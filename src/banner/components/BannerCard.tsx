@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import {
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -85,9 +84,10 @@ export function BannerCard({
     !showVideo;
   const showGradient = mediaType === 'GRADIENT';
   const autoGorsel =
-    banner.id.startsWith('auto-event-') ||
-    banner.id.startsWith('promo-') ||
-    banner.id.startsWith('auto-room-');
+    (banner.id.startsWith('auto-event-') ||
+      banner.id.startsWith('promo-') ||
+      banner.id.startsWith('auto-room-')) &&
+    !(banner.tags ?? []).includes('ROOM_CARD');
   const showText =
     !autoGorsel &&
     (mediaType === 'IMAGE_TEXT' ||
@@ -129,11 +129,7 @@ export function BannerCard({
   return (
     <Animated.View
       entering={FadeInDown.duration(280).springify().damping(18)}
-      style={[
-        styles.card,
-        compact && styles.compact,
-        Platform.OS === 'ios' ? styles.shadowIos : styles.elevationAndroid,
-      ]}
+      style={[styles.card, compact && styles.compact]}
       onLayout={onLayout}
       accessibilityLabel={
         banner.title?.trim() ||
@@ -254,15 +250,6 @@ const styles = StyleSheet.create({
   },
   compact: {
     maxHeight: BANNER_COMPACT_MAX_HEIGHT,
-  },
-  shadowIos: {
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  elevationAndroid: {
-    elevation: 3,
   },
   gradient: {
     width: '100%',

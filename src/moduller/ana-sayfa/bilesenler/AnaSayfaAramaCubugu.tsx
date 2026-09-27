@@ -15,6 +15,8 @@ type Props = {
   onDegisti: (deger: string) => void;
   placeholder?: string;
   onSubmit?: () => void;
+  /** Header satırında — dış boşluk ve gölge yok */
+  gomulu?: boolean;
 };
 
 const KUTU_H = 44;
@@ -25,6 +27,7 @@ export function AnaSayfaAramaCubugu({
   onDegisti,
   placeholder,
   onSubmit,
+  gomulu,
 }: Props) {
   useTemayaAboneOl();
   const { t } = useCeviri();
@@ -35,10 +38,10 @@ export function AnaSayfaAramaCubugu({
     <View
       style={[
         styles.dis,
-        {
+        gomulu && styles.gomulu,
+        !gomulu && {
           backgroundColor: acik ? RenkTokenlari.bgGlass : RenkTokenlari.bgCard,
           borderColor: acik ? RenkTokenlari.border : 'rgba(139,92,246,0.22)',
-          shadowOpacity: acik ? 0.06 : 0,
         },
       ]}
     >
@@ -92,10 +95,12 @@ const styles = StyleSheet.create({
     borderRadius: YaricapTokenlari.lg,
     borderWidth: StyleSheet.hairlineWidth,
     height: KUTU_H,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 2,
+  },
+  gomulu: {
+    marginHorizontal: 0,
+    marginBottom: 0,
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
   },
   wrap: {
     flex: 1,

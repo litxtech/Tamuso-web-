@@ -13,6 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
 import { YUZEN_TAB_ICERIK_BOSLUGU, ANA_TAB_YENIDEN_EVENT } from '../../src/components/YuzenTabBar';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -32,7 +33,6 @@ import {
   type FeedIzgaraOgesi,
 } from '../../src/moduller/ana-sayfa/okuma/AnaSayfaFeedIzgarasi';
 import { AnaSayfaAtmosfer } from '../../src/moduller/ana-sayfa/bilesenler/AnaSayfaAtmosfer';
-import { AnaSayfaFeedBasligi } from '../../src/moduller/ana-sayfa/bilesenler/AnaSayfaFeedBasligi';
 import { AnaSayfaFeedKart } from '../../src/moduller/ana-sayfa/bilesenler/AnaSayfaFeedKart';
 import {
   AnaSayfaFiltreCipleri,
@@ -161,6 +161,7 @@ function sonGezilenAyniMi(
 export default function HomeScreen() {
   useTemayaAboneOl();
   const { t } = useCeviri();
+  const insets = useSafeAreaInsets();
   const { profile, signOut } = useAuth();
   const navigation = useNavigation();
   const isAdmin = AdminYetkisiVarMi(profile);
@@ -599,7 +600,6 @@ export default function HomeScreen() {
 
   const yayinSayisi = useMemo(() => feed.filter((o) => o.tur === 'canli').length, [feed]);
   const sesSayisi = useMemo(() => feed.filter((o) => o.tur === 'oda').length, [feed]);
-  const toplamCanli = yayinSayisi + sesSayisi;
 
   const filtrelenmisFeed = useMemo(
     () => feedAramaFiltrele(feed, arama),
@@ -781,35 +781,37 @@ export default function HomeScreen() {
           <View style={styles.root}>
             <AnaSayfaAtmosfer />
 
-            <AnaSayfaFeedBasligi
-              canliSayisi={toplamCanli}
-              solAksiyon={
-                <AnaSayfaProfilMenuDugmesi
-                  onPress={() => setMenuAcik(true)}
-                  avatarUrl={profile?.avatar_url}
-                  harf={
-                    profile?.display_name?.trim()?.[0] ||
-                    profile?.username?.trim()?.[0] ||
-                    '?'
-                  }
+            <View
+              style={[
+                styles.ustAksiyon,
+                { paddingTop: insets.top + BoslukTokenlari.sm },
+              ]}
+            >
+              <AnaSayfaProfilMenuDugmesi
+                onPress={() => setMenuAcik(true)}
+                avatarUrl={profile?.avatar_url}
+                harf={
+                  profile?.display_name?.trim()?.[0] ||
+                  profile?.username?.trim()?.[0] ||
+                  '?'
+                }
+              />
+              <View style={styles.aramaEsnek}>
+                <AnaSayfaAramaCubugu
+                  gomulu
+                  deger={arama}
+                  onDegisti={setArama}
+                  placeholder={t('anaSayfa.aramaPlaceholder')}
+                  onSubmit={() => {
+                    if (arama.trim()) router.push('/kesfet' as any);
+                  }}
                 />
-              }
-              sagAksiyon={
-                <BildirimZiliDugmesi
-                  sayi={okunmamis}
-                  onPress={() => router.push('/bildirimler' as any)}
-                />
-              }
-            />
-
-            <AnaSayfaAramaCubugu
-              deger={arama}
-              onDegisti={setArama}
-              placeholder={t('anaSayfa.aramaPlaceholder')}
-              onSubmit={() => {
-                if (arama.trim()) router.push('/kesfet' as any);
-              }}
-            />
+              </View>
+              <BildirimZiliDugmesi
+                sayi={okunmamis}
+                onPress={() => router.push('/bildirimler' as any)}
+              />
+            </View>
 
             <AnaSayfaAramaOnerileri
               sorgu={arama}
@@ -989,6 +991,16 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  ustAksiyon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: BoslukTokenlari.sm,
+    gap: 4,
+  },
+  aramaEsnek: {
+    flex: 1,
+    minWidth: 0,
+  },
   filtreSatir: {
     flexDirection: 'row',
     alignItems: 'center',
