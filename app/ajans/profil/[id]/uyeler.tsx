@@ -26,6 +26,7 @@ import {
   YaricapTokenlari,
 } from '../../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useTemayaAboneOl } from '../../../../src/tasarim-sistemi/tema/useTemayaAboneOl';
+import { useCeviri } from '../../../../src/i18n/useCeviri';
 
 function kisa(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -33,18 +34,24 @@ function kisa(n: number) {
   return String(Math.floor(n || 0));
 }
 
-function dakikaMetni(n: number) {
+function dakikaMetni(
+  n: number,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+) {
   const d = Math.max(0, Math.floor(Number(n) || 0));
-  if (d < 60) return `${d} dk`;
+  if (d < 60) return t('ajans.dkKisa', { n: d });
   const saat = Math.floor(d / 60);
   const kalan = d % 60;
-  return kalan ? `${saat}sa ${kalan}dk` : `${saat}sa`;
+  return kalan
+    ? t('ajans.saDkKisa', { sa: saat, dk: kalan })
+    : t('ajans.saKisa', { n: saat });
 }
 
 export default function AjansProfilUyelerEkrani() {
   useTemayaAboneOl();
+  const { t } = useCeviri();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [ad, setAd] = useState('Ajans');
+  const [ad, setAd] = useState(t('ajans.baslik'));
   const [uyeler, setUyeler] = useState<AjansProfilYayinci[]>([]);
   const [arama, setArama] = useState('');
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -88,7 +95,7 @@ export default function AjansProfilUyelerEkrani() {
         fallbackHref={`/ajans/profil/${id}` as any}
       >
         <EkranBasligi
-          title="Üyeler"
+          title={t('ajans.uyeler')}
           subtitle={`${ad} · ${filtreli.length}`}
           fallbackHref={`/ajans/profil/${id}` as any}
         />
@@ -106,14 +113,16 @@ export default function AjansProfilUyelerEkrani() {
               <TextInput
                 value={arama}
                 onChangeText={setArama}
-                placeholder="İsim veya @username"
+                placeholder={t('ajans.phUyeUsername')}
                 placeholderTextColor={RenkTokenlari.textDim}
                 style={styles.input}
               />
             }
             ListEmptyComponent={
               <Text style={styles.bos}>
-                {arama.trim() ? 'Sonuç yok' : 'Henüz üye yok'}
+                {arama.trim()
+                  ? t('ajans.sonucYok')
+                  : t('ajans.henuzUyeYok')}
               </Text>
             }
             renderItem={({ item }) => {
@@ -132,15 +141,20 @@ export default function AjansProfilUyelerEkrani() {
                   )}
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text style={styles.ad} numberOfLines={1}>
-                      {item.display_name || item.username || 'Üye'}
+                      {item.display_name ||
+                        item.username ||
+                        t('ajans.uyeVarsayilan')}
                     </Text>
                     <Text style={styles.alt} numberOfLines={1}>
                       {item.username ? `@${item.username}` : '—'}
                       {item.public_user_id ? ` · ID ${item.public_user_id}` : ''}
                     </Text>
                     <Text style={styles.alt} numberOfLines={1}>
-                      Yayın {dakikaMetni(item.yayin_dakika)} · Ses{' '}
-                      {dakikaMetni(item.ses_dakika)} · {kisa(item.haftalik_coin)} coin/hf
+                      {t('ajans.profilUyeMeta', {
+                        yayin: dakikaMetni(item.yayin_dakika, t),
+                        ses: dakikaMetni(item.ses_dakika, t),
+                        coin: kisa(item.haftalik_coin),
+                      })}
                     </Text>
                   </View>
                   <Ionicons

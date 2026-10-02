@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type AjansLimitler = {
   single_transfer_limit: number;
@@ -32,6 +33,7 @@ export type AjansYonetimOzet = {
   invite_code: string | null;
   host_count: number;
   level_code: string | null;
+  my_role?: string | null;
 };
 
 export type AjansUyeOzet = {
@@ -189,7 +191,7 @@ export type AdminAjansBasvuru = {
 };
 
 function rpcHata(error: { message?: string } | null): never {
-  throw new Error(error?.message ?? 'Ajans işlem başarısız');
+  throw new Error(error?.message ?? i18n.t('ajans.islemBasarisiz'));
 }
 
 export async function AjansPanelDetayGetir(
@@ -308,19 +310,21 @@ export function AjansOdemeMesajiOlustur(
   agencyName?: string,
 ): string {
   const satirlar = [
-    agencyName ? `${agencyName} — ödeme bilgileri` : 'Ödeme bilgileri',
+    agencyName
+      ? i18n.t('ajans.odemeBilgileriAdli', { ad: agencyName })
+      : i18n.t('ajans.odemeBilgileri'),
     '',
-    `Hesap sahibi: ${template.account_holder}`,
-    `Banka: ${template.bank_name}`,
-    `IBAN: ${template.iban}`,
+    i18n.t('ajans.odemeHesapSahibi', { ad: template.account_holder }),
+    i18n.t('ajans.odemeBanka', { ad: template.bank_name }),
+    i18n.t('ajans.odemeIban', { iban: template.iban }),
   ];
   if (template.phone?.trim()) {
-    satirlar.push(`Telefon: ${template.phone.trim()}`);
+    satirlar.push(i18n.t('ajans.odemeTelefon', { tel: template.phone.trim() }));
   }
   if (template.note?.trim()) {
     satirlar.push('', template.note.trim());
   }
-  satirlar.push('', 'Açıklamaya kullanıcı adınızı yazın.');
+  satirlar.push('', i18n.t('ajans.odemeAciklamaHint'));
   return satirlar.join('\n');
 }
 
@@ -427,7 +431,7 @@ export async function AjansUyeOdaKur(input: {
     return {
       ok: false,
       room_id: d?.room_id,
-      hata: d?.hata ?? 'Oda açılamadı',
+      hata: d?.hata ?? i18n.t('olusturTab.odaAcilamadi'),
       mevcut_oda: !!d?.mevcut_oda,
     };
   }

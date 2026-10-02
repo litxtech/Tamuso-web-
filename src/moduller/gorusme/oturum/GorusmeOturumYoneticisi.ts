@@ -8,7 +8,13 @@ import i18n from '../../../i18n';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
-import { MedyaOdasiBaglan, MedyaOdasiKes } from '../../livekit/MedyaBaglantisi';
+import {
+  MedyaHoparlorAyarla,
+  MedyaKameraAyarla,
+  MedyaMikrofonAyarla,
+  MedyaOdasiBaglan,
+  MedyaOdasiKes,
+} from '../../livekit/MedyaBaglantisi';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
 import {
   GorusmeBenimAktifleriBitir,
@@ -216,20 +222,20 @@ export function GorusmeOturumSunumAyarla(sunum: GorusmeSunum): void {
 export function GorusmeOturumMuteAyarla(muted: boolean): void {
   if (!durum) return;
   patch({ muted });
-  LiveKitBaglantiYoneticisi.muteLocalAudio(muted);
+  MedyaMikrofonAyarla(!muted);
 }
 
 export function GorusmeOturumSpeakerAyarla(speaker: boolean): void {
   if (!durum) return;
   patch({ speaker });
-  void LiveKitBaglantiYoneticisi.setSpeakerphone(speaker);
+  MedyaHoparlorAyarla(speaker);
 }
 
 export function GorusmeOturumKameraAyarla(cameraOn: boolean): void {
   if (!durum) return;
   patch({ cameraOn });
   if (durum.call.call_type === 'video') {
-    LiveKitBaglantiYoneticisi.setLocalVideoEnabled(cameraOn);
+    MedyaKameraAyarla(cameraOn);
   }
 }
 
@@ -256,11 +262,9 @@ function realtimeKur(callId: string) {
           }
           patch({ baglandi: true, durumYazi: i18n.t('gorusme.baglandi') });
           if (next.call_type === 'video') {
-            LiveKitBaglantiYoneticisi.setLocalVideoEnabled(true);
+            MedyaKameraAyarla(true);
           }
-          LiveKitBaglantiYoneticisi.muteLocalAudio(
-            !!GorusmeOturumAl()?.muted,
-          );
+          MedyaMikrofonAyarla(!GorusmeOturumAl()?.muted);
           if (next.is_paid) {
             billingHeartbeatBaslat(callId);
           }
@@ -394,10 +398,10 @@ export async function GorusmeOturumEkranAc(input: {
       return 'started';
     }
 
-    void LiveKitBaglantiYoneticisi.setSpeakerphone(isVideo);
-    LiveKitBaglantiYoneticisi.muteLocalAudio(false);
+    MedyaHoparlorAyarla(isVideo);
+    MedyaMikrofonAyarla(true);
     if (isVideo) {
-      LiveKitBaglantiYoneticisi.setLocalVideoEnabled(true);
+      MedyaKameraAyarla(true);
     }
 
     if (c.status === 'active' || durum.baglandi) {

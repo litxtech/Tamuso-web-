@@ -15,9 +15,11 @@ import type { PolitikaGorunum } from '../../src/moduller/politikalar/tipler/Poli
 import { PolitikaZenginGovde } from '../../src/moduller/politikalar/bilesenler/PolitikaZenginGovde';
 import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
+import { useCeviri } from '../../src/i18n/useCeviri';
 
 /** Temiz koyu arka plan · beyaz tipografi — modern politika sayfası */
 export default function PolitikaDetayEkrani() {
+  const { t } = useCeviri();
   const { kod } = useLocalSearchParams<{ kod: string }>();
   const [politika, setPolitika] = useState<PolitikaGorunum | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -47,7 +49,7 @@ export default function PolitikaDetayEkrani() {
       <ModulHataSiniri modulAdi="politikalar">
         <View style={styles.baslikWrap}>
           <EkranBasligi
-            title={politika?.baslik ?? 'Politika'}
+            title={politika?.baslik ?? t('politika.tekBaslik')}
             subtitle={politika?.kisa}
             fallbackHref={'/politika' as any}
           />
@@ -65,7 +67,7 @@ export default function PolitikaDetayEkrani() {
               metinStil={styles.govde}
             />
           ) : (
-            <Text style={styles.bos}>Politika bulunamadı.</Text>
+            <Text style={styles.bos}>{t('politika.bulunamadi')}</Text>
           )}
         </ScrollView>
       </ModulHataSiniri>

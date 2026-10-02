@@ -43,8 +43,12 @@ const styles = StyleSheet.create({
   btn: {
     width: 40,
     height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: RenkTokenlari.bgElevated,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
   },
   rozet: {
     position: 'absolute',

@@ -1,3 +1,6 @@
+import i18n from '../../../i18n';
+import { AktifDil } from '../../../i18n';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { CuzdanNoQrPayload } from '../takas/CuzdanTakasIslemleri';
@@ -27,12 +30,13 @@ export function CuzdanAdSoyadMaskele(
   first?: string | null,
   last?: string | null,
 ): string {
+  const locale = DIL_LOCALE_MAP[AktifDil()];
   const a = (first ?? '').trim();
   const b = (last ?? '').trim();
-  const ha = a ? `${a.charAt(0).toLocaleUpperCase('tr-TR')}.` : '';
-  const hb = b ? `${b.charAt(0).toLocaleUpperCase('tr-TR')}.` : '';
+  const ha = a ? `${a.charAt(0).toLocaleUpperCase(locale)}.` : '';
+  const hb = b ? `${b.charAt(0).toLocaleUpperCase(locale)}.` : '';
   const out = [ha, hb].filter(Boolean).join(' ');
-  return out || '—';
+  return out || (i18n.t('cuzdan.tire') as string);
 }
 
 export function CuzdanNoQrGorselUri(
@@ -57,12 +61,12 @@ export function CuzdanKartPaylasimMetni(walletNumber: string): string {
   const no = walletNumber.replace(/\D/g, '');
   const payload = CuzdanNoQrPayload(no);
   return [
-    'MUTA PAY cüzdanım',
+    i18n.t('cuzdanX.kartPaylasBaslik'),
     formatCuzdanNo(no),
     '',
-    `Bağlantı: ${payload}`,
-    'Ses odası, gönderi, mesaj ve canlı yayın aktiviteleri için dijital cüzdan.',
-    'Uygulamada Takas / QR ile okutabilirsin.',
+    i18n.t('cuzdanX.kartPaylasBaglanti', { payload }),
+    i18n.t('cuzdanX.kartPaylasAlt'),
+    i18n.t('cuzdanX.kartPaylasTakas'),
   ].join('\n');
 }
 
@@ -73,7 +77,7 @@ export async function CuzdanKartiniMesajlaPaylas(input: {
 }): Promise<{ ok: true; threadId: string } | { ok: false; hata: string }> {
   const no = input.walletNumber.replace(/\D/g, '');
   if (no.length !== 18) {
-    return { ok: false, hata: 'Cüzdan numarası hazır değil.' };
+    return { ok: false, hata: i18n.t('cuzdanX.cuzdanNoHazirDegil') };
   }
   const sohbet = await OzelSohbetAcVeyaGetir(input.otherUserId);
   if (!sohbet.ok) return sohbet;
@@ -92,7 +96,7 @@ export async function CuzdanKartiniMesajlaPaylas(input: {
   // QR görseli — başarısız olsa metin yeterli
   const img = await MesajGonder({
     threadId: sohbet.threadId,
-    body: 'Cüzdan QR',
+    body: i18n.t('cuzdanX.cuzdanQr'),
     messageType: 'image',
     mediaUrl: qrUrl,
     clientId: yeniUuid(),
@@ -114,7 +118,7 @@ export async function CuzdanKartiniWhatsAppPaylas(
 ): Promise<{ ok: true } | { ok: false; hata: string }> {
   const no = walletNumber.replace(/\D/g, '');
   if (no.length !== 18) {
-    return { ok: false, hata: 'Cüzdan numarası hazır değil.' };
+    return { ok: false, hata: i18n.t('cuzdanX.cuzdanNoHazirDegil') };
   }
 
   const metin = CuzdanKartPaylasimMetni(no);
@@ -129,7 +133,7 @@ export async function CuzdanKartiniWhatsAppPaylas(
       if (indir?.uri) {
         await Sharing.shareAsync(indir.uri, {
           mimeType: 'image/png',
-          dialogTitle: 'WhatsApp ile cüzdan QR paylaş',
+          dialogTitle: i18n.t('cuzdanX.waQrDialog'),
           UTI: 'public.png',
         });
         return { ok: true };
@@ -157,7 +161,7 @@ export async function CuzdanKartiniWhatsAppPaylas(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'WhatsApp açılamadı',
+      hata: e instanceof Error ? e.message : i18n.t('cuzdanX.whatsappAcilamadi'),
     };
   }
 }

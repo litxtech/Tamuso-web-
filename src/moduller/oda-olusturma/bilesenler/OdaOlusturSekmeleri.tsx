@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -7,21 +7,20 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri, type CeviriAnahtari } from '../../../i18n/useCeviri';
 
 export type OdaOlusturSekmeKodu = 'mod' | 'kapasite' | 'duzen' | 'tema' | 'detay';
 
-type Sekme = {
+const SEKME_SIRASI: Array<{
   kod: OdaOlusturSekmeKodu;
-  etiket: string;
+  etiketKey: CeviriAnahtari;
   adim: number;
-};
-
-const SEKMELER: Sekme[] = [
-  { kod: 'mod', etiket: 'Mod', adim: 1 },
-  { kod: 'kapasite', etiket: 'Boyut', adim: 2 },
-  { kod: 'duzen', etiket: 'Düzen', adim: 3 },
-  { kod: 'tema', etiket: 'Tema', adim: 4 },
-  { kod: 'detay', etiket: 'Detay', adim: 5 },
+}> = [
+  { kod: 'mod', etiketKey: 'olusturTab.mod', adim: 1 },
+  { kod: 'kapasite', etiketKey: 'olusturTab.boyut', adim: 2 },
+  { kod: 'duzen', etiketKey: 'olusturTab.duzen', adim: 3 },
+  { kod: 'tema', etiketKey: 'olusturTab.tema', adim: 4 },
+  { kod: 'detay', etiketKey: 'olusturTab.detay', adim: 5 },
 ];
 
 type Props = {
@@ -30,13 +29,23 @@ type Props = {
 };
 
 export function OdaOlusturSekmeleri({ aktif, onSec }: Props) {
+  const { t } = useCeviri();
+  const sekmeler = useMemo(
+    () =>
+      SEKME_SIRASI.map((s) => ({
+        ...s,
+        etiket: t(s.etiketKey),
+      })),
+    [t],
+  );
+
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.serit}
     >
-      {SEKMELER.map((sekme) => {
+      {sekmeler.map((sekme) => {
         const secili = aktif === sekme.kod;
         return (
           <Pressable
@@ -70,15 +79,15 @@ export function OdaOlusturSekmeleri({ aktif, onSec }: Props) {
 }
 
 export function sonrakiSekme(aktif: OdaOlusturSekmeKodu): OdaOlusturSekmeKodu | null {
-  const i = SEKMELER.findIndex((s) => s.kod === aktif);
-  if (i < 0 || i >= SEKMELER.length - 1) return null;
-  return SEKMELER[i + 1].kod;
+  const i = SEKME_SIRASI.findIndex((s) => s.kod === aktif);
+  if (i < 0 || i >= SEKME_SIRASI.length - 1) return null;
+  return SEKME_SIRASI[i + 1].kod;
 }
 
 export function oncekiSekme(aktif: OdaOlusturSekmeKodu): OdaOlusturSekmeKodu | null {
-  const i = SEKMELER.findIndex((s) => s.kod === aktif);
+  const i = SEKME_SIRASI.findIndex((s) => s.kod === aktif);
   if (i <= 0) return null;
-  return SEKMELER[i - 1].kod;
+  return SEKME_SIRASI[i - 1].kod;
 }
 
 const styles = StyleSheet.create({

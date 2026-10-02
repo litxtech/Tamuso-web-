@@ -1,0 +1,24 @@
+{
+  "oyun": {
+    "baslik": "Jeux",
+    "kaskad": "Cascade",
+    "zeus": "Zeus",
+    "nox": "Nox",
+    "davetEyebrow": "INVITATION AU JEU",
+    "varsayilanAd": "Jeu Tamuso",
+    "davetBody": "{{host}} a lancé un jeu. Vous voulez rejoindre ?",
+    "birOyuncu": "Un joueur",
+    "davetMeta": "{{sn}} s · {{joined}}/{{max}} joueurs",
+    "katil": "REJOINDRE",
+    "izle": "REGARDER",
+    "simdiDegil": "PAS MAINTENANT",
+    "odaAcikKalir": "La salle au-dessus reste ouverte. La carte reste au-dessus du dock ; les places restent.",
+    "acikOyunYok": "Aucun jeu ouvert pour le moment",
+    "acikOyunYokBody": "Les jeux ont été désactivés dans l’admin. Réessayez plus tard.",
+    "oyna": "JOUER",
+    "soloSunucu": "Solo · résultat serveur",
+    "noxBody": "Ligne de paiement 5×3 · wild · bonus scatter · résultat serveur",
+    "zeusBody": "Cascade 6×5 · 4 Zeus = 15 free spins · multiplicateurs",
+    "kaskadBody": "Cascade 6×5 · scatter portail · multiplicateurs · tours bonus"
+  }
+}

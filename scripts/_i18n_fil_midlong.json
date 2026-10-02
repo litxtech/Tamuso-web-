@@ -1,0 +1,194 @@
+[
+  {
+    "key": "gorunum.sampanyaAlt",
+    "en": "VIP gold noir"
+  },
+  {
+    "key": "gorunum.neon_sehirAlt",
+    "en": "Cyber pink · mint"
+  },
+  {
+    "key": "ayarlar.pip",
+    "en": "Picture-in-picture (PiP)"
+  },
+  {
+    "key": "auth.appleGirisi",
+    "en": "Apple sign-in"
+  },
+  {
+    "key": "auth.spotifyGirisi",
+    "en": "Spotify sign-in"
+  },
+  {
+    "key": "auth.twitchGirisi",
+    "en": "Twitch sign-in"
+  },
+  {
+    "key": "auth.xGirisi",
+    "en": "X sign-in"
+  },
+  {
+    "key": "auth.googleGirisi",
+    "en": "Google sign-in"
+  },
+  {
+    "key": "auth.misafirGirisi",
+    "en": "Guest sign-in"
+  },
+  {
+    "key": "auth.destek",
+    "en": "Support: support@litxtech.com"
+  },
+  {
+    "key": "auth.spotifyKaydi",
+    "en": "Spotify sign-up"
+  },
+  {
+    "key": "auth.twitchKaydi",
+    "en": "Twitch sign-up"
+  },
+  {
+    "key": "auth.xKaydi",
+    "en": "X sign-up"
+  },
+  {
+    "key": "auth.googleKaydi",
+    "en": "Google sign-up"
+  },
+  {
+    "key": "auth.epostaPlaceholder",
+    "en": "you@mail.com"
+  },
+  {
+    "key": "profil.ayarlarAlt",
+    "en": "Account · privacy · app"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadBet",
+    "en": "Cosmic Cascade — entry"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadWin",
+    "en": "Cosmic Cascade — reward"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadRefund",
+    "en": "Cosmic Cascade — refund"
+  },
+  {
+    "key": "cuzdan.refKaskadRound",
+    "en": "Cosmic Cascade round"
+  },
+  {
+    "key": "ajans.phEposta",
+    "en": "agency@example.com"
+  },
+  {
+    "key": "ajans.hostBasvuruFormu",
+    "en": "Host application form"
+  },
+  {
+    "key": "ajans.davetlerAlt",
+    "en": "Code · QR · analytics"
+  },
+  {
+    "key": "sehir.gucDestekci",
+    "en": "Power {{guc}} · {{count}} supporters"
+  },
+  {
+    "key": "aiMuzik.ornekPrompt2",
+    "en": "Energetic Black Sea, kemençe + electronic"
+  },
+  {
+    "key": "aiMuzik.kanalAndroid",
+    "en": "Google Play / card"
+  },
+  {
+    "key": "odaMuzik.aiStudio",
+    "en": "AI Music Studio"
+  },
+  {
+    "key": "odaMuzik.sesBilgi",
+    "en": "Audio: {{ext}} · {{path}}"
+  },
+  {
+    "key": "sertifikasyon.altBaslik",
+    "en": "Store / pre-release control hub"
+  },
+  {
+    "key": "sertifikasyon.hediyeStresAlt",
+    "en": "40-gift queue · drop rate"
+  },
+  {
+    "key": "takas.qrCuzdanOzet",
+    "en": "Wallet: {{no}}\n{{maskeli}}"
+  },
+  {
+    "key": "anaSayfa.menuAiMuzik",
+    "en": "AI Music Studio"
+  },
+  {
+    "key": "anaSayfa.bolumCountryLeague",
+    "en": "World Country League"
+  },
+  {
+    "key": "anaSayfa.canliA11y",
+    "en": "{{baslik}}, live stream"
+  },
+  {
+    "key": "anaSayfa.sesA11y",
+    "en": "{{baslik}}, voice room"
+  },
+  {
+    "key": "anaSayfa.sesOdasiA11y",
+    "en": "Voice room {{baslik}}"
+  },
+  {
+    "key": "anaSayfa.mailKonu",
+    "en": "Tamuso support / report"
+  },
+  {
+    "key": "profilTab.galibiyetOrani",
+    "en": "Win rate {{oran}}%"
+  },
+  {
+    "key": "canliYayin.a11yCanliYayin",
+    "en": "{{baslik}}, live stream"
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoPaylasMetin",
+    "en": "MUTA PAY wallet no: {{no}}"
+  },
+  {
+    "key": "mesajSohbet.idPaylasMetin",
+    "en": "User ID: {{id}}"
+  },
+  {
+    "key": "sesOda.demoCanliOda",
+    "en": "Demo live room"
+  },
+  {
+    "key": "banner.auto.live_coins",
+    "en": "Live coin threshold"
+  },
+  {
+    "key": "odaDuzen.premium_tilesAlt",
+    "en": "VIP tile grid"
+  },
+  {
+    "key": "odaDuzen.planet_orbitAlt",
+    "en": "Orbital mic ring"
+  },
+  {
+    "key": "odaDuzen.mini_clusterAlt",
+    "en": "Compact cluster grid"
+  },
+  {
+    "key": "odaDuzen.dropin_tiles",
+    "en": "Drop-in tiles"
+  },
+  {
+    "key": "odaTema.party_neonAlt",
+    "en": "Live party · pink neon"
+  }
+]

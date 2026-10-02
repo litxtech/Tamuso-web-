@@ -1,0 +1,268 @@
+[
+  {
+    "key": "ortak.hata",
+    "reason": "same_as_en",
+    "en": "Error",
+    "val": "Error",
+    "tr": "Hata"
+  },
+  {
+    "key": "sekmeler.mesaj",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "gorunum.plasma",
+    "reason": "same_as_en",
+    "en": "Plasma",
+    "val": "Plasma",
+    "tr": "Plazma"
+  },
+  {
+    "key": "gorunum.mercana",
+    "reason": "same_as_en",
+    "en": "Coral",
+    "val": "Coral",
+    "tr": "Mercan"
+  },
+  {
+    "key": "mesajlar.sohbetler",
+    "reason": "same_as_en",
+    "en": "Chats",
+    "val": "Chats",
+    "tr": "Sohbetler"
+  },
+  {
+    "key": "cuzdan.ajansPaketPopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "bildirimler.kategoriSosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "bildirimAyar.sosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "aiCeviri.gorusmeSohbetKisa",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "guvenlik.cinsel",
+    "reason": "same_as_en",
+    "en": "Sexual",
+    "val": "Sexual",
+    "tr": "Cinsel"
+  },
+  {
+    "key": "ajans.hata",
+    "reason": "same_as_en",
+    "en": "Error",
+    "val": "Error",
+    "tr": "Hata"
+  },
+  {
+    "key": "ajans.formSecSohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "ajans.dkKisa",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.vokalEnstr",
+    "reason": "same_as_en",
+    "en": "Instrumental",
+    "val": "Instrumental",
+    "tr": "Enstrümantal"
+  },
+  {
+    "key": "aiMuzik.ses",
+    "reason": "same_as_en",
+    "en": "Audio",
+    "val": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "odaMuzik.tabPopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "odaMuzik.alertSes",
+    "reason": "same_as_en",
+    "en": "Audio",
+    "val": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "odaMuzik.dashToplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "odaMuzik.sesBilgi",
+    "reason": "same_as_en",
+    "en": "Audio: {{ext}} · {{path}}",
+    "val": "Audio: {{ext}} · {{path}}",
+    "tr": "Ses: {{ext}} · {{path}}"
+  },
+  {
+    "key": "fikirler.baslik",
+    "reason": "same_as_en",
+    "en": "Ideas",
+    "val": "Ideas",
+    "tr": "Fikirler"
+  },
+  {
+    "key": "fikirler.sekmePopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "ulkeLigi.puanEtiket",
+    "reason": "same_as_en",
+    "en": "pts",
+    "val": "pts",
+    "tr": "puan"
+  },
+  {
+    "key": "satinAlma.kanalManuel",
+    "reason": "same_as_en",
+    "en": "Manual",
+    "val": "Manual",
+    "tr": "Manuel"
+  },
+  {
+    "key": "sertifikasyon.internet",
+    "reason": "same_as_en",
+    "en": "Internet",
+    "val": "Internet",
+    "tr": "İnternet"
+  },
+  {
+    "key": "anaSayfa.populer",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "anaSayfa.grupYonetim",
+    "reason": "same_as_en",
+    "en": "ADMIN",
+    "val": "ADMIN",
+    "tr": "YÖNETİM"
+  },
+  {
+    "key": "cuzdanX.taban",
+    "reason": "same_as_en",
+    "en": "{{adet}} base",
+    "val": "{{adet}} base",
+    "tr": "{{adet}} taban"
+  },
+  {
+    "key": "olusturTab.tema",
+    "reason": "same_as_tr",
+    "en": "Theme",
+    "val": "Tema",
+    "tr": "Tema"
+  },
+  {
+    "key": "hediye.sekmePopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "canliYayin.katSohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "mesajSohbet.sohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "sesOda.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "sesOda.saDk",
+    "reason": "same_as_en",
+    "en": "{{sa}} h {{dk}} min",
+    "val": "{{sa}} h {{dk}} min",
+    "tr": "{{sa}} sa {{dk}} dk"
+  },
+  {
+    "key": "sesOda.yonetici",
+    "reason": "same_as_en",
+    "en": "Admin",
+    "val": "Admin",
+    "tr": "Yönetici"
+  },
+  {
+    "key": "belge.admin.toplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "kullanimSuresiFmt.gunSaatKisa",
+    "reason": "same_as_en",
+    "en": "{{gun}}d {{saat}}h",
+    "val": "{{gun}}d {{saat}}h",
+    "tr": "{{gun}}g {{saat}}s"
+  },
+  {
+    "key": "kullanimSuresiFmt.saatDkKisa",
+    "reason": "same_as_en",
+    "en": "{{saat}}h {{dk}}m",
+    "val": "{{saat}}h {{dk}}m",
+    "tr": "{{saat}}s {{dk}}dk"
+  }
+]

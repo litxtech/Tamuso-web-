@@ -345,13 +345,9 @@ export function OdaMuzikKutuphanesiSheet({
             <Text style={styles.bolumBaslik}>
               {t('odaMuzik.kuyruk', { count: kuyruk.length })}
             </Text>
-            {kuyruk.slice(0, 5).map((q) => (
+            {kuyruk.slice(0, 30).map((q, i) => (
               <View key={q.id} style={styles.kuyrukSatir}>
-                <Ionicons
-                  name="list"
-                  size={14}
-                  color={RenkTokenlari.textDim}
-                />
+                <Text style={styles.kuyrukSure}>{i + 1}</Text>
                 <Text style={styles.kuyrukAd} numberOfLines={1}>
                   {q.title}
                 </Text>

@@ -17,6 +17,11 @@ import {
   BildirimleriHepsiniOkundu,
 } from '../okuma/BildirimKuyrugumuGetir';
 import { CihazBildirimRozetiniAyarla } from '../islemler/CihazBildirimRozetiniAyarla';
+import { BekleyenPushHedefiAlVeTemizle } from '../islemler/BekleyenPushHedefi';
+import {
+  BildirimHedefineGecikmeliGit,
+  BildirimYanitiniIsle,
+} from '../islemler/BildirimPushYonlendirme';
 
 type BildirimContextValue = {
   okunmamis: number;
@@ -29,10 +34,12 @@ type BildirimContextValue = {
 const BildirimContext = createContext<BildirimContextValue | null>(null);
 
 export function BildirimSaglayici({ children }: { children: React.ReactNode }) {
-  const { session, user } = useAuth();
+  const { session, user, loading: authLoading } = useAuth();
   const [okunmamis, setOkunmamis] = useState(0);
   const userId = user?.id ?? null;
   const odakli = useRef(true);
+  /** null = henüz bilinmiyor; login geçişi false→true için */
+  const oncekiOturum = useRef<boolean | null>(null);
 
   const uygulaSayi = useCallback((n: number) => {
     const v = Math.max(0, Math.floor(n));
@@ -74,6 +81,34 @@ export function BildirimSaglayici({ children }: { children: React.ReactNode }) {
     },
     [uygulaSayi, yenile],
   );
+
+  // Arka plan / ön planda push tıklama (cold start app/index'te)
+  useEffect(() => {
+    if (authLoading) return;
+
+    const yanitSub = Notifications.addNotificationResponseReceivedListener(
+      (yanit) => {
+        BildirimYanitiniIsle(yanit, {
+          oturumVar: !!session,
+          hemenGit: !!session,
+        });
+      },
+    );
+
+    return () => yanitSub.remove();
+  }, [authLoading, session]);
+
+  // Login sonrası (oturumsuzken tıklanan push) bekleyen hedefi uygula
+  useEffect(() => {
+    if (authLoading) return;
+    const onceki = oncekiOturum.current;
+    const simdi = !!session;
+    oncekiOturum.current = simdi;
+    if (onceki === false && simdi) {
+      const hedef = BekleyenPushHedefiAlVeTemizle();
+      if (hedef) BildirimHedefineGecikmeliGit(hedef, 200);
+    }
+  }, [authLoading, session]);
 
   useEffect(() => {
     if (!session || !userId) {

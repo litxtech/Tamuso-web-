@@ -168,6 +168,7 @@ export default function GorusmeEkrani() {
               speaker={oturum.speaker}
               cameraOn={oturum.cameraOn}
               mock={oturum.mock}
+              threadId={oturum.call.thread_id}
               billingRemainingSec={oturum.billingRemainingSec}
               billingLowBalance={oturum.billingLowBalance}
               onMute={() => GorusmeOturumMuteAyarla(!oturum.muted)}

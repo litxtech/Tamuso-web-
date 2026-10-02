@@ -1,10 +1,12 @@
 import { RenkTokenlari } from './RenkTokenlari';
-import { temaKodunuAl } from './tema/TemaDurumu';
+import { temaAcikMi, temaKodunuAl } from './tema/TemaDurumu';
 import { TipografiTokenlari } from './TipografiTokenlari';
 import {
   AnimasyonTokenlari,
   BoslukTokenlari,
   GolgeTokenlari,
+  HeaderTokenlari,
+  screenPaddingHorizontal,
   YaricapTokenlari,
 } from './BoslukVeYaricapTokenlari';
 
@@ -16,12 +18,14 @@ export const TasarimSistemi = {
   renkler: RenkTokenlari,
   tipografi: TipografiTokenlari,
   bosluklar: BoslukTokenlari,
+  header: HeaderTokenlari,
+  screenPaddingHorizontal,
   yaricaplar: YaricapTokenlari,
   golgeler: GolgeTokenlari,
   animasyonlar: AnimasyonTokenlari,
   get tema() {
     const kod = temaKodunuAl();
-    if (kod === 'acik') return 'light-premium' as const;
+    if (temaAcikMi(kod)) return 'light-premium' as const;
     if (kod === 'kadife') return 'velvet-rose' as const;
     if (kod === 'sampanya') return 'champagne-noir' as const;
     if (kod === 'kozmik') return 'cosmic-plum' as const;
@@ -34,6 +38,8 @@ export {
   RenkTokenlari,
   TipografiTokenlari,
   BoslukTokenlari,
+  HeaderTokenlari,
+  screenPaddingHorizontal,
   YaricapTokenlari,
   GolgeTokenlari,
   AnimasyonTokenlari,

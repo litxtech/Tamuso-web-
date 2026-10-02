@@ -1,6 +1,7 @@
 import type { BannerCampaign } from './BannerTypes';
 import { isBannerEligible } from './BannerEligibilityEngine';
 import type { BannerUserContext, BannerUserState } from './BannerTypes';
+import { BANNER_ROOM_CARD_TAG } from './BannerConstants';
 
 /** Placement bazlı filtre + priority sıralama */
 export function filterBannersForPlacement(
@@ -11,9 +12,12 @@ export function filterBannersForPlacement(
 ): BannerCampaign[] {
   return banners
     .filter((b) => {
-      const hasPlacement =
-        (b.placements?.length ?? 0) === 0 ||
-        (b.placements ?? []).some((p) => p.placement_key === placementKey);
+      // Boş placement = her yerde değil (ses odasına sızmasın)
+      const placements = b.placements ?? [];
+      if (placements.length === 0) return false;
+      const hasPlacement = placements.some(
+        (p) => p.placement_key === placementKey,
+      );
       if (!hasPlacement) return false;
       return isBannerEligible(
         b,
@@ -42,4 +46,11 @@ export function extractAfterPostIndex(placementKey: string): number | null {
   if (!m) return null;
   const n = Number(m[1]);
   return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Otomatik / manuel oda kartı boyutunda mı? */
+export function bannerOdaKartMi(banner: BannerCampaign): boolean {
+  if (banner.id.startsWith('auto-room-')) return true;
+  if (banner.id.startsWith('promo-oda-')) return true;
+  return (banner.tags ?? []).includes(BANNER_ROOM_CARD_TAG);
 }

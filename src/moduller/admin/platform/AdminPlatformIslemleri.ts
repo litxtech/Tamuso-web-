@@ -10,6 +10,9 @@ import type {
   AdminPlatformOzeti,
   AdminRapor,
   AdminRaporDetay,
+  AjansKomisyonOrani,
+  EkonomiSimulasyon,
+  PlatformEkonomiConfig,
 } from '../tipler/PlatformTipleri';
 
 function rpcHata(error: { message?: string } | null): never {
@@ -160,13 +163,174 @@ export async function AdminKillSwitchAyarla(
 }
 
 export async function AdminEkonomiKatalogu(): Promise<{
+  config: PlatformEkonomiConfig | null;
+  simuleOrnek: EkonomiSimulasyon | null;
   paketler: AdminPaket[];
   hediyeler: AdminHediye[];
 }> {
   const { data, error } = await supabase.rpc('admin_ekonomi_katalogu');
   if (error) rpcHata(error);
-  const d = data as { paketler: AdminPaket[]; hediyeler: AdminHediye[] };
-  return { paketler: d?.paketler ?? [], hediyeler: d?.hediyeler ?? [] };
+  const d = data as {
+    config?: PlatformEkonomiConfig;
+    simule_ornek?: EkonomiSimulasyon;
+    paketler: AdminPaket[];
+    hediyeler: AdminHediye[];
+  };
+  return {
+    config: d?.config ?? null,
+    simuleOrnek: d?.simule_ornek ?? null,
+    paketler: d?.paketler ?? [],
+    hediyeler: d?.hediyeler ?? [],
+  };
+}
+
+export async function AdminEkonomiConfigGuncelle(
+  patch: Partial<PlatformEkonomiConfig>,
+): Promise<PlatformEkonomiConfig> {
+  const { data, error } = await supabase.rpc('admin_ekonomi_config_guncelle', {
+    p: patch,
+  });
+  if (error) rpcHata(error);
+  return data as PlatformEkonomiConfig;
+}
+
+export async function AdminEkonomiSimuleEt(
+  brutTry: number,
+): Promise<EkonomiSimulasyon> {
+  const { data, error } = await supabase.rpc('admin_ekonomi_simule_et', {
+    p_brut_try: brutTry,
+  });
+  if (error) rpcHata(error);
+  return data as EkonomiSimulasyon;
+}
+
+export async function AdminAjansKomisyonListele(): Promise<{
+  items: AjansKomisyonOrani[];
+  defaults: {
+    default_agency_share: number;
+    gift_host_share: number;
+    default_platform_share: number;
+  };
+}> {
+  const { data, error } = await supabase.rpc('admin_ajans_komisyon_listele');
+  if (error) rpcHata(error);
+  const d = data as {
+    items?: AjansKomisyonOrani[];
+    defaults?: {
+      default_agency_share?: number;
+      gift_host_share?: number;
+      default_platform_share?: number;
+    };
+  };
+  return {
+    items: (d?.items ?? []).map((x) => ({
+      ...x,
+      agency_share: Number(x.agency_share),
+      host_share: Number(x.host_share),
+      platform_share: Number(x.platform_share),
+    })),
+    defaults: {
+      default_agency_share: Number(d?.defaults?.default_agency_share ?? 0.2),
+      gift_host_share: Number(d?.defaults?.gift_host_share ?? 0.8),
+      default_platform_share: Number(d?.defaults?.default_platform_share ?? 0.1),
+    },
+  };
+}
+
+export async function AdminAjansKomisyonGuncelle(input: {
+  agencyId: string;
+  agencyShare: number;
+  platformShare: number;
+}): Promise<{
+  agency_id: string;
+  agency_share: number;
+  platform_share: number;
+  host_share: number;
+  updated_at?: string | null;
+}> {
+  const { data, error } = await supabase.rpc('admin_ajans_komisyon_guncelle', {
+    p_agency_id: input.agencyId,
+    p_agency_share: input.agencyShare,
+    p_platform_share: input.platformShare,
+  });
+  if (error) rpcHata(error);
+  const d = data as {
+    agency_id: string;
+    agency_share: number;
+    platform_share: number;
+    host_share: number;
+    updated_at?: string | null;
+  };
+  return {
+    agency_id: d.agency_id,
+    agency_share: Number(d.agency_share),
+    platform_share: Number(d.platform_share),
+    host_share: Number(d.host_share),
+    updated_at: d.updated_at,
+  };
+}
+
+export async function AdminAjansKomisyonVarsayilanUygula(): Promise<{
+  updated_rows: number;
+  agency_share: number;
+  platform_share: number;
+  host_share: number;
+}> {
+  const { data, error } = await supabase.rpc(
+    'admin_ajans_komisyon_varsayilan_uygula',
+  );
+  if (error) rpcHata(error);
+  const d = data as {
+    updated_rows?: number;
+    agency_share?: number;
+    platform_share?: number;
+    host_share?: number;
+  };
+  return {
+    updated_rows: d?.updated_rows ?? 0,
+    agency_share: Number(d?.agency_share ?? 0.2),
+    platform_share: Number(d?.platform_share ?? 0.1),
+    host_share: Number(d?.host_share ?? 0.7),
+  };
+}
+
+export async function AdminHediyeKatalogOranUygula(): Promise<{
+  updated_rows: number;
+  gift_host_share: number;
+}> {
+  const { data, error } = await supabase.rpc('admin_hediye_katalog_oran_uygula');
+  if (error) rpcHata(error);
+  const d = data as { updated_rows?: number; gift_host_share?: number };
+  return {
+    updated_rows: d?.updated_rows ?? 0,
+    gift_host_share: Number(d?.gift_host_share ?? 0.8),
+  };
+}
+
+export async function AdminHediyeGuncelle(input: {
+  id: string;
+  coinCost?: number | null;
+  diamondValue?: number | null;
+  name?: string | null;
+  emoji?: string | null;
+  rarity?: string | null;
+  isActive?: boolean | null;
+  sortOrder?: number | null;
+}): Promise<AdminHediye> {
+  const { data, error } = await supabase.rpc('admin_hediye_guncelle', {
+    p_id: input.id,
+    p_coin_cost: input.coinCost ?? null,
+    p_diamond_value: input.diamondValue ?? null,
+    p_name: input.name ?? null,
+    p_emoji: input.emoji ?? null,
+    p_rarity: input.rarity ?? null,
+    p_is_active: input.isActive ?? null,
+    p_sort_order: input.sortOrder ?? null,
+  });
+  if (error) rpcHata(error);
+  const hediye = (data as { hediye?: AdminHediye })?.hediye;
+  if (!hediye) throw new Error('Hediye güncellenemedi');
+  return hediye;
 }
 
 export async function AdminPaketAktiflik(
@@ -207,6 +371,48 @@ export async function AdminCoinPaketGuncelle(input: {
   if (error) rpcHata(error);
   const paket = (data as { paket?: AdminPaket })?.paket;
   if (!paket) throw new Error('Paket güncellenemedi');
+  return paket;
+}
+
+export type AdminAjansCoinPaket = {
+  id: string;
+  package_key: string;
+  title: string;
+  liste_fiyat_try: number;
+  odenecek_try: number;
+  coins: number;
+  indirim_yuzde: number;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export async function AdminAjansPaketKatalogu(): Promise<AdminAjansCoinPaket[]> {
+  const { data, error } = await supabase.rpc('admin_ajans_paket_katalogu');
+  if (error) rpcHata(error);
+  return (Array.isArray(data) ? data : []) as AdminAjansCoinPaket[];
+}
+
+export async function AdminAjansPaketGuncelle(input: {
+  id: string;
+  title?: string | null;
+  listeFiyatTry?: number | null;
+  coins?: number | null;
+  indirimYuzde?: number | null;
+  sortOrder?: number | null;
+  isActive?: boolean | null;
+}): Promise<AdminAjansCoinPaket> {
+  const { data, error } = await supabase.rpc('admin_ajans_paket_guncelle', {
+    p_id: input.id,
+    p_title: input.title ?? null,
+    p_liste_fiyat_try: input.listeFiyatTry ?? null,
+    p_coins: input.coins ?? null,
+    p_indirim_yuzde: input.indirimYuzde ?? null,
+    p_sort_order: input.sortOrder ?? null,
+    p_is_active: input.isActive ?? null,
+  });
+  if (error) rpcHata(error);
+  const paket = (data as { paket?: AdminAjansCoinPaket })?.paket;
+  if (!paket) throw new Error('Ajans paketi güncellenemedi');
   return paket;
 }
 

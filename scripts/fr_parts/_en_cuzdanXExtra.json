@@ -1,0 +1,16 @@
+{
+  "cuzdanXExtra": {
+    "odemeBilgisi": "After approval, funds are sent to your saved bank account within {{gun}} business days.",
+    "pdfExcel": "PDF / Excel",
+    "dekontBaslik": "Wallet receipt",
+    "hediyeBelgesi": "Gift receipt",
+    "cekimTalebi": "Withdrawal request",
+    "islemSonrasiBakiye": "Balance after transaction",
+    "harcananCoin": "Coins spent",
+    "kazanilanElmas": "Diamonds earned",
+    "dekontNot": "Tamuso wallet transaction receipt.",
+    "hediyeNot": "Tamuso gift transaction receipt.",
+    "gonderildiOk": "Sent → {{kim}}",
+    "alindiOk": "Received ← {{kim}}"
+  }
+}

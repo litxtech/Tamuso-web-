@@ -15,70 +15,93 @@ import type {
   CiroDonem,
 } from '../admin/ciro/AdminCiroOzetiGetir';
 import { SayiKisa } from '../admin/bilesenler/AdminStil';
+import i18n from '../../i18n';
+import { DilNormalizeEt, DIL_LOCALE_MAP } from '../../i18n/diller';
+
+function belgelocale(): string {
+  return DIL_LOCALE_MAP[DilNormalizeEt(i18n.language)];
+}
 
 function tryYazi(n: number): string {
-  return `${Number(n || 0).toLocaleString('tr-TR', {
+  return `${Number(n || 0).toLocaleString(belgelocale(), {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })} ₺`;
 }
 
-const DONEM_ETIKET: Record<CiroDonem, string> = {
-  today: 'Bugün',
-  week: 'Bu hafta',
-  month: 'Bu ay',
-  all: 'Tüm zamanlar',
-};
+function donemEtiket(d: CiroDonem): string {
+  return i18n.t(`belge.admin.donem.${d}`);
+}
 
 /** Admin ciro raporu — PDF / WhatsApp / yazıcı */
 export function AdminCiroBelgesiOlustur(data: AdminCiroOzeti | null): BelgeIcerik {
   const period = data?.period ?? 'today';
   const m = data?.ozet?.[period] ?? { try: 0, coins: 0, adet: 0 };
   const o = data?.ozet;
+  const dil = belgelocale();
+  const donem = donemEtiket(period);
   return {
-    baslik: 'Ciro raporu',
-    altBaslik: `${DONEM_ETIKET[period]} · Tamuso`,
+    baslik: i18n.t('belge.admin.ciroBaslik'),
+    altBaslik: i18n.t('belge.admin.ciroAlt', { donem }),
     platformAdi: 'Tamuso',
-    ozet: `${DONEM_ETIKET[period]} ciro: ${tryYazi(m.try)} · ${SayiKisa(m.coins)} coin · ${m.adet} işlem`,
+    ozet: i18n.t('belge.admin.ciroOzet', {
+      donem,
+      try: tryYazi(m.try),
+      coins: SayiKisa(m.coins),
+      adet: m.adet,
+    }),
     satirlar: [
-      { etiket: 'Dönem', deger: DONEM_ETIKET[period] },
-      { etiket: 'Ciro (TRY)', deger: tryYazi(m.try) },
-      { etiket: 'Coin', deger: SayiKisa(m.coins) },
-      { etiket: 'İşlem adedi', deger: String(m.adet) },
+      { etiket: i18n.t('belge.admin.donemLabel'), deger: donem },
+      { etiket: i18n.t('belge.admin.ciroTry'), deger: tryYazi(m.try) },
+      { etiket: i18n.t('belge.admin.coin'), deger: SayiKisa(m.coins) },
+      { etiket: i18n.t('belge.admin.islemAdedi'), deger: String(m.adet) },
       {
-        etiket: 'Rapor zamanı',
+        etiket: i18n.t('belge.raporZamani'),
         deger: data?.generated_at
-          ? new Date(data.generated_at).toLocaleString('tr-TR')
-          : new Date().toLocaleString('tr-TR'),
+          ? new Date(data.generated_at).toLocaleString(dil)
+          : new Date().toLocaleString(dil),
       },
     ],
     bolumler: [
       {
-        baslik: 'Özet kartlar',
+        baslik: i18n.t('belge.admin.ozetKartlar'),
         satirlar: [
-          { etiket: 'Bugün', deger: tryYazi(o?.today.try ?? 0) },
-          { etiket: 'Bu hafta', deger: tryYazi(o?.week.try ?? 0) },
-          { etiket: 'Bu ay', deger: tryYazi(o?.month.try ?? 0) },
-          { etiket: 'Toplam', deger: tryYazi(o?.all.try ?? 0) },
+          { etiket: donemEtiket('today'), deger: tryYazi(o?.today.try ?? 0) },
+          { etiket: donemEtiket('week'), deger: tryYazi(o?.week.try ?? 0) },
+          { etiket: donemEtiket('month'), deger: tryYazi(o?.month.try ?? 0) },
+          { etiket: i18n.t('belge.admin.toplam'), deger: tryYazi(o?.all.try ?? 0) },
         ],
       },
       {
-        baslik: 'Kimden (dönem)',
-        ozet: `${data?.kimden?.length ?? 0} kullanıcı`,
+        baslik: i18n.t('belge.admin.kimden'),
+        ozet: i18n.t('belge.admin.kimdenOzet', {
+          n: data?.kimden?.length ?? 0,
+        }),
         satirlar: (data?.kimden ?? []).slice(0, 40).map((k) => ({
-          etiket: k.display_name || k.username || k.public_user_id || 'Kullanıcı',
-          deger: `${tryYazi(Number(k.toplam_try))} · ${SayiKisa(Number(k.toplam_coin))} coin · ${k.islem_adet}×`,
+          etiket:
+            k.display_name ||
+            k.username ||
+            k.public_user_id ||
+            i18n.t('belge.kullanici'),
+          deger: i18n.t('belge.admin.kimdenSatir', {
+            try: tryYazi(Number(k.toplam_try)),
+            coins: SayiKisa(Number(k.toplam_coin)),
+            adet: k.islem_adet,
+          }),
         })),
       },
       {
-        baslik: 'Son işlemler',
+        baslik: i18n.t('belge.admin.sonIslemler'),
         satirlar: (data?.islemler ?? []).slice(0, 40).map((i) => ({
-          etiket: `${i.display_name} · ${new Date(i.created_at).toLocaleString('tr-TR')}`,
-          deger: `${tryYazi(Number(i.amount_try))} · ${SayiKisa(Number(i.coins_added))} coin`,
+          etiket: `${i.display_name} · ${new Date(i.created_at).toLocaleString(dil)}`,
+          deger: i18n.t('belge.admin.islemSatir', {
+            try: tryYazi(Number(i.amount_try)),
+            coins: SayiKisa(Number(i.coins_added)),
+          }),
         })),
       },
     ],
-    not: 'Tamuso admin ciro belgesi. Gerçek ödeme sağlayıcı mutabakatı ayrıca kontrol edilmelidir.',
+    not: i18n.t('belge.admin.ciroNot'),
   };
 }
 
@@ -102,96 +125,123 @@ export type BelgeCuzdanHareketGirdi =
 export function AdminOzetBelgesiOlustur(ozet: AdminOzet | null): BelgeIcerik {
   const p = ozet?.platform;
   return {
-    baslik: 'Yönetim özeti',
-    altBaslik: 'Tamuso platform kontrol raporu',
+    baslik: i18n.t('belge.admin.yonetimOzeti'),
+    altBaslik: i18n.t('belge.admin.yonetimAlt'),
     platformAdi: 'Tamuso',
-    ozet:
-      'Anlık durum — kullanıcılar, finans, canlı, moderasyon ve özellik bayrakları.',
+    ozet: i18n.t('belge.admin.yonetimOzetBody'),
     satirlar: [
-      { etiket: 'Canlı oda', deger: String(ozet?.liveRooms ?? 0) },
-      { etiket: 'Canlı PK', deger: String(ozet?.livePk ?? 0) },
-      { etiket: 'Push kuyruk', deger: String(ozet?.pendingOutbox ?? 0) },
-      { etiket: 'Açık rapor', deger: String(ozet?.openReports ?? 0) },
+      { etiket: i18n.t('belge.admin.canliOda'), deger: String(ozet?.liveRooms ?? 0) },
+      { etiket: i18n.t('belge.admin.canliPk'), deger: String(ozet?.livePk ?? 0) },
+      {
+        etiket: i18n.t('belge.admin.pushKuyruk'),
+        deger: String(ozet?.pendingOutbox ?? 0),
+      },
+      {
+        etiket: i18n.t('belge.admin.acikRapor'),
+        deger: String(ozet?.openReports ?? 0),
+      },
     ],
     bolumler: p
       ? [
           {
-            baslik: 'Kullanıcılar',
+            baslik: i18n.t('belge.admin.kullanicilar'),
             satirlar: [
-              { etiket: 'Toplam', deger: String(p.kullanici.toplam) },
-              { etiket: 'Banlı', deger: String(p.kullanici.banli) },
-              { etiket: 'Host', deger: String(p.kullanici.host) },
-              { etiket: 'Son 24s yeni', deger: String(p.kullanici.son_24s) },
+              {
+                etiket: i18n.t('belge.admin.toplam'),
+                deger: String(p.kullanici.toplam),
+              },
+              {
+                etiket: i18n.t('belge.admin.banli'),
+                deger: String(p.kullanici.banli),
+              },
+              {
+                etiket: i18n.t('belge.admin.host'),
+                deger: String(p.kullanici.host),
+              },
+              {
+                etiket: i18n.t('belge.admin.son24sYeni'),
+                deger: String(p.kullanici.son_24s),
+              },
             ],
           },
           {
-            baslik: 'Finans',
+            baslik: i18n.t('belge.admin.finans'),
             satirlar: [
               {
-                etiket: 'Toplam yükleme coin',
+                etiket: i18n.t('belge.admin.toplamYuklemeCoin'),
                 deger: String(p.finans.toplam_yukleme_coin),
               },
               {
-                etiket: 'Son 24s yükleme',
+                etiket: i18n.t('belge.admin.son24sYukleme'),
                 deger: String(p.finans.son_24s_yukleme_coin),
               },
               {
-                etiket: 'Bekleyen çekim',
+                etiket: i18n.t('belge.admin.bekleyenCekim'),
                 deger: String(p.finans.bekleyen_cekim),
               },
               {
-                etiket: 'Bekleyen elmas',
+                etiket: i18n.t('belge.admin.bekleyenElmas'),
                 deger: String(p.finans.bekleyen_cekim_elmas),
               },
             ],
           },
           {
-            baslik: 'Sosyal / güvenlik',
+            baslik: i18n.t('belge.admin.sosyalGuvenlik'),
             satirlar: [
-              { etiket: 'Açık rapor', deger: String(p.sosyal.acik_rapor) },
-              { etiket: 'Aktif ihtar', deger: String(p.sosyal.aktif_ihtar) },
-              { etiket: 'Hediye 24s', deger: String(p.sosyal.hediye_24s) },
               {
-                etiket: 'Kapalı özellik',
+                etiket: i18n.t('belge.admin.acikRapor'),
+                deger: String(p.sosyal.acik_rapor),
+              },
+              {
+                etiket: i18n.t('belge.admin.aktifIhtar'),
+                deger: String(p.sosyal.aktif_ihtar),
+              },
+              {
+                etiket: i18n.t('belge.admin.hediye24s'),
+                deger: String(p.sosyal.hediye_24s),
+              },
+              {
+                etiket: i18n.t('belge.admin.kapaliOzellik'),
                 deger: String(p.bayrak.kapali_ozellik),
               },
               {
-                etiket: 'Aktif kill switch',
+                etiket: i18n.t('belge.admin.aktifKill'),
                 deger: String(p.bayrak.aktif_kill),
               },
             ],
           },
         ]
       : undefined,
-    not: 'Bu belge Tamuso yönetim panelinden oluşturulmuştur.',
+    not: i18n.t('belge.admin.yonetimNot'),
   };
 }
 
-/** Cüzdan hareket / hediye / çekim → belge (Türkçe, anlaşılır) */
+/** Cüzdan hareket / hediye / çekim → belge (i18n) */
 export function CuzdanHareketBelgesiOlustur(
   detay: BelgeCuzdanHareketGirdi,
 ): BelgeIcerik {
+  const dil = belgelocale();
   if (detay.tur === 'ledger') {
     const r: LedgerSatiri = detay.veri;
     const tarih = new Date(r.created_at);
     return {
-      baslik: 'Cüzdan dekontu',
+      baslik: i18n.t('cuzdanXExtra.dekontBaslik'),
       altBaslik: LedgerAnlasilirOzet(r),
       platformAdi: 'Tamuso',
       ozet: LedgerTutarYazi(r),
       satirlar: [
-        { etiket: 'İşlem', deger: LedgerSebepEtiketi(r.reason) },
-        { etiket: 'Açıklama', deger: LedgerAnlasilirOzet(r) },
-        { etiket: 'Tutar', deger: LedgerTutarYazi(r) },
-        { etiket: 'Birim', deger: LedgerBirimEtiketi(r.currency) },
+        { etiket: i18n.t('belge.islem'), deger: LedgerSebepEtiketi(r.reason) },
+        { etiket: i18n.t('belge.aciklama'), deger: LedgerAnlasilirOzet(r) },
+        { etiket: i18n.t('belge.tutar'), deger: LedgerTutarYazi(r) },
+        { etiket: i18n.t('belge.birim'), deger: LedgerBirimEtiketi(r.currency) },
         {
-          etiket: 'İşlem sonrası bakiye',
-          deger: `${r.balance_after.toLocaleString('tr-TR')} ${LedgerBirimEtiketi(r.currency)}`,
+          etiket: i18n.t('cuzdanXExtra.islemSonrasiBakiye'),
+          deger: `${r.balance_after.toLocaleString(dil)} ${LedgerBirimEtiketi(r.currency)}`,
         },
-        { etiket: 'Kaynak', deger: LedgerRefEtiketi(r.ref_type) },
+        { etiket: i18n.t('belge.kaynak'), deger: LedgerRefEtiketi(r.ref_type) },
         {
-          etiket: 'Tarih',
-          deger: tarih.toLocaleDateString('tr-TR', {
+          etiket: i18n.t('belge.tarih'),
+          deger: tarih.toLocaleDateString(dil, {
             weekday: 'long',
             day: '2-digit',
             month: 'long',
@@ -199,16 +249,16 @@ export function CuzdanHareketBelgesiOlustur(
           }),
         },
         {
-          etiket: 'Saat',
-          deger: tarih.toLocaleTimeString('tr-TR', {
+          etiket: i18n.t('belge.saat'),
+          deger: tarih.toLocaleTimeString(dil, {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
           }),
         },
-        { etiket: 'İşlem no', deger: r.id.slice(0, 13).toUpperCase() },
+        { etiket: i18n.t('belge.islemNo'), deger: r.id.slice(0, 13).toUpperCase() },
       ],
-      not: 'Tamuso cüzdan hareket belgesi.',
+      not: i18n.t('cuzdanXExtra.dekontNot'),
     };
   }
 
@@ -217,40 +267,46 @@ export function CuzdanHareketBelgesiOlustur(
     const kim =
       h.karsi_profil?.display_name ??
       h.karsi_profil?.username ??
-      'Kullanıcı';
+      i18n.t('belge.kullanici');
     const tarih = new Date(h.created_at);
     const gonderildi = h.yon === 'gonderilen';
     return {
-      baslik: 'Hediye belgesi',
-      altBaslik: h.gift?.name ?? 'Hediye',
+      baslik: i18n.t('cuzdanXExtra.hediyeBelgesi'),
+      altBaslik: h.gift?.name ?? i18n.t('belge.hediye'),
       platformAdi: 'Tamuso',
-      ozet: gonderildi ? `Gönderildi → ${kim}` : `Alındı ← ${kim}`,
+      ozet: gonderildi
+        ? i18n.t('cuzdanXExtra.gonderildiOk', { kim })
+        : i18n.t('cuzdanXExtra.alindiOk', { kim }),
       satirlar: [
         {
-          etiket: 'Hediye',
+          etiket: i18n.t('belge.hediye'),
           deger: `${h.gift?.emoji ?? ''} ${h.gift?.name ?? '—'}`.trim(),
         },
-        { etiket: 'Adet', deger: String(h.quantity) },
+        { etiket: i18n.t('belge.adet'), deger: String(h.quantity) },
         {
-          etiket: 'Yön',
-          deger: gonderildi ? 'Gönderildi' : 'Alındı',
+          etiket: i18n.t('belge.yon'),
+          deger: gonderildi
+            ? i18n.t('belge.gonderildi')
+            : i18n.t('belge.alindi'),
         },
         {
-          etiket: gonderildi ? 'Alıcı' : 'Gönderen',
+          etiket: gonderildi
+            ? i18n.t('belge.alici')
+            : i18n.t('belge.gonderen'),
           deger: kim,
         },
-        { etiket: 'Oda', deger: h.oda?.title ?? '—' },
+        { etiket: i18n.t('belge.oda'), deger: h.oda?.title ?? '—' },
         {
-          etiket: 'Harcanan coin',
-          deger: h.coins_spent.toLocaleString('tr-TR'),
+          etiket: i18n.t('cuzdanXExtra.harcananCoin'),
+          deger: h.coins_spent.toLocaleString(dil),
         },
         {
-          etiket: 'Kazanılan elmas',
-          deger: h.diamonds_earned.toLocaleString('tr-TR'),
+          etiket: i18n.t('cuzdanXExtra.kazanilanElmas'),
+          deger: h.diamonds_earned.toLocaleString(dil),
         },
         {
-          etiket: 'Tarih',
-          deger: tarih.toLocaleDateString('tr-TR', {
+          etiket: i18n.t('belge.tarih'),
+          deger: tarih.toLocaleDateString(dil, {
             weekday: 'long',
             day: '2-digit',
             month: 'long',
@@ -258,37 +314,37 @@ export function CuzdanHareketBelgesiOlustur(
           }),
         },
         {
-          etiket: 'Saat',
-          deger: tarih.toLocaleTimeString('tr-TR', {
+          etiket: i18n.t('belge.saat'),
+          deger: tarih.toLocaleTimeString(dil, {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
           }),
         },
-        { etiket: 'İşlem no', deger: h.id.slice(0, 13).toUpperCase() },
+        { etiket: i18n.t('belge.islemNo'), deger: h.id.slice(0, 13).toUpperCase() },
       ],
-      not: 'Tamuso hediye işlem belgesi.',
+      not: i18n.t('cuzdanXExtra.hediyeNot'),
     };
   }
 
   const c = detay.veri;
   const tarih = new Date(c.created_at);
   return {
-    baslik: 'Çekim talebi',
+    baslik: i18n.t('cuzdanXExtra.cekimTalebi'),
     altBaslik: detay.durumEtiket,
     platformAdi: 'Tamuso',
-    ozet: `${c.diamonds.toLocaleString('tr-TR')} elmas · ${c.method}`,
+    ozet: `${i18n.t('belge.elmas', { n: c.diamonds.toLocaleString(dil) })} · ${c.method}`,
     satirlar: [
       {
-        etiket: 'Miktar',
-        deger: `${c.diamonds.toLocaleString('tr-TR')} elmas`,
+        etiket: i18n.t('belge.miktar'),
+        deger: i18n.t('belge.elmas', { n: c.diamonds.toLocaleString(dil) }),
       },
-      { etiket: 'Yöntem', deger: c.method },
-      { etiket: 'Durum', deger: detay.durumEtiket },
-      { etiket: 'Ödeme süresi', deger: CEKIM_ODEME_BILGISI },
+      { etiket: i18n.t('belge.yontem'), deger: c.method },
+      { etiket: i18n.t('belge.durum'), deger: detay.durumEtiket },
+      { etiket: i18n.t('belge.odemeSuresi'), deger: CEKIM_ODEME_BILGISI() },
       {
-        etiket: 'Tarih',
-        deger: tarih.toLocaleDateString('tr-TR', {
+        etiket: i18n.t('belge.tarih'),
+        deger: tarih.toLocaleDateString(dil, {
           weekday: 'long',
           day: '2-digit',
           month: 'long',
@@ -296,15 +352,15 @@ export function CuzdanHareketBelgesiOlustur(
         }),
       },
       {
-        etiket: 'Saat',
-        deger: tarih.toLocaleTimeString('tr-TR', {
+        etiket: i18n.t('belge.saat'),
+        deger: tarih.toLocaleTimeString(dil, {
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
         }),
       },
-      { etiket: 'Talep no', deger: c.id.slice(0, 13).toUpperCase() },
+      { etiket: i18n.t('belge.talepNo'), deger: c.id.slice(0, 13).toUpperCase() },
     ],
-    not: CEKIM_ODEME_BILGISI,
+    not: CEKIM_ODEME_BILGISI(),
   };
 }

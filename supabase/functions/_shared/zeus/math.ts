@@ -83,7 +83,7 @@ const ALL_PAY_SYMBOLS: readonly ZeusSymbolType[] = [
 ];
 
 export const DEFAULT_CONFIG: ZeusMathConfig = {
-  mathVersion: 'olympus-v1',
+  mathVersion: 'olympus-balanced-v1',
   paytableVersion: 'zeus-pay-v1',
   configVersion: 'zeus-cfg-v1',
   columns: 6,
@@ -135,12 +135,61 @@ export const DEFAULT_CONFIG: ZeusMathConfig = {
   maxEvents: 256,
   maxPayoutMult: 5000,
   winTiers: { nice: 5, big: 15, mega: 40, sensational: 80 },
-  betPresets: [20, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+  betPresets: [20, 50, 100, 150, 200],
   minBet: 20,
-  maxBet: 50000,
+  maxBet: 200,
   autoplayEnabled: true,
   turboEnabled: true,
 };
+
+/** DB/admin JSON config → tam ZeusMathConfig (eksik alanlar DEFAULT'tan). */
+export function mergeZeusMathConfig(
+  partial: Record<string, unknown> | null | undefined,
+): ZeusMathConfig {
+  if (!partial || typeof partial !== 'object') {
+    return { ...DEFAULT_CONFIG };
+  }
+  const base = { ...DEFAULT_CONFIG };
+  const out: ZeusMathConfig = {
+    ...base,
+    ...partial,
+    paytable: {
+      ...base.paytable,
+      ...((partial.paytable as ZeusMathConfig['paytable']) ?? {}),
+    },
+    symbolWeights: {
+      ...base.symbolWeights,
+      ...((partial.symbolWeights as ZeusMathConfig['symbolWeights']) ?? {}),
+    },
+    multiplierWeights:
+      Array.isArray(partial.multiplierWeights) &&
+      (partial.multiplierWeights as unknown[]).length > 0
+        ? (partial.multiplierWeights as ZeusMathConfig['multiplierWeights'])
+        : base.multiplierWeights,
+    bonus: {
+      ...base.bonus,
+      ...((partial.bonus as ZeusMathConfig['bonus']) ?? {}),
+    },
+    winTiers: {
+      ...base.winTiers,
+      ...((partial.winTiers as ZeusMathConfig['winTiers']) ?? {}),
+    },
+    betPresets: Array.isArray(partial.betPresets)
+      ? (partial.betPresets as number[]).map((n) => Math.floor(Number(n)))
+      : base.betPresets,
+    minBet: Number(partial.minBet ?? base.minBet),
+    maxBet: Math.min(200, Number(partial.maxBet ?? base.maxBet)),
+  };
+  if (out.maxBet > 200) out.maxBet = 200;
+  if (out.minBet < 1) out.minBet = base.minBet;
+  out.betPresets = out.betPresets
+    .filter((b) => b >= out.minBet && b <= out.maxBet)
+    .sort((a, b) => a - b);
+  if (out.betPresets.length === 0) {
+    out.betPresets = [...DEFAULT_CONFIG.betPresets];
+  }
+  return out;
+}
 
 type SeededRng = {
   next(): number;

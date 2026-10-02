@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import type { AppPaylasimLinki, PaylasimLinkGirdi } from '../tipler';
 
 export type AdminLinkSonucu =
@@ -9,9 +10,9 @@ function normalizeGirdi(girdi: PaylasimLinkGirdi): PaylasimLinkGirdi | { hata: s
   const code = girdi.code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
   const title = girdi.title.trim();
   const url = girdi.url.trim();
-  if (!code || code.length < 2) return { hata: 'Kod en az 2 karakter olmalı' };
-  if (!title) return { hata: 'Başlık gerekli' };
-  if (!/^https?:\/\//i.test(url)) return { hata: 'URL http(s) ile başlamalı' };
+  if (!code || code.length < 2) return { hata: i18n.t('paylasim.admin.kodMin') };
+  if (!title) return { hata: i18n.t('paylasim.admin.baslikGerekli') };
+  if (!/^https?:\/\//i.test(url)) return { hata: i18n.t('paylasim.admin.urlHttps') };
   return {
     code,
     title,

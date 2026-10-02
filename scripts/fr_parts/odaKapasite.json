@@ -1,0 +1,14 @@
+{
+  "odaKapasite": {
+    "mini": "Mini",
+    "miniAlt": "Salle intimiste",
+    "social": "Social",
+    "socialAlt": "Discussion du quotidien",
+    "community": "Communauté",
+    "communityAlt": "Scène communautaire",
+    "stage": "Scène",
+    "stageAlt": "Grande scène",
+    "event": "Événement",
+    "eventAlt": "Taille événement"
+  }
+}

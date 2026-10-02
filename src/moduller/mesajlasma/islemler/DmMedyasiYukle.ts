@@ -177,8 +177,9 @@ export async function DmMedyasiSecVeYukle(
   if (!item) {
     return { ok: false, hata: i18n.t('auth.iptalEdildi'), iptal: true };
   }
-  opts?.onYuklemeBasladi?.();
-  return DmMedyaUriYukle(item);
+  const basladi = opts?.onYuklemeBasladi;
+  if (typeof basladi === 'function') basladi();
+  return await DmMedyaUriYukle(item);
 }
 
 /** Yerel ses dosyası (m4a/aac/mp4 audio) → dm-media */

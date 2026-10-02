@@ -27,6 +27,7 @@ import { GonderiPaylasServisi } from '../GonderiPaylasServisi';
 import { GonderiPaylasKullaniciListesi } from './GonderiPaylasKullaniciListesi';
 import type { GonderiPaylasAlici } from '../tipler';
 import { useCeviri } from '../../../../i18n/useCeviri';
+import { MesajComposerLinkOnizleme } from '../../../mesajlasma/bilesenler/MesajComposerLinkOnizleme';
 
 type Props = {
   visible: boolean;
@@ -262,6 +263,7 @@ export function GonderiPaylasSheet({
             maxLength={500}
             editable={!gonderiyor}
           />
+          <MesajComposerLinkOnizleme metin={note} />
 
           <Text style={styles.bolum}>
             {aramaAktif ? t('durumX.sonuclar') : t('durumX.sonKonusmalar')}

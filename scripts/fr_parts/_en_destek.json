@@ -1,0 +1,24 @@
+{
+  "destek": {
+    "baslik": "Support",
+    "canliBaslik": "Live support",
+    "yeniTalep": "New request",
+    "konu": "Subject",
+    "mesaj": "Message",
+    "temsilciAlt": "Platform support agent",
+    "yeniGorusme": "New chat",
+    "baglaniyor": "Connecting…",
+    "mesajYok": "No messages",
+    "yaz": "Type a message…",
+    "bitirBaslik": "End chat",
+    "bitirSoru": "End live support?",
+    "bitir": "End",
+    "durumBekliyor": "Toprak is connecting…",
+    "durumAktif": "Toprak is online",
+    "durumIdle": "Timed out",
+    "durumKapandi": "Chat closed",
+    "idleKapandi": "Chat closed after 3 minutes of inactivity.",
+    "gorusmeBitti": "Chat ended.",
+    "misafirAlt": "Complete your account to talk with the platform live."
+  }
+}

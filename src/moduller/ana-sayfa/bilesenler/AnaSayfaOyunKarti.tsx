@@ -170,6 +170,7 @@ export function AnaSayfaOyunKarti({ oyun, onPress, index = 0, aktif = true }: Pr
       <FeedPencereCerceve renkler={oyun.aura} aktif={aktif} index={index}>
         <Pressable
           onPress={onPress}
+          delayPressIn={60}
           onPressIn={() => {
             basili.value = withSpring(1, { damping: 18, stiffness: 320 });
           }}
@@ -305,13 +306,13 @@ const styles = StyleSheet.create({
   },
   yuzenGolge: {
     position: 'absolute',
-    left: '18%',
-    right: '18%',
-    bottom: '-6%',
-    height: '18%',
+    left: '22%',
+    right: '22%',
+    bottom: '-2%',
+    height: '12%',
     borderRadius: 999,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    transform: [{ scaleX: 1.2 }],
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    transform: [{ scaleX: 1.05 }],
   },
   yuzenImg: {
     width: '100%',
@@ -357,12 +358,14 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   alt: {
-    padding: BoslukTokenlari.sm + 2,
-    gap: 3,
+    paddingHorizontal: BoslukTokenlari.sm + 2,
+    paddingTop: 4,
+    paddingBottom: BoslukTokenlari.sm + 2,
+    gap: 2,
   },
   baslik: {
     color: '#FBF7EE',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 0.2,
     textShadowColor: 'rgba(0,0,0,0.6)',
@@ -372,12 +375,12 @@ const styles = StyleSheet.create({
   slogan: {
     ...TipografiTokenlari.micro,
     color: 'rgba(251,247,238,0.7)',
-    fontSize: 10.5,
+    fontSize: 10,
     letterSpacing: 0.1,
   },
   cta: {
     alignSelf: 'flex-start',
-    marginTop: 6,
+    marginTop: 4,
     borderRadius: YaricapTokenlari.pill,
     overflow: 'visible',
     shadowRadius: 10,
@@ -387,14 +390,14 @@ const styles = StyleSheet.create({
   ctaIc: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: YaricapTokenlari.pill,
   },
   ctaYazi: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1,
   },

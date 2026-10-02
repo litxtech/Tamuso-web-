@@ -1,4 +1,6 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
+import { DilNormalizeEt } from '../../../i18n/diller';
 
 export type SiralamaSatiri = {
   id: string;
@@ -61,9 +63,19 @@ export async function LiderlikSiralamasiniYenile(
   return { ok: true };
 }
 
-export function CoinSkoruFormatla(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 10_000) return `${Math.round(n / 1000)}B`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}B`;
+export function CoinSkoruFormatla(n: number, locale?: string | null): string {
+  const tr = DilNormalizeEt(locale ?? i18n.language) === 'tr';
+  if (n >= 1_000_000) {
+    const s = (n / 1_000_000).toFixed(1);
+    return tr ? `${s.replace('.', ',')}Mn` : `${s}M`;
+  }
+  if (n >= 10_000) {
+    const k = Math.round(n / 1000);
+    return tr ? `${k}B` : `${k}K`;
+  }
+  if (n >= 1000) {
+    const s = (n / 1000).toFixed(1);
+    return tr ? `${s.replace('.', ',')}B` : `${s}K`;
+  }
   return String(n);
 }

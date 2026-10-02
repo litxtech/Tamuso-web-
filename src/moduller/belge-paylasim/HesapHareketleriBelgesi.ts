@@ -1,6 +1,5 @@
 /**
- * Kullanıcı hesap hareketleri — PDF / Excel / WhatsApp için Türkçe belge.
- * Kod değil; tarih, saat, karşı taraf, oyun, yükleme, kazanç/kayıp okunaklı yazılır.
+ * Kullanıcı hesap hareketleri — PDF / Excel / WhatsApp belge içeriği (i18n).
  */
 
 import type { BelgeIcerik, BelgeSatiri } from './BelgeSablonlari';
@@ -18,6 +17,8 @@ import {
 } from '../oyunlar/ortak/servisler/OyunGecmisiniGetir';
 import type { OyunOyuncuIstatistik } from '../oyunlar/ortak/servisler/OyunIstatistikServisi';
 import { CEKIM_ODEME_BILGISI } from '../cuzdan/cekim/CekimOdemeBilgisi';
+import i18n from '../../i18n';
+import { DilNormalizeEt, DIL_LOCALE_MAP } from '../../i18n/diller';
 
 export type HesapCekimSatiri = {
   id: string;
@@ -40,7 +41,7 @@ export type HesapHareketleriBelgeGirdi = {
   oyunOzet?: OyunOyuncuIstatistik | null;
 };
 
-/** Excel / CSV satırı — tamamen Türkçe sütunlar */
+/** Excel / CSV satırı */
 export type HesapHareketExcelSatiri = {
   tarih: string;
   saat: string;
@@ -55,22 +56,31 @@ export type HesapHareketExcelSatiri = {
   islemNo: string;
 };
 
+function belgelocale(): string {
+  return DIL_LOCALE_MAP[DilNormalizeEt(i18n.language)];
+}
+
+function sayi(n: number): string {
+  return n.toLocaleString(belgelocale());
+}
+
 function tarihParcala(iso: string): { tarih: string; saat: string; tam: string } {
+  const dil = belgelocale();
   try {
     const d = new Date(iso);
     return {
-      tarih: d.toLocaleDateString('tr-TR', {
+      tarih: d.toLocaleDateString(dil, {
         weekday: 'long',
         day: '2-digit',
         month: 'long',
         year: 'numeric',
       }),
-      saat: d.toLocaleTimeString('tr-TR', {
+      saat: d.toLocaleTimeString(dil, {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
       }),
-      tam: d.toLocaleString('tr-TR', {
+      tam: d.toLocaleString(dil, {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
@@ -88,7 +98,7 @@ function hediyeKim(h: HediyeGecmisiKaydi): string {
   return (
     h.karsi_profil?.display_name ??
     h.karsi_profil?.username ??
-    'Kullanıcı'
+    i18n.t('belge.kullanici')
   );
 }
 
@@ -102,7 +112,6 @@ export function HesapHareketExcelSatirlari(
 
   for (const r of girdi.ledger) {
     const kok = r.reason.split(':')[0] ?? r.reason;
-    // Hediye / çekim zaten ayrı satırlarda (karşı taraf + durum ile) — çift yazma
     if (
       hediyeVar &&
       (kok.startsWith('gift_') || kok === 'gift_sent' || kok === 'gift_received')
@@ -123,14 +132,17 @@ export function HesapHareketExcelSatirlari(
       islem: LedgerAnlasilirOzet(r),
       aciklama:
         r.delta >= 0
-          ? 'Hesaba giriş / kazanç'
-          : 'Hesaptan çıkış / harcama',
+          ? i18n.t('belge.hesabaGiris')
+          : i18n.t('belge.hesaptanCikis'),
       karsiTaraf: '—',
       yer: '—',
-      tutar: `${r.delta >= 0 ? '+' : ''}${r.delta.toLocaleString('tr-TR')}`,
+      tutar: `${r.delta >= 0 ? '+' : ''}${sayi(r.delta)}`,
       birim: LedgerBirimEtiketi(r.currency),
-      bakiyeSonrasi: r.balance_after.toLocaleString('tr-TR'),
-      durum: r.delta >= 0 ? 'Kazanç / yükleme' : 'Harcama / kayıp',
+      bakiyeSonrasi: sayi(r.balance_after),
+      durum:
+        r.delta >= 0
+          ? i18n.t('belge.kazancYukleme')
+          : i18n.t('belge.harcamaKayip'),
       islemNo: r.id.slice(0, 13).toUpperCase(),
     });
   }
@@ -138,23 +150,29 @@ export function HesapHareketExcelSatirlari(
   for (const h of girdi.hediyeler) {
     const t = tarihParcala(h.created_at);
     const gonderildi = h.yon === 'gonderilen';
-    const hediyeAd = `${h.gift?.emoji ?? '🎁'} ${h.gift?.name ?? 'Hediye'}${
+    const hediyeAd = `${h.gift?.emoji ?? '🎁'} ${h.gift?.name ?? i18n.t('belge.hediye')}${
       h.quantity > 1 ? ` ×${h.quantity}` : ''
     }`;
     satirlar.push({
       _ts: new Date(h.created_at).getTime(),
       tarih: t.tarih,
       saat: t.saat,
-      islem: gonderildi ? 'Hediye gönderildi' : 'Hediye alındı',
+      islem: gonderildi
+        ? i18n.t('belge.hediyeGonderildi')
+        : i18n.t('belge.hediyeAlindi'),
       aciklama: hediyeAd,
       karsiTaraf: hediyeKim(h),
       yer: h.oda?.title ?? '—',
       tutar: gonderildi
-        ? `−${h.coins_spent.toLocaleString('tr-TR')}`
-        : `+${h.diamonds_earned.toLocaleString('tr-TR')}`,
-      birim: gonderildi ? 'coin' : 'elmas',
+        ? `−${sayi(h.coins_spent)}`
+        : `+${sayi(h.diamonds_earned)}`,
+      birim: gonderildi
+        ? i18n.t('belge.coinBirim')
+        : i18n.t('belge.elmasBirim'),
       bakiyeSonrasi: '—',
-      durum: gonderildi ? 'Gönderildi' : 'Alındı',
+      durum: gonderildi
+        ? i18n.t('belge.gonderildi')
+        : i18n.t('belge.alindi'),
       islemNo: h.id.slice(0, 13).toUpperCase(),
     });
   }
@@ -165,12 +183,12 @@ export function HesapHareketExcelSatirlari(
       _ts: new Date(c.created_at).getTime(),
       tarih: t.tarih,
       saat: t.saat,
-      islem: 'Elmas çekim talebi',
-      aciklama: `Banka / ${c.method}`,
+      islem: i18n.t('belge.elmasCekimTalebi'),
+      aciklama: i18n.t('belge.bankaYontem', { method: c.method }),
       karsiTaraf: '—',
       yer: '—',
-      tutar: `−${c.diamonds.toLocaleString('tr-TR')}`,
-      birim: 'elmas',
+      tutar: `−${sayi(c.diamonds)}`,
+      birim: i18n.t('belge.elmasBirim'),
       bakiyeSonrasi: '—',
       durum: c.durumEtiket,
       islemNo: c.id.slice(0, 13).toUpperCase(),
@@ -180,21 +198,28 @@ export function HesapHareketExcelSatirlari(
   for (const o of girdi.oyunlar ?? []) {
     const t = tarihParcala(o.baslangic);
     const kazancMi = o.sira === 1 || o.coinOdul > 0;
+    const durum = OyunDurumEtiketi(o.durum);
     satirlar.push({
       _ts: new Date(o.baslangic).getTime(),
       tarih: t.tarih,
       saat: t.saat,
-      islem: `Oyun: ${o.oyunAdi}`,
-      aciklama: `Sıra ${OyunSiraYazi(o.sira)} · XP ${o.xp.toLocaleString('tr-TR')} · Kupa ${o.kupa >= 0 ? '+' : ''}${o.kupa}`,
+      islem: i18n.t('belge.oyunIslem', { ad: o.oyunAdi }),
+      aciklama: i18n.t('belge.oyunAciklama', {
+        sira: OyunSiraYazi(o.sira),
+        xp: sayi(o.xp),
+        kupa: `${o.kupa >= 0 ? '+' : ''}${o.kupa}`,
+      }),
       karsiTaraf: '—',
       yer: o.odaBaslik ?? '—',
       tutar:
         o.coinOdul !== 0
-          ? `${o.coinOdul >= 0 ? '+' : ''}${o.coinOdul.toLocaleString('tr-TR')}`
+          ? `${o.coinOdul >= 0 ? '+' : ''}${sayi(o.coinOdul)}`
           : '—',
-      birim: o.coinOdul !== 0 ? 'coin' : '—',
+      birim: o.coinOdul !== 0 ? i18n.t('belge.coinBirim') : '—',
       bakiyeSonrasi: '—',
-      durum: `${OyunDurumEtiketi(o.durum)}${kazancMi ? ' · kazanç' : ''}`,
+      durum: kazancMi
+        ? i18n.t('belge.durumKazanc', { durum })
+        : durum,
       islemNo: o.session_id.slice(0, 13).toUpperCase(),
     });
   }
@@ -213,17 +238,17 @@ export function HesapHareketExcelCsvOlustur(
   girdi: HesapHareketleriBelgeGirdi,
 ): string {
   const basliklar = [
-    'Tarih',
-    'Saat',
-    'İşlem',
-    'Açıklama',
-    'Karşı taraf',
-    'Oda / Yer',
-    'Tutar',
-    'Birim',
-    'Bakiye sonrası',
-    'Durum',
-    'İşlem no',
+    i18n.t('belge.excelBaslikTarih'),
+    i18n.t('belge.excelBaslikSaat'),
+    i18n.t('belge.excelBaslikIslem'),
+    i18n.t('belge.excelBaslikAciklama'),
+    i18n.t('belge.excelBaslikKarsi'),
+    i18n.t('belge.excelBaslikYer'),
+    i18n.t('belge.excelBaslikTutar'),
+    i18n.t('belge.excelBaslikBirim'),
+    i18n.t('belge.excelBaslikBakiye'),
+    i18n.t('belge.excelBaslikDurum'),
+    i18n.t('belge.excelBaslikNo'),
   ];
   const hucre = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const satirlar = HesapHareketExcelSatirlari(girdi).map((s) =>
@@ -249,9 +274,10 @@ export function HesapHareketExcelCsvOlustur(
 export function HesapHareketleriBelgesiOlustur(
   girdi: HesapHareketleriBelgeGirdi,
 ): BelgeIcerik {
-  const ad = girdi.sahipAdi?.trim() || 'Kullanıcı';
+  const ad = girdi.sahipAdi?.trim() || i18n.t('belge.kullanici');
   const kod = girdi.hesapKodu?.trim();
   const excel = HesapHareketExcelSatirlari(girdi);
+  const dil = belgelocale();
   const yukleme = girdi.ledger.filter(
     (r) =>
       r.delta > 0 &&
@@ -277,35 +303,35 @@ export function HesapHareketleriBelgesiOlustur(
   ).length;
 
   const ozetSatirlar: BelgeSatiri[] = [
-    { etiket: 'Hesap sahibi', deger: ad },
-    ...(kod ? [{ etiket: 'Hesap kodu', deger: kod }] : []),
+    { etiket: i18n.t('belge.hesapSahibi'), deger: ad },
+    ...(kod ? [{ etiket: i18n.t('belge.hesapKodu'), deger: kod }] : []),
     {
-      etiket: 'Güncel coin',
-      deger: (girdi.coins ?? 0).toLocaleString('tr-TR'),
+      etiket: i18n.t('belge.guncelCoin'),
+      deger: sayi(girdi.coins ?? 0),
     },
     {
-      etiket: 'Güncel elmas',
-      deger: (girdi.diamonds ?? 0).toLocaleString('tr-TR'),
+      etiket: i18n.t('belge.guncelElmas'),
+      deger: sayi(girdi.diamonds ?? 0),
     },
     {
-      etiket: 'Toplam kayıt',
-      deger: `${excel.length} satır`,
+      etiket: i18n.t('belge.toplamKayit'),
+      deger: i18n.t('belge.satirSayisi', { n: excel.length }),
     },
     {
-      etiket: 'Yükleme işlemi',
+      etiket: i18n.t('belge.yuklemeIslemi'),
       deger: String(yukleme),
     },
     {
-      etiket: 'Oyun bahis / giriş',
+      etiket: i18n.t('belge.oyunBahisGiris'),
       deger: String(oyunKayip),
     },
     {
-      etiket: 'Oyun kazanç / ödül',
+      etiket: i18n.t('belge.oyunKazancOdul'),
       deger: String(oyunKazanc),
     },
     {
-      etiket: 'Rapor zamanı',
-      deger: new Date().toLocaleString('tr-TR'),
+      etiket: i18n.t('belge.raporZamani'),
+      deger: new Date().toLocaleString(dil),
     },
   ];
 
@@ -313,19 +339,19 @@ export function HesapHareketleriBelgesiOlustur(
     const o = girdi.oyunOzet;
     ozetSatirlar.push(
       {
-        etiket: 'Oynanan oyun',
+        etiket: i18n.t('belge.oynananOyun'),
         deger: String(o.totalGames),
       },
       {
-        etiket: 'Birincilik (kazanç)',
+        etiket: i18n.t('belge.birincilikKazanc'),
         deger: String(o.wins),
       },
       {
-        etiket: 'Kazanma oranı',
-        deger: `%${o.winRate}`,
+        etiket: i18n.t('belge.kazanmaOraniEtiket'),
+        deger: i18n.t('belge.kazanmaOrani', { n: o.winRate }),
       },
       {
-        etiket: 'Lig',
+        etiket: i18n.t('belge.lig'),
         deger: o.leagueLabel,
       },
     );
@@ -335,7 +361,10 @@ export function HesapHareketleriBelgesiOlustur(
     const t = tarihParcala(r.created_at);
     return {
       etiket: `${t.tam} · ${LedgerAnlasilirOzet(r)}`,
-      deger: `${LedgerTutarYazi(r)} → bakiye ${r.balance_after.toLocaleString('tr-TR')}`,
+      deger: i18n.t('belge.bakiyeOk', {
+        tutar: LedgerTutarYazi(r),
+        bakiye: sayi(r.balance_after),
+      }),
     };
   });
 
@@ -343,12 +372,12 @@ export function HesapHareketleriBelgesiOlustur(
     const t = tarihParcala(h.created_at);
     const gonderildi = h.yon === 'gonderilen';
     const kim = hediyeKim(h);
-    const hediye = `${h.gift?.name ?? 'Hediye'}${h.quantity > 1 ? ` ×${h.quantity}` : ''}`;
+    const hediye = `${h.gift?.name ?? i18n.t('belge.hediye')}${h.quantity > 1 ? ` ×${h.quantity}` : ''}`;
     return {
       etiket: `${t.tam} · ${gonderildi ? `${hediye} → ${kim}` : `${hediye} ← ${kim}`}`,
       deger: gonderildi
-        ? `−${h.coins_spent.toLocaleString('tr-TR')} coin${h.oda?.title ? ` · ${h.oda.title}` : ''}`
-        : `+${h.diamonds_earned.toLocaleString('tr-TR')} elmas${h.oda?.title ? ` · ${h.oda.title}` : ''}`,
+        ? `−${sayi(h.coins_spent)} ${i18n.t('belge.coinBirim')}${h.oda?.title ? ` · ${h.oda.title}` : ''}`
+        : `+${sayi(h.diamonds_earned)} ${i18n.t('belge.elmasBirim')}${h.oda?.title ? ` · ${h.oda.title}` : ''}`,
     };
   });
 
@@ -356,55 +385,59 @@ export function HesapHareketleriBelgesiOlustur(
     const t = tarihParcala(o.baslangic);
     return {
       etiket: `${t.tam} · ${o.oyunAdi}${o.odaBaslik ? ` · ${o.odaBaslik}` : ''}`,
-      deger: `Sıra ${OyunSiraYazi(o.sira)} · ${OyunDurumEtiketi(o.durum)} · ödül ${o.coinOdul.toLocaleString('tr-TR')} coin · XP ${o.xp}`,
+      deger: i18n.t('belge.oyunSatir', {
+        sira: OyunSiraYazi(o.sira),
+        durum: OyunDurumEtiketi(o.durum),
+        odul: sayi(o.coinOdul),
+        xp: o.xp,
+      }),
     };
   });
 
   const cekimBolumu: BelgeSatiri[] = girdi.cekimler.slice(0, 40).map((c) => {
     const t = tarihParcala(c.created_at);
     return {
-      etiket: `${t.tam} · ${c.diamonds.toLocaleString('tr-TR')} elmas`,
+      etiket: `${t.tam} · ${i18n.t('belge.elmas', { n: sayi(c.diamonds) })}`,
       deger: `${c.durumEtiket} · ${c.method}`,
     };
   });
 
   return {
-    baslik: 'Hesap hareketleri',
+    baslik: i18n.t('belge.hesapHareketleri'),
     altBaslik: `${ad}${kod ? ` · ${kod}` : ''} · Tamuso`,
     platformAdi: 'Tamuso',
-    ozet:
-      'Tüm cüzdan, hediye, oyun ve çekim işlemlerinizin Türkçe özeti. Tarih, saat, tutar ve karşı taraf bilgileri aşağıdadır.',
+    ozet: i18n.t('belge.hesapOzet'),
     satirlar: ozetSatirlar,
     bolumler: [
       {
-        baslik: 'Cüzdan hareketleri',
-        ozet: `${girdi.ledger.length} kayıt — yükleme, hediye, oyun bahsi / kazancı, çekim`,
+        baslik: i18n.t('belge.cuzdanHareketleri'),
+        ozet: i18n.t('belge.cuzdanHareketOzet', { n: girdi.ledger.length }),
         satirlar: hareketBolumu.length
           ? hareketBolumu
-          : [{ etiket: 'Durum', deger: 'Henüz cüzdan hareketi yok' }],
+          : [{ etiket: i18n.t('belge.durum'), deger: i18n.t('belge.henuzCuzdanYok') }],
       },
       {
-        baslik: 'Hediye etkileşimleri',
-        ozet: `${girdi.hediyeler.length} kayıt — kime / kimden`,
+        baslik: i18n.t('belge.hediyeEtkilesimleri'),
+        ozet: i18n.t('belge.hediyeEtkilesimOzet', { n: girdi.hediyeler.length }),
         satirlar: hediyeBolumu.length
           ? hediyeBolumu
-          : [{ etiket: 'Durum', deger: 'Henüz hediye yok' }],
+          : [{ etiket: i18n.t('belge.durum'), deger: i18n.t('belge.henuzHediyeYok') }],
       },
       {
-        baslik: 'Oyun geçmişi',
-        ozet: `${girdi.oyunlar?.length ?? 0} oturum — sıra, kazanç, ödül`,
+        baslik: i18n.t('belge.oyunGecmisi'),
+        ozet: i18n.t('belge.oyunGecmisiOzet', { n: girdi.oyunlar?.length ?? 0 }),
         satirlar: oyunBolumu.length
           ? oyunBolumu
-          : [{ etiket: 'Durum', deger: 'Henüz oyun kaydı yok' }],
+          : [{ etiket: i18n.t('belge.durum'), deger: i18n.t('belge.henuzOyunYok') }],
       },
       {
-        baslik: 'Çekim talepleri',
-        ozet: `${girdi.cekimler.length} talep`,
+        baslik: i18n.t('belge.cekimTalepleri'),
+        ozet: i18n.t('belge.cekimTalepOzet', { n: girdi.cekimler.length }),
         satirlar: cekimBolumu.length
           ? cekimBolumu
-          : [{ etiket: 'Durum', deger: 'Henüz çekim talebi yok' }],
+          : [{ etiket: i18n.t('belge.durum'), deger: i18n.t('belge.henuzCekimYok') }],
       },
     ],
-    not: `Bu belge hesabınızdaki işlemlere dayanır. ${CEKIM_ODEME_BILGISI}`,
+    not: i18n.t('belge.belgeNot', { odeme: CEKIM_ODEME_BILGISI() }),
   };
 }

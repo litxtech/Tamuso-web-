@@ -8,7 +8,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
@@ -39,6 +38,7 @@ import {
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { UygulamaKimligi } from '../../src/yapilandirma/UygulamaKimligi';
 import { useCeviri, type CeviriAnahtari } from '../../src/i18n/useCeviri';
+import { BiyometriGuvenlikKarti } from '../../src/moduller/kimlik-dogrulama/biyometri/BiyometriAnahtari';
 
 const OLAY_ANAHTAR: Record<string, CeviriAnahtari> = {
   report_submitted: 'guvenlik.olayRapor',
@@ -57,7 +57,10 @@ const LOCALE_MAP: Record<string, string> = {
   tr: 'tr-TR',
   en: 'en-US',
   es: 'es-ES',
+  pt: 'pt-BR',
   ar: 'ar',
+  fr: 'fr-FR',
+  fil: 'fil-PH',
 };
 
 export default function GuvenlikMerkeziEkrani() {
@@ -207,17 +210,6 @@ export default function GuvenlikMerkeziEkrani() {
             <RefreshControl refreshing={yukleniyor} onRefresh={() => void load()} />
           }
         >
-          <LinearGradient
-            colors={[...RenkTokenlari.gradientCard]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={AdminStil.hero}
-          >
-            <Text style={AdminStil.heroEyebrow}>{t('guvenlik.heroEyebrow')}</Text>
-            <Text style={AdminStil.heroTitle}>{t('guvenlik.heroBaslik')}</Text>
-            <Text style={AdminStil.heroAlt}>{t('guvenlik.heroAlt')}</Text>
-          </LinearGradient>
-
           <View style={AdminStil.kpiGrid}>
             <View style={AdminStil.kpi}>
               <Text style={AdminStil.kpiN}>{riskOzet.toplam}</Text>
@@ -230,6 +222,8 @@ export default function GuvenlikMerkeziEkrani() {
               <Text style={AdminStil.kpiL}>{t('guvenlik.yuksekRisk')}</Text>
             </View>
           </View>
+
+          <BiyometriGuvenlikKarti />
 
           <Text style={AdminStil.sectionLabel}>{t('guvenlik.acilCocuk')}</Text>
           <View style={AdminStil.kart}>

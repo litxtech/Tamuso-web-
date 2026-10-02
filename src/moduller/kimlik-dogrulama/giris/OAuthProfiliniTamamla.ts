@@ -106,10 +106,24 @@ export async function OAuthProfiliniTamamla(opts?: {
     patch.display_name = displayName;
   }
 
-  if (otomatikKullaniciAdiMi(profil.username) && email) {
-    const aday = emaildenKullaniciAdi(email);
-    if (aday) {
-      patch.username = await benzersizKullaniciAdi(aday, user.id);
+  if (otomatikKullaniciAdiMi(profil.username)) {
+    const metaHandle = metaMetin(
+      meta,
+      'preferred_username',
+      'user_name',
+      'nickname',
+      'login',
+    );
+    const adayHam =
+      (metaHandle
+        ? metaHandle
+            .toLowerCase()
+            .replace(/[^a-z0-9._-]/g, '')
+            .replace(/^[._-]+|[._-]+$/g, '')
+            .slice(0, 20)
+        : null) || (email ? emaildenKullaniciAdi(email) : null);
+    if (adayHam && adayHam.length >= 3) {
+      patch.username = await benzersizKullaniciAdi(adayHam, user.id);
     }
   }
 

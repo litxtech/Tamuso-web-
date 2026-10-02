@@ -13,12 +13,14 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   onSec: (p: PolitikaGorunum) => void;
 };
 
 export function LobiPolitikaLinkleri({ onSec }: Props) {
+  const { t } = useCeviri();
   const [liste, setListe] = useState<PolitikaGorunum[]>([]);
 
   useEffect(() => {
@@ -31,10 +33,8 @@ export function LobiPolitikaLinkleri({ onSec }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.baslik}>Platform politikaları</Text>
-      <Text style={styles.alt}>
-        Odaya girmeden önce platform kurallarını okuyabilirsin.
-      </Text>
+      <Text style={styles.baslik}>{t('lobi.platformPolitikalari')}</Text>
+      <Text style={styles.alt}>{t('lobi.platformPolitikaAlt')}</Text>
       <View style={styles.row}>
         {liste.map((p) => (
           <Pressable

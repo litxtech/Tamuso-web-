@@ -1,5 +1,6 @@
 import type { BelgeIcerik } from '../../belge-paylasim/BelgeSablonlari';
 import { LedgerSebepEtiketi } from '../../cuzdan/okuma/CuzdanLedgeriniGetir';
+import { AdminLogAnlasilirMetin } from './AdminLogAnlasilirMetin';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import type { AdminKullaniciDosyasi } from './tipler';
 
@@ -54,7 +55,7 @@ export function AdminKullaniciDosyaBelgesiOlustur(
   const logSatirlari = [
     ...(dosya.admin_loglari ?? []).slice(0, 12).map((l) => ({
       etiket: `${trTarih(l.created_at)} · Yönetim`,
-      deger: l.summary,
+      deger: AdminLogAnlasilirMetin(l.action, l.summary),
     })),
     ...(dosya.guvenlik_olaylari ?? []).slice(0, 12).map((l) => ({
       etiket: `${trTarih(l.created_at)} · Güvenlik`,

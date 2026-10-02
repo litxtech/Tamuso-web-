@@ -1,5 +1,4 @@
 import React, {
-  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -8,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 import i18n from '../i18n';
 import { supabase } from '../lib/supabase';
 import type { Profile, Wallet } from '../types/models';
@@ -21,7 +20,6 @@ import { ManuelCikisYap } from '../moduller/kimlik-dogrulama/oturum/ManuelCikisY
 import {
   AktifOturumuGecmiseKaydet,
   OturumGecmisindenGirisYap,
-  type OturumGecmisindenGirisSonuc,
 } from '../moduller/kimlik-dogrulama/oturum-gecmisi/OturumGecmisiIslemleri';
 import { OturumGecmisindenKaldir } from '../moduller/kimlik-dogrulama/oturum-gecmisi/OturumGecmisiDepolama';
 import type { OturumGecmisiKaydi } from '../moduller/kimlik-dogrulama/oturum-gecmisi/tipler';
@@ -35,58 +33,10 @@ import {
 } from '../moduller/kimlik-dogrulama/dogrulama/EmailOtpDogrula';
 import { EmailOtpYenidenGonder } from '../moduller/kimlik-dogrulama/dogrulama/EmailOtpYenidenGonder';
 import { GirisLobisiOnbellekIsit } from '../moduller/giris-lobisi/islemler/GirisLobisiPublicGet';
-
-type AuthContextValue = {
-  session: Session | null;
-  user: User | null;
-  profile: Profile | null;
-  wallet: Wallet | null;
-  loading: boolean;
-  isGuest: boolean;
-  refreshProfile: () => Promise<void>;
-  refreshWallet: () => Promise<void>;
-  /** Hesap tamamlandıktan sonra UI'yı anında misafir olmaktan çıkar */
-  misafirBayraginiKaldir: () => void;
-  /** Harcama / yukleme sonrasi UI aninda guncelle (realtime gelene kadar) */
-  patchWallet: (patch: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => void;
-  /** Relatif degisim — hizli art arda islemlerde stale bakiye riski yok */
-  adjustWallet: (delta: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => void;
-  signIn: (kimlik: string, password: string) => Promise<{ error?: string }>;
-  signInWithApple: () => Promise<{ error?: string; cancelled?: boolean }>;
-  signInWithSpotify: () => Promise<{ error?: string; cancelled?: boolean }>;
-  signUp: (input: {
-    email?: string;
-    phone?: string;
-    password: string;
-    username: string;
-    displayName: string;
-    gender?: string;
-    birthDate?: string;
-    customFields?: Record<string, string>;
-  }) => Promise<{ error?: string; needsConfirm?: boolean }>;
-  continueAsGuest: () => Promise<{ error?: string }>;
-  /** Sadece manuel cikis — otomatik sonlandirma yok */
-  signOut: () => Promise<void>;
-  /** Lobideki kayitli hesaba tek dokunusla gir */
-  signInFromHistory: (
-    kayit: OturumGecmisiKaydi,
-  ) => Promise<OturumGecmisindenGirisSonuc>;
-  deleteAccount: (reason?: string) => Promise<{ error?: string }>;
-  /** Şifre sıfırlama: e-postaya 6 haneli kod gönderir (link değil) */
-  resetPassword: (email: string) => Promise<{ error?: string }>;
-  updatePassword: (password: string) => Promise<{ error?: string }>;
-  verifyEmailOtp: (
-    email: string,
-    kod: string,
-    amac: EmailOtpAmaci,
-  ) => Promise<{ ok: boolean; hata?: string }>;
-  resendEmailOtp: (
-    email: string,
-    amac: EmailOtpAmaci,
-  ) => Promise<{ ok: boolean; hata?: string }>;
-};
-
-const AuthContext = createContext<AuthContextValue | null>(null);
+import {
+  AuthContext,
+  type AuthContextValue,
+} from './AuthContextNesnesi';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -159,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'is_guest',
           'is_admin',
           'is_verified',
+          'selected_title_id',
           'level',
           'xp',
           'primary_city_id',
@@ -193,7 +144,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           (i) =>
             i.provider === 'email' ||
             i.provider === 'spotify' ||
-            i.provider === 'apple',
+            i.provider === 'apple' ||
+            i.provider === 'twitch' ||
+            i.provider === 'x' ||
+            i.provider === 'twitter' ||
+            i.provider === 'google',
         ),
     );
     const metaMisafirDegil =
@@ -244,6 +199,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               ? Math.max(0, Math.floor(patch.diamonds))
               : prev.diamonds,
           updated_at: new Date().toISOString(),
+        };
+      });
+    },
+    [],
+  );
+
+  const patchProfile = useCallback(
+    (patch: Partial<Pick<Profile, 'avatar_url' | 'cover_url'>>) => {
+      setProfile((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...(patch.avatar_url !== undefined
+            ? { avatar_url: patch.avatar_url }
+            : {}),
+          ...(patch.cover_url !== undefined
+            ? { cover_url: patch.cover_url }
+            : {}),
         };
       });
     },
@@ -455,6 +428,108 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   }, [refreshProfile]);
 
+  const signInWithTwitch = useCallback(async () => {
+    let TwitchIleGirisYap: typeof import('../moduller/kimlik-dogrulama/giris/TwitchIleGirisYap').TwitchIleGirisYap;
+    try {
+      ({ TwitchIleGirisYap } = await import(
+        '../moduller/kimlik-dogrulama/giris/TwitchIleGirisYap'
+      ));
+    } catch {
+      return { error: i18n.t('auth.twitchBuildGerekli') };
+    }
+    let sonuc: Awaited<ReturnType<typeof TwitchIleGirisYap>>;
+    try {
+      sonuc = await TwitchIleGirisYap();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('ExpoWebBrowser') || msg.includes('native module')) {
+        return { error: i18n.t('auth.twitchBuildGerekli') };
+      }
+      GuvenlikOlayiKaydet('login_failed', { provider: 'twitch' });
+      return { error: i18n.t('auth.twitchBasarisiz') };
+    }
+    if (!sonuc.ok) {
+      if (sonuc.iptal) return { cancelled: true };
+      GuvenlikOlayiKaydet('login_failed', { provider: 'twitch' });
+      return { error: sonuc.hata };
+    }
+    const durum = await OturumKorumaDurumunuGetir();
+    if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
+      await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
+      return { error: oturumEngelMesaji(durum.kod, durum.mesaj) };
+    }
+    await refreshProfile();
+    return {};
+  }, [refreshProfile]);
+
+  const signInWithX = useCallback(async () => {
+    let XIleGirisYap: typeof import('../moduller/kimlik-dogrulama/giris/XIleGirisYap').XIleGirisYap;
+    try {
+      ({ XIleGirisYap } = await import(
+        '../moduller/kimlik-dogrulama/giris/XIleGirisYap'
+      ));
+    } catch {
+      return { error: i18n.t('auth.xBuildGerekli') };
+    }
+    let sonuc: Awaited<ReturnType<typeof XIleGirisYap>>;
+    try {
+      sonuc = await XIleGirisYap();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('ExpoWebBrowser') || msg.includes('native module')) {
+        return { error: i18n.t('auth.xBuildGerekli') };
+      }
+      GuvenlikOlayiKaydet('login_failed', { provider: 'x' });
+      return { error: i18n.t('auth.xBasarisiz') };
+    }
+    if (!sonuc.ok) {
+      if (sonuc.iptal) return { cancelled: true };
+      GuvenlikOlayiKaydet('login_failed', { provider: 'x' });
+      return { error: sonuc.hata };
+    }
+    const durum = await OturumKorumaDurumunuGetir();
+    if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
+      await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
+      return { error: oturumEngelMesaji(durum.kod, durum.mesaj) };
+    }
+    await refreshProfile();
+    return {};
+  }, [refreshProfile]);
+
+  const signInWithGoogle = useCallback(async () => {
+    let GoogleIleGirisYap: typeof import('../moduller/kimlik-dogrulama/giris/GoogleIleGirisYap').GoogleIleGirisYap;
+    try {
+      ({ GoogleIleGirisYap } = await import(
+        '../moduller/kimlik-dogrulama/giris/GoogleIleGirisYap'
+      ));
+    } catch {
+      return { error: i18n.t('auth.googleBuildGerekli') };
+    }
+    let sonuc: Awaited<ReturnType<typeof GoogleIleGirisYap>>;
+    try {
+      sonuc = await GoogleIleGirisYap();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('ExpoWebBrowser') || msg.includes('native module')) {
+        return { error: i18n.t('auth.googleBuildGerekli') };
+      }
+      GuvenlikOlayiKaydet('login_failed', { provider: 'google' });
+      return { error: i18n.t('auth.googleBasarisiz') };
+    }
+    if (!sonuc.ok) {
+      if (sonuc.iptal) return { cancelled: true };
+      GuvenlikOlayiKaydet('login_failed', { provider: 'google' });
+      return { error: sonuc.hata };
+    }
+    const durum = await OturumKorumaDurumunuGetir();
+    if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
+      await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
+      return { error: oturumEngelMesaji(durum.kod, durum.mesaj) };
+    }
+    await refreshProfile();
+    return {};
+  }, [refreshProfile]);
+
   const signUp = useCallback(
     async (input: {
       email?: string;
@@ -559,10 +634,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshWallet,
       misafirBayraginiKaldir,
       patchWallet,
+      patchProfile,
       adjustWallet,
       signIn,
       signInWithApple,
       signInWithSpotify,
+      signInWithTwitch,
+      signInWithX,
+      signInWithGoogle,
       signUp,
       continueAsGuest,
       signOut,
@@ -583,10 +662,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshWallet,
       misafirBayraginiKaldir,
       patchWallet,
+      patchProfile,
       adjustWallet,
       signIn,
       signInWithApple,
       signInWithSpotify,
+      signInWithTwitch,
+      signInWithX,
+      signInWithGoogle,
       signUp,
       continueAsGuest,
       signOut,

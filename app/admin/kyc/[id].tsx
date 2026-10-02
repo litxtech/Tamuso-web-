@@ -17,6 +17,7 @@ import { EkranBasligi } from '../../../src/components/EkranBasligi';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { AdminYetkisiVarMi } from '../../../src/moduller/admin/yetki/AdminYetkisiVarMi';
 import {
+  AdminKycBasvuruSil,
   AdminKycDetayGetir,
   AdminKycDurumGuncelle,
   type AdminKycDetay,
@@ -24,7 +25,18 @@ import {
 import { ProfilMedyaBuyutucu } from '../../../src/moduller/kullanici-profili/bilesenler/ProfilMedyaBuyutucu';
 import { MedyaUriOnizlemeGuvenli } from '../../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { AdminStil } from '../../../src/moduller/admin/bilesenler/AdminStil';
-import { LedgerSebepEtiketi } from '../../../src/moduller/cuzdan/okuma/CuzdanLedgeriniGetir';
+import { LedgerBirimEtiketi, LedgerSebepEtiketi } from '../../../src/moduller/cuzdan/okuma/CuzdanLedgeriniGetir';
+import { AdminLogAnlasilirMetin } from '../../../src/moduller/admin/kullanici/AdminLogAnlasilirMetin';
+import {
+  BelgePdfPaylas,
+  BelgeYazdir,
+  WhatsAppBelgeGonder,
+} from '../../../src/moduller/belge-paylasim/BelgePaylasimIslemleri';
+import {
+  KimlikSonrasiAktiviteBelgesiOlustur,
+  magazaEtiketi,
+  odemeDurumEtiketi,
+} from '../../../src/moduller/admin/kyc/KimlikSonrasiAktiviteBelgesi';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 import {
@@ -91,6 +103,7 @@ export default function AdminKycDetayEkrani() {
   const [detay, setDetay] = useState<AdminKycDetay | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [belgeBusy, setBelgeBusy] = useState(false);
   const [redNot, setRedNot] = useState('');
   const [buyutUri, setBuyutUri] = useState<string | null>(null);
 
@@ -118,6 +131,39 @@ export default function AdminKycDetayEkrani() {
   );
 
   if (!admin) return null;
+
+  const sil = () => {
+    if (!detay) return;
+    const r = detay.basvuru;
+    Alert.alert(
+      'Kimlik onayını sil',
+      `${r.first_name} ${r.last_name} kaydı, belgeleri ve cüzdan kimlik durumu kaldırılacak.`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Sil',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              setBusy(true);
+              try {
+                await AdminKycBasvuruSil(r.id);
+                Alert.alert('Tamam', 'Kimlik onayı silindi.');
+                router.replace('/admin/kyc' as any);
+              } catch (e) {
+                Alert.alert(
+                  'Hata',
+                  e instanceof Error ? e.message : 'Silinemedi',
+                );
+              } finally {
+                setBusy(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
+  };
 
   const karar = (status: 'approved' | 'rejected') => {
     if (!detay) return;
@@ -181,6 +227,37 @@ export default function AdminKycDetayEkrani() {
     (l) => new Date(l.created_at).getTime() >= basvuruMs,
   );
 
+  const belgeIslem = async (tur: 'yazdir' | 'pdf' | 'whatsapp') => {
+    if (!b) return;
+    const ad =
+      p?.display_name ||
+      b.profiles?.display_name ||
+      (b.profiles?.username ? `@${b.profiles.username}` : 'Kullanıcı');
+    const icerik = KimlikSonrasiAktiviteBelgesiOlustur({
+      basvuru: b,
+      ad,
+      yuklemeler: yuklemelerSonrasi,
+      hareketler: hareketlerSonrasi,
+      hediyeler: hediyelerSonrasi,
+      loglar: adminLogSonrasi,
+    });
+    const telefon = b.phone_e164 || p?.phone_e164;
+    setBelgeBusy(true);
+    try {
+      const sonuc =
+        tur === 'yazdir'
+          ? await BelgeYazdir(icerik)
+          : tur === 'pdf'
+            ? await BelgePdfPaylas(icerik)
+            : await WhatsAppBelgeGonder(icerik, telefon);
+      if (!sonuc.ok) {
+        Alert.alert('Belge', sonuc.hata);
+      }
+    } finally {
+      setBelgeBusy(false);
+    }
+  };
+
   return (
     <Screen edges={['top']}>
       <EkranBasligi
@@ -239,14 +316,14 @@ export default function AdminKycDetayEkrani() {
             </Text>
             <View style={styles.belgeGrid}>
               {[
-                { etiket: 'Ön yüz', uri: detay.belgeler.on },
-                { etiket: 'Arka yüz', uri: detay.belgeler.arka },
-                { etiket: 'Selfie', uri: detay.belgeler.selfie },
+                { id: 'on', etiket: 'Ön yüz', uri: detay.belgeler.on },
+                { id: 'arka', etiket: 'Arka yüz', uri: detay.belgeler.arka },
+                { id: 'selfie', etiket: 'Selfie', uri: detay.belgeler.selfie },
               ].map((item) => {
                 const belgeUri = MedyaUriOnizlemeGuvenli(item.uri);
                 return belgeUri ? (
                   <Pressable
-                    key={item.etiket}
+                    key={item.id}
                     style={styles.belgeKart}
                     onPress={() => setBuyutUri(belgeUri)}
                   >
@@ -258,7 +335,7 @@ export default function AdminKycDetayEkrani() {
                     <Text style={styles.belgeEtiket}>{item.etiket}</Text>
                   </Pressable>
                 ) : item.etiket === 'Arka yüz' && !b.doc_back_path ? null : (
-                  <View key={item.etiket} style={styles.belgeKart}>
+                  <View key={item.id} style={styles.belgeKart}>
                     <View style={[styles.belgeImg, styles.belgeBos]}>
                       <Text style={AdminStil.kartAlt}>Yok</Text>
                     </View>
@@ -368,6 +445,29 @@ export default function AdminKycDetayEkrani() {
             <Text style={styles.ipucu}>
               Başvuru tarihinden ({tr(b.created_at)}) itibaren hesap hareketleri
             </Text>
+            <View style={styles.paylasSatir}>
+              <Pressable
+                style={[styles.paylasBtn, belgeBusy && { opacity: 0.5 }]}
+                disabled={belgeBusy}
+                onPress={() => void belgeIslem('yazdir')}
+              >
+                <Text style={styles.paylasYazi}>Yazdır</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.paylasBtn, belgeBusy && { opacity: 0.5 }]}
+                disabled={belgeBusy}
+                onPress={() => void belgeIslem('pdf')}
+              >
+                <Text style={styles.paylasYazi}>PDF</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.paylasBtn, styles.waBtn, belgeBusy && { opacity: 0.5 }]}
+                disabled={belgeBusy}
+                onPress={() => void belgeIslem('whatsapp')}
+              >
+                <Text style={[styles.paylasYazi, { color: '#25D366' }]}>WhatsApp</Text>
+              </Pressable>
+            </View>
 
             <Text style={styles.altBaslik}>
               Yüklemeler ({yuklemelerSonrasi.length})
@@ -379,7 +479,7 @@ export default function AdminKycDetayEkrani() {
                 <Satir
                   key={y.id}
                   e={tr(y.tarih)}
-                  d={`${y.coin} coin · ${y.store ?? y.provider ?? '?'} · ${y.status ?? ''}`}
+                  d={`${y.coin.toLocaleString('tr-TR')} coin · ${magazaEtiketi(y.store ?? y.provider)} · ${odemeDurumEtiketi(y.status)}`}
                 />
               ))
             )}
@@ -394,7 +494,7 @@ export default function AdminKycDetayEkrani() {
                 <Satir
                   key={h.id}
                   e={tr(h.created_at)}
-                  d={`${h.delta > 0 ? '+' : ''}${h.delta} ${h.currency} · ${LedgerSebepEtiketi(h.reason)} · bakiye ${h.balance_after}`}
+                  d={`${h.delta > 0 ? '+' : ''}${h.delta.toLocaleString('tr-TR')} ${LedgerBirimEtiketi(h.currency)} · ${LedgerSebepEtiketi(h.reason)} · bakiye ${h.balance_after.toLocaleString('tr-TR')}`}
                 />
               ))
             )}
@@ -425,7 +525,11 @@ export default function AdminKycDetayEkrani() {
               <Text style={AdminStil.kartAlt}>Log yok</Text>
             ) : (
               adminLogSonrasi.slice(0, 20).map((l) => (
-                <Satir key={l.id} e={tr(l.created_at)} d={l.summary} />
+                <Satir
+                  key={l.id}
+                  e={tr(l.created_at)}
+                  d={AdminLogAnlasilirMetin(l.action, l.summary)}
+                />
               ))
             )}
 
@@ -481,6 +585,14 @@ export default function AdminKycDetayEkrani() {
               </Text>
             </Bolum>
           )}
+
+          <Pressable
+            style={[styles.silBtn, busy && { opacity: 0.5 }]}
+            disabled={busy}
+            onPress={sil}
+          >
+            <Text style={styles.redYazi}>Kimlik onayını sil</Text>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -575,6 +687,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
+  paylasSatir: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  paylasBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: YaricapTokenlari.md,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+    backgroundColor: RenkTokenlari.bgElevated,
+  },
+  waBtn: {
+    borderColor: 'rgba(37, 211, 102, 0.45)',
+  },
+  paylasYazi: {
+    ...TipografiTokenlari.caption,
+    color: RenkTokenlari.text,
+    fontWeight: '800',
+  },
   kararBtn: {
     flex: 1,
     alignItems: 'center',
@@ -599,5 +733,13 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.body,
     color: RenkTokenlari.danger,
     fontWeight: '800',
+  },
+  silBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: YaricapTokenlari.md,
+    borderWidth: 1,
+    borderColor: `${RenkTokenlari.danger}66`,
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
   },
 });

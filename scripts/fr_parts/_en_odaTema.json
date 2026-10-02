@@ -1,0 +1,28 @@
+{
+  "odaTema": {
+    "midnight_plum": "Midnight plum",
+    "midnight_plumAlt": "Purple night scene",
+    "neon_aurora": "Neon aurora",
+    "neon_auroraAlt": "Pink · magenta aurora",
+    "royal_gold": "Royal",
+    "royal_goldAlt": "Gold VIP atmosphere",
+    "cosmic_void": "Cosmic",
+    "cosmic_voidAlt": "Deep indigo void",
+    "arctic_mist": "Arctic",
+    "arctic_mistAlt": "Ice-blue mist",
+    "cherry_noir": "Cherry noir",
+    "cherry_noirAlt": "Dark red scene",
+    "emerald_haze": "Emerald",
+    "emerald_hazeAlt": "Forest-green haze",
+    "sunset_pulse": "Sunset",
+    "sunset_pulseAlt": "Orange · coral pulse",
+    "electric_lilac": "Electric",
+    "electric_lilacAlt": "Neon lilac glow",
+    "ocean_depth": "Ocean",
+    "ocean_depthAlt": "Deep teal wave",
+    "velvet_rose": "Velvet rose",
+    "velvet_roseAlt": "Soft rose scene",
+    "cyber_mint": "Cyber mint",
+    "cyber_mintAlt": "Dark base · mint accent"
+  }
+}

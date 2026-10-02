@@ -17,6 +17,8 @@ type Props = {
   topGap: number;
   /** Eski API — layout'u asla değiştirmez, kart butonların üstünden açılır. */
   bottomGap?: number;
+  /** Alt köşeleri düzleştirir; kart telefonun altına kadar iner. */
+  dibine?: boolean;
   oyunModu?: boolean;
   onGapPress?: () => void;
   children: React.ReactNode;
@@ -25,6 +27,7 @@ type Props = {
 export function OyunOdaAltKart({
   topGap,
   bottomGap = 0,
+  dibine = false,
   oyunModu = false,
   onGapPress,
   children,
@@ -77,7 +80,7 @@ export function OyunOdaAltKart({
         />
       </Animated.View>
       <Animated.View
-        style={[styles.kart, oyunModu && styles.kartOyun, kartStil]}
+        style={[styles.kart, oyunModu && styles.kartOyun, dibine && styles.kartDibine, kartStil]}
       >
         {!oyunModu ? <View style={styles.handle} /> : null}
         <View style={styles.icerik}>{children}</View>
@@ -124,6 +127,11 @@ const styles = StyleSheet.create({
   },
   kartOyun: {
     borderColor: 'rgba(232, 197, 71, 0.28)',
+  },
+  kartDibine: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottomWidth: 0,
   },
   handle: {
     alignSelf: 'center',

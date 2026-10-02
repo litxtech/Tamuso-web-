@@ -1,0 +1,571 @@
+{
+    "metrics": {
+        "lat_rpc_takip_edilenleri_listele": {
+            "count": 2008,
+            "avg": 218.2007122011951,
+            "min": 65.1757,
+            "med": 75.3548,
+            "p(90)": 104.13679,
+            "p(95)": 680.6285899999999,
+            "p(99)": 3546.574931000002,
+            "max": 12227.4587
+        },
+        "ok_rpc_durum_akisi_takip": {
+            "count": 3511,
+            "rate": 6.374445287410418
+        },
+        "bucket_5_10s": {
+            "count": 867,
+            "rate": 1.574094008597218
+        },
+        "ok_rpc_bildirimlerimi_listele": {
+            "rate": 3.4259693128292388,
+            "count": 1887
+        },
+        "diag_inflight": {
+            "value": 0,
+            "min": 0,
+            "max": 2
+        },
+        "http_req_receiving": {
+            "min": 0,
+            "med": 0,
+            "p(90)": 0.9112900000000008,
+            "p(95)": 2.0853699999999984,
+            "p(99)": 3.468256999999999,
+            "max": 46.371,
+            "count": 72912,
+            "avg": 0.30728203725038394
+        },
+        "data_received": {
+            "count": 208538044,
+            "rate": 378614.17027103
+        },
+        "bucket_1_2s": {
+            "count": 1162,
+            "rate": 2.1096853956054984
+        },
+        "http_req_duration{expected_response:true}": {
+            "count": 72912,
+            "avg": 358.5861858240089,
+            "min": 65.1757,
+            "med": 77.0938,
+            "p(90)": 111.18674000000006,
+            "p(95)": 1465.6845399999936,
+            "p(99)": 8463.673672999974,
+            "max": 13820.6542
+        },
+        "checks": {
+            "passes": 72912,
+            "fails": 0,
+            "value": 1
+        },
+        "bucket_lt_100": {
+            "count": 65024,
+            "rate": 118.05523508076759
+        },
+        "lat_live_live_list": {
+            "p(90)": 98.80926000000011,
+            "p(95)": 644.4251349999979,
+            "p(99)": 3663.88610899997,
+            "max": 13820.6542,
+            "count": 1962,
+            "avg": 224.30100341488262,
+            "min": 65.7305,
+            "med": 75.37395000000001
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 72912,
+            "value": 0
+        },
+        "lat_rpc_liderlik_siralamasi_listele": {
+            "med": 76.04705000000001,
+            "p(90)": 125.00690000000016,
+            "p(95)": 1866.2167349999934,
+            "p(99)": 9580.189055000003,
+            "max": 12721.7671,
+            "count": 3838,
+            "avg": 412.89168572172997,
+            "min": 66.857
+        },
+        "ok_rpc_bildirim_okunmamis_sayim": {
+            "count": 1887,
+            "rate": 3.4259693128292388
+        },
+        "bucket_10_20s": {
+            "rate": 0.9840357008762308,
+            "count": 542
+        },
+        "reqs_stage_200": {
+            "rate": 10.125400560492139,
+            "count": 5577
+        },
+        "http_req_connecting": {
+            "avg": 0.21179322059468944,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 126.6801,
+            "count": 72912
+        },
+        "lat_home_live_sessions": {
+            "p(95)": 2127.91950999998,
+            "p(99)": 10245.52878599996,
+            "max": 12803.911,
+            "count": 11447,
+            "avg": 422.0454051279824,
+            "min": 66.3869,
+            "med": 78.437,
+            "p(90)": 124.73491999999989
+        },
+        "lat_rpc_bildirimlerimi_listele": {
+            "p(95)": 663.9474399999986,
+            "p(99)": 3363.948655999991,
+            "max": 9085.6767,
+            "count": 1887,
+            "avg": 208.86190969793356,
+            "min": 65.7489,
+            "med": 74.9836,
+            "p(90)": 102.91078000000005
+        },
+        "vus": {
+            "min": 1,
+            "max": 500,
+            "value": 1
+        },
+        "op_ok": {
+            "rate": 132.3764041001619,
+            "count": 72912
+        },
+        "lat_profile_stats": {
+            "count": 5678,
+            "avg": 220.77083876364975,
+            "min": 65.9853,
+            "med": 76.30709999999999,
+            "p(90)": 100.2655,
+            "p(95)": 618.6002399999996,
+            "p(99)": 3620.706441999921,
+            "max": 12096.9122
+        },
+        "ok_rpc_durum_akisi": {
+            "count": 4187,
+            "rate": 7.6017665674700705
+        },
+        "ok_rpc_mesaj_konularini_getir": {
+            "count": 3965,
+            "rate": 7.198711354196043
+        },
+        "vus_max": {
+            "value": 500,
+            "min": 500,
+            "max": 500
+        },
+        "ok_room_live_list": {
+            "count": 1962,
+            "rate": 3.5621366146110054
+        },
+        "ok_home_rooms": {
+            "count": 11447,
+            "rate": 20.782761379945043
+        },
+        "bucket_250_500": {
+            "count": 810,
+            "rate": 1.4706068592430757
+        },
+        "reqs_stage_500": {
+            "count": 42997,
+            "rate": 78.06380632947472
+        },
+        "lat_home_blocks": {
+            "p(90)": 92.40133999999999,
+            "p(95)": 632.4738099999995,
+            "p(99)": 3260.1485999999973,
+            "max": 12177.3521,
+            "count": 11447,
+            "avg": 202.4573423429728,
+            "min": 65.1812,
+            "med": 74.1786
+        },
+        "ok_rpc_liderlik_siralamasi_listele": {
+            "count": 3838,
+            "rate": 6.968134723178919
+        },
+        "lat_stage_200": {
+            "p(99)": 3377.940643999999,
+            "max": 3994.1281,
+            "count": 5577,
+            "avg": 220.79705872332758,
+            "min": 66.6133,
+            "med": 78.1014,
+            "p(90)": 111.01188000000008,
+            "p(95)": 1272.8833599999998
+        },
+        "ok_rpc_takipcileri_listele": {
+            "count": 2008,
+            "rate": 3.645652559703822
+        },
+        "lat_home_rooms": {
+            "max": 12728.0241,
+            "count": 11447,
+            "avg": 424.511585140211,
+            "min": 69.7897,
+            "med": 80.7574,
+            "p(90)": 131.70794,
+            "p(95)": 2052.028719999997,
+            "p(99)": 9983.052941999931
+        },
+        "lat_stage_500": {
+            "max": 13820.6542,
+            "count": 42997,
+            "avg": 518.8046867734987,
+            "min": 65.1812,
+            "med": 77.1778,
+            "p(90)": 596.5320400000007,
+            "p(95)": 3299.93191999999,
+            "p(99)": 10651.576628
+        },
+        "reqs_stage_400": {
+            "count": 12803,
+            "rate": 23.24466619615938
+        },
+        "lat_rpc_durum_akisi": {
+            "max": 12727.4732,
+            "count": 4187,
+            "avg": 445.25775118223044,
+            "min": 68.377,
+            "med": 77.5468,
+            "p(90)": 125.19744000000001,
+            "p(95)": 2444.3771999999985,
+            "p(99)": 11115.140434000074
+        },
+        "ok_home_blocks": {
+            "count": 11447,
+            "rate": 20.782761379945043
+        },
+        "ok_home_live_sessions": {
+            "rate": 20.782761379945043,
+            "count": 11447
+        },
+        "lat_stage_400": {
+            "med": 76.4517,
+            "p(90)": 86.45016000000001,
+            "p(95)": 93.54865999999997,
+            "p(99)": 483.87047399999915,
+            "max": 1365.9463,
+            "count": 12803,
+            "avg": 88.15637099117421,
+            "min": 65.1757
+        },
+        "iterations": {
+            "count": 38483,
+            "rate": 69.86835032623614
+        },
+        "bucket_100_250": {
+            "count": 1805,
+            "rate": 3.2770930628811747
+        },
+        "lat_room_live_list": {
+            "p(95)": 2389.335509999971,
+            "p(99)": 10583.339130999993,
+            "max": 12725.2176,
+            "count": 1962,
+            "avg": 430.52183419979644,
+            "min": 68.1928,
+            "med": 76.93225000000001,
+            "p(90)": 125.95322000000016
+        },
+        "lat_stage_100": {
+            "max": 1421.9637,
+            "count": 2468,
+            "avg": 81.85459408427882,
+            "min": 67.9695,
+            "med": 78.4158,
+            "p(90)": 87.64911,
+            "p(95)": 93.424125,
+            "p(99)": 145.22983699999966
+        },
+        "lat_rpc_mesaj_konularini_getir": {
+            "p(99)": 9905.912748,
+            "max": 12767.5265,
+            "count": 3965,
+            "avg": 416.5075383354346,
+            "min": 66.4339,
+            "med": 76.061,
+            "p(90)": 118.28637999999994,
+            "p(95)": 1994.9034799999963
+        },
+        "lat_rpc_durum_akisi_takip": {
+            "p(99)": 10536.893480000002,
+            "max": 12513.9372,
+            "count": 3511,
+            "avg": 456.66734371973706,
+            "min": 66.538,
+            "med": 76.3537,
+            "p(90)": 143.7398,
+            "p(95)": 2335.5299999999997
+        },
+        "reqs_stage_300": {
+            "rate": 16.461719003403662,
+            "count": 9067
+        },
+        "bucket_2_5s": {
+            "count": 1645,
+            "rate": 2.986602819080073
+        },
+        "http_req_waiting": {
+            "med": 76.5781,
+            "p(90)": 110.73190000000106,
+            "p(95)": 1465.3476649999918,
+            "p(99)": 8463.085649999975,
+            "max": 13820.316,
+            "count": 72912,
+            "avg": 358.0378878538508,
+            "min": 64.9041
+        },
+        "lat_rpc_bildirim_okunmamis_sayim": {
+            "max": 12452.9448,
+            "count": 1887,
+            "avg": 428.33119703232614,
+            "min": 65.7887,
+            "med": 76.0975,
+            "p(90)": 156.40942,
+            "p(95)": 2074.4964799999866,
+            "p(99)": 10550.186373999999
+        },
+        "lat_stage_300": {
+            "med": 76.7048,
+            "p(90)": 88.71398,
+            "p(95)": 113.64434999999952,
+            "p(99)": 2394.627502,
+            "max": 3938.9245,
+            "count": 9067,
+            "avg": 140.74363197308904,
+            "min": 65.3897
+        },
+        "ok_profile_get": {
+            "count": 5678,
+            "rate": 10.308772526891584
+        },
+        "lat_rpc_takipcileri_listele": {
+            "avg": 429.8161854581681,
+            "min": 66.3625,
+            "med": 76.28540000000001,
+            "p(90)": 119.45848999999998,
+            "p(95)": 2446.154189999995,
+            "p(99)": 10050.000794000056,
+            "max": 12740.1241,
+            "count": 2008
+        },
+        "http_req_sending": {
+            "min": 0,
+            "med": 0,
+            "p(90)": 0.6202,
+            "p(95)": 0.6781,
+            "p(99)": 0.8042889999999999,
+            "max": 2.8905,
+            "count": 72912,
+            "avg": 0.24101593290541876
+        },
+        "op_latency": {
+            "p(99)": 8463.673672999974,
+            "max": 13820.6542,
+            "count": 72912,
+            "avg": 358.5861858240089,
+            "min": 65.1757,
+            "med": 77.0938,
+            "p(90)": 111.18674000000006,
+            "p(95)": 1465.6845399999936
+        },
+        "http_req_duration": {
+            "avg": 358.5861858240089,
+            "min": 65.1757,
+            "med": 77.0938,
+            "p(90)": 111.18674000000006,
+            "p(95)": 1465.6845399999936,
+            "p(99)": 8463.673672999974,
+            "max": 13820.6542,
+            "count": 72912
+        },
+        "ok_profile_stats": {
+            "count": 5678,
+            "rate": 10.308772526891584
+        },
+        "data_sent": {
+            "count": 16366197,
+            "rate": 29713.878478917835
+        },
+        "reqs_stage_100": {
+            "rate": 4.480812010631988,
+            "count": 2468
+        },
+        "ok_rpc_takip_edilenleri_listele": {
+            "count": 2008,
+            "rate": 3.645652559703822
+        },
+        "http_reqs": {
+            "count": 72912,
+            "rate": 132.3764041001619
+        },
+        "iteration_duration": {
+            "p(95)": 8046.179550000001,
+            "p(99)": 16199.816756,
+            "max": 22948.286,
+            "count": 38483,
+            "avg": 4739.343843148906,
+            "min": 2072.0538,
+            "med": 4239.0661,
+            "p(90)": 7239.0842
+        },
+        "http_req_blocked": {
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 211.1176,
+            "count": 72912,
+            "avg": 0.46659592111038006,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0
+        },
+        "http_req_tls_handshaking": {
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 89.7756,
+            "count": 72912,
+            "avg": 0.25312738643844634,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0
+        },
+        "lat_profile_get": {
+            "p(95)": 2112.3402499999743,
+            "p(99)": 10241.55189799998,
+            "max": 12383.006,
+            "count": 5678,
+            "avg": 421.18429646002124,
+            "min": 65.8238,
+            "med": 76.6738,
+            "p(90)": 108.76458000000002
+        },
+        "status_2xx": {
+            "rate": 132.3764041001619,
+            "count": 72912
+        },
+        "ok_live_live_list": {
+            "count": 1962,
+            "rate": 3.5621366146110054
+        },
+        "bucket_500_1s": {
+            "count": 1057,
+            "rate": 1.9190511731110258
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "rpc:durum_akisi_takip ok": {
+                    "id": "45332d9128466b2731105dd4ebedb514",
+                    "passes": 3511,
+                    "fails": 0,
+                    "name": "rpc:durum_akisi_takip ok",
+                    "path": "::rpc:durum_akisi_takip ok"
+                },
+                "profile:get ok": {
+                    "id": "9a37a11540ddf488a92a948ce371cb67",
+                    "passes": 5678,
+                    "fails": 0,
+                    "name": "profile:get ok",
+                    "path": "::profile:get ok"
+                },
+                "home batch ok": {
+                    "passes": 22894,
+                    "fails": 0,
+                    "name": "home batch ok",
+                    "path": "::home batch ok",
+                    "id": "ca36ea6808b4e5ec1e8399e899dc5ccf"
+                },
+                "profile:stats ok": {
+                    "fails": 0,
+                    "name": "profile:stats ok",
+                    "path": "::profile:stats ok",
+                    "id": "5cc6be25947f035c7b787e91c6c2dd7f",
+                    "passes": 5678
+                },
+                "home:blocks ok": {
+                    "id": "611cb2bfe3d03d79375c00e1965dd846",
+                    "passes": 11447,
+                    "fails": 0,
+                    "name": "home:blocks ok",
+                    "path": "::home:blocks ok"
+                },
+                "rpc:mesaj_konularini_getir ok": {
+                    "name": "rpc:mesaj_konularini_getir ok",
+                    "path": "::rpc:mesaj_konularini_getir ok",
+                    "id": "95460683cf370699b886ee384e067118",
+                    "passes": 3965,
+                    "fails": 0
+                },
+                "rpc:bildirim_okunmamis_sayim ok": {
+                    "passes": 1887,
+                    "fails": 0,
+                    "name": "rpc:bildirim_okunmamis_sayim ok",
+                    "path": "::rpc:bildirim_okunmamis_sayim ok",
+                    "id": "f2c33476675bb31aa3b63fa11ab25a5f"
+                },
+                "rpc:bildirimlerimi_listele ok": {
+                    "name": "rpc:bildirimlerimi_listele ok",
+                    "path": "::rpc:bildirimlerimi_listele ok",
+                    "id": "0bbf651150977b98e5b3d4e941aa1bf6",
+                    "passes": 1887,
+                    "fails": 0
+                },
+                "rpc:liderlik_siralamasi_listele ok": {
+                    "name": "rpc:liderlik_siralamasi_listele ok",
+                    "path": "::rpc:liderlik_siralamasi_listele ok",
+                    "id": "e0cb87fc5041a8bd6f9a028cd7f9df6f",
+                    "passes": 3838,
+                    "fails": 0
+                },
+                "room:live_list ok": {
+                    "name": "room:live_list ok",
+                    "path": "::room:live_list ok",
+                    "id": "84ce5c1bf72ff8d031423de9b3a73dca",
+                    "passes": 1962,
+                    "fails": 0
+                },
+                "live:live_list ok": {
+                    "name": "live:live_list ok",
+                    "path": "::live:live_list ok",
+                    "id": "0e2afb66a0e38dc09bc9966e35820e29",
+                    "passes": 1962,
+                    "fails": 0
+                },
+                "rpc:durum_akisi ok": {
+                    "name": "rpc:durum_akisi ok",
+                    "path": "::rpc:durum_akisi ok",
+                    "id": "3ee749a182a56b4955f7a180794b7302",
+                    "passes": 4187,
+                    "fails": 0
+                },
+                "rpc:takipcileri_listele ok": {
+                    "id": "423c3cb68ae1d05839adda5ce0d12627",
+                    "passes": 2008,
+                    "fails": 0,
+                    "name": "rpc:takipcileri_listele ok",
+                    "path": "::rpc:takipcileri_listele ok"
+                },
+                "rpc:takip_edilenleri_listele ok": {
+                    "name": "rpc:takip_edilenleri_listele ok",
+                    "path": "::rpc:takip_edilenleri_listele ok",
+                    "id": "d531d809a4db044fefead8b845bdc4c7",
+                    "passes": 2008,
+                    "fails": 0
+                }
+            }
+    }
+}

@@ -4,6 +4,10 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import {
+  KameraOnizlemeBirakildi,
+  KameraOnizlemeTutuldu,
+} from '../../livekit/kamera/KameraOnizlemeKilidi';
 
 type Props = {
   aktif: boolean;
@@ -11,32 +15,42 @@ type Props = {
 };
 
 /**
- * Canli yayin lokal onizleme — LiveKit remote video ayri katman.
- * Expo Go / izin yok / native hata → placeholder (asla çökme).
+ * Canlı yayın stüdyo önizleme — LiveKit bağlanmadan ÖNCE kapatılmalı.
+ * CameraView kamerayı tutar; unmount’ta kilidi serbest bırakır.
  */
 export function CanliKameraOnizleme({ aktif, facing = 'front' }: Props) {
   const { t } = useCeviri();
   const [permission, requestPermission] = useCameraPermissions();
   const [hata, setHata] = useState<string | null>(null);
   const [kameraKirildi, setKameraKirildi] = useState(false);
+  const [gorunur, setGorunur] = useState(false);
 
   useEffect(() => {
-    if (!aktif) return;
+    if (!aktif) {
+      setGorunur(false);
+      KameraOnizlemeBirakildi();
+      return;
+    }
     if (!permission) return;
     if (!permission.granted) {
       void requestPermission()
         .then((r) => {
           if (!r.granted) setHata(t('canliYayin.kameraIzni'));
         })
-        .catch(() =>
-          setHata(t('canliYayin.kameraKullanilamiyor')),
-        );
+        .catch(() => setHata(t('canliYayin.kameraKullanilamiyor')));
+      return;
     }
+    setGorunur(true);
+    KameraOnizlemeTutuldu();
+    return () => {
+      setGorunur(false);
+      KameraOnizlemeBirakildi();
+    };
   }, [aktif, permission, requestPermission, t]);
 
   if (!aktif) return null;
 
-  if (hata || kameraKirildi || !permission?.granted) {
+  if (hata || kameraKirildi || !permission?.granted || !gorunur) {
     return (
       <View style={styles.placeholder}>
         <Text style={styles.placeholderText}>
@@ -54,7 +68,11 @@ export function CanliKameraOnizleme({ aktif, facing = 'front' }: Props) {
         <CameraView
           style={styles.camera}
           facing={facing}
-          onMountError={() => setKameraKirildi(true)}
+          onCameraReady={() => KameraOnizlemeTutuldu()}
+          onMountError={() => {
+            setKameraKirildi(true);
+            KameraOnizlemeBirakildi();
+          }}
         />
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{t('canliYayin.canliOnizleme')}</Text>
@@ -62,6 +80,7 @@ export function CanliKameraOnizleme({ aktif, facing = 'front' }: Props) {
       </View>
     );
   } catch {
+    KameraOnizlemeBirakildi();
     return (
       <View style={styles.placeholder}>
         <Text style={styles.placeholderText}>
@@ -102,15 +121,15 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 3 / 4,
     borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: RenkTokenlari.bgCard,
+    backgroundColor: RenkTokenlari.bgElevated,
     borderWidth: 1,
     borderColor: RenkTokenlari.border,
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 16,
   },
   placeholderText: {
-    ...TipografiTokenlari.body,
+    ...TipografiTokenlari.caption,
     color: RenkTokenlari.textMuted,
     textAlign: 'center',
   },

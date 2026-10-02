@@ -4,6 +4,7 @@
  */
 
 import i18n from '../../../i18n';
+import { AktifSayiLocale } from '../../../i18n/diller';
 import { CoinDegerOzeti, TryYazi } from '../katalog/CoinTakasPaylasimi';
 
 /** Mağaza paketlerinde kullanılan yaklaşık kur (1 $ ≈ 35 ₺) */
@@ -15,12 +16,14 @@ export function CoinUsdYaklasik(tl: number): number {
   return Math.max(1, Math.round(n / TAKAS_TRY_USD));
 }
 
-export function UsdYazi(usd: number): string {
-  return `${usd.toLocaleString('tr-TR')} $`;
+export function UsdYazi(usd: number, locale?: string | null): string {
+  const loc = locale ?? AktifSayiLocale(i18n.language);
+  return `${usd.toLocaleString(loc)} $`;
 }
 
-export function CoinYazi(coins: number): string {
-  return Math.floor(Number(coins) || 0).toLocaleString('tr-TR');
+export function CoinYazi(coins: number, locale?: string | null): string {
+  const loc = locale ?? AktifSayiLocale(i18n.language);
+  return Math.floor(Number(coins) || 0).toLocaleString(loc);
 }
 
 /** Teklif gövdesi — katalog özeti; “satmak” dili yok */

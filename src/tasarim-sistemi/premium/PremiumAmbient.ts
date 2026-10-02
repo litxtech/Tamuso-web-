@@ -2,7 +2,7 @@
  * Tema-bağımsız ambient / glow yardımcıları.
  */
 import { RenkTokenlari } from '../RenkTokenlari';
-import { kullaniciTemaKodunuAl } from '../tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../tema/TemaDurumu';
 
 export type AtmosferLeke = {
   renk: string;
@@ -16,7 +16,7 @@ export type AtmosferLeke = {
 };
 
 export function premiumAcikTemaMi(): boolean {
-  return kullaniciTemaKodunuAl() === 'acik';
+  return temaAcikMi(kullaniciTemaKodunuAl());
 }
 
 /** Dark: lacivert-siyah ambient · Light: soft pembe/lila blobs */

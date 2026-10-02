@@ -1,3 +1,5 @@
+import i18n from '../../i18n';
+
 export type FikirDurum =
   | 'RECEIVED'
   | 'REVIEWING'
@@ -156,13 +158,40 @@ export type AdminFikirOzet = {
   };
 };
 
+export const FIKIR_DURUM_ETIKET_ANAHTAR: Record<FikirDurum, string> = {
+  RECEIVED: 'fikirler.durumAlindi',
+  REVIEWING: 'fikirler.durumInceleniyor',
+  PLANNED: 'fikirler.durumPlanlandi',
+  IN_DEVELOPMENT: 'fikirler.durumGelistiriliyor',
+  COMPLETED: 'fikirler.durumHayataGecirildi',
+  NOT_PLANNED: 'fikirler.durumPlanlanmiyor',
+};
+
+export function FikirDurumEtiketi(status: FikirDurum | string): string {
+  const key = FIKIR_DURUM_ETIKET_ANAHTAR[status as FikirDurum];
+  return key ? (i18n.t(key) as string) : status;
+}
+
+/** Aktif dil etiketleri — i18n üzerinden (Object.keys çalışır) */
 export const FIKIR_DURUM_ETIKET: Record<FikirDurum, string> = {
-  RECEIVED: 'Alındı',
-  REVIEWING: 'İnceleniyor',
-  PLANNED: 'Planlandı',
-  IN_DEVELOPMENT: 'Geliştiriliyor',
-  COMPLETED: 'Hayata Geçirildi',
-  NOT_PLANNED: 'Şimdilik Planlanmıyor',
+  get RECEIVED() {
+    return FikirDurumEtiketi('RECEIVED');
+  },
+  get REVIEWING() {
+    return FikirDurumEtiketi('REVIEWING');
+  },
+  get PLANNED() {
+    return FikirDurumEtiketi('PLANNED');
+  },
+  get IN_DEVELOPMENT() {
+    return FikirDurumEtiketi('IN_DEVELOPMENT');
+  },
+  get COMPLETED() {
+    return FikirDurumEtiketi('COMPLETED');
+  },
+  get NOT_PLANNED() {
+    return FikirDurumEtiketi('NOT_PLANNED');
+  },
 };
 
 export const FIKIR_BASLIK_MIN = 8;

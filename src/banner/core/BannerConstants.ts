@@ -1,5 +1,7 @@
 /** Banner size / aspect ratio config — hardcode yok, buradan gelir */
 
+import i18n from '../../i18n';
+
 export type BannerSizeType = 'SMALL' | 'MEDIUM' | 'LARGE' | 'HERO' | 'CUSTOM';
 
 export const BANNER_SIZE_PRESETS: Record<
@@ -17,6 +19,27 @@ export const BANNER_SIZE_PRESETS: Record<
 export const BANNER_STRIP_ASPECT = '4:1';
 export const BANNER_STRIP_MAX_HEIGHT = 92;
 export const BANNER_COMPACT_MAX_HEIGHT = 92;
+
+/**
+ * Ses odası kartı oranı (AnaSayfaFeedKart FEED_KART_ORANI = 0.76).
+ * Otomatik oda tanıtımları feed’de kart boyutunda görünür.
+ */
+export const BANNER_ROOM_CARD_ASPECT = '19:25';
+export const BANNER_ROOM_CARD_NUMERIC = 19 / 25;
+export const BANNER_ROOM_CARD_TAG = 'ROOM_CARD';
+
+/** Manuel kampanya — sadece feed (ses odası / diğer yüzeyler yok) */
+export const MANUAL_BANNER_SCREEN_KEYS = ['FEED'] as const;
+export const MANUAL_BANNER_PLACEMENT_KEYS = [
+  'FEED_TOP',
+  'FEED_AFTER_POST_3',
+  'FEED_AFTER_POST_4',
+  'FEED_AFTER_POST_6',
+  'FEED_AFTER_POST_8',
+  'FEED_AFTER_POST_10',
+  'FEED_AFTER_POST_14',
+  'FEED_INLINE',
+] as const;
 
 /** Otomatik tanıtım placement’ları (oda / canlı / oyun) */
 export const AUTO_ROOM_PROMO_PLACEMENTS = {
@@ -39,6 +62,7 @@ export const BANNER_CUSTOM_ASPECT_OPTIONS = [
   '16:5',
   '16:6',
   '16:7',
+  '19:25',
 ] as const;
 
 export function parseAspectRatio(ratio: string | null | undefined): number {
@@ -124,41 +148,39 @@ export const BANNER_TAG_PRESETS = [
   'GAME',
   'HOTEL',
   'SPONSORED',
+  'ROOM_CARD',
 ] as const;
 
-export const SCREEN_LABELS: Record<string, string> = {
-  HOME: 'Ana Sayfa',
-  FEED: 'Feed',
-  DISCOVER: 'Keşfet',
-  MESSAGES: 'Mesajlar',
-  PROFILE: 'Profil',
-  VOICE_ROOM: 'Ses Odası',
-  GAME_CENTER: 'Oyun Merkezi',
-  SETTINGS: 'Ayarlar',
-  MARKET: 'Market',
-  LIVE: 'Canlı yayın',
-};
+export function bannerScreenLabel(key: string): string {
+  const t = i18n.t(`banner.screen.${key}`);
+  return t || key;
+}
 
-export const PLACEMENT_LABELS: Record<string, string> = {
-  FEED_TOP: 'Feed üst',
-  FEED_AFTER_POST_3: 'Feed 3. içerik sonrası',
-  FEED_AFTER_POST_4: 'Feed 4. içerik sonrası',
-  FEED_AFTER_POST_6: 'Feed 6. içerik sonrası (otomatik oda)',
-  FEED_AFTER_POST_8: 'Feed 8. içerik sonrası',
-  FEED_AFTER_POST_10: 'Feed 10. içerik sonrası',
-  FEED_AFTER_POST_14: 'Feed 14. içerik sonrası (otomatik canlı)',
-  FEED_INLINE: 'Feed satır içi',
-  DISCOVER_TOP: 'Keşfet üst',
-  DISCOVER_MIDDLE: 'Keşfet orta',
-  DISCOVER_BOTTOM: 'Keşfet alt',
-  MESSAGES_TOP: 'Mesajlar üst',
-  PROFILE_TOP: 'Profil üst',
-  PROFILE_MIDDLE: 'Profil orta',
-  VOICE_ROOM_TOP: 'Ses odası üst',
-  VOICE_ROOM_BOTTOM: 'Ses odası alt',
-  GAME_CENTER_TOP: 'Oyun merkezi üst',
-  GAME_CENTER_MIDDLE: 'Oyun merkezi orta',
-  HOME_TOP: 'Ana sayfa üst',
-  HOME_MIDDLE: 'Ana sayfa orta',
-  HOME_BOTTOM: 'Ana sayfa alt (otomatik oyun)',
-};
+export function bannerPlacementLabel(key: string): string {
+  const t = i18n.t(`banner.placement.${key}`);
+  return t || key;
+}
+
+/** Lazy i18n — dil değişince doğru etiket */
+export const SCREEN_LABELS: Record<string, string> = new Proxy(
+  {} as Record<string, string>,
+  {
+    get(_target, prop: string | symbol) {
+      if (typeof prop !== 'string') return undefined;
+      // React / LogBox `$$typeof` okuması → sahte missing-key gürültüsü
+      if (prop === '$$typeof' || prop.startsWith('@@')) return undefined;
+      return bannerScreenLabel(prop);
+    },
+  },
+);
+
+export const PLACEMENT_LABELS: Record<string, string> = new Proxy(
+  {} as Record<string, string>,
+  {
+    get(_target, prop: string | symbol) {
+      if (typeof prop !== 'string') return undefined;
+      if (prop === '$$typeof' || prop.startsWith('@@')) return undefined;
+      return bannerPlacementLabel(prop);
+    },
+  },
+);

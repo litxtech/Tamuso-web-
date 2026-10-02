@@ -1,9 +1,9 @@
 /**
- * Zeus ön yükleme — hücre boyutunda GPU warm (1×1 kutuda decode yetmez).
+ * Zeus ön yükleme — yalnızca sembol GPU warm; kapak/spin arka planda.
  */
 
 import React, { memo, useCallback, useEffect, useRef } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -13,24 +13,33 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GAME_DISPLAY_NAME, GAME_SUBTITLE } from '../config/ZeusSabitleri';
+import { GAME_DISPLAY_NAME } from '../config/ZeusSabitleri';
 import { TipografiTokenlari } from '../../../../tasarim-sistemi/TipografiTokenlari';
-import { CharacterImages, SymbolImages, UiImages } from '../assets/VisualAssets';
-import { zeusVisualsCached } from '../assets/preloadZeusAssets';
+import { CharacterImages, SymbolImages } from '../assets/VisualAssets';
+import { useCeviri } from '../../../../i18n/useCeviri';
 
 type Props = {
   progress: number;
+  failed?: boolean;
+  onRetry?: () => void;
   onImagesWarmed?: () => void;
 };
 
 const AVATAR = 112;
-const WARM_SIZE = 72;
-const WARM_TIMEOUT_MS = 520;
+const WARM_SIZE = 48;
 const SYMBOL_SOURCES = Object.values(SymbolImages);
+/** Sembol onLoad gelmezse tahtayı kilitleme */
+const WARM_FALLBACK_MS = 280;
 
-function ZeusOnYuklemeInner({ progress, onImagesWarmed }: Props) {
+function ZeusOnYuklemeInner({
+  progress,
+  failed,
+  onRetry,
+  onImagesWarmed,
+}: Props) {
+  const { t } = useCeviri();
   const pulse = useSharedValue(0.96);
-  const pending = useRef(SYMBOL_SOURCES.length + 2);
+  const pending = useRef(SYMBOL_SOURCES.length);
   const notified = useRef(false);
   const onWarmedRef = useRef(onImagesWarmed);
   onWarmedRef.current = onImagesWarmed;
@@ -53,10 +62,11 @@ function ZeusOnYuklemeInner({ progress, onImagesWarmed }: Props) {
   }, [pulse]);
 
   useEffect(() => {
-    if (zeusVisualsCached()) notify();
-    const t = setTimeout(notify, WARM_TIMEOUT_MS);
+    notified.current = false;
+    pending.current = SYMBOL_SOURCES.length;
+    const t = setTimeout(notify, WARM_FALLBACK_MS);
     return () => clearTimeout(t);
-  }, [notify]);
+  }, [failed, notify]);
 
   const onWarmLoad = useCallback(() => {
     pending.current -= 1;
@@ -69,6 +79,25 @@ function ZeusOnYuklemeInner({ progress, onImagesWarmed }: Props) {
 
   const pct = Math.min(100, Math.max(0, Math.round(progress)));
 
+  if (failed) {
+    return (
+      <View style={styles.root}>
+        <LinearGradient
+          colors={['#070B18', '#2A1258', '#070B18']}
+          style={StyleSheet.absoluteFill}
+        />
+        <Text style={styles.logo}>{GAME_DISPLAY_NAME}</Text>
+        <Text style={styles.failTitle}>{t('zeusX.yuklemeBasarisiz')}</Text>
+        <Text style={styles.failBody}>{t('zeusX.yuklemeBasarisizAlt')}</Text>
+        {onRetry ? (
+          <Pressable style={styles.retry} onPress={onRetry}>
+            <Text style={styles.retryYazi}>{t('ortak.tekrarDene')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.root}>
       <LinearGradient
@@ -80,13 +109,11 @@ function ZeusOnYuklemeInner({ progress, onImagesWarmed }: Props) {
           source={CharacterImages.zeusIdle}
           style={styles.avatarImg}
           resizeMode="contain"
-          resizeMethod="resize"
           fadeDuration={0}
-          onLoad={onWarmLoad}
         />
       </Animated.View>
       <Text style={styles.logo}>{GAME_DISPLAY_NAME}</Text>
-      <Text style={styles.subtitle}>{GAME_SUBTITLE.toUpperCase()}</Text>
+      <Text style={styles.subtitle}>{t('zeusX.hazirlaniyor')}</Text>
       <View style={styles.barTrack}>
         <View style={[styles.barFill, { width: `${pct}%` }]} />
       </View>
@@ -98,19 +125,11 @@ function ZeusOnYuklemeInner({ progress, onImagesWarmed }: Props) {
             source={src}
             style={styles.warmImg}
             resizeMode="contain"
-            resizeMethod="resize"
             fadeDuration={0}
             onLoad={onWarmLoad}
+            onError={onWarmLoad}
           />
         ))}
-        <Image
-          source={UiImages.spinButton}
-          style={styles.warmImg}
-          resizeMode="contain"
-          resizeMethod="resize"
-          fadeDuration={0}
-          onLoad={onWarmLoad}
-        />
       </View>
     </View>
   );
@@ -124,6 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    paddingHorizontal: 24,
   },
   avatarWrap: { width: AVATAR, height: AVATAR * 1.25 },
   avatarImg: { width: AVATAR, height: AVATAR * 1.25 },
@@ -136,8 +156,32 @@ const styles = StyleSheet.create({
   subtitle: {
     color: 'rgba(232,197,71,0.75)',
     fontSize: TipografiTokenlari.caption.fontSize,
-    letterSpacing: 2,
+    letterSpacing: 1.2,
     fontWeight: '700',
+  },
+  failTitle: {
+    color: '#FFB3D4',
+    fontWeight: '800',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  failBody: {
+    color: 'rgba(232,224,212,0.75)',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  retry: {
+    marginTop: 12,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: '#E8C547',
+  },
+  retryYazi: {
+    color: '#12040C',
+    fontWeight: '900',
+    fontSize: 14,
   },
   barTrack: {
     width: 180,

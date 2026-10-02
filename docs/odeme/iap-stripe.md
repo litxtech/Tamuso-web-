@@ -17,6 +17,8 @@ MUTA PAY **coin takası** mağaza dışı “satın al → nakde çevir” deği
 - Ödemeler ilk tamamlanan anlaşmadan itibaren ayın **01–15** ve **15–31** pencerelerinde yapılır.
 - Elmas çekimi (host kazancı) bu modelden ayrıdır.
 
+Rakip cent/dolar bandı + kilitli katalog oranları: [`coin-ekonomi-benchmark.md`](./coin-ekonomi-benchmark.md).
+
 ## App Store Connect ürünleri (Consumable)
 Bundle: `com.litxtech.muta`
 
@@ -44,8 +46,9 @@ update public.feature_flags set enabled = true where key in ('iap_enabled');
 ## Edge secrets
 ```
 IAP_SKIP_VERIFY=1          # sandbox; prod'da kaldir + Apple/Google verify ekle
-STRIPE_SECRET_KEY=sk_test_...
+STRIPE_SECRET_KEY=sk_live_...   # Dashboard → Edge Functions → Secrets (asla mobil .env)
 STRIPE_WEBHOOK_SECRET=whsec_...
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...  # yalnız publishable; Payment Sheet için
 ```
 
 Deploy:
@@ -59,7 +62,15 @@ Stripe webhook URL:
 `https://vdkqrqtrftzhbtquzked.supabase.co/functions/v1/stripe-webhook`
 Event: `checkout.session.completed`
 
+## AI müzik dakikası
+- iOS/Android: App Store / Play IAP → `ai-music-iap-verify` → anında dakika
+- Web / IAP yok + `stripe_enabled`: Stripe Checkout → webhook → `ai_music_stripe_satin_al_onayla`
+- Satın alma geçmişi: Ayarlar → `satin_alma_gecmisim` (coin + AI müzik)
+
 ## Mobil
 - `expo-iap` plugin (`app.config.ts`)
+- `@stripe/stripe-react-native` — uygulama içi PaymentSheet (alttan kart; yeni native build gerekir)
+- Yedek: `StripeCheckoutWebSheet` — Checkout URL uygulama içi WebView bottom sheet (harici tarayıcı yok)
 - Cüzdan → `CoinPaketiSatinAl`
-- Development build gerekir (Expo Go IAP yok)
+- AI Müzik → `AiMuzikPaketSatinAl` + alttan sheet
+- Development build gerekir (Expo Go IAP / Stripe native yok)

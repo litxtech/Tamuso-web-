@@ -24,5 +24,4 @@ export const TAKAS_ODEME_BILGISI = () => TakasOdemeBilgisi();
 /** @deprecated Prefer TakasIadeUyari() */
 export const TAKAS_IADE_UYARISI = () => TakasIadeUyari();
 
-export const TAKAS_DIL_NOTU =
-  'Gösterilen tutarlar uygulama içi sanal öğe katalog özetidir; gerçek para ödemesi değildir.';
+export const TAKAS_DIL_NOTU = () => i18n.t('takas.dilNotu');

@@ -34,6 +34,8 @@ export type Profile = {
   /** Tek seferlik çocuk koruma kartı: approved | declined */
   child_protection_consent_status?: 'approved' | 'declined' | null;
   child_protection_consent_at?: string | null;
+  /** Kullanıcının seçtiği dinamik ünvan (görünen id sunucuda çözülür) */
+  selected_title_id?: string | null;
 };
 
 export type Wallet = {

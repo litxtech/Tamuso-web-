@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import {
   GirisLobisiOnbellegeYaz,
   GirisLobisiOnbellekDisktenYukle,
@@ -13,6 +14,7 @@ import {
 
 function ayarNormalize(raw: unknown): GirisLobisiAyar {
   const a = (raw ?? {}) as Partial<GirisLobisiAyar>;
+  const giris = i18n.t('lobi.formBaslik');
   return {
     logo_goster: Boolean(a.logo_goster),
     logo_url: a.logo_url ?? null,
@@ -21,9 +23,11 @@ function ayarNormalize(raw: unknown): GirisLobisiAyar {
     marka_adi: a.marka_adi ?? null,
     slogan_goster: Boolean(a.slogan_goster),
     slogan: a.slogan ?? null,
-    form_baslik: (a.form_baslik ?? 'Giriş').trim() || 'Giriş',
+    form_baslik: (a.form_baslik ?? giris).trim() || giris,
     form_alt: a.form_alt ?? null,
     ust_metin: a.ust_metin ?? null,
+    sosyal_medya_gizle: Boolean(a.sosyal_medya_gizle),
+    tum_butonlar_gizle: Boolean(a.tum_butonlar_gizle),
     updated_at: a.updated_at,
   };
 }

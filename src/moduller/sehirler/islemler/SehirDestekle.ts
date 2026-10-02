@@ -1,12 +1,13 @@
 import { supabase } from '../../../lib/supabase';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
+import i18n from '../../../i18n';
 
 export async function SehirDestekle(input: {
   cityId: string;
   isPrimary?: boolean;
 }): Promise<{ ok: boolean; hata?: string }> {
   if (!(await OzellikBayragiAktifMiSunucu('city_league_enabled'))) {
-    return { ok: false, hata: 'city_league_enabled bayrağı kapalı.' };
+    return { ok: false, hata: i18n.t('sehir.alertLigKapali') };
   }
   const { error } = await supabase.rpc('sehir_destekle', {
     p_city_id: input.cityId,

@@ -19,7 +19,7 @@ export type ProfilKonumKatalogu = {
   regions: ProfilBolge[];
 };
 
-/** DB: sadece profile_enabled ulke/bolgeler (simdi TR + 81 il) */
+/** DB: aktif ülkeler + profile_enabled bölgeler (TR illeri vb.) */
 export async function ProfilKonumKatalogunuGetir(): Promise<ProfilKonumKatalogu> {
   const { data, error } = await supabase.rpc('profil_konum_katalogu');
   if (error) throw error;

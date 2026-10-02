@@ -1,0 +1,16 @@
+{
+  "cihazlar": {
+    "altBaslik": "Sign out of one device or all of them",
+    "oturumlar": "Sessions",
+    "migrationHint": "Make sure migration 003 has been run.",
+    "kapatilamadi": "Could not close",
+    "digerCikisYapildi": "Signed out of other devices.",
+    "islemBasarisiz": "Operation failed",
+    "kayitliCihazYok": "No devices yet",
+    "kayitliCihazYokBody": "Devices you sign in on are listed here.",
+    "tumCihazlardanCikis": "Sign out of all other devices",
+    "cihaz": "Device",
+    "buCihaz": "This device",
+    "cikis": "Sign out"
+  }
+}

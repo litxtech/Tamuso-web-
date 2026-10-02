@@ -30,6 +30,7 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { SesOdasinaGit } from '../../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
 
 export default function RoomsScreen() {
   const { t } = useCeviri();
@@ -80,7 +81,7 @@ export default function RoomsScreen() {
   );
 
   const odaAc = useCallback((oda: Room) => {
-    router.push(`/lobi/${oda.id}` as any);
+    void SesOdasinaGit({ roomId: oda.id, room: oda });
   }, []);
 
   const renderItem = useCallback(
@@ -98,7 +99,7 @@ export default function RoomsScreen() {
 
   const listeBaslik = useMemo(
     () =>
-      rooms.length > 0 ? (
+      rooms.length > 0 && filtre !== 'all' ? (
         <View style={styles.listeBaslik}>
           <View style={styles.accent} />
           <Text style={styles.listeBaslikYazi}>

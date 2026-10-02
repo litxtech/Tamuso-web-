@@ -62,9 +62,9 @@ import { useAktifSesOdasi } from '../../src/moduller/ses-odalari/oturum/useAktif
 import { KullaniciAktifOdasiniGetir, type KullaniciAktifOda } from '../../src/moduller/ses-odalari/okuma/KullaniciAktifOdasiniGetir';
 import { ProfilSesOdasiButonu } from '../../src/moduller/ses-odalari/bilesenler/ProfilSesOdasiButonu';
 import {
-  HESAP_SILINDI_ADI,
   ProfilSilinmisMi,
 } from '../../src/moduller/kullanici-profili/yardimcilar/ProfilSilinmis';
+import { useCeviri } from '../../src/i18n/useCeviri';
 
 function formatSayi(n: number) {
   const v = Number(n);
@@ -103,6 +103,7 @@ const EMPTY_PRIVACY: GizlilikAyarlari = {
 };
 
 export default function KullaniciProfilEkrani() {
+  const { t } = useCeviri();
   const { id: idHam } = useLocalSearchParams<{ id: string }>();
   const id = paramId(idHam);
   const insets = useSafeAreaInsets();
@@ -193,10 +194,10 @@ export default function KullaniciProfilEkrani() {
   const kendi = !!id && user?.id === id;
   const silinmis = ProfilSilinmisMi(profil);
   const ad = silinmis
-    ? HESAP_SILINDI_ADI
+    ? t('profil.hesapSilindi')
     : profil?.display_name?.trim() ||
       profil?.username?.trim() ||
-      'Kullanıcı';
+      t('ortak.kullanici');
   const coverUri = silinmis ? null : MedyaUriGuvenli(profil?.cover_url);
   const avatarUri = silinmis ? null : MedyaUriGuvenli(profil?.avatar_url);
 
@@ -220,16 +221,16 @@ export default function KullaniciProfilEkrani() {
 
   const durumSil = (oge: DurumOggesi) => {
     if (!oge.is_mine) return;
-    Alert.alert('Durumu kaldır', 'Bu paylaşım profilinden ve durumdan silinsin mi?', [
-      { text: 'Vazgeç', style: 'cancel' },
+    Alert.alert(t('durum.durumuSil'), t('durum.profilKaldirSoru'), [
+      { text: t('ortak.vazgec'), style: 'cancel' },
       {
-        text: 'Kaldır',
+        text: t('ortak.kaldir'),
         style: 'destructive',
         onPress: () => {
           void (async () => {
             const r = await DurumSil(oge.id);
             if (!r.ok) {
-              Alert.alert('Sil', r.hata ?? 'Kaldırılamadı');
+              Alert.alert(t('ortak.sil'), r.hata ?? t('durum.silinemedi'));
               return;
             }
             setDurumlar((prev) => prev.filter((x) => x.id !== oge.id));
@@ -247,25 +248,25 @@ export default function KullaniciProfilEkrani() {
       onPress?: () => void;
     }[] = [
       {
-        text: 'Görüntüle',
+        text: t('ortak.goruntule'),
         onPress: () => router.push(`/durum/${oge.id}` as any),
       },
     ];
     if (oge.post_kind !== 'game_win') {
       buttons.push({
-        text: 'Düzenle',
+        text: t('ortak.duzenle'),
         onPress: () => router.push(`/durum/duzenle?id=${oge.id}` as any),
       });
     }
     buttons.push(
       {
-        text: 'Kaldır',
+        text: t('ortak.kaldir'),
         style: 'destructive',
         onPress: () => durumSil(oge),
       },
-      { text: 'Vazgeç', style: 'cancel' },
+      { text: t('ortak.vazgec'), style: 'cancel' },
     );
-    Alert.alert('Gönderi', undefined, buttons);
+    Alert.alert(t('durum.gonderi'), undefined, buttons);
   };
 
   const mesajAc = async () => {
@@ -290,7 +291,7 @@ export default function KullaniciProfilEkrani() {
                 style={[profilXOverlayBtnStyle, styles.backBtn, { top: overlayTop }]}
                 onPress={() => guvenliGeriDon()}
                 hitSlop={8}
-                accessibilityLabel="Geri"
+                accessibilityLabel={t('ortak.geri')}
               >
                 <Ionicons name="chevron-back" size={22} color={RenkTokenlari.text} />
               </Pressable>
@@ -301,7 +302,7 @@ export default function KullaniciProfilEkrani() {
                 />
               ) : (
                 <Text style={[styles.bos, { marginTop: overlayTop + 80 }]}>
-                  Profil bulunamadı
+                  {t('profil.bulunamadi')}
                 </Text>
               )}
             </View>
@@ -311,7 +312,7 @@ export default function KullaniciProfilEkrani() {
                 style={[profilXOverlayBtnStyle, styles.backBtn, { top: overlayTop }]}
                 onPress={() => guvenliGeriDon()}
                 hitSlop={8}
-                accessibilityLabel="Geri"
+                accessibilityLabel={t('ortak.geri')}
               >
                 <Ionicons name="chevron-back" size={22} color={RenkTokenlari.text} />
               </Pressable>
@@ -323,9 +324,9 @@ export default function KullaniciProfilEkrani() {
                     color={RenkTokenlari.textMuted}
                   />
                 </View>
-                <Text style={styles.ad}>{HESAP_SILINDI_ADI}</Text>
+                <Text style={styles.ad}>{t('profil.hesapSilindi')}</Text>
                 <Text style={styles.tombstoneAlt}>
-                  Bu hesap kapatıldı. Gönderiler ve içerikler kaldırıldı.
+                  {t('profil.hesapKapatildiAlt')}
                 </Text>
               </View>
             </View>
@@ -346,6 +347,9 @@ export default function KullaniciProfilEkrani() {
                 username={profil.username}
                 bio={profil.bio?.trim() || null}
                 verified={!!profil.is_verified}
+                titleId={
+                  gosterPrestige ? profil.selected_title_id ?? null : null
+                }
                 createdAt={profil.created_at}
                 country={profil.country}
                 publicUserId={profil.public_user_id}
@@ -377,7 +381,7 @@ export default function KullaniciProfilEkrani() {
                     style={profilXOverlayBtnStyle}
                     onPress={() => guvenliGeriDon()}
                     hitSlop={8}
-                    accessibilityLabel="Geri"
+                    accessibilityLabel={t('ortak.geri')}
                   >
                     <Ionicons
                       name="chevron-back"
@@ -391,7 +395,7 @@ export default function KullaniciProfilEkrani() {
                     <Pressable
                       style={profilXOverlayBtnStyle}
                       onPress={() => setGuvenlikAcik(true)}
-                      accessibilityLabel="Engelle veya bildir"
+                      accessibilityLabel={t('mesajSohbet.engelleBildir')}
                       hitSlop={10}
                     >
                       <Ionicons
@@ -408,9 +412,9 @@ export default function KullaniciProfilEkrani() {
                       style={styles.duzenleBtn}
                       onPress={() => router.push('/profil-duzenle' as any)}
                       accessibilityRole="button"
-                      accessibilityLabel="Profili düzenle"
+                      accessibilityLabel={t('profil.duzenle')}
                     >
-                      <Text style={styles.duzenleYazi}>Profili düzenle</Text>
+                      <Text style={styles.duzenleYazi}>{t('profil.duzenle')}</Text>
                     </Pressable>
                   ) : id ? (
                     <ProfilSosyalAlani
@@ -488,7 +492,7 @@ export default function KullaniciProfilEkrani() {
                 <View style={styles.metrics}>
                   {gosterSeviye ? (
                     <Metric
-                      label="Seviye"
+                      label={t('profil.seviye')}
                       value={String(profil.level ?? 1)}
                       icon="trophy-outline"
                       tint={RenkTokenlari.violet}
@@ -496,7 +500,7 @@ export default function KullaniciProfilEkrani() {
                   ) : null}
                   {gosterSeviye ? (
                     <Metric
-                      label="Tecrübe"
+                      label={t('profil.tecrube')}
                       value={formatSayi(profil.xp ?? 0)}
                       icon="flash-outline"
                       tint={RenkTokenlari.accent}
@@ -504,21 +508,21 @@ export default function KullaniciProfilEkrani() {
                   ) : null}
                   {gosterTopup ? (
                     <Metric
-                      label="Yüklenen"
+                      label={t('profil.yuklenen')}
                       value={formatSayi(stats?.total_topup_coin ?? 0)}
                       icon="diamond-outline"
                       tint={RenkTokenlari.accent}
                     />
                   ) : null}
                   <Metric
-                    label="Alınan"
+                    label={t('profil.alinan')}
                     value={String(stats?.total_gifts_received ?? 0)}
                     icon="gift-outline"
                     tint={RenkTokenlari.mint}
                   />
                   {!gosterSeviye && !gosterTopup ? (
                     <Metric
-                      label="Gönderilen"
+                      label={t('profil.gonderilen')}
                       value={String(stats?.total_gifts_sent ?? 0)}
                       icon="heart-outline"
                       tint={RenkTokenlari.danger}
@@ -558,7 +562,7 @@ export default function KullaniciProfilEkrani() {
                         style={styles.hediyeIc}
                       >
                         <Ionicons name="gift" size={18} color="#fff" />
-                        <Text style={styles.hediyeYazi}>Hediye gönder</Text>
+                        <Text style={styles.hediyeYazi}>{t('hediye.gonderBaslik')}</Text>
                       </LinearGradient>
                     </Pressable>
                   </View>
@@ -578,12 +582,12 @@ export default function KullaniciProfilEkrani() {
                       yukleniyor={durumYukleniyor}
                       baslikGizle
                       yatayPadding={false}
-                      bosMetin="Bu kullanıcının henüz paylaşımı yok."
+                      bosMetin={t('profil.paylasimYokKullanici')}
                       onPress={(oge) => router.push(`/durum/${oge.id}` as any)}
                       onUzunBas={kendi ? durumMenu : undefined}
                     />
                   ) : (
-                    <Text style={styles.gizliMetin}>Gönderiler gizli</Text>
+                    <Text style={styles.gizliMetin}>{t('profil.gonderilerGizli')}</Text>
                   )}
                 </ModulHataSiniri>
               </View>

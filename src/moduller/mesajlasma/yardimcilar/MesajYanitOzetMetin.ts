@@ -21,6 +21,10 @@ export function MesajYanitOzetMetin(
       return t('mesajV2.video');
     case 'shared_post':
       return t('mesajV2.sharedPost');
+    case 'agency_package_offer':
+      return t('cuzdanX.ajansTeklifKart');
+    case 'agency_package_receipt':
+      return t('cuzdanX.ajansFisBaslik');
     default:
       break;
   }

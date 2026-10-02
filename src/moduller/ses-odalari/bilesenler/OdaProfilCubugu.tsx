@@ -3,17 +3,9 @@
  * Tıklanınca profil kartı sheet’i açılır.
  */
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { ProfilAvatarKucuk } from '../../canli-sohbet/bilesenler/ProfilAvatarKucuk';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -54,22 +46,6 @@ function OdaProfilCubuguInner({
         : t('sesOda.seviyeN', { n: seviye })
       : handle ?? t('sesOda.odaSahibi'));
 
-  const isilti = useSharedValue(0);
-  useEffect(() => {
-    isilti.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.35, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-      false,
-    );
-  }, [isilti]);
-
-  const parlama = useAnimatedStyle(() => ({
-    opacity: 0.25 + isilti.value * 0.55,
-  }));
-
   return (
     <Pressable
       onPress={onPress}
@@ -85,7 +61,7 @@ function OdaProfilCubuguInner({
         style={styles.cerceve}
       >
         <View style={styles.ic}>
-          <Animated.View style={[styles.parlama, parlama]} pointerEvents="none" />
+          <View style={styles.parlama} pointerEvents="none" />
           <View style={styles.avatarRing}>
             <ProfilAvatarKucuk
               size={28}

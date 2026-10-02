@@ -14,11 +14,16 @@ import {
   AjansPanelDetayGetir,
   type AjansHostBasvuru,
 } from '../../../src/moduller/ajanslar/islemler/AjansPanelIslemleri';
+import { AjansHostBasvuruDurum } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../src/i18n/diller';
 
 export default function AjansBasvurularEkrani() {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const id = useAjansRouteId();
   const [liste, setListe] = useState<AjansHostBasvuru[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -46,8 +51,8 @@ export default function AjansBasvurularEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Başvurular"
-      subtitle={`${liste.length} bekleyen`}
+      title={t('ajans.basvurular')}
+      subtitle={t('ajans.bekleyenAlt', { count: liste.length })}
       aktif="basvurular"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
@@ -55,13 +60,17 @@ export default function AjansBasvurularEkrani() {
     >
       <AjansKart accent={liste.length > 0}>
         {liste.length === 0 ? (
-          <AjansHint>Bekleyen başvuru yok</AjansHint>
+          <AjansHint>{t('ajans.bekleyenBasvuruYok')}</AjansHint>
         ) : (
           liste.map((b) => (
             <View key={b.id} style={styles.blok}>
               <AjansListeSatir
-                title={b.display_name || b.username || 'Başvuru'}
-                subtitle={`@${b.username || '—'} · ${new Date(b.created_at).toLocaleString('tr-TR')}\nDurum: ${b.status}`}
+                title={b.display_name || b.username || t('ajans.basvuruVarsayilan')}
+                subtitle={t('ajans.basvuruSatir', {
+                  user: b.username || '—',
+                  zaman: new Date(b.created_at).toLocaleString(locale),
+                  status: AjansHostBasvuruDurum(String(b.status), t),
+                })}
                 avatarUrl={b.avatar_url}
               />
               <View style={styles.aksiyon}>
@@ -73,12 +82,12 @@ export default function AjansBasvurularEkrani() {
                       setBusy(true);
                       const r = await AjansHostBasvurusunuOnayla(b.id);
                       setBusy(false);
-                      if (!r.ok) Alert.alert('Başvuru', r.hata);
+                      if (!r.ok) Alert.alert(t('ajans.alertBasvuru'), r.hata);
                       else await yukle();
                     })();
                   }}
                 >
-                  <Text style={styles.onayYazi}>Kabul</Text>
+                  <Text style={styles.onayYazi}>{t('ajans.kabul')}</Text>
                 </Pressable>
                 <Pressable
                   style={styles.red}
@@ -88,12 +97,12 @@ export default function AjansBasvurularEkrani() {
                       setBusy(true);
                       const r = await AjansHostBasvurusunuReddet(b.id);
                       setBusy(false);
-                      if (!r.ok) Alert.alert('Başvuru', r.hata);
+                      if (!r.ok) Alert.alert(t('ajans.alertBasvuru'), r.hata);
                       else await yukle();
                     })();
                   }}
                 >
-                  <Text style={styles.redYazi}>Reddet</Text>
+                  <Text style={styles.redYazi}>{t('ortak.reddet')}</Text>
                 </Pressable>
               </View>
             </View>

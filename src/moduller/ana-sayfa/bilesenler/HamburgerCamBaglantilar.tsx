@@ -21,7 +21,7 @@ export type HamburgerAjansOzeti = {
   id: string;
   name: string;
   logoUrl: string | null;
-  role: 'owner' | 'member';
+  role: 'owner' | 'manager' | 'member';
 };
 
 type Props = {
@@ -143,7 +143,7 @@ export function HamburgerCamBaglantilar({
           const metin = (
             <View style={styles.metin}>
               <Text style={[styles.etiket, metinRtl]} numberOfLines={1}>
-                {ajans.role === 'owner' ? t('ajans.ajansim') : t('anaSayfa.ajansEtiket')}
+                {ajans.role === 'member' ? t('anaSayfa.ajansEtiket') : t('ajans.ajansim')}
               </Text>
               <Text style={[styles.ad, metinRtl]} numberOfLines={1}>
                 {ajans.name.trim() || t('anaSayfa.ajansEtiket')}
@@ -220,7 +220,7 @@ export function useHamburgerCamBaglantilar(aktif: boolean): {
           const a = uyelik.agency;
           const rol = uyelik.role;
           setAjans(
-            a && (rol === 'owner' || rol === 'member')
+            a && (rol === 'owner' || rol === 'manager' || rol === 'member')
               ? {
                   id: a.id,
                   name: a.name,

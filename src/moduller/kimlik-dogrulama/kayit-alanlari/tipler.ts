@@ -1,3 +1,5 @@
+import i18n from '../../../i18n';
+
 export type KayitAlanModu = 'required' | 'optional' | 'hidden';
 
 export type YerlesikKayitAlani =
@@ -27,16 +29,51 @@ export type KayitAlanAyarlari = {
   updated_at?: string;
 };
 
+const YERLESIK_ETIKET_ANAHTAR: Record<
+  YerlesikKayitAlani,
+  | 'kayitAlan.phone'
+  | 'kayitAlan.gender'
+  | 'kayitAlan.birth_date'
+  | 'kayitAlan.email'
+  | 'kayitAlan.avatar'
+> = {
+  phone: 'kayitAlan.phone',
+  gender: 'kayitAlan.gender',
+  birth_date: 'kayitAlan.birth_date',
+  email: 'kayitAlan.email',
+  avatar: 'kayitAlan.avatar',
+};
+
+/** Canlı dilde yerleşik alan etiketleri */
+export function YerlesikKayitAlanEtiketi(alan: YerlesikKayitAlani): string {
+  return i18n.t(YERLESIK_ETIKET_ANAHTAR[alan]);
+}
+
+/** @deprecated Prefer YerlesikKayitAlanEtiketi() for live locale */
 export const YERLESIK_KAYIT_ALAN_ETIKETLERI: Record<
   YerlesikKayitAlani,
   string
-> = {
-  phone: 'Telefon',
-  gender: 'Cinsiyet',
-  birth_date: 'Doğum tarihi',
-  email: 'E-posta',
-  avatar: 'Profil fotoğrafı',
-};
+> = new Proxy({} as Record<YerlesikKayitAlani, string>, {
+  get(_t, prop: string) {
+    if (prop in YERLESIK_ETIKET_ANAHTAR) {
+      return YerlesikKayitAlanEtiketi(prop as YerlesikKayitAlani);
+    }
+    return undefined;
+  },
+  ownKeys() {
+    return Object.keys(YERLESIK_ETIKET_ANAHTAR);
+  },
+  getOwnPropertyDescriptor(_t, prop) {
+    if (prop in YERLESIK_ETIKET_ANAHTAR) {
+      return {
+        enumerable: true,
+        configurable: true,
+        value: YerlesikKayitAlanEtiketi(prop as YerlesikKayitAlani),
+      };
+    }
+    return undefined;
+  },
+});
 
 export const VARSAYILAN_KAYIT_ALANLARI: Record<
   YerlesikKayitAlani,
@@ -55,9 +92,9 @@ export const VARSAYILAN_KAYIT_ALAN_AYARLARI: KayitAlanAyarlari = {
 };
 
 export function KayitAlanModuEtiketi(mod: KayitAlanModu): string {
-  if (mod === 'required') return 'Zorunlu';
-  if (mod === 'hidden') return 'Gizli';
-  return 'İsteğe bağlı';
+  if (mod === 'required') return i18n.t('kayitAlan.zorunlu');
+  if (mod === 'hidden') return i18n.t('kayitAlan.gizli');
+  return i18n.t('kayitAlan.istegeBagli');
 }
 
 export function AlanGorunurMu(mod: KayitAlanModu): boolean {

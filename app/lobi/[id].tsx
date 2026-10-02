@@ -24,16 +24,6 @@ import {
   LobidenAyril,
   LobiyeKatil,
 } from '../../src/moduller/oda-lobisi/islemler/LobiKatilimIslemleri';
-import {
-  OdaToplulukOnayiVarMi,
-  OdaToplulukOnayiniKaydet,
-} from '../../src/moduller/oda-lobisi/depolama/OdaToplulukOnayi';
-import { PolitikaOkumaPaneli } from '../../src/moduller/politikalar/bilesenler/PolitikaOkumaPaneli';
-import {
-  POLITIKA_LISTESI,
-  POLITIKA_METINLERI,
-  type PolitikaTanimi,
-} from '../../src/moduller/politikalar/icerik/PolitikaMetinleri';
 import { ProfilAvatarKucuk } from '../../src/moduller/canli-sohbet/bilesenler/ProfilAvatarKucuk';
 import { CamArkaplan } from '../../src/bilesenler/yuzey/CamArkaplan';
 import { joinRoom } from '../../src/services/api';
@@ -45,6 +35,8 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { OdaCikisKilidiAktifMi } from '../../src/moduller/ses-odalari/navigasyon/OdaCikisKilidi';
+import { YeniOdaOnbellegeYaz } from '../../src/moduller/ses-odalari/onbellek/YeniOdaOnbellek';
+import { useCeviri } from '../../src/i18n/useCeviri';
 
 type LobiKisi = {
   user_id: string;
@@ -58,10 +50,11 @@ type LobiKisi = {
 };
 
 /**
- * Oda lobisi — ses odasına girmeden önce politika / onay bekletme.
+ * Oda lobisi — sözleşme onayı yok; giriş doğrudan odaya gider.
  * Ambient video giriş (auth) lobisinde; burada değil.
  */
 export default function OdaLobisiEkrani() {
+  const { t } = useCeviri();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -69,8 +62,6 @@ export default function OdaLobisiEkrani() {
   const [kisiler, setKisiler] = useState<LobiKisi[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [giriyor, setGiriyor] = useState(false);
-  const [hatirlatmaOk, setHatirlatmaOk] = useState(false);
-  const [okunan, setOkunan] = useState<PolitikaTanimi | null>(null);
   const ayrildi = useRef(false);
   const giriyorRef = useRef(false);
   /** Modal altinda lobi kalirsa focus'ta tekrar odaya sokulmasin */
@@ -90,47 +81,51 @@ export default function OdaLobisiEkrani() {
             audience_capacity: hedef.audience_capacity,
           });
           if (!kapasite.ok) {
-            Alert.alert('Dolu', kapasite.hata);
+            Alert.alert(t('lobi.alertDolu'), kapasite.hata);
             return false;
           }
         }
       }
-      await OdaToplulukOnayiniKaydet();
+      // Hemen odaya geç — join / lobi çıkışı room ekranında ve arka planda
       ayrildi.current = true;
-      await LobidenAyril(id);
-      await joinRoom(hedef.id, user.id, hostMu ? 'host' : 'listener');
+      void LobidenAyril(id);
+      void joinRoom(hedef.id, user.id, hostMu ? 'host' : 'listener').catch(
+        () => undefined,
+      );
+      YeniOdaOnbellegeYaz(hedef, []);
       router.replace(`/room/${hedef.id}` as any);
       return true;
     } catch (e) {
-      Alert.alert('Giriş', e instanceof Error ? e.message : 'Hata');
+      Alert.alert(
+        t('lobi.alertGiris'),
+        e instanceof Error ? e.message : t('ortak.hata'),
+      );
       return false;
     } finally {
       giriyorRef.current = false;
       setGiriyor(false);
     }
-  }, [id, user]);
+  }, [id, user, t]);
 
   const yukle = useCallback(async () => {
     if (!id) return;
     setYukleniyor(true);
     try {
       if (!user) {
-        Alert.alert('Giriş', 'Oturum gerekli');
+        Alert.alert(t('lobi.alertGiris'), t('lobi.oturumGerekli'));
         router.replace('/(auth)/login' as any);
         return;
       }
       const yetki = await OdaGirisYetkisiniKontrolEt(id);
       if (!yetki.ok || !yetki.oda) {
-        Alert.alert('Oda', yetki.hata ?? 'Oda yok');
+        Alert.alert(t('lobi.alertOda'), yetki.hata ?? t('lobi.odaYok'));
         router.replace('/(tabs)' as any);
         return;
       }
       setOda(yetki.oda);
-      const onayli = await OdaToplulukOnayiVarMi();
-      setHatirlatmaOk(onayli);
 
-      // İlk açılışta onaylıysa doğrudan gir; odadan dönüşte tekrar sokma
-      if (onayli && !otomatikGirisYapildi.current) {
+      // Sözleşme onayı yok — doğrudan gir; odadan dönüşte tekrar sokma
+      if (!otomatikGirisYapildi.current) {
         otomatikGirisYapildi.current = true;
         const gecti = await odayaDogruGec(yetki.oda);
         if (gecti) return;
@@ -141,11 +136,14 @@ export default function OdaLobisiEkrani() {
       const liste = await LobiKatilimcilariniGetir(id);
       setKisiler(liste);
     } catch (e) {
-      Alert.alert('Lobi', e instanceof Error ? e.message : 'Yüklenemedi');
+      Alert.alert(
+        t('lobi.alertLobi'),
+        e instanceof Error ? e.message : t('ajans.yuklenemedi'),
+      );
     } finally {
       setYukleniyor(false);
     }
-  }, [id, user, odayaDogruGec]);
+  }, [id, user, odayaDogruGec, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -175,25 +173,10 @@ export default function OdaLobisiEkrani() {
 
   const odayaGir = async () => {
     if (!id || !user || !oda || giriyor) return;
-    if (!hatirlatmaOk) {
-      Alert.alert(
-        'Topluluk kuralları',
-        '18+ platform. Çocuk koruma ihlallerinde af yoktur; hesaplar kalıcı kapatılır.',
-      );
-      return;
-    }
     await odayaDogruGec(oda);
   };
 
-  const onayToggle = () => {
-    setHatirlatmaOk((v) => {
-      const next = !v;
-      if (next) void OdaToplulukOnayiniKaydet();
-      return next;
-    });
-  };
-
-  // Onaylı kullanıcıda / yüklemede onay paneli flaş etmesin
+  // Yüklemede lobi flaş etmesin
   const onayEkraniGoster = !yukleniyor && !giriyor;
 
   return (
@@ -206,10 +189,7 @@ export default function OdaLobisiEkrani() {
         />
 
         {!onayEkraniGoster ? (
-          <View style={[styles.bekler, { paddingTop: insets.top }]}>
-            <ActivityIndicator color={RenkTokenlari.primary} size="large" />
-            <Text style={styles.beklerYazi}>Ses odasına giriliyor…</Text>
-          </View>
+          <View style={[styles.bekler, { paddingTop: insets.top }]} />
         ) : (
           <>
             <View style={[styles.ust, { paddingTop: insets.top + 6 }]}>
@@ -230,32 +210,22 @@ export default function OdaLobisiEkrani() {
                 />
                 <View style={styles.hostCopy}>
                   <Text style={styles.odaAd} numberOfLines={1}>
-                    {oda?.title ?? 'Lobi'}
+                    {oda?.title ?? t('lobi.baslik')}
                   </Text>
                   <Text style={styles.hostAd} numberOfLines={1}>
                     {oda?.host?.display_name ??
                       (oda?.host?.username
                         ? `@${oda.host.username}`
-                        : 'Ev sahibi')}
+                        : t('kesfet.evSahibi'))}
                   </Text>
                 </View>
               </View>
-
-              <Pressable
-                onPress={() => setOkunan(POLITIKA_METINLERI.child_safety)}
-                style={[styles.yuvarlak, styles.kalkan]}
-                hitSlop={8}
-              >
-                <Ionicons name="shield-checkmark" size={18} color={RenkTokenlari.text} />
-              </Pressable>
             </View>
 
             <View style={styles.orta} pointerEvents="box-none">
               <View style={styles.ortaKart}>
-                <Text style={styles.ortaBaslik}>Oda lobisi</Text>
-                <Text style={styles.ortaAlt}>
-                  Politikaları kabul et, sonra ses odasına gir
-                </Text>
+                <Text style={styles.ortaBaslik}>{t('lobi.odaLobisi')}</Text>
+                <Text style={styles.ortaAlt}>{t('lobi.odaLobisiAlt')}</Text>
                 <View style={styles.avatarSerit}>
                   {kisiler.slice(0, 6).map((k) => (
                     <View key={k.user_id} style={styles.avatarHalka}>
@@ -270,8 +240,8 @@ export default function OdaLobisiEkrani() {
                 </View>
                 <Text style={styles.ortaYazi}>
                   {kisiler.length === 0
-                    ? 'Lobide henüz kimse yok'
-                    : `${kisiler.length} kişi lobide bekliyor`}
+                    ? t('lobi.bos')
+                    : t('lobi.bekleyen', { count: kisiler.length })}
                 </Text>
               </View>
             </View>
@@ -283,52 +253,6 @@ export default function OdaLobisiEkrani() {
                 fallbackColor={RenkTokenlari.tabBarFallback}
                 pointerEvents="none"
               />
-              <Text style={styles.altBaslik}>Odaya girmeden önce</Text>
-              <Text style={styles.altAlt}>
-                18+ · çocuk korumada af yok, hesap kapatılır
-              </Text>
-
-              <View style={styles.politikaRow}>
-                {POLITIKA_LISTESI.map((p) => (
-                  <Pressable
-                    key={p.kod}
-                    style={[
-                      styles.chip,
-                      p.kod === 'child_safety' && styles.chipDanger,
-                    ]}
-                    onPress={() => setOkunan(p)}
-                  >
-                    <Text
-                      style={[
-                        styles.chipYazi,
-                        p.kod === 'child_safety' && styles.chipYaziDanger,
-                      ]}
-                    >
-                      {p.kod === 'tos'
-                        ? 'Kullanım'
-                        : p.kod === 'privacy'
-                          ? 'Gizlilik'
-                          : 'Çocuk koruma'}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              <Pressable style={styles.onaySatir} onPress={onayToggle}>
-                <Ionicons
-                  name={hatirlatmaOk ? 'checkbox' : 'square-outline'}
-                  size={22}
-                  color={
-                    hatirlatmaOk
-                      ? RenkTokenlari.mint
-                      : 'rgba(255,255,255,0.55)'
-                  }
-                />
-                <Text style={styles.onayYazi}>
-                  Politikaları kabul ediyorum · çocuk korumada af yoktur
-                </Text>
-              </Pressable>
-
               <LinearGradient
                 colors={[...RenkTokenlari.gradientPrimary]}
                 start={{ x: 0, y: 0 }}
@@ -345,17 +269,12 @@ export default function OdaLobisiEkrani() {
                   ) : (
                     <>
                       <Ionicons name="mic" size={20} color={RenkTokenlari.textOnPrimary} />
-                      <Text style={styles.ctaYazi}>Ses odasına gir</Text>
+                      <Text style={styles.ctaYazi}>{t('lobi.sesOdasinaGir')}</Text>
                     </>
                   )}
                 </Pressable>
               </LinearGradient>
             </View>
-
-            <PolitikaOkumaPaneli
-              politika={okunan}
-              onKapat={() => setOkunan(null)}
-            />
           </>
         )}
       </ModulHataSiniri>
@@ -369,12 +288,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
-  },
-  beklerYazi: {
-    ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textMuted,
-    fontWeight: '600',
   },
   ust: {
     flexDirection: 'row',
@@ -391,7 +304,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: RenkTokenlari.chipFill,
   },
-  kalkan: { backgroundColor: 'rgba(232,75,106,0.45)' },
   hostKart: {
     flex: 1,
     flexDirection: 'row',
@@ -466,49 +378,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
     overflow: 'hidden',
-  },
-  altBaslik: {
-    ...TipografiTokenlari.h2,
-    color: RenkTokenlari.text,
-  },
-  altAlt: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textMuted,
-    marginTop: -4,
-  },
-  politikaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: YaricapTokenlari.pill,
-    backgroundColor: RenkTokenlari.pressFill,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.borderAccent,
-  },
-  chipDanger: {
-    backgroundColor: 'rgba(232,75,106,0.22)',
-    borderColor: 'rgba(232,75,106,0.55)',
-  },
-  chipYazi: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.primarySoft,
-    fontWeight: '800',
-  },
-  chipYaziDanger: { color: RenkTokenlari.danger },
-  onaySatir: {
-    flexDirection: 'row',
-    gap: 10,
-    alignItems: 'center',
-  },
-  onayYazi: {
-    ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textMuted,
-    flex: 1,
-    lineHeight: 18,
   },
   ctaGrad: {
     borderRadius: YaricapTokenlari.pill,

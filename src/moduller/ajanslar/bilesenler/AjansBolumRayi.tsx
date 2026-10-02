@@ -12,32 +12,44 @@ import { Ionicons } from '@expo/vector-icons';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
-  BoslukTokenlari,
+  screenPaddingHorizontal,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { ajansHref } from '../kancalar/useAjansRouteId';
+import { useCeviri } from '../../../i18n/useCeviri';
+import type { CeviriAnahtari } from '../../../i18n/useCeviri';
 
-export const AJANS_BOLUMLER: Array<{
+type BolumSabit = {
   key: string;
-  label: string;
+  labelKey: CeviriAnahtari;
   icon: keyof typeof Ionicons.glyphMap;
   path: string;
-}> = [
-  { key: 'ozet', label: 'Genel', icon: 'grid-outline', path: '' },
-  { key: 'canli', label: 'Canlı', icon: 'radio-outline', path: 'canli' },
-  { key: 'uyeler', label: 'Üyeler', icon: 'people-outline', path: 'uyeler' },
-  { key: 'basvurular', label: 'Başvuru', icon: 'mail-outline', path: 'basvurular' },
-  { key: 'davetler', label: 'Davet', icon: 'person-add-outline', path: 'davetler' },
-  { key: 'ekipler', label: 'Ekip', icon: 'git-network-outline', path: 'ekipler' },
-  { key: 'program', label: 'Program', icon: 'calendar-outline', path: 'program' },
-  { key: 'etkinlikler', label: 'Etkinlik', icon: 'sparkles-outline', path: 'etkinlikler' },
-  { key: 'duyurular', label: 'Duyuru', icon: 'megaphone-outline', path: 'duyurular' },
-  { key: 'gorevler', label: 'Görev', icon: 'checkbox-outline', path: 'gorevler' },
-  { key: 'analitik', label: 'Analitik', icon: 'stats-chart-outline', path: 'analitik' },
-  { key: 'islemler', label: 'İşlem', icon: 'wallet-outline', path: 'islemler' },
-  { key: 'destek', label: 'Destek', icon: 'help-buoy-outline', path: 'destek' },
-  { key: 'guvenlik', label: 'Güvenlik', icon: 'shield-checkmark-outline', path: 'guvenlik' },
-  { key: 'ayarlar', label: 'Ayarlar', icon: 'settings-outline', path: 'ayarlar' },
+};
+
+export const AJANS_BOLUMLER: BolumSabit[] = [
+  { key: 'ozet', labelKey: 'ajans.ozetBolum', icon: 'grid-outline', path: '' },
+  { key: 'canli', labelKey: 'ajans.kpiCanli', icon: 'radio-outline', path: 'canli' },
+  { key: 'uyeler', labelKey: 'ajans.uyeler', icon: 'people-outline', path: 'uyeler' },
+  { key: 'basvurular', labelKey: 'ajans.basvuruVarsayilan', icon: 'mail-outline', path: 'basvurular' },
+  { key: 'davetler', labelKey: 'ajans.hizliDavet', icon: 'person-add-outline', path: 'davetler' },
+  { key: 'ekipler', labelKey: 'ajans.rayEkip', icon: 'git-network-outline', path: 'ekipler' },
+  { key: 'program', labelKey: 'ajans.programBaslik', icon: 'calendar-outline', path: 'program' },
+  { key: 'etkinlikler', labelKey: 'ajans.hizliEtkinlik', icon: 'sparkles-outline', path: 'etkinlikler' },
+  { key: 'duyurular', labelKey: 'ajans.hizliDuyuru', icon: 'megaphone-outline', path: 'duyurular' },
+  { key: 'gorevler', labelKey: 'ajans.rayGorev', icon: 'checkbox-outline', path: 'gorevler' },
+  { key: 'analitik', labelKey: 'ajans.analitik', icon: 'stats-chart-outline', path: 'analitik' },
+  { key: 'islemler', labelKey: 'ajans.rayIslem', icon: 'wallet-outline', path: 'islemler' },
+  { key: 'cuzdan', labelKey: 'ajans.rayCuzdan', icon: 'cash-outline', path: 'cuzdan' },
+  { key: 'paketler', labelKey: 'ajans.rayPaket', icon: 'pricetags-outline', path: 'paketler' },
+  { key: 'satis-linkleri', labelKey: 'ajans.raySatisLink', icon: 'link-outline', path: 'satis-linkleri' },
+  { key: 'satis-takibi', labelKey: 'ajans.raySatisTakip', icon: 'checkmark-done-outline', path: 'satis-takibi' },
+  { key: 'en-cok-alicilar', labelKey: 'ajans.rayTopAlicilar', icon: 'trophy-outline', path: 'en-cok-alicilar' },
+  { key: 'dekontlar', labelKey: 'ajans.rayDekont', icon: 'receipt-outline', path: 'dekontlar' },
+  { key: 'faturalar', labelKey: 'ajans.rayFatura', icon: 'document-text-outline', path: 'faturalar' },
+  { key: 'destek', labelKey: 'ajans.rayDestek', icon: 'help-buoy-outline', path: 'destek' },
+  { key: 'guvenlik', labelKey: 'ajans.rayGuvenlik', icon: 'shield-checkmark-outline', path: 'guvenlik' },
+  { key: 'dogrulama', labelKey: 'ajans.verMerkez', icon: 'finger-print-outline', path: 'dogrulama' },
+  { key: 'ayarlar', labelKey: 'ajans.ayarlar', icon: 'settings-outline', path: 'ayarlar' },
 ];
 
 export function AjansBolumRayi({
@@ -47,6 +59,7 @@ export function AjansBolumRayi({
   agencyId: string;
   aktif?: string;
 }) {
+  const { t } = useCeviri();
   const scrollRef = useRef<ScrollView>(null);
   const offsets = useRef<Record<string, number>>({});
   const aktifKey = aktif ?? 'ozet';
@@ -85,7 +98,7 @@ export function AjansBolumRayi({
                 color={secili ? RenkTokenlari.primarySoft : RenkTokenlari.textDim}
               />
               <Text style={[styles.yazi, secili && styles.yaziAktif]} numberOfLines={1}>
-                {b.label}
+                {t(b.labelKey)}
               </Text>
             </Pressable>
           );
@@ -100,16 +113,17 @@ export { AjansBolumRayi as AjansBolumGrid };
 
 const styles = StyleSheet.create({
   wrap: {
-    marginHorizontal: -BoslukTokenlari.lg,
+    marginBottom: 4,
   },
   rail: {
-    paddingHorizontal: BoslukTokenlari.lg,
+    paddingHorizontal: screenPaddingHorizontal,
     gap: 8,
     paddingVertical: 2,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,

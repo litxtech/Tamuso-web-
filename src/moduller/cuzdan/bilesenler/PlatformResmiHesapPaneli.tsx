@@ -23,6 +23,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 
 type Props = {
@@ -32,6 +33,7 @@ type Props = {
 
 /** Yargıç / mavi tik tıklanınca platform resmi hesapları */
 export function PlatformResmiHesapPaneli({ acik, onKapat }: Props) {
+  const { t } = useCeviri();
   const insets = useSafeAreaInsets();
   const [liste, setListe] = useState<PlatformResmiHesap[]>([]);
   const [yukleniyor, setYukleniyor] = useState(false);
@@ -60,8 +62,8 @@ export function PlatformResmiHesapPaneli({ acik, onKapat }: Props) {
               <Ionicons name="shield-checkmark" size={22} color="#fff" />
             </LinearGradient>
             <View style={{ flex: 1 }}>
-              <Text style={styles.baslik}>Platform resmi hesaplar</Text>
-              <Text style={styles.alt}>Mavi tikli · MUTA yargıç ve resmi kanallar</Text>
+              <Text style={styles.baslik}>{t('takas.resmiHesapBaslik')}</Text>
+              <Text style={styles.alt}>{t('takas.resmiHesapAlt')}</Text>
             </View>
             <Pressable onPress={onKapat} hitSlop={10}>
               <Ionicons name="close" size={22} color={RenkTokenlari.textMuted} />
@@ -73,9 +75,7 @@ export function PlatformResmiHesapPaneli({ acik, onKapat }: Props) {
           ) : (
             <ScrollView style={{ maxHeight: 360 }}>
               {liste.length === 0 ? (
-                <Text style={styles.bos}>
-                  Henüz atanmış resmi hesap yok. Admin panelinden yargıç atanmalı.
-                </Text>
+                <Text style={styles.bos}>{t('takas.resmiHesapBos')}</Text>
               ) : (
                 liste.map((h) => {
                   const avatar = MedyaUriGuvenli(h.avatar_url);
@@ -96,7 +96,7 @@ export function PlatformResmiHesapPaneli({ acik, onKapat }: Props) {
                         <MaviTikRozeti size={16} />
                       </View>
                       <Text style={styles.meta} numberOfLines={1}>
-                        {h.is_platform_yargic ? 'Yargıç · ' : ''}
+                        {h.is_platform_yargic ? t('takas.yargicEtiket') : ''}
                         {h.username ? `@${h.username}` : h.public_user_id ?? ''}
                       </Text>
                     </View>

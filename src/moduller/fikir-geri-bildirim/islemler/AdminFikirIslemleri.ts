@@ -6,9 +6,10 @@ import type {
   FikirIstatistik,
   FikirKategori,
 } from '../tipler';
+import i18n from '../../../i18n';
 
 function rpcHata(error: { message?: string } | null): never {
-  throw new Error(error?.message || 'Admin işlem başarısız');
+  throw new Error(error?.message || i18n.t('fikirler.adminIslemBasarisiz'));
 }
 
 export async function AdminFikirIstatistikGetir(): Promise<FikirIstatistik> {

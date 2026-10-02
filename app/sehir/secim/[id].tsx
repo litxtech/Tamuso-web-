@@ -35,26 +35,34 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import type { CeviriAnahtari } from '../../../src/i18n/useCeviri';
 
-function durumEtiketi(status: string) {
-  const map: Record<string, string> = {
-    nominating: 'Adaylık açık',
-    voting: 'Oylama sürüyor',
-    tallied: 'Sonuçlandı',
-    cancelled: 'İptal',
-    closed: 'Kapandı',
+function durumEtiketi(
+  status: string,
+  t: (key: CeviriAnahtari, opts?: Record<string, unknown>) => string,
+) {
+  const map: Record<string, CeviriAnahtari> = {
+    nominating: 'sehir.adaylikAcik',
+    voting: 'sehir.oylamaSuruyor',
+    tallied: 'sehir.durumSonuclandi',
+    cancelled: 'sehir.durumIptal',
+    closed: 'sehir.durumKapandi',
   };
-  return map[status] ?? status;
+  const key = map[status];
+  return key ? t(key) : status;
 }
 
-function kalanSure(endsAt: string): string {
+function kalanSure(
+  endsAt: string,
+  t: (key: CeviriAnahtari, opts?: Record<string, unknown>) => string,
+): string {
   const ms = new Date(endsAt).getTime() - Date.now();
-  if (ms <= 0) return 'Süre doldu';
+  if (ms <= 0) return t('sehir.sureDoldu');
   const h = Math.floor(ms / 3_600_000);
   const m = Math.floor((ms % 3_600_000) / 60_000);
-  if (h > 24) return `${Math.floor(h / 24)}g ${h % 24}sa`;
-  if (h > 0) return `${h}sa ${m}dk`;
-  return `${m} dk`;
+  if (h > 24) return t('sehir.sureGunSa', { g: Math.floor(h / 24), sa: h % 24 });
+  if (h > 0) return t('sehir.sureSaDk', { sa: h, dk: m });
+  return t('sehir.sureDk', { dk: m });
 }
 
 export default function SehirSecimDetayEkrani() {
@@ -77,9 +85,9 @@ export default function SehirSecimDetayEkrani() {
       setData(g);
       setHata(null);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Yüklenemedi');
+      setHata(e instanceof Error ? e.message : t('ajans.yuklenemedi'));
     }
-  }, [electionId]);
+  }, [electionId, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -136,13 +144,13 @@ export default function SehirSecimDetayEkrani() {
   const headerMeta = useMemo(() => {
     if (!data) return '';
     void tick;
-    const pieces = [durumEtiketi(data.election.status)];
+    const pieces = [durumEtiketi(data.election.status, t)];
     if (data.election.status === 'voting') {
-      pieces.push(`Kalan ${kalanSure(data.election.ends_at)}`);
+      pieces.push(t('sehir.kalanSure', { sure: kalanSure(data.election.ends_at, t) }));
     }
-    pieces.push(`${data.election.total_votes} oy`);
+    pieces.push(t('sehir.oySayisi', { count: data.election.total_votes }));
     return pieces.join(' · ');
-  }, [data, tick]);
+  }, [data, tick, t]);
 
   const adayOl = () => {
     if (!electionId) return;
@@ -154,10 +162,10 @@ export default function SehirSecimDetayEkrani() {
       });
       setBusy(false);
       if (!sonuc.ok) {
-        Alert.alert('Adaylık', sonuc.hata);
+        Alert.alert(t('sehir.adaylikAlert'), sonuc.hata);
         return;
       }
-      Alert.alert('Aday oldun', 'Canlı sonuçlar güncelleniyor.');
+      Alert.alert(t('sehir.adayOldun'), t('sehir.adayOldunBody'));
       setManifesto('');
       await yukle();
     });
@@ -166,7 +174,7 @@ export default function SehirSecimDetayEkrani() {
   const oyVer = (candidateId: string) => {
     if (!electionId) return;
     if (myVote) {
-      Alert.alert('Oy', 'Bu seçimde zaten oy kullandın.');
+      Alert.alert(t('sehir.oyAlert'), t('sehir.zatenOy'));
       return;
     }
     islemiDene('oy_kullan', async () => {
@@ -174,7 +182,7 @@ export default function SehirSecimDetayEkrani() {
       const sonuc = await SehirOyuKullan({ electionId, candidateId });
       setBusy(false);
       if (!sonuc.ok) {
-        Alert.alert('Oy', sonuc.hata);
+        Alert.alert(t('sehir.oyAlert'), sonuc.hata);
         return;
       }
       await yukle();
@@ -190,20 +198,20 @@ export default function SehirSecimDetayEkrani() {
           subtitle={
             data
               ? `${data.city?.name ?? ''} · ${headerMeta}`
-              : 'Yükleniyor…'
+              : t('ortak.yukleniyor')
           }
           onBack={() => router.back()}
         />
 
         {hata ? (
-          <BosDurum icon="alert-circle-outline" title="Seçim yok" body={hata} />
+          <BosDurum icon="alert-circle-outline" title={t('sehir.secimYok')} body={hata} />
         ) : null}
 
         {data?.winner ? (
           <View style={styles.winner}>
             <Ionicons name="trophy" size={22} color={RenkTokenlari.accent} />
             <View style={styles.winnerCopy}>
-              <Text style={styles.winnerLabel}>Seçilen lider</Text>
+              <Text style={styles.winnerLabel}>{t('sehir.secilenLider')}</Text>
               <Text style={styles.winnerName}>{data.winner.display_name}</Text>
             </View>
             {MedyaUriGuvenli(data.winner.avatar_url) ? (
@@ -218,12 +226,12 @@ export default function SehirSecimDetayEkrani() {
         {canApply ? (
           <View style={styles.apply}>
             <TextField
-              label="Adaylık bildirisi"
+              label={t('sehir.adaylikBildirisi')}
               value={manifesto}
               onChangeText={setManifesto}
-              placeholder="Kısa vaat (isteğe bağlı)"
+              placeholder={t('sehir.vaatPlaceholder')}
             />
-            <GradientButton title="Aday ol" onPress={adayOl} loading={busy} />
+            <GradientButton title={t('sehir.adayOl')} onPress={adayOl} loading={busy} />
           </View>
         ) : null}
 
@@ -233,16 +241,16 @@ export default function SehirSecimDetayEkrani() {
           contentContainerStyle={styles.list}
           ListHeaderComponent={
             <Text style={styles.section}>
-              Canlı gidişat
-              {canVote && !myVote ? ' · oyunu kullan' : ''}
-              {myVote ? ' · oyun kaydedildi' : ''}
+              {t('sehir.canliGidisat')}
+              {canVote && !myVote ? t('sehir.oyunuKullanSuffix') : ''}
+              {myVote ? t('sehir.oyunKaydedildiSuffix') : ''}
             </Text>
           }
           ListEmptyComponent={
             <BosDurum
               icon="people-outline"
-              title="Henüz aday yok"
-              body="İlk aday sen olabilirsin."
+              title={t('sehir.henuzAdayYok')}
+              body={t('sehir.ilkAdaySen')}
             />
           }
           renderItem={({ item, index }) => {
@@ -275,7 +283,10 @@ export default function SehirSecimDetayEkrani() {
                     />
                   </View>
                   <Text style={styles.votes}>
-                    {item.vote_count} oy · %{item.percent}
+                    {t('sehir.oyYuzde', {
+                      count: item.vote_count,
+                      pct: item.percent,
+                    })}
                   </Text>
                 </View>
                 {canVote && !myVote ? (
@@ -284,7 +295,7 @@ export default function SehirSecimDetayEkrani() {
                     onPress={() => oyVer(item.id)}
                     disabled={busy}
                   >
-                    <Text style={styles.voteBtnText}>Oy ver</Text>
+                    <Text style={styles.voteBtnText}>{t('sehir.oyVer')}</Text>
                   </Pressable>
                 ) : selected ? (
                   <Ionicons name="checkmark-circle" size={22} color={RenkTokenlari.mint} />

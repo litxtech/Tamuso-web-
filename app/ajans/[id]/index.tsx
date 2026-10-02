@@ -11,9 +11,14 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../../../src/components/Screen';
+import { EkranBasligi, guvenliGeriDon } from '../../../src/components/EkranBasligi';
 import { ModulHataSiniri } from '../../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { AjansAtmosfer } from '../../../src/moduller/ajanslar/bilesenler/AjansAtmosfer';
 import { AjansBolumRayi } from '../../../src/moduller/ajanslar/bilesenler/AjansBolumRayi';
+import {
+  AjansCekmeceMenu,
+  AjansMenuDugmesi,
+} from '../../../src/moduller/ajanslar/bilesenler/AjansCekmeceMenu';
 import {
   AjansBolumBaslik,
   AjansHint,
@@ -39,11 +44,15 @@ import {
   type AjansIzinler,
   type AjansUyari,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import {
+  AjansBugunEtiket,
+  AjansEksikCevir,
+  AjansUyariBaslik,
+  AjansUyariGovde,
+} from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
-import {
-  BoslukTokenlari,
-} from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useTemayaAboneOl } from '../../../src/tasarim-sistemi/tema/useTemayaAboneOl';
 import { useCeviri } from '../../../src/i18n/useCeviri';
 
@@ -55,6 +64,7 @@ export default function AjansKontrolMerkeziEkrani() {
   useTemayaAboneOl();
   const { t } = useCeviri();
   const id = useAjansRouteId();
+  const [menuAcik, setMenuAcik] = useState(false);
   const [kpi, setKpi] = useState<AjansDashboardKpi | null>(null);
   const [bugun, setBugun] = useState<AjansBugunOzet | null>(null);
   const [uyarilar, setUyarilar] = useState<AjansUyari[]>([]);
@@ -96,7 +106,6 @@ export default function AjansKontrolMerkeziEkrani() {
   );
 
   const a = kpi?.agency;
-
   const anaKpi = kpi
     ? [
         { l: t('ajans.kpiUyeler'), v: String(kpi.uyeler), emph: true },
@@ -105,7 +114,6 @@ export default function AjansKontrolMerkeziEkrani() {
         { l: t('ajans.kpiSesOdasi'), v: String(kpi.ses_odasinda), emph: true },
       ]
     : [];
-
   const ekstraKpi = kpi
     ? [
         { l: t('ajans.kpiBekleyen'), v: String(kpi.bekleyen_basvuru) },
@@ -120,13 +128,25 @@ export default function AjansKontrolMerkeziEkrani() {
 
   return (
     <Screen edges={['top']}>
-      <ModulHataSiniri modulAdi="ajans-kontrol" varyant="ekran" fallbackHref="/ajans/yonetim">
+      <ModulHataSiniri
+        modulAdi="ajans-kontrol"
+        varyant="ekran"
+        fallbackHref="/(tabs)/profile"
+      >
         <View style={styles.root}>
           <AjansAtmosfer />
+          <EkranBasligi
+            title={a?.name?.trim() || t('ajans.ozetBolum')}
+            subtitle={a?.name?.trim() ? t('ajans.ozetBolum') : undefined}
+            border
+            onBack={() => guvenliGeriDon('/(tabs)/profile')}
+            right={<AjansMenuDugmesi onPress={() => setMenuAcik(true)} />}
+          />
+          <AjansBolumRayi agencyId={id} aktif="ozet" />
           {yukleniyor && !kpi ? (
             <ActivityIndicator
               color={RenkTokenlari.primarySoft}
-              style={{ marginTop: 80 }}
+              style={{ marginTop: 32 }}
             />
           ) : hata && !kpi ? (
             <Text style={styles.hata}>{hata}</Text>
@@ -141,15 +161,6 @@ export default function AjansKontrolMerkeziEkrani() {
                 />
               }
             >
-              <Pressable
-                style={styles.geri}
-                onPress={() => router.push('/ajans/yonetim' as any)}
-                hitSlop={10}
-              >
-                <Ionicons name="chevron-back" size={20} color={RenkTokenlari.text} />
-                <Text style={styles.geriYazi}>{t('ajans.ajanslarim')}</Text>
-              </Pressable>
-
               <AjansHeroKapak
                 name={a.name}
                 subtitle={a.username ? `@${a.username}` : a.agency_public_id}
@@ -157,7 +168,10 @@ export default function AjansKontrolMerkeziEkrani() {
                 bannerUrl={a.banner_url}
                 levelLabel={seviyeEtiket(a.level_code)}
                 verified={!!a.is_verified}
-                meta={t('ajans.metaUye', { id: a.agency_public_id, count: kpi.uyeler })}
+                meta={t('ajans.metaUye', {
+                  id: a.agency_public_id,
+                  count: kpi.uyeler,
+                })}
                 actionLabel={
                   AjansIzinVar(izinler, 'agency.manage_settings')
                     ? t('ajans.ajansiYonet')
@@ -169,8 +183,6 @@ export default function AjansKontrolMerkeziEkrani() {
                     : undefined
                 }
               />
-
-              <AjansBolumRayi agencyId={id} aktif="ozet" />
 
               {seviye ? (
                 <AjansKart>
@@ -197,7 +209,11 @@ export default function AjansKontrolMerkeziEkrani() {
                   </View>
                   {Array.isArray(seviye.eksikler) && seviye.eksikler.length ? (
                     <AjansHint>
-                      {t('ajans.eksikOnEk', { liste: (seviye.eksikler as string[]).join(', ') })}
+                      {t('ajans.eksikOnEk', {
+                        liste: (seviye.eksikler as string[])
+                          .map((x) => AjansEksikCevir(String(x), t))
+                          .join(', '),
+                      })}
                     </AjansHint>
                   ) : null}
                 </AjansKart>
@@ -221,7 +237,10 @@ export default function AjansKontrolMerkeziEkrani() {
                   ))}
                 </View>
               ) : null}
-              <Pressable onPress={() => setKpiAcik((v) => !v)} style={styles.daha}>
+              <Pressable
+                onPress={() => setKpiAcik((v) => !v)}
+                style={styles.daha}
+              >
                 <Text style={styles.dahaYazi}>
                   {kpiAcik ? t('ajans.dahaAz') : t('ajans.dahaFazlaMetrik')}
                 </Text>
@@ -240,14 +259,16 @@ export default function AjansKontrolMerkeziEkrani() {
                   (bugun?.maddeler ?? []).map((m) => (
                     <AjansListeSatir
                       key={m.key}
-                      title={m.label}
+                      title={AjansBugunEtiket(m.key, t)}
                       subtitle={t('ajans.kayitSayisi', { count: m.count })}
                       leading={
                         <View style={styles.bugunSayi}>
                           <Text style={styles.bugunSayiYazi}>{m.count}</Text>
                         </View>
                       }
-                      onPress={() => router.push(ajansHref(id, m.href) as any)}
+                      onPress={() =>
+                        router.push(ajansHref(id, m.href) as any)
+                      }
                     />
                   ))
                 )}
@@ -261,8 +282,8 @@ export default function AjansKontrolMerkeziEkrani() {
                   uyarilar.slice(0, 8).map((u, i) => (
                     <AjansListeSatir
                       key={`${u.code}-${i}`}
-                      title={u.title}
-                      subtitle={u.body}
+                      title={AjansUyariBaslik(u.code, t)}
+                      subtitle={AjansUyariGovde(u.code, u.body, t)}
                       onPress={
                         u.href
                           ? () => router.push(ajansHref(id, u.href) as any)
@@ -272,37 +293,19 @@ export default function AjansKontrolMerkeziEkrani() {
                   ))
                 )}
               </AjansKart>
-
-              <AjansBolumBaslik>{t('ajans.hizliIslem')}</AjansBolumBaslik>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.hizliRail}
-              >
-                {[
-                  { label: t('ajans.hizliDavet'), p: 'davetler', i: 'person-add-outline' as const },
-                  { label: t('ajans.hizliDuyuru'), p: 'duyurular', i: 'megaphone-outline' as const },
-                  { label: t('ajans.hizliEtkinlik'), p: 'etkinlikler', i: 'calendar-outline' as const },
-                  { label: t('ajans.hizliCoin'), p: 'islemler', i: 'diamond-outline' as const },
-                  { label: t('ajans.hizliCanli'), p: 'canli', i: 'radio-outline' as const },
-                  { label: t('ajans.hizliAyarlar'), p: 'ayarlar', i: 'settings-outline' as const },
-                ].map((h) => (
-                  <Pressable
-                    key={h.p}
-                    style={styles.hizliKart}
-                    onPress={() => router.push(ajansHref(id, h.p) as any)}
-                  >
-                    <View style={styles.hizliIcon}>
-                      <Ionicons name={h.i} size={18} color={RenkTokenlari.primarySoft} />
-                    </View>
-                    <Text style={styles.hizliYazi}>{h.label}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
             </ScrollView>
           ) : (
             <Text style={styles.hata}>{t('ajans.ajansBulunamadi')}</Text>
           )}
+
+          <AjansCekmeceMenu
+            acik={menuAcik}
+            onKapat={() => setMenuAcik(false)}
+            agencyId={id}
+            agencyName={a?.name}
+            aktif="ozet"
+            onOgeSec={(href) => router.push(href as any)}
+          />
         </View>
       </ModulHataSiniri>
     </Screen>
@@ -313,20 +316,9 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
     paddingHorizontal: BoslukTokenlari.lg,
+    paddingTop: BoslukTokenlari.sm,
     paddingBottom: BoslukTokenlari.xxxl,
     gap: BoslukTokenlari.md,
-  },
-  geri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    alignSelf: 'flex-start',
-    marginBottom: -4,
-  },
-  geriYazi: {
-    ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textMuted,
-    fontWeight: '600',
   },
   seviyeBas: {
     flexDirection: 'row',
@@ -346,7 +338,7 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: RenkTokenlari.surface,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
   },
   progressFill: {
@@ -376,7 +368,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 12,
     backgroundColor: RenkTokenlari.pressFill,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: RenkTokenlari.borderAccent,
     alignItems: 'center',
     justifyContent: 'center',
@@ -386,35 +378,11 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.primarySoft,
     fontWeight: '800',
   },
-  hizliRail: {
-    gap: 10,
-    paddingVertical: 2,
-  },
-  hizliKart: {
-    width: 76,
-    alignItems: 'center',
-    gap: 8,
-  },
-  hizliIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: RenkTokenlari.surface,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hizliYazi: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textMuted,
-    textAlign: 'center',
-  },
   hata: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.danger,
     textAlign: 'center',
-    marginTop: 40,
-    paddingHorizontal: BoslukTokenlari.lg,
+    marginTop: 48,
+    paddingHorizontal: 24,
   },
 });

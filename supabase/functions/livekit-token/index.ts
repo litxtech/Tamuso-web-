@@ -104,6 +104,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { error: kilitHata } = await supabase.rpc('rtc_saglayici_kilit_kontrol', {
+      p_saglayici: 'LIVEKIT',
+    });
+    if (kilitHata && !kilitHata.message.includes('does not exist')) {
+      return Response.json(
+        { error: kilitHata.message },
+        { status: kilitHata.message.includes('uyusmuyor') ? 409 : 403, headers: corsHeaders },
+      );
+    }
+
     // Audit + kill switch (migration 006)
     const { error: auditError } = await supabase.rpc('livekit_token_istegi_kaydet', {
       p_room_name: roomName,

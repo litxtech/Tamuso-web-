@@ -28,6 +28,7 @@ import { SehirDuyuruYayinla } from '../../src/moduller/sehirler/islemler/SehirMo
 import { SehirStil } from '../../src/moduller/sehirler/bilesenler/SehirStil';
 import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
 import { TextField } from '../../src/components/TextField';
+import { SesOdasinaGit } from '../../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
 import { KlavyeScrollView } from '../../src/bilesenler/klavye/KlavyeScrollView';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -154,7 +155,6 @@ export default function SehirDetayEkrani() {
                       ? t('sehir.destekliyorsun')
                       : t('sehir.henuzDesteklemiyorsun')}
                 </Text>
-                <Text style={styles.heroTitle}>{city.name}</Text>
                 <Text style={styles.heroAlt}>
                   {t('sehir.heroAltDetay')}
                 </Text>
@@ -381,7 +381,7 @@ export default function SehirDetayEkrani() {
                           Alert.alert(t('sehir.alertOda'), t('sehir.odaBagliDegil'));
                           return;
                         }
-                        router.push(`/lobi/${o.room_id}` as any);
+                        void SesOdasinaGit({ roomId: o.room_id });
                       }}
                     >
                       <View style={{ flex: 1 }}>
@@ -445,7 +445,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  heroTitle: { ...TipografiTokenlari.title, color: RenkTokenlari.text, fontSize: 28 },
   heroAlt: { ...TipografiTokenlari.caption, color: RenkTokenlari.textMuted, lineHeight: 18 },
   kpiRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   kpi: {

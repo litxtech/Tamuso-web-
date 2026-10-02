@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -9,22 +9,86 @@ import { SeviyeTaci } from './SeviyeTaci';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import type { RoomSeat } from '../../../types/models';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 
 type Props = {
   seat: RoomSeat;
   hostId?: string | null;
   tahtMi?: boolean;
+  /** Görünüm ölçeği — düzen kataloğundan */
+  olcek?: 'mikro' | 'kompakt' | 'normal' | 'buyuk' | 'dev';
+  /** Premium halo halkası */
+  halo?: boolean;
+  /**
+   * Yoğun salon (12–20 koltuk): podium/rozet gizlenir, isim kısalır —
+   * satır yüksekliği düşer, herkes ekranda kalır.
+   */
+  yogun?: boolean;
   onPress?: (seat: RoomSeat) => void;
+  onLongPress?: (seat: RoomSeat) => void;
 };
 
-function KonusmaciKartiIc({ seat, hostId, tahtMi = false, onPress }: Props) {
-  const { t } = useCeviri();
+const OLCEK_AVATAR: Record<NonNullable<Props['olcek']>, { dolu: number; efekt: number }> = {
+  mikro: { dolu: 28, efekt: 32 },
+  kompakt: { dolu: 34, efekt: 40 },
+  normal: { dolu: 40, efekt: 46 },
+  buyuk: { dolu: 50, efekt: 56 },
+  dev: { dolu: 64, efekt: 72 },
+};
+
+function HarfAvatar({
+  boy,
+  harf,
+  hostMu,
+  tahtMi,
+}: {
+  boy: number;
+  harf: string;
+  hostMu: boolean;
+  tahtMi: boolean;
+}) {
+  return (
+    <View
+      style={[
+        styles.avatar,
+        styles.filled,
+        {
+          width: boy,
+          height: boy,
+          borderRadius: boy / 2,
+          backgroundColor:
+            tahtMi || hostMu ? RenkTokenlari.accent : RenkTokenlari.primary,
+        },
+        (tahtMi || hostMu) && styles.avatarHost,
+      ]}
+    >
+      <Text style={[styles.harf, tahtMi && styles.harfTaht]}>{harf}</Text>
+    </View>
+  );
+}
+
+function KonusmaciKartiIc({
+  seat,
+  hostId,
+  tahtMi = false,
+  olcek,
+  halo = false,
+  yogun = false,
+  onPress,
+  onLongPress,
+}: Props) {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const dolu = !!seat.user_id;
   const hostMu = !!seat.user_id && !!hostId && seat.user_id === hostId;
   const yardimciMu = !hostMu && !!seat.is_cohost;
   const seviye = Number(seat.profile?.level) || 0;
-  const avatarBoy = tahtMi ? 58 : 40;
-  const efektBoy = tahtMi ? 66 : 46;
+  const cozulmusOlcek =
+    olcek ?? (tahtMi ? 'buyuk' : yogun ? 'mikro' : 'normal');
+  const boyutlar = OLCEK_AVATAR[cozulmusOlcek];
+  const avatarBoy = tahtMi && !olcek ? (yogun ? 48 : 58) : boyutlar.dolu;
+  const efektBoy = tahtMi && !olcek ? (yogun ? 54 : 66) : boyutlar.efekt;
+  const podiumGizle = yogun && !tahtMi;
   const muted = !!seat.is_muted;
   const micKilitli = !!seat.is_mic_locked;
   const koltukNo = seat.seat_index + 1;
@@ -32,16 +96,47 @@ function KonusmaciKartiIc({ seat, hostId, tahtMi = false, onPress }: Props) {
   const ad =
     seat.profile?.display_name?.trim() ||
     seat.profile?.username?.trim() ||
-    (tahtMi || seat.seat_index === 0 ? 'Ev sahibi' : `Koltuk ${koltukNo}`);
-  const harf = ad.charAt(0).toLocaleUpperCase('tr-TR');
+    (tahtMi || seat.seat_index === 0
+      ? t('sesOda.evSahibi')
+      : t('sesOda.koltukN', { n: koltukNo }));
+  const harf = ad.charAt(0).toLocaleUpperCase(locale);
   const avatarUrl = MedyaUriGuvenli(seat.profile?.avatar_url);
+  const [avatarBozuk, setAvatarBozuk] = useState(false);
+
+  useEffect(() => {
+    setAvatarBozuk(false);
+  }, [avatarUrl]);
+
+  const avatarGoster = !!avatarUrl && !avatarBozuk;
 
   return (
     <Pressable
       onPress={onPress ? () => onPress(seat) : undefined}
-      style={[styles.wrap, tahtMi && styles.wrapTaht]}
+      onLongPress={onLongPress ? () => onLongPress(seat) : undefined}
+      delayLongPress={380}
+      style={[
+        styles.wrap,
+        tahtMi && styles.wrapTaht,
+        yogun && !tahtMi && styles.wrapYogun,
+      ]}
     >
       <View style={styles.avatarKutu}>
+        {halo && !yogun ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.haloHalka,
+              {
+                width: avatarBoy + 12,
+                height: avatarBoy + 12,
+                borderRadius: (avatarBoy + 12) / 2,
+                borderColor: tahtMi || hostMu
+                  ? 'rgba(240,180,41,0.45)'
+                  : 'rgba(196,59,255,0.35)',
+              },
+            ]}
+          />
+        ) : null}
         {dolu ? (
           <KonusmaciAktiflikEfekti
             userId={seat.user_id}
@@ -53,10 +148,11 @@ function KonusmaciKartiIc({ seat, hostId, tahtMi = false, onPress }: Props) {
               size={tahtMi ? 'md' : 'sm'}
               avatarBoy={avatarBoy}
             >
-              {avatarUrl ? (
+              {avatarGoster ? (
                 <Image
-                  source={{ uri: avatarUrl }}
+                  source={{ uri: avatarUrl! }}
                   resizeMode="cover"
+                  onError={() => setAvatarBozuk(true)}
                   style={{
                     width: avatarBoy,
                     height: avatarBoy,
@@ -64,28 +160,12 @@ function KonusmaciKartiIc({ seat, hostId, tahtMi = false, onPress }: Props) {
                   }}
                 />
               ) : (
-                <View
-                  style={[
-                    styles.avatar,
-                    styles.filled,
-                    {
-                      width: avatarBoy,
-                      height: avatarBoy,
-                      borderRadius: avatarBoy / 2,
-                    },
-                    (tahtMi || hostMu) && styles.avatarHost,
-                    {
-                      backgroundColor:
-                        tahtMi || hostMu
-                          ? RenkTokenlari.accent
-                          : RenkTokenlari.primary,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.harf, tahtMi && styles.harfTaht]}>
-                    {harf}
-                  </Text>
-                </View>
+                <HarfAvatar
+                  boy={avatarBoy}
+                  harf={harf}
+                  hostMu={hostMu}
+                  tahtMi={tahtMi}
+                />
               )}
             </SeviyeTaci>
           </KonusmaciAktiflikEfekti>
@@ -108,49 +188,66 @@ function KonusmaciKartiIc({ seat, hostId, tahtMi = false, onPress }: Props) {
             >
               <Ionicons
                 name={tahtMi ? 'ribbon-outline' : 'add'}
-                size={tahtMi ? 20 : 14}
+                size={tahtMi ? (yogun ? 16 : 20) : yogun ? 12 : 14}
                 color={tahtMi ? RenkTokenlari.accent : RenkTokenlari.textMuted}
               />
             </View>
           </KonusmaciAktiflikEfekti>
         )}
         {dolu && (muted || micKilitli) ? (
-          <View style={styles.micBadge} pointerEvents="none">
+          <View
+            style={[styles.micBadge, yogun && styles.micBadgeYogun]}
+            pointerEvents="none"
+          >
             <Ionicons
               name={micKilitli ? 'lock-closed' : 'mic-off'}
-              size={9}
+              size={yogun ? 7 : 9}
               color="#fff"
             />
           </View>
         ) : null}
+        {podiumGizle && !dolu ? (
+          <View style={styles.koltukNoRozet} pointerEvents="none">
+            <Text style={styles.koltukNoRozetYazi}>{koltukNo}</Text>
+          </View>
+        ) : null}
       </View>
 
-      <KoltukTahti
-        numara={tahtMi ? null : koltukNo}
-        tahtMi={tahtMi}
-        doluMu={dolu}
-        hostMu={hostMu}
-        yardimciMu={yardimciMu}
-      />
+      {!podiumGizle ? (
+        <KoltukTahti
+          numara={tahtMi ? null : koltukNo}
+          tahtMi={tahtMi}
+          doluMu={dolu}
+          hostMu={hostMu}
+          yardimciMu={yardimciMu}
+        />
+      ) : null}
 
       {tahtMi ? (
-        <Text style={[styles.name, styles.nameTaht]} numberOfLines={1}>
+        <Text
+          style={[styles.name, styles.nameTaht, yogun && styles.nameYogun]}
+          numberOfLines={1}
+        >
           {ad}
         </Text>
       ) : (
         <Text
-          style={[styles.name, dolu && styles.nameDolu]}
+          style={[
+            styles.name,
+            dolu && styles.nameDolu,
+            yogun && styles.nameYogun,
+          ]}
           numberOfLines={1}
         >
           {ad}
         </Text>
       )}
-      {hostMu ? (
+      {!yogun && hostMu ? (
         <View style={styles.hostRozet}>
           <Ionicons name="ribbon" size={8} color={RenkTokenlari.accent} />
           <Text style={styles.hostYazi}>{t('sesOda.sahipRozet')}</Text>
         </View>
-      ) : yardimciMu ? (
+      ) : !yogun && yardimciMu ? (
         <View style={styles.cohostRozet}>
           <Ionicons name="shield-checkmark" size={8} color="#8ec8ff" />
           <Text style={styles.cohostYazi}>ADMIN</Text>
@@ -164,7 +261,11 @@ function ayniKart(a: Props, b: Props) {
   return (
     a.tahtMi === b.tahtMi &&
     a.hostId === b.hostId &&
+    a.olcek === b.olcek &&
+    a.halo === b.halo &&
+    a.yogun === b.yogun &&
     a.onPress === b.onPress &&
+    a.onLongPress === b.onLongPress &&
     a.seat.id === b.seat.id &&
     a.seat.user_id === b.seat.user_id &&
     a.seat.is_muted === b.seat.is_muted &&
@@ -189,11 +290,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     gap: 0,
   },
+  wrapYogun: {
+    gap: 1,
+    paddingVertical: 0,
+  },
   avatarKutu: {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'visible',
     zIndex: 4,
+  },
+  haloHalka: {
+    position: 'absolute',
+    borderWidth: 1.5,
+    opacity: 0.9,
   },
   avatar: {
     backgroundColor: RenkTokenlari.seatEmpty,
@@ -231,7 +341,7 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textDim,
     textAlign: 'center',
-    maxWidth: 68,
+    maxWidth: 78,
     marginTop: 1,
     fontSize: 10,
   },
@@ -244,6 +354,31 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     maxWidth: 110,
     color: RenkTokenlari.accent,
+  },
+  nameYogun: {
+    fontSize: 9,
+    maxWidth: 58,
+    marginTop: 0,
+  },
+  koltukNoRozet: {
+    position: 'absolute',
+    right: -4,
+    top: -2,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    paddingHorizontal: 3,
+    backgroundColor: 'rgba(18,16,24,0.85)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 6,
+  },
+  koltukNoRozetYazi: {
+    color: 'rgba(220,215,230,0.9)',
+    fontSize: 8,
+    fontWeight: '700',
   },
   hostRozet: {
     flexDirection: 'row',
@@ -294,5 +429,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 5,
+  },
+  micBadgeYogun: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    right: -3,
+    bottom: -1,
   },
 });

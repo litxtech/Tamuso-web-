@@ -1,0 +1,6 @@
+{
+  "odaSohbet": {
+    "mesajBos": "Message cannot be empty.",
+    "mesajCokUzun": "Message is too long."
+  }
+}

@@ -15,8 +15,16 @@ import {
   AjansEtkinlikListesi,
   AjansEtkinlikOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import {
+  AjansKayitDurum,
+  AjansTurEtiket,
+} from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../src/i18n/diller';
 
 export default function AjansEtkinliklerEkrani() {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [title, setTitle] = useState('');
@@ -40,29 +48,34 @@ export default function AjansEtkinliklerEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Etkinlikler"
-      subtitle="Ajans etkinlikleri"
+      title={t('ajans.etkinliklerBaslik')}
+      subtitle={t('ajans.etkinliklerAlt')}
       aktif="etkinlikler"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni etkinlik</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniEtkinlik')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={title} onChangeText={setTitle} placeholder="Başlık" />
-        <AjansInput value={desc} onChangeText={setDesc} placeholder="Açıklama" multiline />
+        <AjansInput value={title} onChangeText={setTitle} placeholder={t('ajans.phBaslik')} />
+        <AjansInput
+          value={desc}
+          onChangeText={setDesc}
+          placeholder={t('ajans.phAciklamaKisa')}
+          multiline
+        />
         <AjansCta
-          label="SCHEDULED olarak oluştur"
+          label={t('ajans.scheduledOlustur')}
           onPress={() => {
             void (async () => {
               const r = await AjansEtkinlikOlustur({
                 agencyId: id,
-                title: title.trim() || 'Ajans Etkinliği',
+                title: title.trim() || t('ajans.varsayilanEtkinlik'),
                 description: desc,
                 startsAt: new Date(Date.now() + 86400000).toISOString(),
                 status: 'SCHEDULED',
               });
-              if (!r.ok) Alert.alert('Etkinlik', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.alertEtkinlik'), r.hata);
               else {
                 setTitle('');
                 setDesc('');
@@ -74,13 +87,17 @@ export default function AjansEtkinliklerEkrani() {
       </AjansKart>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           liste.map((e) => (
             <AjansListeSatir
               key={String(e.id)}
               title={String(e.title)}
-              subtitle={`${e.status} · ${e.kind} · ${new Date(String(e.starts_at)).toLocaleString('tr-TR')}`}
+              subtitle={t('ajans.etkinlikSatir', {
+                status: AjansKayitDurum(String(e.status), t),
+                kind: AjansTurEtiket(String(e.kind), t),
+                zaman: new Date(String(e.starts_at)).toLocaleString(locale),
+              })}
             />
           ))
         )}

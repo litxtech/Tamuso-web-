@@ -1,0 +1,20 @@
+{
+  "webview": {
+    "gecersizUrl": "URL invalide",
+    "baglantiAcilamadi": "Impossible d’ouvrir le lien",
+    "sayfaAcilamadi": "Impossible d’ouvrir la page",
+    "baglantiAciliyor": "Ouverture du lien…",
+    "webviewYok": "WebView indisponible",
+    "webviewYokBody": "WebView / WebBrowser n’est pas disponible dans ce build de développement. Faites un nouveau build natif ou ouvrez le lien à l’extérieur.",
+    "disaridaAc": "Ouvrir à l’extérieur",
+    "sistemTarayici": "Navigateur système",
+    "yuklemeHatasi": "Erreur de chargement",
+    "sayfaYuklenemediHttp": "Impossible de charger la page (erreur HTTP)",
+    "urlBos": "L’URL est vide",
+    "engellenenSema": "Schéma bloqué : {{scheme}}",
+    "sadeceHttps": "Seul le HTTPS est autorisé",
+    "bosHost": "Adresse manquante ou invalide (ex. https://exemple.com)",
+    "kimlikEngellendi": "Les identifiants dans l’URL sont bloqués",
+    "gecersizKarakter": "Caractère invalide"
+  }
+}

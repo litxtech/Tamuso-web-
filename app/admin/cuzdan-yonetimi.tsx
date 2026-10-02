@@ -540,7 +540,7 @@ export default function AdminCuzdanYonetimi() {
                       }
                     />
                   </View>
-                  {(['tr', 'en', 'ar'] as const).map((loc) => (
+                  {(['tr', 'en', 'es', 'pt', 'ar'] as const).map((loc) => (
                     <Alan
                       key={loc}
                       label={loc.toUpperCase()}

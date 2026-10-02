@@ -1,21 +1,58 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { YonluIkon } from './YonluIkon';
 import { RenkTokenlari } from '../tasarim-sistemi/RenkTokenlari';
-import { TipografiTokenlari } from '../tasarim-sistemi/TipografiTokenlari';
-import { BoslukTokenlari } from '../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari, HeaderTokenlari } from '../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import i18n from '../i18n';
 
-type Props = {
+type Hiza = 'start' | 'center';
+
+export type TamusoScreenHeaderProps = {
+  title: string;
+  subtitle?: string;
+  /** Geri. Varsayılan açık. Liste kökünde kapatıp onMenu ver. */
+  back?: boolean;
+  onBack?: () => void;
+  fallbackHref?: Href;
+  /** back kapalıyken sol slot; back açıkken sağ aksiyonun soluna ikon */
+  onMenu?: () => void;
+  menuAccessibilityLabel?: string;
+  rightAction?: React.ReactNode;
+  badge?: string | number | null;
+  /** Başlık satırının altında, aynı yatay gutter içinde */
+  search?: React.ReactNode;
+  transparent?: boolean;
+  divider?: boolean;
+  compact?: boolean;
+  align?: Hiza;
+};
+
+type EkranBasligiProps = {
   title: string;
   subtitle?: string;
   onBack?: () => void;
   showBack?: boolean;
+  /** Sağ aksiyon (Kaydet, ikon, vb.) */
   right?: React.ReactNode;
-  /** Geri gecmisi yoksa donulecek rota (varsayilan: profil) */
+  /**
+   * start: geri + başlık aynı satırda grup (varsayılan)
+   * center: başlık kalan alanda ortalanır; absolute katman yok
+   */
+  alignment?: Hiza;
   fallbackHref?: Href;
+  border?: boolean;
+  transparent?: boolean;
 };
+
+function cevir(anahtar: string, yedek: string) {
+  try {
+    return String(i18n.t(anahtar));
+  } catch {
+    return yedek;
+  }
+}
 
 /**
  * Stack ekranlarinda once dismiss / back dener;
@@ -34,129 +71,270 @@ export function guvenliGeriDon(fallbackHref: Href = '/(tabs)/profile') {
 }
 
 /**
- * Ortak üst bar: geri + ortalı başlık + opsiyonel sağ aksiyon.
- * Başlık absolute ortalı — butonlarla iç içe binmez.
+ * Normal sayfa başlığı.
  *
- * RTL KARARI — SEMANTİK: direction kilidi YOK; I18nManager row'u aynalar,
- * geri butonu start kenarında kalır (Arapça'da fiziksel SAĞ) ve
- * YonluIkon chevron'u dile göre çevirir. merkez left/right 52 simetrik — sorunsuz.
+ *   ‹  Başvurular                    ⋯
+ *      0 bekleyen başvuru
+ *
+ * Safe area bu bileşende yok. Üst inset'in sahibi Screen edges={['top']}.
+ * İkinci bir SafeAreaView veya insets.top ekleme.
+ *
+ * Başlık akışta durur: absolute left/right, negatif margin ve width:'100%' yok.
+ * Bu üçü Yoga'da başlık kutusunu flex slot'tan genişletip x < 0 bölgesine itiyordu.
  */
+export function TamusoScreenHeader({
+  title,
+  subtitle,
+  back = true,
+  onBack,
+  fallbackHref = '/(tabs)/profile',
+  onMenu,
+  menuAccessibilityLabel,
+  rightAction,
+  badge,
+  search,
+  transparent = false,
+  divider = false,
+  compact = false,
+  align = 'start',
+}: TamusoScreenHeaderProps) {
+  const geriBas = onBack ?? (() => guvenliGeriDon(fallbackHref));
+  const menuSol = !back && !!onMenu;
+  const menuSag = back && !!onMenu;
+  const ortali = align === 'center';
+  const rozet =
+    badge === null || badge === undefined || badge === ''
+      ? null
+      : String(badge);
+
+  const geriDugme = back ? (
+    <Pressable
+      style={styles.hit}
+      onPress={geriBas}
+      hitSlop={HeaderTokenlari.backHitSlop}
+      accessibilityRole="button"
+      accessibilityLabel={cevir('ortak.geri', 'Back')}
+    >
+      <YonluIkon
+        yon="chevron-back"
+        size={HeaderTokenlari.iconSize}
+        color={RenkTokenlari.text}
+      />
+    </Pressable>
+  ) : null;
+
+  const menuDugme = onMenu ? (
+    <Pressable
+      style={styles.hit}
+      onPress={onMenu}
+      hitSlop={HeaderTokenlari.backHitSlop}
+      accessibilityRole="button"
+      accessibilityLabel={menuAccessibilityLabel ?? cevir('anaSayfa.menu', 'Menu')}
+    >
+      <Ionicons name="menu" size={22} color={RenkTokenlari.text} />
+    </Pressable>
+  ) : null;
+
+  const metin = (
+    <View
+      style={[styles.metin, ortali && styles.metinOrta]}
+      pointerEvents={ortali ? 'none' : 'auto'}
+    >
+      <View style={styles.baslikSatir}>
+        <Text
+          style={[styles.title, compact && styles.titleCompact, ortali && styles.ortaliMetin]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {title}
+        </Text>
+        {rozet ? (
+          <View style={styles.rozet}>
+            <Text style={styles.rozetYazi} numberOfLines={1}>
+              {rozet}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+      {subtitle ? (
+        <Text
+          style={[styles.sub, ortali && styles.ortaliMetin]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {subtitle}
+        </Text>
+      ) : null}
+    </View>
+  );
+
+  const sagIcerik = menuSag || rightAction;
+  const sag = sagIcerik ? (
+    <View style={styles.sag}>
+      {menuSag ? menuDugme : null}
+      {rightAction}
+    </View>
+  ) : null;
+
+  const sol = menuSol ? menuDugme : geriDugme;
+
+  return (
+    <View
+      style={[
+        styles.wrap,
+        compact && styles.wrapCompact,
+        divider && !transparent && styles.wrapDivider,
+      ]}
+    >
+      <View style={styles.satir}>
+        {ortali ? (
+          <>
+            <View style={styles.yan}>{sol}</View>
+            {metin}
+            <View style={[styles.yan, styles.yanSon]}>{sag}</View>
+          </>
+        ) : (
+          <>
+            {sol}
+            {metin}
+            {sag}
+          </>
+        )}
+      </View>
+      {search ? <View style={styles.arama}>{search}</View> : null}
+    </View>
+  );
+}
+
+/** Mevcut ekranların kullandığı kapı. Yerleşim TamusoScreenHeader'da. */
 export function EkranBasligi({
   title,
   subtitle,
   onBack,
   showBack = true,
   right,
+  alignment = 'start',
   fallbackHref = '/(tabs)/profile',
-}: Props) {
-  const geriEtiket = (() => {
-    try {
-      return String(i18n.t('ortak.geri'));
-    } catch {
-      return 'Back';
-    }
-  })();
-
+  border = false,
+  transparent = false,
+}: EkranBasligiProps) {
   return (
-    <View style={styles.wrap}>
-      <View style={styles.top}>
-        <View style={styles.yanSol}>
-          {showBack ? (
-            <Pressable
-              style={styles.backBtn}
-              onPress={onBack ?? (() => guvenliGeriDon(fallbackHref))}
-              hitSlop={8}
-              accessibilityLabel={geriEtiket}
-            >
-              <YonluIkon
-                yon="chevron-back"
-                size={24}
-                color={RenkTokenlari.text}
-              />
-            </Pressable>
-          ) : (
-            <View style={styles.backBtn} />
-          )}
-        </View>
-
-        <View style={styles.merkez} pointerEvents="none">
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text style={styles.sub} numberOfLines={1}>
-              {subtitle}
-            </Text>
-          ) : null}
-        </View>
-
-        <View style={styles.yanSag}>
-          {right ?? <View style={styles.backBtn} />}
-        </View>
-      </View>
-    </View>
+    <TamusoScreenHeader
+      title={title}
+      subtitle={subtitle}
+      back={showBack}
+      onBack={onBack}
+      fallbackHref={fallbackHref}
+      rightAction={right}
+      divider={border}
+      transparent={transparent}
+      align={alignment}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: BoslukTokenlari.md,
-    paddingTop: BoslukTokenlari.xs,
-    paddingBottom: BoslukTokenlari.sm,
-    zIndex: 2,
+    paddingHorizontal: HeaderTokenlari.horizontal,
+    paddingTop: HeaderTokenlari.paddingTop,
+    paddingBottom: HeaderTokenlari.paddingBottom,
   },
-  top: {
+  wrapCompact: {
+    paddingTop: 0,
+    paddingBottom: BoslukTokenlari.sm,
+  },
+  wrapDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: RenkTokenlari.border,
+  },
+  satir: {
     flexDirection: 'row',
     alignItems: 'center',
-    /** merkez absolute — akışta sadece yanSol+yanSag; iki yana it (RTL güvenli) */
-    justifyContent: 'space-between',
-    minHeight: 48,
-    position: 'relative',
+    minHeight: HeaderTokenlari.minHeight,
+    gap: BoslukTokenlari.xs,
   },
-  yanSol: {
-    minWidth: 44,
-    zIndex: 2,
+  hit: {
+    width: HeaderTokenlari.touchTarget,
+    height: HeaderTokenlari.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  yan: {
+    flex: 1,
+    minWidth: 0,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
-  yanSag: {
-    minWidth: 44,
-    zIndex: 2,
+  yanSon: {
     alignItems: 'flex-end',
-    justifyContent: 'center',
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
+  metin: {
+    flex: 1,
+    minWidth: 0,
     justifyContent: 'center',
+    gap: HeaderTokenlari.titleSubtitleGap,
   },
-  merkez: {
-    position: 'absolute',
-    left: 52,
-    right: 52,
-    top: 0,
-    bottom: 0,
+  metinOrta: {
+    flex: 2,
+  },
+  baslikSatir: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    zIndex: 1,
+    minWidth: 0,
+    gap: BoslukTokenlari.sm,
   },
   title: {
-    ...TipografiTokenlari.h2,
+    flexShrink: 1,
+    minWidth: 0,
     color: RenkTokenlari.text,
+    fontSize: HeaderTokenlari.titleSize,
+    lineHeight: HeaderTokenlari.titleLineHeight,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  titleCompact: {
+    fontSize: HeaderTokenlari.compactTitleSize,
+    lineHeight: HeaderTokenlari.compactTitleLineHeight,
+  },
+  ortaliMetin: {
     textAlign: 'center',
-    fontSize: 17,
-    lineHeight: 22,
-    fontWeight: '800',
-    maxWidth: '100%',
   },
   sub: {
-    ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
-    textAlign: 'center',
-    lineHeight: 14,
-    marginTop: 2,
-    maxWidth: '100%',
+    fontSize: HeaderTokenlari.subtitleSize,
+    lineHeight: HeaderTokenlari.subtitleLineHeight,
+    fontWeight: '500',
+    letterSpacing: 0,
+  },
+  rozet: {
+    flexShrink: 0,
+    minHeight: 20,
+    paddingHorizontal: BoslukTokenlari.sm,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: RenkTokenlari.pressFill,
+  },
+  rozetYazi: {
+    color: RenkTokenlari.primarySoft,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  sag: {
+    flexGrow: 0,
+    flexShrink: 0,
+    minWidth: 0,
+    maxWidth: '46%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    minHeight: HeaderTokenlari.touchTarget,
+  },
+  arama: {
+    marginTop: BoslukTokenlari.sm,
+    minWidth: 0,
   },
 });

@@ -16,8 +16,12 @@ import {
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
+import { useCeviri } from '../../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../src/i18n/diller';
 
 export default function AjansCanliEkrani() {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const id = useAjansRouteId();
   const [data, setData] = useState<AjansCanliOperasyon | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -43,8 +47,8 @@ export default function AjansCanliEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Canlı Operasyon"
-      subtitle="Şu an ajansında ne oluyor?"
+      title={t('ajans.canliOperasyon')}
+      subtitle={t('ajans.canliOperasyonAlt')}
       aktif="canli"
       yukleniyor={yukleniyor && !data}
       refreshing={yukleniyor && !!data}
@@ -52,27 +56,31 @@ export default function AjansCanliEkrani() {
     >
       <View style={styles.kpiGrid}>
         <AjansKpiHucre
-          label="Çevrimiçi"
+          label={t('ajans.kpiCevrimici')}
           value={String(data?.ozet.cevrimici ?? 0)}
           emphasize
         />
         <AjansKpiHucre
-          label="Canlı"
+          label={t('ajans.kpiCanli')}
           value={String(data?.ozet.canli ?? 0)}
           emphasize
         />
-        <AjansKpiHucre label="Ses odası" value={String(data?.ozet.ses ?? 0)} emphasize />
+        <AjansKpiHucre
+          label={t('ajans.kpiSesOdasi')}
+          value={String(data?.ozet.ses ?? 0)}
+          emphasize
+        />
       </View>
 
-      <AjansBolumBaslik>Çevrimiçi üyeler</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.cevrimiciUyeler')}</AjansBolumBaslik>
       <AjansKart>
         {(data?.cevrimici ?? []).length === 0 ? (
-          <AjansHint>Kimse çevrimiçi değil</AjansHint>
+          <AjansHint>{t('ajans.kimseCevrimici')}</AjansHint>
         ) : (
           data!.cevrimici.map((u) => (
             <AjansListeSatir
               key={u.user_id}
-              title={u.display_name || u.username || 'Üye'}
+              title={u.display_name || u.username || t('ajans.uyeVarsayilan')}
               subtitle={u.username ? `@${u.username}` : undefined}
               avatarUrl={u.avatar_url}
               live
@@ -81,52 +89,61 @@ export default function AjansCanliEkrani() {
         )}
       </AjansKart>
 
-      <AjansBolumBaslik>Canlı yayın</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.canliYayinBolum')}</AjansBolumBaslik>
       <AjansKart accent>
         {(data?.canli_yayinlar ?? []).length === 0 ? (
-          <AjansHint>Aktif yayın yok</AjansHint>
+          <AjansHint>{t('ajans.aktifYayinYok')}</AjansHint>
         ) : (
           data!.canli_yayinlar.map((c) => (
             <AjansListeSatir
               key={c.session_id}
-              title={c.display_name || c.username || 'Yayın'}
-              subtitle={`${c.title} · ${c.viewer_count} izleyici`}
+              title={c.display_name || c.username || t('ajans.kpiCanli')}
+              subtitle={t('ajans.izleyiciSatir', {
+                title: c.title,
+                count: c.viewer_count,
+              })}
               avatarUrl={c.avatar_url}
               live
-              trailing={<Text style={styles.link}>Git</Text>}
+              trailing={<Text style={styles.link}>{t('ajans.git')}</Text>}
               onPress={() => router.push(`/canli/${c.session_id}` as any)}
             />
           ))
         )}
       </AjansKart>
 
-      <AjansBolumBaslik>Ses odaları</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.sesOdalariBolum')}</AjansBolumBaslik>
       <AjansKart>
         {(data?.ses_odalari ?? []).length === 0 ? (
-          <AjansHint>Aktif oda yok</AjansHint>
+          <AjansHint>{t('ajans.aktifOdaYok')}</AjansHint>
         ) : (
           data!.ses_odalari.map((r) => (
             <AjansListeSatir
               key={r.room_id}
               title={r.title}
-              subtitle={`${r.display_name || r.username} · ${r.listener_count} dinleyici`}
-              trailing={<Text style={styles.link}>Oda</Text>}
+              subtitle={t('ajans.dinleyiciSatir', {
+                ad: r.display_name || r.username,
+                count: r.listener_count,
+              })}
+              trailing={<Text style={styles.link}>{t('ajans.alertOda')}</Text>}
               onPress={() => router.push(`/room/${r.room_id}` as any)}
             />
           ))
         )}
       </AjansKart>
 
-      <AjansBolumBaslik>Yaklaşan program</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yaklasanProgram')}</AjansBolumBaslik>
       <AjansKart>
         {(data?.yaklasan_programlar ?? []).length === 0 ? (
-          <AjansHint>Planlanmış program yok</AjansHint>
+          <AjansHint>{t('ajans.planlanmisProgramYok')}</AjansHint>
         ) : (
           data!.yaklasan_programlar.map((p) => (
             <AjansListeSatir
               key={p.id}
               title={p.title}
-              subtitle={`${p.kind} · ${new Date(p.starts_at).toLocaleString('tr-TR')}`}
+              subtitle={t('ajans.programSatir', {
+                kind: p.kind,
+                zaman: new Date(p.starts_at).toLocaleString(locale),
+              })}
               onPress={() => router.push(ajansHref(id, 'program') as any)}
             />
           ))

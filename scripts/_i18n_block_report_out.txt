@@ -1,0 +1,75 @@
+﻿
+### ES
+gorunum.         tot=74 miss=0 sameEN=74 (100% copy)
+odaDuzen.        tot=108 miss=0 sameEN=92 (85% copy)
+odaTema.         tot=126 miss=0 sameEN=3 (2% copy)
+sesOda.          tot=217 miss=0 sameEN=11 (5% copy)
+odaMuzik.        tot=63 miss=0 sameEN=4 (6% copy)
+ajans.           tot=406 miss=0 sameEN=15 (4% copy)
+aiMuzik.         tot=264 miss=0 sameEN=11 (4% copy)
+anaSayfa.        tot=129 miss=0 sameEN=4 (3% copy)
+hediyeAd.        tot=50 miss=0 sameEN=3 (6% copy)
+belge.           tot=150 miss=0 sameEN=10 (7% copy)
+
+### PT
+gorunum.         tot=74 miss=0 sameEN=74 (100% copy)
+odaDuzen.        tot=108 miss=0 sameEN=92 (85% copy)
+odaTema.         tot=126 miss=0 sameEN=5 (4% copy)
+sesOda.          tot=217 miss=0 sameEN=13 (6% copy)
+odaMuzik.        tot=63 miss=0 sameEN=3 (5% copy)
+ajans.           tot=406 miss=0 sameEN=21 (5% copy)
+aiMuzik.         tot=264 miss=0 sameEN=10 (4% copy)
+anaSayfa.        tot=129 miss=0 sameEN=8 (6% copy)
+canliYayin.      tot=120 miss=0 sameEN=8 (7% copy)
+hediyeAd.        tot=50 miss=0 sameEN=3 (6% copy)
+belge.           tot=150 miss=0 sameEN=13 (9% copy)
+
+### AR
+gorunum.         tot=74 miss=0 sameEN=74 (100% copy)
+odaDuzen.        tot=108 miss=17 sameEN=91 (84% copy)
+odaTema.         tot=126 miss=13 sameEN=81 (64% copy)
+sesOda.          tot=217 miss=0 sameEN=5 (2% copy)
+mesajlar.        tot=78 miss=9 sameEN=0 (0% copy)
+mesajV2.         tot=84 miss=10 sameEN=1 (1% copy)
+zeusX.           tot=6 miss=6 sameEN=0 (0% copy)
+ajans.           tot=406 miss=0 sameEN=9 (2% copy)
+aiMuzik.         tot=264 miss=0 sameEN=3 (1% copy)
+belge.           tot=150 miss=0 sameEN=5 (3% copy)
+MISSING NS: {"mesajlar":9,"mesajV2":10,"odaDuzen":17,"odaTema":13,"zeusX":6}
+ALL MISSING: mesajlar.hizliEkle, mesajlar.hizliEkleBaslik, mesajlar.hizliEkleAlt, mesajlar.hizliEtiketPh, mesajlar.hizliMetinPh, mesajlar.hizliBos, mesajlar.hizliLimit, mesajlar.hizliSilBaslik, mesajlar.hizliSilIpucu, mesajV2.sharedPost, mesajV2.you, mesajV2.doubleTapToReply, mesajV2.tapToRecord, mesajV2.mediaCount, mesajV2.mediaRemove, mesajV2.mediaAddMore, mesajV2.sendN, mesajV2.voicePreviewHint, mesajV2.voiceTooShort, odaDuzen.kategoriPlatform, odaDuzen.club_stage, odaDuzen.club_stageAlt, odaDuzen.presence_grid, odaDuzen.presence_gridAlt, odaDuzen.spaces_strip, odaDuzen.spaces_stripAlt, odaDuzen.party_wave, odaDuzen.party_waveAlt, odaDuzen.party_u, odaDuzen.party_uAlt, odaDuzen.dropin_tiles, odaDuzen.dropin_tilesAlt, odaDuzen.greenroom_bar, odaDuzen.greenroom_barAlt, odaDuzen.salon_circle, odaDuzen.salon_circleAlt, odaTema.kategoriPlatform, odaTema.club_cream, odaTema.club_creamAlt, odaTema.blurple_night, odaTema.blurple_nightAlt, odaTema.spaces_sky, odaTema.spaces_skyAlt, odaTema.party_neon, odaTema.party_neonAlt, odaTema.greenroom_dark, odaTema.greenroom_darkAlt, odaTema.salon_warm, odaTema.salon_warmAlt, zeusX.hazirlaniyor, zeusX.yuklemeBasarisiz, zeusX.yuklemeBasarisizAlt, zeusX.oyunuBitir, zeusX.netKarolar, zeusX.bilgi
+
+### FR
+gorunum.         tot=74 miss=0 sameEN=74 (100% copy)
+odaDuzen.        tot=108 miss=17 sameEN=91 (84% copy)
+odaTema.         tot=126 miss=13 sameEN=84 (67% copy)
+sesOda.          tot=217 miss=0 sameEN=11 (5% copy)
+mesajlar.        tot=78 miss=9 sameEN=1 (1% copy)
+mesajV2.         tot=84 miss=10 sameEN=4 (5% copy)
+zeusX.           tot=6 miss=6 sameEN=0 (0% copy)
+ajans.           tot=406 miss=0 sameEN=21 (5% copy)
+aiMuzik.         tot=264 miss=0 sameEN=14 (5% copy)
+anaSayfa.        tot=129 miss=0 sameEN=7 (5% copy)
+hediyeAd.        tot=50 miss=0 sameEN=11 (22% copy)
+belge.           tot=150 miss=0 sameEN=17 (11% copy)
+sehir.           tot=132 miss=0 sameEN=5 (4% copy)
+MISSING NS: {"mesajlar":9,"mesajV2":10,"odaDuzen":17,"odaTema":13,"zeusX":6}
+ALL MISSING: mesajlar.hizliEkle, mesajlar.hizliEkleBaslik, mesajlar.hizliEkleAlt, mesajlar.hizliEtiketPh, mesajlar.hizliMetinPh, mesajlar.hizliBos, mesajlar.hizliLimit, mesajlar.hizliSilBaslik, mesajlar.hizliSilIpucu, mesajV2.sharedPost, mesajV2.you, mesajV2.doubleTapToReply, mesajV2.tapToRecord, mesajV2.mediaCount, mesajV2.mediaRemove, mesajV2.mediaAddMore, mesajV2.sendN, mesajV2.voicePreviewHint, mesajV2.voiceTooShort, odaDuzen.kategoriPlatform, odaDuzen.club_stage, odaDuzen.club_stageAlt, odaDuzen.presence_grid, odaDuzen.presence_gridAlt, odaDuzen.spaces_strip, odaDuzen.spaces_stripAlt, odaDuzen.party_wave, odaDuzen.party_waveAlt, odaDuzen.party_u, odaDuzen.party_uAlt, odaDuzen.dropin_tiles, odaDuzen.dropin_tilesAlt, odaDuzen.greenroom_bar, odaDuzen.greenroom_barAlt, odaDuzen.salon_circle, odaDuzen.salon_circleAlt, odaTema.kategoriPlatform, odaTema.club_cream, odaTema.club_creamAlt, odaTema.blurple_night, odaTema.blurple_nightAlt, odaTema.spaces_sky, odaTema.spaces_skyAlt, odaTema.party_neon, odaTema.party_neonAlt, odaTema.greenroom_dark, odaTema.greenroom_darkAlt, odaTema.salon_warm, odaTema.salon_warmAlt, zeusX.hazirlaniyor, zeusX.yuklemeBasarisiz, zeusX.yuklemeBasarisizAlt, zeusX.oyunuBitir, zeusX.netKarolar, zeusX.bilgi
+
+### FIL
+gorunum.         tot=74 miss=0 sameEN=74 (100% copy)
+odaDuzen.        tot=108 miss=17 sameEN=91 (84% copy)
+odaTema.         tot=126 miss=13 sameEN=103 (82% copy)
+sesOda.          tot=217 miss=0 sameEN=107 (49% copy)
+odaMuzik.        tot=63 miss=0 sameEN=7 (11% copy)
+mesajlar.        tot=78 miss=9 sameEN=8 (10% copy)
+mesajV2.         tot=84 miss=10 sameEN=55 (65% copy)
+zeusX.           tot=6 miss=6 sameEN=0 (0% copy)
+ajans.           tot=406 miss=0 sameEN=49 (12% copy)
+aiMuzik.         tot=264 miss=0 sameEN=42 (16% copy)
+anaSayfa.        tot=129 miss=0 sameEN=66 (51% copy)
+canliYayin.      tot=120 miss=0 sameEN=103 (86% copy)
+hediyeAd.        tot=50 miss=0 sameEN=49 (98% copy)
+belge.           tot=150 miss=0 sameEN=83 (55% copy)
+sehir.           tot=132 miss=0 sameEN=9 (7% copy)
+MISSING NS: {"mesajlar":9,"mesajV2":10,"odaDuzen":17,"odaTema":13,"zeusX":6}
+ALL MISSING: mesajlar.hizliEkle, mesajlar.hizliEkleBaslik, mesajlar.hizliEkleAlt, mesajlar.hizliEtiketPh, mesajlar.hizliMetinPh, mesajlar.hizliBos, mesajlar.hizliLimit, mesajlar.hizliSilBaslik, mesajlar.hizliSilIpucu, mesajV2.sharedPost, mesajV2.you, mesajV2.doubleTapToReply, mesajV2.tapToRecord, mesajV2.mediaCount, mesajV2.mediaRemove, mesajV2.mediaAddMore, mesajV2.sendN, mesajV2.voicePreviewHint, mesajV2.voiceTooShort, odaDuzen.kategoriPlatform, odaDuzen.club_stage, odaDuzen.club_stageAlt, odaDuzen.presence_grid, odaDuzen.presence_gridAlt, odaDuzen.spaces_strip, odaDuzen.spaces_stripAlt, odaDuzen.party_wave, odaDuzen.party_waveAlt, odaDuzen.party_u, odaDuzen.party_uAlt, odaDuzen.dropin_tiles, odaDuzen.dropin_tilesAlt, odaDuzen.greenroom_bar, odaDuzen.greenroom_barAlt, odaDuzen.salon_circle, odaDuzen.salon_circleAlt, odaTema.kategoriPlatform, odaTema.club_cream, odaTema.club_creamAlt, odaTema.blurple_night, odaTema.blurple_nightAlt, odaTema.spaces_sky, odaTema.spaces_skyAlt, odaTema.party_neon, odaTema.party_neonAlt, odaTema.greenroom_dark, odaTema.greenroom_darkAlt, odaTema.salon_warm, odaTema.salon_warmAlt, zeusX.hazirlaniyor, zeusX.yuklemeBasarisiz, zeusX.yuklemeBasarisizAlt, zeusX.oyunuBitir, zeusX.netKarolar, zeusX.bilgi

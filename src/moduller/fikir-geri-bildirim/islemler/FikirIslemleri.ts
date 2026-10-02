@@ -1,10 +1,11 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import type { FikirDetay, FikirKategori, FikirOzet } from '../tipler';
 import type { FikirEk } from '../yardimcilar/FikirMedyaYukle';
 import { FikirTeknikMetaAl } from '../yardimcilar/FikirTeknikMeta';
 
 function rpcHata(error: { message?: string } | null): never {
-  throw new Error(error?.message || 'İşlem başarısız');
+  throw new Error(error?.message || i18n.t('fikirler.islemBasarisiz'));
 }
 
 export async function FikirKategorileriGetir(
@@ -44,7 +45,7 @@ export async function FikirGonder(girdi: {
   });
   if (error) rpcHata(error);
   const row = data as { ok?: boolean; id?: string; status?: string };
-  if (!row?.id) throw new Error('Fikir oluşturulamadı');
+  if (!row?.id) throw new Error(i18n.t('fikirler.olusturulamadi'));
   return { ok: true, id: row.id, status: row.status ?? 'RECEIVED' };
 }
 

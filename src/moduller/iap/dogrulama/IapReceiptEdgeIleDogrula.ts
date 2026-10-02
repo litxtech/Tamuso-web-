@@ -3,6 +3,7 @@ import type {
   IapMagaza,
   IapReceiptDogrulamaSonuc,
 } from './IapReceiptDogrulamaIstegiHazirla';
+import i18n from '../../../i18n';
 
 /**
  * Edge Function uzerinden receipt verify + coin yukleme.
@@ -25,7 +26,7 @@ export async function IapReceiptEdgeIleDogrula(input: {
 
   const { data: session } = await supabase.auth.getSession();
   const jwt = session.session?.access_token;
-  if (!jwt) return { ok: false, hata: 'Oturum gerekli' };
+  if (!jwt) return { ok: false, hata: i18n.t('cuzdanX.oturumGerekli') };
 
   try {
     const res = await fetch(edgeUrl, {
@@ -53,7 +54,7 @@ export async function IapReceiptEdgeIleDogrula(input: {
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'IAP edge hatası',
+      hata: e instanceof Error ? e.message : i18n.t('cuzdanX.iapEdgeHatasi'),
     };
   }
 }

@@ -9,10 +9,12 @@ import {
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { FikirDurumRozeti } from './FikirDurumRozeti';
 import type { FikirOzet } from '../tipler';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 
-function tarihKisa(iso: string) {
+function tarihKisa(iso: string, locale: string) {
   try {
-    return new Date(iso).toLocaleDateString('tr-TR', {
+    return new Date(iso).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -31,6 +33,9 @@ export function FikirKarti({
   onPress: () => void;
   showVotes?: boolean;
 }) {
+  const { dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
+
   return (
     <Pressable style={styles.kart} onPress={onPress}>
       <View style={styles.ust}>
@@ -50,12 +55,12 @@ export function FikirKarti({
         {item.title}
       </Text>
       <View style={styles.alt}>
-        <Text style={styles.tarih}>{tarihKisa(item.created_at)}</Text>
+        <Text style={styles.tarih}>{tarihKisa(item.created_at, locale)}</Text>
         {showVotes ? (
           <View style={styles.oy}>
             <Ionicons name="bulb-outline" size={14} color={RenkTokenlari.accent} />
             <Text style={styles.oyYazi}>
-              {item.vote_count.toLocaleString('tr-TR')}
+              {item.vote_count.toLocaleString(locale)}
             </Text>
           </View>
         ) : null}

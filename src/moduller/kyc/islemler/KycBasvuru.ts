@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { DepoyaMedyaYukle } from '../../../ortak/medya/DepoyaMedyaYukle';
 
 export type KycDocType =
@@ -37,7 +38,7 @@ async function kycYukle(
     mime: 'image/jpeg',
     tur: 'image',
   });
-  if (!up.ok) throw new Error(up.hata ?? 'Yükleme başarısız');
+  if (!up.ok) throw new Error(up.hata ?? i18n.t('kyc.yuklemeBasarisiz'));
   return path;
 }
 
@@ -46,20 +47,20 @@ export async function KycBasvuruGonder(
 ): Promise<{ ok: true } | { ok: false; hata: string }> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;
-  if (!uid) return { ok: false, hata: 'Oturum yok' };
+  if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
   try {
     if (!input.livenessPassed) {
-      return { ok: false, hata: 'Canlılık kontrolü tamamlanmalı.' };
+      return { ok: false, hata: i18n.t('kyc.canlilikTamamlanmali') };
     }
     if (input.docType === 'temporary_id' && !input.docBackUri) {
-      return { ok: false, hata: 'Geçici kimlikte arka yüz zorunlu.' };
+      return { ok: false, hata: i18n.t('kyc.geciciArkaZorunlu') };
     }
     if (
       (input.docType === 'id_card' || input.docType === 'drivers_license') &&
       !input.docBackUri
     ) {
-      return { ok: false, hata: 'Kimlik/ehliyette arka yüz zorunlu.' };
+      return { ok: false, hata: i18n.t('kyc.kimlikArkaZorunlu') };
     }
 
     const front = await kycYukle(uid, input.docFrontUri, 'front');
@@ -86,10 +87,10 @@ export async function KycBasvuruGonder(
     });
     if (error) {
       if (/18\+/i.test(error.message)) {
-        return { ok: false, hata: '18 yaşından küçükler başvuramaz.' };
+        return { ok: false, hata: i18n.t('kyc.yas18') };
       }
       if (/pending/i.test(error.message)) {
-        return { ok: false, hata: 'Zaten bekleyen bir başvurun var.' };
+        return { ok: false, hata: i18n.t('kyc.bekleyenBasvuru') };
       }
       return { ok: false, hata: error.message };
     }
@@ -97,7 +98,7 @@ export async function KycBasvuruGonder(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'KYC gönderilemedi',
+      hata: e instanceof Error ? e.message : i18n.t('kyc.kycGonderilemedi'),
     };
   }
 }

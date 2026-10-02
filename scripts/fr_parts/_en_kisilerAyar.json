@@ -1,0 +1,33 @@
+{
+  "kisilerAyar": {
+    "altBaslik": "Discovery · privacy · fees",
+    "coinDk": "{{n}} coins/min",
+    "azalt": "Decrease",
+    "artir": "Increase",
+    "yuklenemedi": "Could not load",
+    "kesifTercihi": "Discovery preference",
+    "aramaIzni": "Call permission",
+    "fiyat": "Price",
+    "ucretlerGuncellendi": "Your call rates were updated.",
+    "kisitliUyari": "You were restricted from discovery due to moderation. You cannot re-enable it yourself.",
+    "kesif": "Discovery",
+    "beniGoster": "Show me on the People page",
+    "cevrimiciGoster": "Show my online status",
+    "bayrakGoster": "Show my country flag",
+    "kesifTercihim": "My discovery preference",
+    "kadinlar": "Women",
+    "erkekler": "Men",
+    "herkes": "Everyone",
+    "aramalar": "Calls",
+    "beniAra": "Call me (open to calls)",
+    "sesliKabul": "Accept voice calls",
+    "goruntuluKabul": "Accept video calls",
+    "kimlerArayabilir": "Who can call me?",
+    "takipEttiklerim": "People I follow",
+    "kimse": "Nobody",
+    "sesliUcret": "Voice call rate",
+    "goruntuluUcret": "Video call rate",
+    "ucretleriKaydet": "Save Rates",
+    "digerGizlilik": "Other privacy settings →"
+  }
+}

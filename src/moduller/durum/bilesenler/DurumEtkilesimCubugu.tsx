@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { TakipSayaciniFormatla } from '../../takip/TakipSayacFormat';
 
 type Props = {
   commentCount: number;
@@ -16,13 +17,6 @@ type Props = {
   onHediye: () => void;
   onPaylas?: () => void;
 };
-
-function formatSayi(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}Mn`;
-  if (n >= 10_000) return `${Math.round(n / 1000)}B`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}B`;
-  return String(n);
-}
 
 /**
  * Kompakt etkileşim çubuğu.
@@ -39,7 +33,7 @@ export const DurumEtkilesimCubugu = memo(function DurumEtkilesimCubugu({
   onHediye,
   onPaylas,
 }: Props) {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
   return (
     <View style={styles.aksiyonlar}>
       <Pressable
@@ -58,7 +52,7 @@ export const DurumEtkilesimCubugu = memo(function DurumEtkilesimCubugu({
       >
         <Ionicons name="chatbubble-outline" size={18} color={RenkTokenlari.textMuted} />
         {commentCount > 0 ? (
-          <Text style={styles.aksiyonSayi}>{formatSayi(commentCount)}</Text>
+          <Text style={styles.aksiyonSayi}>{TakipSayaciniFormatla(commentCount, dil)}</Text>
         ) : null}
       </Pressable>
 
@@ -87,7 +81,7 @@ export const DurumEtkilesimCubugu = memo(function DurumEtkilesimCubugu({
               likedByMe && { color: RenkTokenlari.primarySoft },
             ]}
           >
-            {formatSayi(likeCount)}
+            {TakipSayaciniFormatla(likeCount, dil)}
           </Text>
         ) : null}
       </Pressable>
@@ -106,7 +100,7 @@ export const DurumEtkilesimCubugu = memo(function DurumEtkilesimCubugu({
       >
         <Ionicons name="gift-outline" size={18} color={RenkTokenlari.textMuted} />
         {giftCount > 0 ? (
-          <Text style={styles.aksiyonSayi}>{formatSayi(giftCount)}</Text>
+          <Text style={styles.aksiyonSayi}>{TakipSayaciniFormatla(giftCount, dil)}</Text>
         ) : null}
       </Pressable>
 
@@ -116,7 +110,7 @@ export const DurumEtkilesimCubugu = memo(function DurumEtkilesimCubugu({
           accessibilityLabel={t('durumX.goruntulenme', { count: viewCount })}
         >
           <Ionicons name="eye-outline" size={18} color={RenkTokenlari.textMuted} />
-          <Text style={styles.aksiyonSayi}>{formatSayi(viewCount)}</Text>
+          <Text style={styles.aksiyonSayi}>{TakipSayaciniFormatla(viewCount, dil)}</Text>
         </View>
       ) : null}
 

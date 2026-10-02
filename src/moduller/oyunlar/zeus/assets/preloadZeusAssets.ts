@@ -1,5 +1,6 @@
 /**
- * Zeus — semboller önce; karakter / UI / gökyüzü arka planda.
+ * Zeus — semboller arka planda; tahta hemen açılır.
+ * Ağır kapak/karakter decode oyunu kilitlemez.
  */
 
 import type { ImageSourcePropType } from 'react-native';
@@ -14,61 +15,94 @@ import {
   UiImages,
 } from './VisualAssets';
 
-let visualCache: Promise<void> | null = null;
+let visualCache: Promise<boolean> | null = null;
 let visualsReady = false;
-let bgCache: Promise<void> | null = null;
+let visualsFailed = false;
+let restCache: Promise<void> | null = null;
 
 export function zeusVisualsCached(): boolean {
   return visualsReady;
 }
 
-/** Oyun seçim modalı açılınca çağır — cold start’ı kısaltır. */
+export function zeusVisualsFailed(): boolean {
+  return visualsFailed;
+}
+
+export function resetZeusVisualCache(): void {
+  visualCache = null;
+  visualsReady = false;
+  visualsFailed = false;
+  restCache = null;
+}
+
 export function warmZeusAssetsEarly(): void {
   void preloadZeusAssets();
 }
 
+function loadRestInBackground(): void {
+  if (restCache) return;
+  restCache = (async () => {
+    await oyunGorselleriniYukle(
+      oyunGorselModulIdleri([
+        CharacterImages.zeusIdle,
+        BackgroundImages.olympusSky,
+      ]),
+      undefined,
+      { wave: 2 },
+    );
+    // Kapak / spin butonu en son — 2MB+; tahtayı etkilemesin
+    await oyunGorselleriniYukle(
+      oyunGorselModulIdleri([UiImages.cover, UiImages.spinButton]),
+      undefined,
+      { wave: 1 },
+    );
+  })().catch(() => undefined);
+}
+
 export async function preloadZeusAssets(
   onProgress?: (progress01: number) => void,
-): Promise<void> {
+): Promise<boolean> {
   if (visualsReady) {
     onProgress?.(1);
-    return;
+    loadRestInBackground();
+    return true;
   }
   if (!visualCache) {
     visualCache = (async () => {
+      visualsFailed = false;
       const symbolIds = oyunGorselModulIdleri(
         Object.values(SymbolImages) as ImageSourcePropType[],
       );
-      const restIds = oyunGorselModulIdleri([
-        CharacterImages.zeusIdle,
-        UiImages.spinButton,
-      ]);
-
-      await oyunGorselleriniYukle(symbolIds, (done, total) => {
-        onProgress?.(0.75 * (done / Math.max(1, total)));
-      });
-      visualsReady = true;
-      onProgress?.(0.82);
-
-      await oyunGorselleriniYukle(restIds, (done, total) => {
-        onProgress?.(0.82 + 0.12 * (done / Math.max(1, total)));
-      });
-      onProgress?.(1);
-
-      if (!bgCache) {
-        bgCache = oyunGorselleriniYukle(
-          oyunGorselModulIdleri([
-            BackgroundImages.olympusSky,
-            UiImages.cover,
-          ]),
-        ).catch(() => undefined);
+      if (symbolIds.length < Object.keys(SymbolImages).length) {
+        throw new Error('ZEUS_SYMBOL_MODULES_MISSING');
       }
-    })().catch(() => {
-      visualCache = null;
+
+      // 4'lü dalga — CPU'yu boğmadan hızlı
+      await oyunGorselleriniYukle(
+        symbolIds,
+        (done, total) => {
+          onProgress?.(done / Math.max(1, total));
+        },
+        { wave: 4 },
+      );
+
       visualsReady = true;
+      visualsFailed = false;
       onProgress?.(1);
+      loadRestInBackground();
+      return true;
+    })().catch((err) => {
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.error('[ZEUS_PRELOAD_FAILED]', err);
+      }
+      visualCache = null;
+      visualsReady = false;
+      visualsFailed = true;
+      onProgress?.(1);
+      return false;
     });
   }
-  await visualCache;
-  onProgress?.(1);
+  const ok = await visualCache;
+  if (ok) onProgress?.(1);
+  return ok;
 }

@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useCeviri } from '../../src/i18n/useCeviri';
 import { KozmikKaskadEkrani } from '../../src/moduller/oyunlar/kaskad/ekranlar/KozmikKaskadEkrani';
 import { registerKozmikKaskad } from '../../src/moduller/oyunlar/kaskad/KaskadKayit';
 import { isGameVisible } from '../../src/moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
@@ -20,6 +21,7 @@ import {
 type Durum = 'yukleniyor' | 'acik' | 'kapali';
 
 export default function KaskadOyunSayfasi() {
+  const { t } = useCeviri();
   const { user } = useAuth();
   const [durum, setDurum] = useState<Durum>('yukleniyor');
 
@@ -58,12 +60,10 @@ export default function KaskadOyunSayfasi() {
   if (durum === 'kapali') {
     return (
       <View style={styles.merkez}>
-        <Text style={styles.baslik}>REALM OF STORMS</Text>
-        <Text style={styles.mesaj}>
-          Oyun şu an kapalı. Daha sonra tekrar dene.
-        </Text>
+        <Text style={styles.baslik}>{t('oyun.kaskad')}</Text>
+        <Text style={styles.mesaj}>{t('oyun.acikOyunYokBody')}</Text>
         <Pressable style={styles.btn} onPress={kapat}>
-          <Text style={styles.btnText}>Geri dön</Text>
+          <Text style={styles.btnText}>{t('ortak.geriDon')}</Text>
         </Pressable>
       </View>
     );

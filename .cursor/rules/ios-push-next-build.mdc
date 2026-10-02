@@ -1,21 +1,19 @@
 ---
-description: Sonraki iOS build'de Push Notifications (APNs) mutlaka acilsin
+description: iOS Push — APNs EAS'te kurulu; yeni build'de Push No deme
 alwaysApply: true
 ---
 
-# iOS Push — sonraki build zorunlulugu
+# iOS Push — durum
 
-Ilk cihaz development build'inde kullanici **Setup Push Notifications → No** secti.
-Bir sonraki `eas build --platform ios` (development veya production) sirasinda agent sunlari yapmali:
+EAS'te Apple Push Key kayıtlı (`keyIdentifier` Expo credentials).
+`eas.json` → `cli.promptToConfigurePushNotifications: true`.
+`app.config.ts` → `aps-environment` + `UIBackgroundModes: remote-notification` — kaldirma.
 
-1. Build interactive calissin (`--non-interactive` kullanma) veya once credentials duzelt.
-2. EAS sordugunda:
-   - **Setup Push Notifications?** → **Yes**
-   - **Apple Push Notifications service key?** → **Yes** (Apple hesabi ile olustur/yukle)
-3. Provisioning profil Push capability icermiyorsa credentials'i yenile:
-   - `npx eas-cli credentials -p ios`
-   - Distribution certificate / Ad Hoc profile icin Push'u etkinlestir; gerekirse profili yeniden olustur.
-4. `app.config.ts` icinde `ios.entitlements['aps-environment']` ve `UIBackgroundModes: remote-notification` zaten var — kaldirma.
-5. Build bitince Install linki ile kur; fiziksel cihazda Expo Push token uretildigini dogrula.
+Sonraki `eas build --platform ios` sirasinda:
 
-Push acilmadan iOS bildirimleri calismaz.
+1. Mümkünse interactive çalıştır; **Setup Push Notifications?** sorulursa → **Yes**.
+2. Push key zaten varsa CLI "Push Notifications are set up" der — yeni key zorlama.
+3. Development profilinde `aps-environment: development` (EXPO_PUBLIC_APP_ENV ≠ production).
+4. Kurulum sonrası fiziksel cihazda Expo Push token üretildiğini doğrula.
+
+Push key InvalidCredentials verirse: `eas credentials -p ios` → Push Key yenile (Apple login gerekir).

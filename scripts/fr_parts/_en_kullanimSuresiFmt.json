@@ -1,0 +1,11 @@
+{
+  "kullanimSuresiFmt": {
+    "gunSaatKisa": "{{gun}}d {{saat}}h",
+    "saatDkKisa": "{{saat}}h {{dk}}m",
+    "dkKisa": "{{dk}} m",
+    "snKisa": "{{sn}} s",
+    "gun": "{{n}} d",
+    "saat": "{{n}} h",
+    "dk": "{{n}} m"
+  }
+}

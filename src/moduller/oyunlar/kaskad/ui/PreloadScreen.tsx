@@ -15,7 +15,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { GAME_DISPLAY_NAME, GAME_SUBTITLE } from '../sabitler/KaskadSabitleri';
 import { TipografiTokenlari } from '../../../../tasarim-sistemi/TipografiTokenlari';
-import { CharacterImages, SymbolImages, UiImages } from '../assets/VisualAssets';
+import { CharacterImages, SymbolImages } from '../assets/VisualAssets';
 import { kaskadVisualsCached } from '../assets/preloadKaskadAssets';
 
 type Props = {
@@ -24,14 +24,14 @@ type Props = {
 };
 
 const AVATAR = 112;
-/** Tahta hücre boyutuna yakın — GPU texture bu boyutta cache’lensin */
-const WARM_SIZE = 72;
-const WARM_TIMEOUT_MS = 520;
+/** Tahta hücresine yakın — GPU bu boyutta decode etsin, 1024 kaynak beklemesin */
+const WARM_SIZE = 96;
+const WARM_TIMEOUT_MS = 2500;
 const SYMBOL_SOURCES = Object.values(SymbolImages);
 
 function PreloadScreenInner({ progress, onImagesWarmed }: Props) {
   const pulse = useSharedValue(0.96);
-  const pending = useRef(SYMBOL_SOURCES.length + 2);
+  const pending = useRef(SYMBOL_SOURCES.length);
   const notified = useRef(false);
   const onWarmedRef = useRef(onImagesWarmed);
   onWarmedRef.current = onImagesWarmed;
@@ -95,9 +95,7 @@ function PreloadScreenInner({ progress, onImagesWarmed }: Props) {
               source={CharacterImages.stormKeeper}
               style={styles.avatarImg}
               resizeMode="cover"
-              resizeMethod="resize"
               fadeDuration={0}
-              onLoad={onWarmLoad}
             />
           </View>
         </LinearGradient>
@@ -117,19 +115,10 @@ function PreloadScreenInner({ progress, onImagesWarmed }: Props) {
             source={src}
             style={styles.warmImg}
             resizeMode="contain"
-            resizeMethod="resize"
             fadeDuration={0}
             onLoad={onWarmLoad}
           />
         ))}
-        <Image
-          source={UiImages.spinButton}
-          style={styles.warmImg}
-          resizeMode="contain"
-          resizeMethod="resize"
-          fadeDuration={0}
-          onLoad={onWarmLoad}
-        />
       </View>
     </View>
   );

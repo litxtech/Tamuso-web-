@@ -10,17 +10,30 @@ export type PushTercihleri = {
   social: boolean;
   wallet: boolean;
   system: boolean;
+  calls: boolean;
+  agency: boolean;
   updated_at: string;
+};
+
+export type BildirimAnahtari = {
+  kod: string;
+  grup: string;
+  baslik: string;
+  aciklama: string;
+  acik: boolean;
+  sira: number;
 };
 
 export type PushTercihAnahtari =
   | 'all_enabled'
   | 'messages'
+  | 'calls'
   | 'gifts'
   | 'live'
   | 'rooms'
   | 'social'
   | 'wallet'
+  | 'agency'
   | 'system';
 
 export const PUSH_TERCIH_KATALOGU: {
@@ -44,6 +57,15 @@ export const PUSH_TERCIH_KATALOGU: {
     },
     get alt() {
       return i18n.t('bildirimAyar.mesajlarAlt');
+    },
+  },
+  {
+    key: 'calls',
+    get baslik() {
+      return i18n.t('bildirimAyar.aramalar');
+    },
+    get alt() {
+      return i18n.t('bildirimAyar.aramalarAlt');
     },
   },
   {
@@ -89,6 +111,15 @@ export const PUSH_TERCIH_KATALOGU: {
     },
     get alt() {
       return i18n.t('bildirimAyar.cuzdanAlt');
+    },
+  },
+  {
+    key: 'agency',
+    get baslik() {
+      return i18n.t('bildirimAyar.ajans');
+    },
+    get alt() {
+      return i18n.t('bildirimAyar.ajansAlt');
     },
   },
   {

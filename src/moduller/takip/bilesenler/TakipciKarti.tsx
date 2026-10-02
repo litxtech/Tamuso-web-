@@ -13,6 +13,7 @@ import { TakipButonu } from './TakipButonu';
 import type { TakipKullaniciKarti } from '../TakipTipleri';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   kart: TakipKullaniciKarti;
@@ -32,6 +33,7 @@ export function TakipciKarti({
   followLoading,
   hideFollow,
 }: Props) {
+  const { t } = useCeviri();
   const ad = kart.display_name;
   const handle = kart.username ? `@${kart.username}` : null;
   const avatar = MedyaUriGuvenli(kart.avatar_url);
@@ -96,7 +98,7 @@ export function TakipciKarti({
             }}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel={`${ad} için menü`}
+            accessibilityLabel={t('takip.menuA11y', { ad })}
             style={styles.menuBtn}
           >
             <Ionicons

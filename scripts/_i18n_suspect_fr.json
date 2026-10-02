@@ -1,0 +1,828 @@
+[
+  {
+    "key": "sekmeler.profil",
+    "reason": "same_as_tr",
+    "en": "Profile",
+    "val": "Profil",
+    "tr": "Profil"
+  },
+  {
+    "key": "sekmeler.mesajlar",
+    "reason": "same_as_en",
+    "en": "Messages",
+    "val": "Messages",
+    "tr": "Mesajlar"
+  },
+  {
+    "key": "gorunum.tumunuGorAlt",
+    "reason": "same_as_en",
+    "en": "30 looks",
+    "val": "30 looks",
+    "tr": "30 görünüm"
+  },
+  {
+    "key": "gorunum.kategoriDoga",
+    "reason": "same_as_en",
+    "en": "Nature",
+    "val": "Nature",
+    "tr": "Doğa"
+  },
+  {
+    "key": "gorunum.sampanya",
+    "reason": "same_as_en",
+    "en": "Champagne",
+    "val": "Champagne",
+    "tr": "Şampanya"
+  },
+  {
+    "key": "gorunum.grafit",
+    "reason": "same_as_en",
+    "en": "Graphite",
+    "val": "Graphite",
+    "tr": "Grafit"
+  },
+  {
+    "key": "gorunum.bordo",
+    "reason": "same_as_en",
+    "en": "Bordeaux",
+    "val": "Bordeaux",
+    "tr": "Bordo"
+  },
+  {
+    "key": "gorunum.buzul",
+    "reason": "same_as_en",
+    "en": "Glacier",
+    "val": "Glacier",
+    "tr": "Buzul"
+  },
+  {
+    "key": "gorunum.gunbatimiAlt",
+    "reason": "same_as_en",
+    "en": "Orange noir",
+    "val": "Orange noir",
+    "tr": "Turuncu noir"
+  },
+  {
+    "key": "gorunum.plasma",
+    "reason": "same_as_en",
+    "en": "Plasma",
+    "val": "Plasma",
+    "tr": "Plazma"
+  },
+  {
+    "key": "gorunum.krom",
+    "reason": "same_as_en",
+    "en": "Chrome",
+    "val": "Chrome",
+    "tr": "Krom"
+  },
+  {
+    "key": "ayarlar.bildirimler",
+    "reason": "same_as_en",
+    "en": "Notifications",
+    "val": "Notifications",
+    "tr": "Bildirimler"
+  },
+  {
+    "key": "ayarlar.iletisim",
+    "reason": "same_as_en",
+    "en": "Contact",
+    "val": "Contact",
+    "tr": "İletişim"
+  },
+  {
+    "key": "auth.fotograf",
+    "reason": "same_as_en",
+    "en": "Photo",
+    "val": "Photo",
+    "tr": "Fotoğraf"
+  },
+  {
+    "key": "profil.baslik",
+    "reason": "same_as_tr",
+    "en": "Profile",
+    "val": "Profil",
+    "tr": "Profil"
+  },
+  {
+    "key": "profil.mesajGonder",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "profilDuzenle.fotograflar",
+    "reason": "same_as_en",
+    "en": "Photos",
+    "val": "Photos",
+    "tr": "Fotoğraflar"
+  },
+  {
+    "key": "mesajlar.baslik",
+    "reason": "same_as_en",
+    "en": "Messages",
+    "val": "Messages",
+    "tr": "Mesajlar"
+  },
+  {
+    "key": "cuzdan.ajansPaketStandart",
+    "reason": "same_as_en",
+    "en": "Standard",
+    "val": "Standard",
+    "tr": "Standart"
+  },
+  {
+    "key": "cuzdan.ajansPaketPrestij",
+    "reason": "same_as_en",
+    "en": "Prestige",
+    "val": "Prestige",
+    "tr": "Prestij"
+  },
+  {
+    "key": "durum.fotograf",
+    "reason": "same_as_en",
+    "en": "Photo",
+    "val": "Photo",
+    "tr": "Fotoğraf"
+  },
+  {
+    "key": "bildirimler.baslik",
+    "reason": "same_as_en",
+    "en": "Notifications",
+    "val": "Notifications",
+    "tr": "Bildirimler"
+  },
+  {
+    "key": "bildirimler.kategoriSosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "bildirimler.varsayilanBaslik",
+    "reason": "same_as_en",
+    "en": "Notification",
+    "val": "Notification",
+    "tr": "Bildirim"
+  },
+  {
+    "key": "bildirimAyar.mesajlar",
+    "reason": "same_as_en",
+    "en": "Messages",
+    "val": "Messages",
+    "tr": "Mesajlar"
+  },
+  {
+    "key": "bildirimAyar.sosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "destek.mesaj",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "aiAsistan.botAd",
+    "reason": "same_as_en",
+    "en": "Assistant",
+    "val": "Assistant",
+    "tr": "Asistan"
+  },
+  {
+    "key": "aiCeviri.gorusmeSohbetKisa",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "guvenlik.siddet",
+    "reason": "same_as_en",
+    "en": "Violence",
+    "val": "Violence",
+    "tr": "Şiddet"
+  },
+  {
+    "key": "ajans.izin",
+    "reason": "same_as_en",
+    "en": "Permission",
+    "val": "Permission",
+    "tr": "İzin"
+  },
+  {
+    "key": "ajans.phSlogan",
+    "reason": "same_as_tr",
+    "en": "Tagline",
+    "val": "Slogan",
+    "tr": "Slogan"
+  },
+  {
+    "key": "ajans.phAciklamaKisa",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "ajans.alertProfil",
+    "reason": "same_as_tr",
+    "en": "Profile",
+    "val": "Profil",
+    "tr": "Profil"
+  },
+  {
+    "key": "ajans.alertYetki",
+    "reason": "same_as_en",
+    "en": "Permission",
+    "val": "Permission",
+    "tr": "Yetki"
+  },
+  {
+    "key": "ajans.phNot",
+    "reason": "same_as_en",
+    "en": "Note",
+    "val": "Note",
+    "tr": "Not"
+  },
+  {
+    "key": "ajans.islemlerBaslik",
+    "reason": "same_as_en",
+    "en": "Transactions",
+    "val": "Transactions",
+    "tr": "İşlemler"
+  },
+  {
+    "key": "ajans.dkKisa",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "ajans.alertKod",
+    "reason": "same_as_en",
+    "en": "Code",
+    "val": "Code",
+    "tr": "Kod"
+  },
+  {
+    "key": "ajans.phMesaj",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "sehir.lider",
+    "reason": "same_as_en",
+    "en": "Leader",
+    "val": "Leader",
+    "tr": "Lider"
+  },
+  {
+    "key": "sehir.labelMesaj",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "sehir.puan",
+    "reason": "same_as_en",
+    "en": "Points",
+    "val": "Points",
+    "tr": "Puan"
+  },
+  {
+    "key": "aiMuzik.chipTur",
+    "reason": "same_as_en",
+    "en": "Genre",
+    "val": "Genre",
+    "tr": "Tür"
+  },
+  {
+    "key": "aiMuzik.chipEnstruman",
+    "reason": "same_as_en",
+    "en": "Instruments",
+    "val": "Instruments",
+    "tr": "Enstrüman"
+  },
+  {
+    "key": "aiMuzik.chipEnstrumanOk",
+    "reason": "same_as_en",
+    "en": "Instruments ✓",
+    "val": "Instruments ✓",
+    "tr": "Enstrüman ✓"
+  },
+  {
+    "key": "aiMuzik.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.ses",
+    "reason": "same_as_en",
+    "en": "Audio",
+    "val": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "aiMuzik.duraklat",
+    "reason": "same_as_en",
+    "en": "Pause",
+    "val": "Pause",
+    "tr": "Duraklat"
+  },
+  {
+    "key": "aiMuzik.admin.alertDakika",
+    "reason": "same_as_en",
+    "en": "Minutes",
+    "val": "Minutes",
+    "tr": "Dakika"
+  },
+  {
+    "key": "aiMuzik.admin.etiketDakika",
+    "reason": "same_as_en",
+    "en": "Minutes",
+    "val": "Minutes",
+    "tr": "Dakika"
+  },
+  {
+    "key": "odaMuzik.alertSes",
+    "reason": "same_as_en",
+    "en": "Audio",
+    "val": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "odaMuzik.dashToplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "fikirler.gorsel",
+    "reason": "same_as_en",
+    "en": "Image",
+    "val": "Image",
+    "tr": "Görsel"
+  },
+  {
+    "key": "fikirler.aciklama",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "kyc.belge",
+    "reason": "same_as_en",
+    "en": "Document",
+    "val": "Document",
+    "tr": "Belge"
+  },
+  {
+    "key": "canli.aciklama",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "modlar.tekli",
+    "reason": "same_as_en",
+    "en": "Solo",
+    "val": "Solo",
+    "tr": "Tekli"
+  },
+  {
+    "key": "hesapSil.onayBaslik",
+    "reason": "same_as_en",
+    "en": "Confirmation",
+    "val": "Confirmation",
+    "tr": "Onay"
+  },
+  {
+    "key": "ulkeLigi.adminPuan",
+    "reason": "same_as_en",
+    "en": "Points",
+    "val": "Points",
+    "tr": "Puan"
+  },
+  {
+    "key": "ulkeLigi.puanEtiket",
+    "reason": "same_as_en",
+    "en": "pts",
+    "val": "pts",
+    "tr": "puan"
+  },
+  {
+    "key": "satinAlma.kanalManuel",
+    "reason": "same_as_tr",
+    "en": "Manual",
+    "val": "Manuel",
+    "tr": "Manuel"
+  },
+  {
+    "key": "pk.skorVarsayilan",
+    "reason": "same_as_en",
+    "en": "score",
+    "val": "score",
+    "tr": "skor"
+  },
+  {
+    "key": "sertifikasyon.baslik",
+    "reason": "same_as_en",
+    "en": "Certification",
+    "val": "Certification",
+    "tr": "Sertifikasyon"
+  },
+  {
+    "key": "sertifikasyon.katPerformans",
+    "reason": "same_as_en",
+    "en": "Performance",
+    "val": "Performance",
+    "tr": "Performans"
+  },
+  {
+    "key": "sertifikasyon.katFinans",
+    "reason": "same_as_en",
+    "en": "Finance",
+    "val": "Finance",
+    "tr": "Finans"
+  },
+  {
+    "key": "sertifikasyon.internet",
+    "reason": "same_as_en",
+    "en": "Internet",
+    "val": "Internet",
+    "tr": "İnternet"
+  },
+  {
+    "key": "platform.kpiRozet",
+    "reason": "same_as_en",
+    "en": "Badges",
+    "val": "Badges",
+    "tr": "Rozet"
+  },
+  {
+    "key": "platform.bildirimler",
+    "reason": "same_as_en",
+    "en": "Notifications",
+    "val": "Notifications",
+    "tr": "Bildirimler"
+  },
+  {
+    "key": "platform.sertifikasyon",
+    "reason": "same_as_en",
+    "en": "Certification",
+    "val": "Certification",
+    "tr": "Sertifikasyon"
+  },
+  {
+    "key": "takas.mesajlas",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesajlaş"
+  },
+  {
+    "key": "anaSayfa.menuDestekAlt",
+    "reason": "same_as_en",
+    "en": "Agent Toprak",
+    "val": "Agent Toprak",
+    "tr": "Temsilci Toprak"
+  },
+  {
+    "key": "anaSayfa.istatRozet",
+    "reason": "same_as_en",
+    "en": "Badges",
+    "val": "Badges",
+    "tr": "Rozet"
+  },
+  {
+    "key": "anaSayfa.oneriler",
+    "reason": "same_as_en",
+    "en": "Suggestions…",
+    "val": "Suggestions…",
+    "tr": "Öneriler…"
+  },
+  {
+    "key": "anaSayfa.menu",
+    "reason": "same_as_en",
+    "en": "Menu",
+    "val": "Menu",
+    "tr": "Menü"
+  },
+  {
+    "key": "anaSayfa.grupYonetim",
+    "reason": "same_as_en",
+    "en": "ADMIN",
+    "val": "ADMIN",
+    "tr": "YÖNETİM"
+  },
+  {
+    "key": "cuzdanX.islemler",
+    "reason": "same_as_en",
+    "en": "Transactions",
+    "val": "Transactions",
+    "tr": "İşlemler"
+  },
+  {
+    "key": "olusturTab.mod",
+    "reason": "same_as_en",
+    "en": "Mode",
+    "val": "Mode",
+    "tr": "Mod"
+  },
+  {
+    "key": "cihazlar.oturumlar",
+    "reason": "same_as_en",
+    "en": "Sessions",
+    "val": "Sessions",
+    "tr": "Oturumlar"
+  },
+  {
+    "key": "mesajV2.photo",
+    "reason": "same_as_en",
+    "en": "Photo",
+    "val": "Photo",
+    "tr": "Fotoğraf"
+  },
+  {
+    "key": "mesajV2.pause",
+    "reason": "same_as_en",
+    "en": "Pause",
+    "val": "Pause",
+    "tr": "Duraklat"
+  },
+  {
+    "key": "mesajV2.pushPhoto",
+    "reason": "same_as_en",
+    "en": "📷 Photo",
+    "val": "📷 Photo",
+    "tr": "📷 Fotoğraf"
+  },
+  {
+    "key": "hediye.sekmeNadir",
+    "reason": "same_as_en",
+    "en": "Rare",
+    "val": "Rare",
+    "tr": "Nadir"
+  },
+  {
+    "key": "hediyeAd.rose",
+    "reason": "same_as_en",
+    "en": "Rose",
+    "val": "Rose",
+    "tr": "Gül"
+  },
+  {
+    "key": "hediyeAd.bouquet",
+    "reason": "same_as_en",
+    "en": "Bouquet",
+    "val": "Bouquet",
+    "tr": "Buket"
+  },
+  {
+    "key": "hediyeAd.champagne",
+    "reason": "same_as_en",
+    "en": "Champagne",
+    "val": "Champagne",
+    "tr": "Şampanya"
+  },
+  {
+    "key": "hediyeAd.yacht",
+    "reason": "same_as_en",
+    "en": "Yacht",
+    "val": "Yacht",
+    "tr": "Yat"
+  },
+  {
+    "key": "hediyeAd.lion",
+    "reason": "same_as_en",
+    "en": "Lion",
+    "val": "Lion",
+    "tr": "Aslan"
+  },
+  {
+    "key": "hediyeAd.dragon",
+    "reason": "same_as_en",
+    "en": "Dragon",
+    "val": "Dragon",
+    "tr": "Ejder"
+  },
+  {
+    "key": "hediyeAd.phoenix",
+    "reason": "same_as_en",
+    "en": "Phoenix",
+    "val": "Phoenix",
+    "tr": "Anka"
+  },
+  {
+    "key": "mesajSohbet.mesajBaslik",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "gorusme.sesli",
+    "reason": "same_as_en",
+    "en": "Audio",
+    "val": "Audio",
+    "tr": "Sesli"
+  },
+  {
+    "key": "sesOda.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "sesOda.saDk",
+    "reason": "same_as_en",
+    "en": "{{sa}} h {{dk}} min",
+    "val": "{{sa}} h {{dk}} min",
+    "tr": "{{sa}} sa {{dk}} dk"
+  },
+  {
+    "key": "sesOda.aciklama",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "sesOda.mikrofon",
+    "reason": "same_as_en",
+    "en": "Microphone",
+    "val": "Microphone",
+    "tr": "Mikrofon"
+  },
+  {
+    "key": "kisilerX.mesaj",
+    "reason": "same_as_en",
+    "en": "Message",
+    "val": "Message",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "durumX.duraklat",
+    "reason": "same_as_en",
+    "en": "Pause",
+    "val": "Pause",
+    "tr": "Duraklat"
+  },
+  {
+    "key": "belge.baslik",
+    "reason": "same_as_en",
+    "en": "Document",
+    "val": "Document",
+    "tr": "Belge"
+  },
+  {
+    "key": "belge.fisilti",
+    "reason": "same_as_en",
+    "en": "DOCUMENT",
+    "val": "DOCUMENT",
+    "tr": "BELGE"
+  },
+  {
+    "key": "belge.islem",
+    "reason": "same_as_en",
+    "en": "Transaction",
+    "val": "Transaction",
+    "tr": "İşlem"
+  },
+  {
+    "key": "belge.aciklama",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "belge.kaynak",
+    "reason": "same_as_en",
+    "en": "Source",
+    "val": "Source",
+    "tr": "Kaynak"
+  },
+  {
+    "key": "belge.tarih",
+    "reason": "same_as_en",
+    "en": "Date",
+    "val": "Date",
+    "tr": "Tarih"
+  },
+  {
+    "key": "belge.excelBaslikTarih",
+    "reason": "same_as_en",
+    "en": "Date",
+    "val": "Date",
+    "tr": "Tarih"
+  },
+  {
+    "key": "belge.excelBaslikIslem",
+    "reason": "same_as_en",
+    "en": "Transaction",
+    "val": "Transaction",
+    "tr": "İşlem"
+  },
+  {
+    "key": "belge.excelBaslikAciklama",
+    "reason": "same_as_en",
+    "en": "Description",
+    "val": "Description",
+    "tr": "Açıklama"
+  },
+  {
+    "key": "belge.admin.islemAdedi",
+    "reason": "same_as_en",
+    "en": "Transactions",
+    "val": "Transactions",
+    "tr": "İşlem adedi"
+  },
+  {
+    "key": "belge.admin.toplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "belge.admin.finans",
+    "reason": "same_as_en",
+    "en": "Finance",
+    "val": "Finance",
+    "tr": "Finans"
+  },
+  {
+    "key": "banner.tanitim",
+    "reason": "same_as_en",
+    "en": "Promotion",
+    "val": "Promotion",
+    "tr": "Tanıtım"
+  },
+  {
+    "key": "banner.screen.MESSAGES",
+    "reason": "same_as_en",
+    "en": "Messages",
+    "val": "Messages",
+    "tr": "Mesajlar"
+  },
+  {
+    "key": "banner.screen.PROFILE",
+    "reason": "same_as_tr",
+    "en": "Profile",
+    "val": "Profil",
+    "tr": "Profil"
+  },
+  {
+    "key": "odaDuzen.kategoriSalon",
+    "reason": "same_as_tr",
+    "en": "Lounge",
+    "val": "Salon",
+    "tr": "Salon"
+  },
+  {
+    "key": "odaDuzen.kategoriKompakt",
+    "reason": "same_as_en",
+    "en": "Compact",
+    "val": "Compact",
+    "tr": "Kompakt"
+  },
+  {
+    "key": "odaDuzen.spotlight_pro",
+    "reason": "same_as_tr",
+    "en": "Spotlight Pro",
+    "val": "Spot Pro",
+    "tr": "Spot Pro"
+  },
+  {
+    "key": "odaTema.kategoriDoga",
+    "reason": "same_as_en",
+    "en": "Nature",
+    "val": "Nature",
+    "tr": "Doğa"
+  },
+  {
+    "key": "odaTema.royal_gold",
+    "reason": "same_as_en",
+    "en": "Royal",
+    "val": "Royal",
+    "tr": "Kraliyet"
+  }
+]

@@ -1,12 +1,34 @@
 import { MedyaIzinleriniIste } from './izin/MedyaIzinleriniIste';
 import { LiveKitTokenAl, type LiveKitRol } from './token/LiveKitTokenAl';
 import { LiveKitBaglantiYoneticisi } from './baglanti/LiveKitBaglantiYoneticisi';
+import { RtcAktifSaglayici } from '../rtc/RtcProviderDurumu';
+import {
+  AgoraBaglan,
+  AgoraHoparlor,
+  AgoraKamera,
+  AgoraKameraAcVeBekle,
+  AgoraKameraCevir,
+  AgoraKes,
+  AgoraMikrofon,
+  AgoraYayinciMi,
+} from '../rtc/AgoraMotoru';
 
-export type RtcSaglayici = 'livekit';
+export type RtcSaglayici = 'livekit' | 'agora';
 
 export function AktifRtcSaglayici(): RtcSaglayici {
-  return 'livekit';
+  return RtcAktifSaglayici() === 'AGORA' ? 'agora' : 'livekit';
 }
+
+type SonBaglanti = {
+  roomName: string;
+  role: LiveKitRol;
+  video?: boolean;
+  gorusmeModu?: boolean;
+  micAcik?: boolean;
+};
+
+let sonBaglanti: SonBaglanti | null = null;
+let acikMotor: RtcSaglayici | null = null;
 
 export type MedyaBaglantiSonuc =
   | { ok: true; saglayici: RtcSaglayici; mock: boolean; kanal: string }
@@ -30,6 +52,34 @@ export async function MedyaOdasiBaglan(input: {
    */
   micAcik?: boolean;
 }): Promise<MedyaBaglantiSonuc> {
+  sonBaglanti = {
+    roomName: input.roomName,
+    role: input.role,
+    video: input.video,
+    gorusmeModu: input.gorusmeModu,
+    micAcik: input.micAcik,
+  };
+
+  if (RtcAktifSaglayici() === 'AGORA') {
+    if (acikMotor === 'livekit') {
+      await LiveKitBaglantiYoneticisi.baglantiyiKes();
+    }
+    const bag = await AgoraBaglan({
+      roomName: input.roomName,
+      role: input.role,
+      video: !!input.video,
+      micAcik: input.micAcik,
+    });
+    if (!bag.ok) return { ok: false, hata: bag.hata };
+    acikMotor = 'agora';
+    AgoraHoparlor(true);
+    return { ok: true, saglayici: 'agora', mock: false, kanal: input.roomName };
+  }
+
+  if (acikMotor === 'agora') {
+    await AgoraKes();
+  }
+
   const asPublisher =
     input.role === 'host' ||
     input.role === 'publisher' ||
@@ -72,6 +122,7 @@ export async function MedyaOdasiBaglan(input: {
   // Uzak ses hemen tam — dinleyici join'de sessizlik olmasın
   LiveKitBaglantiYoneticisi.setRemoteAudioVolume(1);
 
+  acikMotor = 'livekit';
   return {
     ok: true,
     saglayici: 'livekit',
@@ -80,17 +131,60 @@ export async function MedyaOdasiBaglan(input: {
   };
 }
 
+/** Aktif medyayı yeni sağlayıcıya taşır. Oda / arama / yayın kaydı silinmez. */
+export async function MedyaSaglayiciGecisi(): Promise<void> {
+  const girdi = sonBaglanti;
+  if (!girdi) return;
+  await MedyaOdasiKes();
+  await MedyaOdasiBaglan({ ...girdi, zorla: true });
+}
+
 export async function MedyaOdasiKes() {
+  const motor = acikMotor;
+  acikMotor = null;
+  if (motor === 'agora') {
+    await AgoraKes();
+    return;
+  }
   await LiveKitBaglantiYoneticisi.baglantiyiKes();
 }
 
 /** Yerel mikrofonu aç/kapat (yayıncı token gerekir). */
 export function MedyaMikrofonAyarla(acik: boolean) {
+  if (acikMotor === 'agora') {
+    AgoraMikrofon(acik);
+    return;
+  }
   LiveKitBaglantiYoneticisi.muteLocalAudio(!acik);
 }
 
 export function MedyaHoparlorAyarla(acik: boolean) {
+  if (acikMotor === 'agora') {
+    AgoraHoparlor(acik);
+    return;
+  }
   void LiveKitBaglantiYoneticisi.setSpeakerphone(acik);
+}
+
+export function MedyaKameraAyarla(acik: boolean) {
+  if (acikMotor === 'agora') {
+    AgoraKamera(acik);
+    return;
+  }
+  LiveKitBaglantiYoneticisi.setLocalVideoEnabled(acik);
+}
+
+export function MedyaKameraCevir() {
+  if (acikMotor === 'agora') {
+    AgoraKameraCevir();
+    return;
+  }
+  void LiveKitBaglantiYoneticisi.kameraCevir();
+}
+
+export async function MedyaKameraAcVeBekle(ms = 8000): Promise<boolean> {
+  if (acikMotor === 'agora') return AgoraKameraAcVeBekle();
+  return LiveKitBaglantiYoneticisi.kameraAcVeBekle(ms);
 }
 
 /**
@@ -132,10 +226,12 @@ export function MedyaUzakSesHacmiAyarla(hacim: number | boolean) {
  * zorla=true → tam AudioSession configure (oyun SFX sonrası şart).
  */
 export function MedyaSesOturumunuYenile(zorla = false) {
+  if (acikMotor === 'agora') return;
   void LiveKitBaglantiYoneticisi.sesOturumunuYenile(zorla);
 }
 
 /** Bu oturumda mikrofon yayın hakkı var mı (host/konuşmacı ve bağlı). */
 export function MedyaYayinciMi(): boolean {
+  if (acikMotor === 'agora') return AgoraYayinciMi();
   return LiveKitBaglantiYoneticisi.yayinciMi();
 }

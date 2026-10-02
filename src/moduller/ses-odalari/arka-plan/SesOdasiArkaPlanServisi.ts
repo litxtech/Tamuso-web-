@@ -104,22 +104,8 @@ export function SesOdasiArkaPlanKurulum(): void {
 
   void androidKanalHazirla();
 
-  const yanitSub = Notifications.addNotificationResponseReceivedListener(
-    (yanit) => {
-      const data = yanit.notification.request.content.data as {
-        tip?: string;
-        roomId?: string;
-      };
-      if (data?.tip === 'ses_odasi' && data.roomId) {
-        try {
-          router.push(`/room/${data.roomId}` as any);
-        } catch {
-          /* ignore */
-        }
-      }
-    },
-  );
-  temizleyiciler.push(() => yanitSub.remove());
+  // Push / local bildirim tıklama → BildirimSaglayici + app/index (cold start)
+  // Burada ayrı listener yok: çift navigasyon / stack race olmasın.
 
   // Oturum bitince bildirimi kaldır — odadayken ASLA başlatma
   const unsubDurum = AktifSesOdasiDinle((durum) => {

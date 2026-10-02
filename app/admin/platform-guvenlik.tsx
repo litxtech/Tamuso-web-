@@ -201,7 +201,7 @@ export default function AdminPlatformGuvenlikEkrani() {
       <View style={styles.filtreSatir}>
         {DURUM_FILTRE.map((f) => (
           <Pressable
-            key={f.etiket}
+            key={f.kod}
             style={[styles.chip, filtre === f.kod && styles.chipAktif]}
             onPress={() => setFiltre(f.kod)}
           >

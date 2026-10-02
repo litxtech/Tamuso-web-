@@ -5,6 +5,7 @@ import {
   PaylasimMesajiOlustur,
 } from '../PaylasimUrl';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
+import i18n from '../../../i18n';
 
 export type PaylasimSonucu =
   | { ok: true; url: string; code: string }
@@ -24,14 +25,19 @@ export async function UygulamayiPaylas(): Promise<PaylasimSonucu> {
     await Share.share(
       Platform.OS === 'ios'
         ? { message, url }
-        : { message, title: `${OrtamDegiskenleri.uygulamaAdi} indir` },
+        : {
+            message,
+            title: i18n.t('paylasim.indirBaslik', {
+              ad: OrtamDegiskenleri.uygulamaAdi,
+            }),
+          },
     );
 
     return { ok: true, url, code: davet.code };
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Paylaşım başarısız',
+      hata: e instanceof Error ? e.message : i18n.t('paylasim.basarisiz'),
     };
   }
 }

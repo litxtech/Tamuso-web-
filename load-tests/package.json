@@ -1,0 +1,24 @@
+{
+  "name": "tamuso-load-tests",
+  "private": true,
+  "type": "module",
+  "description": "k6 load tests for Tamuso Supabase — not part of the mobile app bundle",
+  "scripts": {
+    "load:100": "node scripts/run.mjs --scenario mixed --ccu 100",
+    "load:500": "node scripts/run.mjs --scenario mixed --ccu 500",
+    "load:1000": "node scripts/run.mjs --scenario mixed --ccu 1000",
+    "load:2500": "node scripts/run.mjs --scenario mixed --ccu 2500",
+    "load:5000": "node scripts/run.mjs --scenario mixed --ccu 5000",
+    "load:7500": "node scripts/run.mjs --scenario mixed --ccu 7500",
+    "load:10000": "node scripts/run.mjs --scenario mixed --ccu 10000",
+    "load:ladder": "node scripts/run.mjs --scenario mixed --ladder",
+    "load:run": "node scripts/run.mjs",
+    "load:realtime": "node realtime/harness.mjs",
+    "load:mint-sample": "node scripts/mint-sample-sessions.mjs",
+    "load:prod-read": "node scripts/run-prod-read-ladder.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "ws": "^8.18.3"
+  }
+}

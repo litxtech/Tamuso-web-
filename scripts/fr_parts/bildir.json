@@ -1,0 +1,22 @@
+{
+  "bildir": {
+    "baslik": "Signaler",
+    "altBaslik": "Rechercher un utilisateur · choisir un motif · expliquer",
+    "raporlarim": "Mes signalements",
+    "kullaniciAra": "Rechercher un utilisateur",
+    "araPlaceholder": "Nom, nom d’utilisateur ou ID",
+    "sonucYok": "Aucun résultat",
+    "araBos": "Recherchez la personne que vous souhaitez signaler",
+    "kullaniciDegistir": "Changer d’utilisateur",
+    "sebepSec": "Choisir un motif",
+    "sebepDegistir": "Changer de motif",
+    "aciklama": "Détails",
+    "aciklamaPlaceholder": "Que s’est-il passé ? Soyez bref et clair…",
+    "gonderiliyor": "Envoi…",
+    "bildirimiGonder": "Envoyer le signalement",
+    "kullaniciVeSebepSec": "Sélectionnez un utilisateur et un motif.",
+    "aciklamaKisa": "Rédigez une courte description (au moins quelques mots).",
+    "gonderilemedi": "Envoi impossible",
+    "bildirimAlindi": "Signalement reçu"
+  }
+}

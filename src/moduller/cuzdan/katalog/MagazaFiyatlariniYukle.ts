@@ -2,54 +2,62 @@
  * StoreKit / Play Billing fiyatları — güvenilir tahsilat kaynağı.
  * DB price_try yalnızca referans / admin önizleme.
  *
- * Önemli: Expo Go / native modül yokken ASLA çökme.
- * Static import yerine dynamic import — canlı/cüzdan mount güvenli.
+ * Kalıcı IAP oturumu + bellek cache — sheet her açılışta yavaşlamasın.
  */
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import type { CoinPackage } from '../../../types/models';
+import { IapUrunId } from '../../iap/IapUrunId';
+import { IapBaglantisiniAc, IapOrtamUygunMu } from '../../iap/oturum/IapOturum';
 
 export type MagazaFiyatHaritasi = Record<
   string,
   { displayPrice: string; price?: number; currency?: string }
 >;
 
-function productIdFor(pkg: CoinPackage): string {
-  if (Platform.OS === 'ios') {
-    return pkg.apple_product_id ?? pkg.sku;
-  }
-  return pkg.google_product_id ?? pkg.sku;
+const CACHE_TTL_MS = 10 * 60 * 1000;
+let cache: { at: number; map: MagazaFiyatHaritasi; skuKey: string } | null =
+  null;
+let inflight: Promise<MagazaFiyatHaritasi> | null = null;
+
+function skuKey(packages: CoinPackage[]): string {
+  return packages
+    .map(IapUrunId)
+    .filter(Boolean)
+    .sort()
+    .join('|');
 }
 
-/** Expo Go veya web — native IAP yok */
-function iapOrtamUygunMu(): boolean {
-  if (Platform.OS !== 'ios' && Platform.OS !== 'android') return false;
-  if (Constants.appOwnership === 'expo') return false;
-  return true;
+/** Bellekte taze mağaza fiyatı var mı — gereksiz IAP fetch atla */
+export function MagazaFiyatCacheTazeMi(packages: CoinPackage[]): boolean {
+  if (!cache) return false;
+  if (cache.skuKey !== skuKey(packages)) return false;
+  return Date.now() - cache.at < CACHE_TTL_MS;
+}
+
+/** Tek SKU cache'te mi — satın alma öncesi fetchProducts atlamak için */
+export function MagazaSkuCacheteMi(sku: string): boolean {
+  if (!cache || Date.now() - cache.at >= CACHE_TTL_MS) return false;
+  return !!cache.map[sku]?.displayPrice;
 }
 
 /**
- * Aktif paketlerin mağaza fiyatlarını çeker.
- * Expo Go / web / native yok: boş harita (UI DB referansına düşer).
+ * Aktif paketlerin mağaza fiyatlarını çeker (cache'li).
  */
 export async function MagazaFiyatlariniYukle(
   packages: CoinPackage[],
 ): Promise<MagazaFiyatHaritasi> {
-  if (!iapOrtamUygunMu()) return {};
-  const skus = [
-    ...new Set(packages.map(productIdFor).filter(Boolean)),
-  ];
+  if (!IapOrtamUygunMu()) return {};
+  const skus = [...new Set(packages.map(IapUrunId).filter(Boolean))];
   if (!skus.length) return {};
 
-  try {
-    const iap = await import('expo-iap');
-    try {
-      await iap.initConnection();
-    } catch {
-      return {};
-    }
+  const key = skuKey(packages);
+  if (cache && cache.skuKey === key && Date.now() - cache.at < CACHE_TTL_MS) {
+    return cache.map;
+  }
+  if (inflight) return inflight;
 
+  inflight = (async () => {
     try {
+      const iap = await IapBaglantisiniAc();
       const products = await iap.fetchProducts({ skus, type: 'in-app' });
       const map: MagazaFiyatHaritasi = {};
       for (const p of products ?? []) {
@@ -71,15 +79,16 @@ export async function MagazaFiyatlariniYukle(
           };
         }
       }
+      cache = { at: Date.now(), map, skuKey: key };
       return map;
     } catch {
-      return {};
+      return cache?.map ?? {};
     } finally {
-      void iap.endConnection().catch(() => undefined);
+      inflight = null;
     }
-  } catch {
-    return {};
-  }
+  })();
+
+  return inflight;
 }
 
 /** Paketi mağaza fiyatıyla zenginleştir */
@@ -88,7 +97,7 @@ export function PaketlereMagazaFiyatiUygula(
   fiyatlar: MagazaFiyatHaritasi,
 ): CoinPackage[] {
   return packages.map((pkg) => {
-    const id = productIdFor(pkg);
+    const id = IapUrunId(pkg);
     const f = fiyatlar[id];
     if (!f) return pkg;
     return {

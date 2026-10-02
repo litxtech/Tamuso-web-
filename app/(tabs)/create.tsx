@@ -49,7 +49,9 @@ import {
   OdaKapakUriIleYukle,
 } from '../../src/moduller/ses-odalari/islemler/OdaKapakMedyasiYukle';
 import { OdaArkaPlanTemaSeridi } from '../../src/moduller/ses-odalari/bilesenler/OdaArkaPlanTemaSeridi';
+import { OdaDuzenSecimSeridi } from '../../src/moduller/ses-odalari/bilesenler/OdaDuzenSecimSeridi';
 import { OdaTemasiniCoz } from '../../src/moduller/oda-olusturma/katalog/OdaTemaKatalogu';
+import { OdaDuzeniniCoz } from '../../src/moduller/ses-odalari/duzen/OdaDuzeniniCoz';
 import { MedyaIzinleriniIste } from '../../src/moduller/livekit/izin/MedyaIzinleriniIste';
 import { ImagePickerOnIsit } from '../../src/ortak/medya/ImagePickerHazirMi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
@@ -66,11 +68,11 @@ const MOD_VARSAYILAN: Record<
   Room['mode'],
   { tema: string; duzen: string }
 > = {
-  dating: { tema: 'midnight_plum', duzen: 'floating_glass' },
-  party: { tema: 'neon_aurora', duzen: 'floating_glass' },
-  karaoke: { tema: 'royal_gold', duzen: 'floating_glass' },
-  game: { tema: 'cosmic_void', duzen: 'floating_glass' },
-  private: { tema: 'midnight_plum', duzen: 'floating_glass' },
+  dating: { tema: 'velvet_rose', duzen: 'intimate_duo' },
+  party: { tema: 'neon_aurora', duzen: 'neon_matrix' },
+  karaoke: { tema: 'royal_gold', duzen: 'theater_gold' },
+  game: { tema: 'cosmic_void', duzen: 'arena_crown' },
+  private: { tema: 'midnight_plum', duzen: 'whisper_circle' },
 };
 
 export default function CreateRoomScreen() {
@@ -90,12 +92,13 @@ export default function CreateRoomScreen() {
   const [kapakMime, setKapakMime] = useState<string | null>(null);
   const [mode] = useState<Room['mode']>('party');
   const [temaKod, setTemaKod] = useState(() => MOD_VARSAYILAN.party.tema);
+  const [duzenKod, setDuzenKod] = useState(() => MOD_VARSAYILAN.party.duzen);
   const [kapasiteKod, setKapasiteKod] = useState('social');
   const [loading, setLoading] = useState(false);
 
   const kapasite = OdaKapasitesiniCoz(kapasiteKod);
-  const varsayilan = MOD_VARSAYILAN[mode];
   const seciliTema = OdaTemasiniCoz(temaKod);
+  const seciliDuzen = OdaDuzeniniCoz(duzenKod);
 
   const hubModlari = useMemo<CanliAcilisMod[]>(
     () => [
@@ -248,7 +251,7 @@ export default function CreateRoomScreen() {
           coverUrl,
           mode,
           maxSeats: kapasite.mikrofon,
-          layoutCode: varsayilan.duzen,
+          layoutCode: duzenKod,
           themeCode: temaKod,
           capacityTierCode: kapasite.kod,
           audienceCapacity: kapasite.dinleyici,
@@ -470,6 +473,17 @@ export default function CreateRoomScreen() {
                   <OdaArkaPlanTemaSeridi
                     seciliKod={temaKod}
                     onSec={(tema) => setTemaKod(tema.kod)}
+                  />
+                </View>
+
+                <View style={styles.bolumBlok}>
+                  <Text style={styles.bolum}>{t('olusturTab.duzen')}</Text>
+                  <Text style={styles.bolumAlt}>
+                    {t('olusturTab.duzenAlt', { duzen: seciliDuzen.ad })}
+                  </Text>
+                  <OdaDuzenSecimSeridi
+                    seciliKod={duzenKod}
+                    onSec={(duzen) => setDuzenKod(duzen.kod)}
                   />
                 </View>
 

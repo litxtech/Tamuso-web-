@@ -1,0 +1,21 @@
+{
+  "profilTab": {
+    "misafirUsername": "guest",
+    "misafirBio": "Guest account — complete your account for a full profile.",
+    "varsayilanBio": "Voice, gifts, and live streams on Tamuso.",
+    "cuzdanAlt": "Your coin and diamond balance",
+    "oyun": "Game",
+    "oyunAlt": "{{lig}} · your profile card",
+    "kupa": "Trophies",
+    "oyunProfili": "Game profile",
+    "oyunXp": "Game XP",
+    "mac": "Matches",
+    "enYuksek": "Highest",
+    "combo": "Combo",
+    "galibiyetOrani": "Win rate {{oran}}%",
+    "oyunIpucu": "Play games in voice rooms — earn XP and trophies.",
+    "hesapGuncellendi": "Your account was updated.",
+    "misafirPaylasimBos": "Complete your account to post.",
+    "paylasimBos": "No posts yet — add your first status."
+  }
+}

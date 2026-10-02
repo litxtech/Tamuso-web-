@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 const GOLD = ['#F8E7A0', '#D4AF37', '#B8860B', '#F0D78C'] as const;
 
@@ -43,6 +44,7 @@ export function TakasProfilKarti({
   onProfil,
   onMesaj,
 }: Props) {
+  const { t } = useCeviri();
   const parilti = useSharedValue(0.35);
   const safeAvatar = MedyaUriGuvenli(avatarUrl);
 
@@ -89,7 +91,7 @@ export function TakasProfilKarti({
                 (onProfil ?? onPress)?.();
               }}
               hitSlop={6}
-              accessibilityLabel="Profili aç"
+              accessibilityLabel={t('takas.profiliAcA11y')}
             >
               <View style={styles.avatarHalka}>
                 {safeAvatar ? (
@@ -124,13 +126,13 @@ export function TakasProfilKarti({
                   onMesaj();
                 }}
                 hitSlop={8}
-                accessibilityLabel="Mesaj gönder"
+                accessibilityLabel={t('takas.mesajGonderA11y')}
               >
                 <Ionicons name="chatbubble-ellipses" size={18} color="#3A2A08" />
               </Pressable>
             ) : null}
             {secili ? (
-              <View style={styles.yesilTik} accessibilityLabel="Seçili">
+              <View style={styles.yesilTik} accessibilityLabel={t('takas.seciliA11y')}>
                 <Ionicons name="checkmark-circle" size={22} color="#22C55E" />
               </View>
             ) : onMesaj ? null : (

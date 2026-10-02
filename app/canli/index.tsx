@@ -75,6 +75,8 @@ export default function CanliYayinEkrani() {
   const [pkDavetAcik, setPkDavetAcik] = useState(false);
   const [geriSayim, setGeriSayim] = useState<number | null>(null);
   const [baslatDurum, setBaslatDurum] = useState<CanliBaslatDurum>('idle');
+  /** Stüdyo CameraView — LiveKit öncesi kapat (cihaz kilidi) */
+  const [studioKamera, setStudioKamera] = useState(true);
   const yayindaRef = useRef(false);
   const sessionIdRef = useRef<string | null>(null);
   const liveEnabled = OzellikBayragiAktifMi('live_enabled');
@@ -128,6 +130,7 @@ export default function CanliYayinEkrani() {
     setMedyaMock(false);
     setGeriSayim(null);
     setBaslatDurum('idle');
+    setStudioKamera(true);
     await load();
   }, [load]);
 
@@ -193,6 +196,12 @@ export default function CanliYayinEkrani() {
       setLoading(true);
       setBaslatDurum('preparing');
       setGeriSayim(3);
+      // Expo CameraView'i önce bırak — LiveKit ile kamera kilidi çakışmasın
+      setStudioKamera(false);
+      const { KameraOnizlemeSerbestBirak } = await import(
+        '../../src/moduller/livekit/kamera/KameraOnizlemeKilidi'
+      );
+      await KameraOnizlemeSerbestBirak(2_800);
 
       const sonuc = await CanliYayinBaslatMotoru({
         title: title.trim(),
@@ -219,6 +228,7 @@ export default function CanliYayinEkrani() {
       if (!sonuc.ok) {
         setGeriSayim(null);
         setBaslatDurum('failed');
+        setStudioKamera(true);
         sessionIdRef.current = null;
         await MedyaOdasiKes().catch(() => undefined);
         Alert.alert(t('canliYayin.canli'), sonuc.hata);
@@ -245,6 +255,7 @@ export default function CanliYayinEkrani() {
         gift_count: 0,
         total_coins_earned: 0,
         hostAd,
+        started_at: new Date().toISOString(),
       });
       setYayinda(true);
       setMedyaMock(!!sonuc.mock);
@@ -318,7 +329,7 @@ export default function CanliYayinEkrani() {
             rol="host"
             meta={meta}
             medyaDurum={medyaDurum}
-            medyaMock={medyaMock || !videoEnabled}
+            medyaMock={medyaMock}
             currentUserId={user?.id}
             canSend={!isGuest}
             isGuest={isGuest}
@@ -432,7 +443,7 @@ export default function CanliYayinEkrani() {
                   onBaslat={baslat}
                   loading={loading || CanliBaslatKilitliMi()}
                   placeholder={baslikOnerisi || t('canliYayin.placeholder')}
-                  kameraOnizleme={!countdownVisible}
+                  kameraOnizleme={studioKamera && !countdownVisible}
                 />
 
                 <Animated.View

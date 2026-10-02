@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Keyboard,
@@ -9,6 +10,8 @@ import {
   Text,
   TextInput,
   View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -54,6 +57,7 @@ import { MesajMedyaOnizlemePaneli } from '../../src/moduller/mesajlasma/bilesenl
 import { MesajMedyaGoruntuleyici } from '../../src/moduller/mesajlasma/bilesenler/MesajMedyaGoruntuleyici';
 import { GALERI_COKLU_LIMIT } from '../../src/ortak/medya/ImagePickerHazirMi';
 import { MesajYanitOnizleme } from '../../src/moduller/mesajlasma/bilesenler/MesajYanitOnizleme';
+import { MesajComposerLinkOnizleme } from '../../src/moduller/mesajlasma/bilesenler/MesajComposerLinkOnizleme';
 import { MesajDuzenlemeBasligi } from '../../src/moduller/mesajlasma/bilesenler/MesajDuzenlemeBasligi';
 import { MesajSabitBar } from '../../src/moduller/mesajlasma/bilesenler/MesajSabitBar';
 import {
@@ -64,7 +68,8 @@ import { MesajSessizeSheet } from '../../src/moduller/mesajlasma/bilesenler/Mesa
 import { MesajMuzikSecimSheet } from '../../src/moduller/mesajlasma/bilesenler/MesajMuzikSecimSheet';
 import { MesajSesKayitDugmesi } from '../../src/moduller/mesajlasma/bilesenler/MesajSesKayitDugmesi';
 import { MesajSesYoneticisi } from '../../src/moduller/mesajlasma/ses/MesajSesYoneticisi';
-import { MesajLinkOnizlemeIste } from '../../src/moduller/mesajlasma/islemler/MesajLinkOnizlemeIste';
+import { MesajLinkOnizlemeDoldur } from '../../src/moduller/mesajlasma/islemler/MesajLinkOnizlemeDoldur';
+import { MesajIlkUrl } from '../../src/moduller/mesajlasma/yardimcilar/MesajUrlAyikla';
 import {
   MesajOutboxFlushSonucAboneOl,
   MesajOutboxOturumBagla,
@@ -90,6 +95,7 @@ import { HediyeMagazaBaglamasi } from '../../src/moduller/hediyeler/bilesenler/H
 import { MaviTikRozeti } from '../../src/moduller/mesajlasma/bilesenler/MaviTikRozeti';
 import { MesajHizliAksiyonSeridi } from '../../src/moduller/mesajlasma/bilesenler/MesajHizliAksiyonSeridi';
 import { PlatformResmiHesapPaneli } from '../../src/moduller/cuzdan/bilesenler/PlatformResmiHesapPaneli';
+import { AjansPaketTeklifSecSheet } from '../../src/moduller/cuzdan/bilesenler/AjansPaketTeklifSecSheet';
 import { usePaylasilanDurumOnizleme } from '../../src/moduller/durum/paylasim/usePaylasilanDurumOnizleme';
 import {
   TakasMahkemeKaraAc,
@@ -109,6 +115,12 @@ import {
   MesajTaslakKayitGetir,
   MesajTaslakSil,
 } from '../../src/moduller/mesajlasma/depolama/MesajTaslakDepolama';
+import {
+  MESAJ_SAYFA_BOYUTU,
+  MesajSayfaOnbellekOku,
+  MesajSayfaOnbellekOkuSync,
+  MesajSayfaOnbellekYaz,
+} from '../../src/moduller/mesajlasma/depolama/MesajSayfaOnbellek';
 
 function uuidYerel(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -174,10 +186,24 @@ export default function MesajDetayEkrani() {
   const [mutedUntil, setMutedUntil] = useState<string | null>(null);
   const [sessizeAcik, setSessizeAcik] = useState(false);
   const [muzikSecimAcik, setMuzikSecimAcik] = useState(false);
+  const [paketTeklifAcik, setPaketTeklifAcik] = useState(false);
   const [vurguMesajId, setVurguMesajId] = useState<string | null>(null);
+  const [eskiYukleniyor, setEskiYukleniyor] = useState(false);
+  const [eskiKaldi, setEskiKaldi] = useState(true);
   const listRef = useRef<FlatList<DirektMesaj>>(null);
+  const eskiYuklemeKilit = useRef(false);
+  const eskiScrollFixBekliyor = useRef(false);
+  const scrollYRef = useRef(0);
+  const contentHRef = useRef(0);
+  const ilkAcilisScrollRef = useRef(true);
+  /** Kullanıcı alttayken yeni yükseklik alta yapışsın; yukarıdayken çekme. */
+  const altaYapistirRef = useRef(true);
+  const listeYukseklikRef = useRef(0);
+  const mesajlarRef = useRef<DirektMesaj[]>([]);
   const mahkemeMi = peer?.thread_kind === 'mahkeme';
   const mahkemeKapali = !!peer?.closed_at;
+
+  mesajlarRef.current = mesajlar;
 
   const mesajMap = useMemo(() => {
     const m: Record<string, DirektMesaj> = {};
@@ -246,29 +272,30 @@ export default function MesajDetayEkrani() {
 
   const mergeMesaj = useCallback((msg: DirektMesaj) => {
     if (!msg?.id) return;
-    setMesajlar((prev) => {
-      const byClient =
-        msg.client_id &&
-        prev.findIndex(
-          (m) => m.client_id === msg.client_id || m.id === msg.client_id,
-        );
-      if (typeof byClient === 'number' && byClient >= 0) {
-        const next = [...prev];
-        next[byClient] = { ...msg, _localStatus: 'sent' };
-        return next;
-      }
-      if (prev.some((m) => m.id === msg.id)) {
-        return prev.map((m) =>
-          m.id === msg.id ? { ...msg, _localStatus: 'sent' } : m,
-        );
-      }
-      if (msg.deleted_at) {
-        return prev.filter((m) => m.id !== msg.id);
-      }
-      return [...prev, { ...msg, _localStatus: 'sent' }];
-    });
+    const prev = mesajlarRef.current;
+    const byClient =
+      msg.client_id &&
+      prev.findIndex(
+        (m) => m.client_id === msg.client_id || m.id === msg.client_id,
+      );
+    let next: DirektMesaj[];
+    if (typeof byClient === 'number' && byClient >= 0) {
+      next = [...prev];
+      next[byClient] = { ...msg, _localStatus: 'sent' };
+    } else if (prev.some((m) => m.id === msg.id)) {
+      next = prev.map((m) =>
+        m.id === msg.id ? { ...msg, _localStatus: 'sent' } : m,
+      );
+    } else if (msg.deleted_at) {
+      next = prev.filter((m) => m.id !== msg.id);
+    } else {
+      next = [...prev, { ...msg, _localStatus: 'sent' }];
+    }
+    mesajlarRef.current = next;
+    setMesajlar(next);
+    if (threadId) MesajSayfaOnbellekYaz(threadId, next);
     listeAltaKaydir();
-  }, [listeAltaKaydir]);
+  }, [listeAltaKaydir, threadId]);
 
   useEffect(() => {
     return MesajOutboxFlushSonucAboneOl((sonuc) => {
@@ -306,6 +333,27 @@ export default function MesajDetayEkrani() {
           void MesajPeerOkunduYayinla(threadId, at, user?.id);
         });
       }
+      // Gelen/güncellenen mesajda link önizlemesi eksikse doldur
+      if (
+        OzellikBayragiAktifMi('link_preview_enabled') &&
+        (msg.link_url || MesajIlkUrl(msg.body)) &&
+        !(msg.link_preview?.title || msg.link_preview?.image_url)
+      ) {
+        void MesajLinkOnizlemeDoldur(msg).then((preview) => {
+          if (!preview) return;
+          setMesajlar((p) =>
+            p.map((m) =>
+              m.id === msg.id
+                ? {
+                    ...m,
+                    link_url: m.link_url || msg.link_url || MesajIlkUrl(msg.body),
+                    link_preview: preview,
+                  }
+                : m,
+            ),
+          );
+        });
+      }
     },
     (at, fromUserId) => {
       if (engelli) return;
@@ -319,13 +367,37 @@ export default function MesajDetayEkrani() {
 
   const load = useCallback(async () => {
     if (!threadId) return;
+    ilkAcilisScrollRef.current = true;
+    setEskiKaldi(true);
+
+    // Instagram: önce bellek/disk önbelleği — boş ekran bekletme
+    const syncCache = MesajSayfaOnbellekOkuSync(threadId);
+    if (syncCache?.length) {
+      setMesajlar(
+        syncCache.map((m) => ({ ...m, _localStatus: 'sent' as const })),
+      );
+      listeAltaKaydir();
+    } else {
+      void MesajSayfaOnbellekOku(threadId).then((disk) => {
+        if (!disk?.length) return;
+        setMesajlar((cur) =>
+          cur.length > 0
+            ? cur
+            : disk.map((m) => ({ ...m, _localStatus: 'sent' as const })),
+        );
+        listeAltaKaydir();
+      });
+    }
+
     try {
-      const bloklu = await MesajThreadEngelliMi(threadId);
-      setEngelli(bloklu);
-      const [karsi, peerRead] = await Promise.all([
+      // Mesajları engel/profil ile paralel çek — açılış gecikmesini kısalt
+      const [bloklu, msgs, karsi, peerRead] = await Promise.all([
+        MesajThreadEngelliMi(threadId),
+        MesajlariGetir({ threadId, limit: MESAJ_SAYFA_BOYUTU }),
         MesajThreadKarsiProfil(threadId).catch(() => null),
         MesajPeerLastReadGet(threadId),
       ]);
+      setEngelli(bloklu);
       setPeer(karsi);
       setPeerLastReadAt(peerRead);
 
@@ -334,12 +406,38 @@ export default function MesajDetayEkrani() {
         return;
       }
 
-      const msgs = await MesajlariGetir({ threadId, limit: 20 });
-      setMesajlar(
-        msgs
-          .filter((m) => typeof m?.id === 'string' && m.id.length > 0)
-          .map((m) => ({ ...m, _localStatus: 'sent' as const })),
-      );
+      const temiz = msgs
+        .filter((m) => typeof m?.id === 'string' && m.id.length > 0)
+        .map((m) => ({ ...m, _localStatus: 'sent' as const }));
+      setMesajlar(temiz);
+      setEskiKaldi(msgs.length >= MESAJ_SAYFA_BOYUTU);
+      // Eksik link önizlemelerini arka planda doldur
+      if (OzellikBayragiAktifMi('link_preview_enabled')) {
+        for (const m of temiz) {
+          if (
+            (m.link_url || MesajIlkUrl(m.body)) &&
+            !(m.link_preview?.title || m.link_preview?.image_url)
+          ) {
+            void MesajLinkOnizlemeDoldur(m).then((preview) => {
+              if (!preview) return;
+              setMesajlar((p) =>
+                p.map((x) =>
+                  x.id === m.id
+                    ? {
+                        ...x,
+                        link_url:
+                          x.link_url || m.link_url || MesajIlkUrl(m.body),
+                        link_preview: preview,
+                      }
+                    : x,
+                ),
+              );
+            });
+          }
+        }
+      }
+      MesajSayfaOnbellekYaz(threadId, temiz);
+
       if (OzellikBayragiAktifMi('message_pin_enabled')) {
         setPins(await MesajSabitlenenleriGetir(threadId));
       } else {
@@ -354,9 +452,8 @@ export default function MesajDetayEkrani() {
       void MesajThreadOkundu(threadId).then(() => {
         void MesajPeerOkunduYayinla(threadId, at, user?.id);
       });
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated: false });
-      });
+      listeAltaKaydir();
+      ilkAcilisScrollRef.current = false;
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       if (msg.toLowerCase().includes('engellen')) {
@@ -364,9 +461,124 @@ export default function MesajDetayEkrani() {
         setMesajlar([]);
         return;
       }
-      setMesajlar([]);
+      // Önbellek varken ağı silme — boş ekrana düşme
+      if (!MesajSayfaOnbellekOkuSync(threadId)?.length) {
+        setMesajlar([]);
+      }
     }
-  }, [threadId, user?.id]);
+  }, [threadId, user?.id, listeAltaKaydir]);
+
+  const eskiMesajlariYukle = useCallback(async () => {
+    if (!threadId || engelli || !eskiKaldi || eskiYuklemeKilit.current) return;
+    const mevcut = mesajlarRef.current;
+    if (mevcut.length === 0) return;
+    const oldest = mevcut[0];
+    if (!oldest?.created_at) return;
+
+    eskiYuklemeKilit.current = true;
+    eskiScrollFixBekliyor.current = true;
+    setEskiYukleniyor(true);
+    try {
+      const more = await MesajlariGetir({
+        threadId,
+        limit: MESAJ_SAYFA_BOYUTU,
+        before: oldest.created_at,
+      });
+      if (more.length < MESAJ_SAYFA_BOYUTU) setEskiKaldi(false);
+      if (more.length === 0) {
+        eskiScrollFixBekliyor.current = false;
+        eskiYuklemeKilit.current = false;
+        setEskiYukleniyor(false);
+        return;
+      }
+      const ek = more
+        .filter((m) => typeof m?.id === 'string' && m.id.length > 0)
+        .map((m) => ({ ...m, _localStatus: 'sent' as const }));
+      const mevcutIds = new Set(mesajlarRef.current.map((m) => m.id));
+      const yeni = ek.filter((m) => !mevcutIds.has(m.id));
+      if (yeni.length === 0) {
+        eskiScrollFixBekliyor.current = false;
+        eskiYuklemeKilit.current = false;
+        setEskiYukleniyor(false);
+        return;
+      }
+      setMesajlar((prev) => [...yeni, ...prev]);
+    } catch {
+      eskiScrollFixBekliyor.current = false;
+      eskiYuklemeKilit.current = false;
+      setEskiYukleniyor(false);
+    } finally {
+      // kilit onContentSizeChange sonrası açılır; timeout yedek
+      setTimeout(() => {
+        if (eskiYuklemeKilit.current) {
+          eskiYuklemeKilit.current = false;
+          eskiScrollFixBekliyor.current = false;
+          setEskiYukleniyor(false);
+        }
+      }, 800);
+    }
+  }, [threadId, engelli, eskiKaldi]);
+
+  const onListeScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const y = e.nativeEvent.contentOffset.y;
+      scrollYRef.current = y;
+      const gorunen = e.nativeEvent.layoutMeasurement.height;
+      if (gorunen > 0) listeYukseklikRef.current = gorunen;
+      // Instagram: üste yaklaşınca önceki sayfa
+      if (y < 100) void eskiMesajlariYukle();
+    },
+    [eskiMesajlariYukle],
+  );
+
+  const altaDurumunuYaz = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+      const kalan =
+        contentSize.height - layoutMeasurement.height - contentOffset.y;
+      altaYapistirRef.current = kalan < 120;
+      scrollYRef.current = contentOffset.y;
+      if (layoutMeasurement.height > 0) {
+        listeYukseklikRef.current = layoutMeasurement.height;
+      }
+    },
+    [],
+  );
+
+  const onListeContentSizeChange = useCallback((_w: number, h: number) => {
+    const onceki = contentHRef.current;
+    if (eskiScrollFixBekliyor.current && onceki > 0) {
+      const delta = h - onceki;
+      if (delta > 0) {
+        const sonraki = scrollYRef.current + delta;
+        scrollYRef.current = sonraki;
+        listRef.current?.scrollToOffset({
+          offset: sonraki,
+          animated: false,
+        });
+      }
+      eskiScrollFixBekliyor.current = false;
+      eskiYuklemeKilit.current = false;
+      setEskiYukleniyor(false);
+      contentHRef.current = h;
+      return;
+    }
+
+    contentHRef.current = h;
+    const altaTakili = ilkAcilisScrollRef.current || altaYapistirRef.current;
+    if (!altaTakili) return;
+
+    const gorunen = listeYukseklikRef.current;
+    if (gorunen > 0) {
+      const hedef = Math.max(0, h - gorunen);
+      // Zaten alttayız — tekrar scrollToEnd görsel zıplama döngüsü kurar.
+      if (Math.abs(hedef - scrollYRef.current) < 4) {
+        ilkAcilisScrollRef.current = false;
+        return;
+      }
+    }
+    listRef.current?.scrollToEnd({ animated: false });
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -514,19 +726,22 @@ export default function MesajDetayEkrani() {
     }
     await gonderimBasarili();
     mergeMesaj({ ...sonuc.mesaj, _localStatus: 'sent' });
-    if (
-      OzellikBayragiAktifMi('link_preview_enabled') &&
-      sonuc.mesaj.link_url
-    ) {
-      void MesajLinkOnizlemeIste({
-        url: sonuc.mesaj.link_url,
-        messageId: sonuc.mesaj.id,
-      }).then((lp) => {
-        if (!lp.ok) return;
+    const linkUrl =
+      sonuc.mesaj.link_url || MesajIlkUrl(sonuc.mesaj.body);
+    if (OzellikBayragiAktifMi('link_preview_enabled') && linkUrl) {
+      void MesajLinkOnizlemeDoldur({
+        ...sonuc.mesaj,
+        link_url: sonuc.mesaj.link_url || linkUrl,
+      }).then((preview) => {
+        if (!preview) return;
         setMesajlar((p) =>
           p.map((m) =>
             m.id === sonuc.mesaj.id
-              ? { ...m, link_preview: lp.preview }
+              ? {
+                  ...m,
+                  link_url: m.link_url || linkUrl,
+                  link_preview: preview,
+                }
               : m,
           ),
         );
@@ -1318,14 +1533,33 @@ export default function MesajDetayEkrani() {
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            onScrollBeginDrag={Keyboard.dismiss}
-            onContentSizeChange={() =>
-              listRef.current?.scrollToEnd({ animated: false })
-            }
+            onScrollBeginDrag={() => {
+              Keyboard.dismiss();
+              ilkAcilisScrollRef.current = false;
+            }}
+            onScrollEndDrag={altaDurumunuYaz}
+            onMomentumScrollEnd={altaDurumunuYaz}
+            onScroll={onListeScroll}
+            scrollEventThrottle={16}
+            onContentSizeChange={onListeContentSizeChange}
+            onLayout={(e) => {
+              listeYukseklikRef.current = e.nativeEvent.layout.height;
+            }}
+            removeClippedSubviews={false}
+            initialNumToRender={MESAJ_SAYFA_BOYUTU}
+            maxToRenderPerBatch={MESAJ_SAYFA_BOYUTU}
+            windowSize={11}
             contentContainerStyle={[
               styles.list,
               mesajlar.length === 0 && styles.listEmpty,
             ]}
+            ListHeaderComponent={
+              eskiYukleniyor ? (
+                <View style={styles.eskiYukleBaslik}>
+                  <ActivityIndicator color={RenkTokenlari.primarySoft} />
+                </View>
+              ) : null
+            }
             ListFooterComponent={<View style={styles.listFooterBosluk} />}
             ListEmptyComponent={
               <View style={styles.emptyChatWrap}>
@@ -1418,6 +1652,11 @@ export default function MesajDetayEkrani() {
                 onCuzdanNoPaylas={cuzdanNoPaylas}
                 onIdPaylas={idPaylas}
                 onMetinPaylas={(m) => void hizliMetinGonder(m)}
+                onPaketTeklif={
+                  peer?.peer_agency_id
+                    ? () => setPaketTeklifAcik(true)
+                    : undefined
+                }
               />
             ) : null}
             <MesajDuzenlemeBasligi
@@ -1445,6 +1684,7 @@ export default function MesajDetayEkrani() {
                 }
               }}
             />
+            <MesajComposerLinkOnizleme metin={metin} />
           <View
             style={[
               styles.composer,
@@ -1662,6 +1902,18 @@ export default function MesajDetayEkrani() {
           onClose={() => setMuzikSecimAcik(false)}
           onSec={(track) => void muzikGonder(track)}
         />
+
+        {peer?.peer_agency_id && threadId ? (
+          <AjansPaketTeklifSecSheet
+            visible={paketTeklifAcik}
+            agencyId={peer.peer_agency_id}
+            threadId={threadId}
+            onClose={() => setPaketTeklifAcik(false)}
+            onGonderildi={() => {
+              void load();
+            }}
+          />
+        ) : null}
       </ModulHataSiniri>
     </Screen>
   );
@@ -1740,6 +1992,11 @@ const styles = StyleSheet.create({
   },
   listFooterBosluk: {
     height: BoslukTokenlari.lg,
+  },
+  eskiYukleBaslik: {
+    paddingVertical: BoslukTokenlari.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listEmpty: { justifyContent: 'center' },
   emptyChatWrap: { alignItems: 'center', gap: 6, paddingHorizontal: 24 },

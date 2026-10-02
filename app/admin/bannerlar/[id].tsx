@@ -26,10 +26,10 @@ import {
 } from '../../../src/banner/admin/BannerAdminTypes';
 import {
   BANNER_CUSTOM_ASPECT_OPTIONS,
-  BANNER_PLACEMENT_KEYS,
-  BANNER_SCREEN_KEYS,
   BANNER_SIZE_PRESETS,
   BANNER_TAG_PRESETS,
+  MANUAL_BANNER_PLACEMENT_KEYS,
+  MANUAL_BANNER_SCREEN_KEYS,
   PLACEMENT_LABELS,
   SCREEN_LABELS,
 } from '../../../src/banner/core/BannerConstants';
@@ -38,12 +38,14 @@ import type {
   BannerAnalyticsSummary,
   BannerCampaign,
   BannerMediaType,
-  BannerPlacement,
   BannerStatus,
   BannerTarget,
 } from '../../../src/banner/core/BannerTypes';
 import type { BannerSizeType } from '../../../src/banner/core/BannerConstants';
-import { TamusoBanner } from '../../../src/banner/components/TamusoBanner';
+import { BannerCard } from '../../../src/banner/components/BannerCard';
+import { BannerRoomCard } from '../../../src/banner/components/BannerRoomCard';
+import { bannerOdaKartMi } from '../../../src/banner/core/BannerPlacementEngine';
+import { BANNER_ROOM_CARD_TAG } from '../../../src/banner/core/BannerConstants';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 import { UlkeKodunaNormalizeEt } from '../../../src/ortak/ulke/UlkeKodunaNormalizeEt';
@@ -53,6 +55,7 @@ import {
 } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { AdminStil } from '../../../src/moduller/admin/bilesenler/AdminStil';
 import { MedyaUriGuvenli } from '../../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { FEED_KART_ORANI } from '../../../src/moduller/ana-sayfa/sabitler/FeedKartOrani';
 
 const MEDIA_TYPES: BannerMediaType[] = [
   'IMAGE',
@@ -104,7 +107,11 @@ function emptyForm(): BannerAdminSavePayload {
     loop_video: true,
     tags: [],
     placements: [
-      { screen_key: 'HOME', placement_key: 'HOME_TOP', sort_order: 0 },
+      {
+        screen_key: 'FEED',
+        placement_key: 'FEED_AFTER_POST_6',
+        sort_order: 0,
+      },
     ],
     targets: [
       {
@@ -251,6 +258,23 @@ export default function AdminBannerDuzenleEkrani() {
       Alert.alert('Eksik', 'Banner adı zorunlu');
       return;
     }
+    // Manuel bannerlar yalnızca feed — ses odası vb. temizle
+    let placements = (form.placements ?? []).filter(
+      (p) =>
+        p.screen_key === 'FEED' ||
+        MANUAL_BANNER_PLACEMENT_KEYS.includes(
+          p.placement_key as (typeof MANUAL_BANNER_PLACEMENT_KEYS)[number],
+        ),
+    );
+    if (placements.length === 0) {
+      placements = [
+        {
+          screen_key: 'FEED',
+          placement_key: 'FEED_AFTER_POST_6',
+          sort_order: 0,
+        },
+      ];
+    }
     const webAksiyonlar = (form.actions ?? []).filter(
       (a) =>
         a.action_type === 'WEB_URL' || a.action_type === 'IN_APP_WEBVIEW',
@@ -277,7 +301,11 @@ export default function AdminBannerDuzenleEkrani() {
     }
     setSaving(true);
     try {
-      const payload = { ...form, status: status ?? form.status };
+      const payload = {
+        ...form,
+        placements,
+        status: status ?? form.status,
+      };
       if (payload.size_type !== 'CUSTOM') {
         payload.aspect_ratio =
           BANNER_SIZE_PRESETS[
@@ -289,7 +317,7 @@ export default function AdminBannerDuzenleEkrani() {
       if (isNew) {
         router.replace(`/admin/bannerlar/${id}` as never);
       } else {
-        patch({ id, status: payload.status });
+        patch({ id, status: payload.status, placements });
       }
     } catch (e) {
       Alert.alert('Hata', e instanceof Error ? e.message : 'Kayıt başarısız');
@@ -298,7 +326,12 @@ export default function AdminBannerDuzenleEkrani() {
     }
   };
 
-  const placement = form.placements?.[0]?.placement_key ?? 'HOME_TOP';
+  const placement = form.placements?.[0]?.placement_key ?? 'FEED_AFTER_POST_6';
+
+  const onizlemeKampanya = useMemo(
+    () => formdanOnizlemeKampanya(form),
+    [form],
+  );
 
   const toggleTag = (tag: string) => {
     const tags = form.tags ?? [];
@@ -412,8 +445,8 @@ export default function AdminBannerDuzenleEkrani() {
               />
             </View>
             <Text style={styles.hint}>
-              Önizleme cihazı: {previewDevice === 'ios' ? 'iPhone' : 'Android'} ·
-              Placement: {placement}
+              Feed simülasyonu · {previewDevice === 'ios' ? 'iPhone' : 'Android'} ·{' '}
+              {placement} · {form.size_type} · {form.aspect_ratio || '—'}
             </Text>
             <View
               style={[
@@ -421,11 +454,10 @@ export default function AdminBannerDuzenleEkrani() {
                 previewDevice === 'android' && styles.previewAndroid,
               ]}
             >
-              {form.id && form.status === 'ACTIVE' ? (
-                <TamusoBanner placement={placement} screen="ADMIN_PREVIEW" />
-              ) : (
-                <PreviewCard form={form} />
-              )}
+              <FeedSimulasyonOnizleme
+                kampanya={onizlemeKampanya}
+                placement={placement}
+              />
             </View>
           </View>
         )}
@@ -538,40 +570,44 @@ export default function AdminBannerDuzenleEkrani() {
               ))}
             </View>
 
-            <Label>Sayfa / Placement (çoklu)</Label>
-            {BANNER_SCREEN_KEYS.map((screen) => (
+            <Label>Feed yerleşimi (manuel banner yalnızca feed’de)</Label>
+            <Text style={styles.hint}>
+              Ses odası ve diğer ekranlara gitmez. Slot seç — feed’de o noktada
+              görünür.
+            </Text>
+            {MANUAL_BANNER_SCREEN_KEYS.map((screen) => (
               <View key={screen} style={{ gap: 6 }}>
                 <Text style={styles.subLabel}>
                   {SCREEN_LABELS[screen] ?? screen}
                 </Text>
                 <View style={styles.rowWrap}>
-                  {BANNER_PLACEMENT_KEYS.filter((p) =>
-                    p.startsWith(screen === 'HOME' ? 'HOME' : screen === 'FEED' ? 'FEED' : screen),
-                  )
-                    .concat(
-                      screen === 'FEED'
-                        ? []
-                        : BANNER_PLACEMENT_KEYS.filter((p) =>
-                            p.includes(screen),
-                          ),
-                    )
-                    .filter((v, i, a) => a.indexOf(v) === i)
-                    .map((pk) => {
-                      const active = (form.placements ?? []).some(
-                        (p) => p.placement_key === pk,
-                      );
-                      return (
-                        <Chip
-                          key={pk}
-                          label={PLACEMENT_LABELS[pk] ?? pk}
-                          active={active}
-                          onPress={() => setPlacement(screen, pk)}
-                        />
-                      );
-                    })}
+                  {MANUAL_BANNER_PLACEMENT_KEYS.map((pk) => {
+                    const active = (form.placements ?? []).some(
+                      (p) => p.placement_key === pk,
+                    );
+                    return (
+                      <Chip
+                        key={pk}
+                        label={PLACEMENT_LABELS[pk] ?? pk}
+                        active={active}
+                        onPress={() => setPlacement(screen, pk)}
+                      />
+                    );
+                  })}
                 </View>
               </View>
             ))}
+
+            <Label>Canlı feed simülasyonu</Label>
+            <Text style={styles.hint}>
+              Renk, ölçü ve yerleşim — ana sayfa feed’inde böyle görünür.
+            </Text>
+            <View style={styles.liveSimBox}>
+              <FeedSimulasyonOnizleme
+                kampanya={onizlemeKampanya}
+                placement={placement}
+              />
+            </View>
 
             <Label>Platform</Label>
             <View style={styles.rowWrap}>
@@ -851,18 +887,113 @@ export default function AdminBannerDuzenleEkrani() {
   );
 }
 
-function PreviewCard({ form }: { form: BannerAdminSavePayload }) {
-  const onizleme = MedyaUriGuvenli(form.thumbnail_url || form.media_url);
+function formdanOnizlemeKampanya(
+  form: BannerAdminSavePayload,
+): BannerCampaign {
+  const now = new Date().toISOString();
+  const tags = [...(form.tags ?? [])];
+  if (
+    form.size_type === 'CUSTOM' &&
+    (form.aspect_ratio === '19:25' || form.aspect_ratio === '0.76') &&
+    !tags.includes(BANNER_ROOM_CARD_TAG)
+  ) {
+    tags.push(BANNER_ROOM_CARD_TAG);
+  }
+  return {
+    id: form.id ?? 'preview-local',
+    name: form.name || 'Önizleme',
+    internal_name: form.internal_name ?? null,
+    title: form.title ?? null,
+    subtitle: form.subtitle ?? null,
+    description: form.description ?? null,
+    badge: form.badge ?? null,
+    label: form.label ?? null,
+    media_type: form.media_type,
+    media_url: form.media_url ?? null,
+    thumbnail_url: form.thumbnail_url ?? null,
+    media_alt: form.media_alt ?? null,
+    gradient_json: (form.gradient_json as BannerCampaign['gradient_json']) ?? {
+      colors: [RenkTokenlari.deepPlum, RenkTokenlari.primary],
+    },
+    size_type: form.size_type,
+    aspect_ratio: form.aspect_ratio ?? '4:1',
+    priority: form.priority ?? 50,
+    status: 'ACTIVE',
+    start_at: null,
+    end_at: null,
+    daily_start_time: null,
+    daily_end_time: null,
+    dismissible: !!form.dismissible,
+    frequency_type: form.frequency_type ?? 'unlimited',
+    max_daily_impressions: form.max_daily_impressions ?? null,
+    max_weekly_impressions: form.max_weekly_impressions ?? null,
+    max_session_impressions: form.max_session_impressions ?? null,
+    shimmer_enabled: !!form.shimmer_enabled,
+    autoplay_video: !!form.autoplay_video,
+    loop_video: !!form.loop_video,
+    carousel_auto_slide_ms: form.carousel_auto_slide_ms ?? 3000,
+    tags,
+    created_by: null,
+    created_at: now,
+    updated_at: now,
+    placements: form.placements ?? [],
+    targets: form.targets ?? [],
+    actions: form.actions ?? [],
+  };
+}
+
+function FeedSimulasyonOnizleme({
+  kampanya,
+  placement,
+}: {
+  kampanya: BannerCampaign;
+  placement: string;
+}) {
+  const odaKart = bannerOdaKartMi(kampanya);
   return (
-    <View style={styles.localPreview}>
-      {onizleme ? (
-        <Image
-          source={{ uri: onizleme }}
-          style={styles.localPreviewImg}
+    <View style={styles.feedSim}>
+      <Text style={styles.feedSimBaslik}>Ana sayfa feed</Text>
+      <View style={styles.feedSimSatir}>
+        <View style={[styles.feedSimKart, { aspectRatio: FEED_KART_ORANI }]}>
+          <Text style={styles.feedSimKartYazi}>Ses odası</Text>
+        </View>
+        <View style={[styles.feedSimKart, { aspectRatio: FEED_KART_ORANI }]}>
+          <Text style={styles.feedSimKartYazi}>Canlı</Text>
+        </View>
+      </View>
+      <Text style={styles.feedSimSlot}>Banner · {placement}</Text>
+      {odaKart ? (
+        <View style={styles.feedSimSatir}>
+          <View style={{ flex: 1 }}>
+            <BannerRoomCard
+              banner={kampanya}
+              placement={placement}
+              screen="ADMIN_PREVIEW"
+              sessionId="preview"
+              interaktif={false}
+            />
+          </View>
+          <View style={[styles.feedSimKart, { aspectRatio: FEED_KART_ORANI, flex: 1 }]}>
+            <Text style={styles.feedSimKartYazi}>Oda</Text>
+          </View>
+        </View>
+      ) : (
+        <BannerCard
+          banner={kampanya}
+          placement={placement}
+          screen="ADMIN_PREVIEW"
+          sessionId="preview"
+          compact
         />
-      ) : null}
-      <Text style={styles.localTitle}>{form.title || form.name}</Text>
-      <Text style={styles.hint}>{form.subtitle || form.description}</Text>
+      )}
+      <View style={styles.feedSimSatir}>
+        <View style={[styles.feedSimKart, { aspectRatio: FEED_KART_ORANI }]}>
+          <Text style={styles.feedSimKartYazi}>Oda</Text>
+        </View>
+        <View style={[styles.feedSimKart, { aspectRatio: FEED_KART_ORANI }]}>
+          <Text style={styles.feedSimKartYazi}>Oda</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -1040,6 +1171,44 @@ const styles = StyleSheet.create({
   },
   previewAndroid: {
     borderRadius: 12,
+  },
+  liveSimBox: {
+    borderRadius: YaricapTokenlari.lg,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+    padding: BoslukTokenlari.md,
+    backgroundColor: RenkTokenlari.bg,
+  },
+  feedSim: {
+    gap: BoslukTokenlari.sm,
+  },
+  feedSimBaslik: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.primarySoft,
+    letterSpacing: 1.2,
+    fontWeight: '800',
+  },
+  feedSimSlot: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textDim,
+  },
+  feedSimSatir: {
+    flexDirection: 'row',
+    gap: BoslukTokenlari.sm,
+  },
+  feedSimKart: {
+    flex: 1,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: RenkTokenlari.surface,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 80,
+  },
+  feedSimKartYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textDim,
   },
   localPreview: {
     marginHorizontal: BoslukTokenlari.lg,

@@ -1,0 +1,33 @@
+{
+  "bildirimler": {
+    "baslik": "Notifications",
+    "bos": "No notifications",
+    "bosBody": "Gifts, live, and system alerts appear here.",
+    "tumunuOkundu": "Mark all as read",
+    "secili": "{{count}} selected",
+    "silBaslik": "Delete notification",
+    "silSoru": "Remove this notification?",
+    "secilenleriSil": "Delete selected",
+    "secilenleriSilSoru": "Delete {{count}} notifications?",
+    "tumunuSil": "Delete all",
+    "tumunuSilSoru": "Delete every notification in the center?",
+    "silinemedi": "Could not delete notification.",
+    "silinemediCoklu": "Could not delete notifications.",
+    "raporlarim": "My reports",
+    "ayarlar": "Notification settings",
+    "secimiKapat": "Exit selection",
+    "tumunuSec": "Select all",
+    "secimiKaldir": "Clear selection",
+    "kategoriHediye": "Gift",
+    "kategoriCanli": "Live",
+    "kategoriOda": "Room",
+    "kategoriSosyal": "Social",
+    "kategoriCuzdan": "Wallet",
+    "kategoriSistem": "System",
+    "varsayilanBaslik": "Notification",
+    "okunmamisA11y": "{{count}} unread notifications",
+    "azOnce": "Just now",
+    "dkOnce": "{{n}} min ago",
+    "saOnce": "{{n}} h ago"
+  }
+}

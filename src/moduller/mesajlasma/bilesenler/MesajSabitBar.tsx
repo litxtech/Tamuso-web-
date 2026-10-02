@@ -18,6 +18,8 @@ function ozet(m: DirektMesaj | undefined, t: (k: any) => string): string {
   if (!m) return '…';
   if (m.message_type === 'voice') return t('mesajV2.voice');
   if (m.message_type === 'music') return t('mesajV2.music');
+  if (m.message_type === 'agency_package_offer') return t('cuzdanX.ajansTeklifKart');
+  if (m.message_type === 'agency_package_receipt') return t('cuzdanX.ajansFisBaslik');
   return (m.body ?? '').trim() || `[${m.message_type}]`;
 }
 

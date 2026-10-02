@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, type TextStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type TextStyle } from 'react-native';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { MesajBaglantiliMetin } from '../../mesajlasma/bilesenler/MesajBaglantiliMetin';
+import { BaglantiOnizlemeBlok } from '../../baglanti/bilesenler/BaglantiOnizlemeBlok';
 
 /** Kapalıyken gösterilecek satır üst sınırı */
 const KAPALI_SATIR = 5;
@@ -14,8 +16,7 @@ type Props = {
 };
 
 /**
- * Uzun caption / metin gönderisi — önce ölçer, gerekirse
- * «devamını gör» ile yerinde açar.
+ * Uzun caption — tıklanabilir link + önizleme kartı + «devamını gör».
  */
 export function DurumCaptionAcilir({
   metin,
@@ -32,8 +33,9 @@ export function DurumCaptionAcilir({
   const kirpik = kirpikGerekli === true && !acik;
 
   return (
-    <>
-      <Text
+    <View style={styles.wrap}>
+      <MesajBaglantiliMetin
+        text={temiz}
         style={[styles.caption, style]}
         numberOfLines={kirpik ? kapaliSatir : undefined}
         onTextLayout={(e) => {
@@ -41,9 +43,7 @@ export function DurumCaptionAcilir({
           const n = e.nativeEvent.lines?.length ?? 0;
           setKirpikGerekli(n > kapaliSatir);
         }}
-      >
-        {temiz}
-      </Text>
+      />
       {kirpikGerekli === true && !acik ? (
         <Pressable
           onPress={(e) => {
@@ -70,11 +70,15 @@ export function DurumCaptionAcilir({
           <Text style={styles.devam}>{t('durumX.dahaAzGoster')}</Text>
         </Pressable>
       ) : null}
-    </>
+      <BaglantiOnizlemeBlok metin={temiz} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrap: {
+    gap: 2,
+  },
   caption: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,

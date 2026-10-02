@@ -7,9 +7,10 @@ import {
 } from './BelgeSablonlari';
 import { HesapHareketExcelCsvOlustur } from './HesapHareketleriBelgesi';
 import type { HesapHareketleriBelgeGirdi } from './HesapHareketleriBelgesi';
+import i18n from '../../i18n';
 
 export type BelgeIslemSonucu =
-  | { ok: true; uri?: string }
+  | { ok: true; uri?: string; iptal?: boolean }
   | { ok: false; hata: string };
 
 async function PrintModulu() {
@@ -45,7 +46,7 @@ export async function PdfDosyasiOlustur(
     if (!Print) {
       return {
         ok: false,
-        hata: 'PDF icin yeni native build gerekli (expo-print)',
+        hata: i18n.t('belge.pdfBuildGerekli'),
       };
     }
     const html = BelgeHtmlSablonOlustur(icerik);
@@ -54,7 +55,7 @@ export async function PdfDosyasiOlustur(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'PDF olusturulamadi',
+      hata: e instanceof Error ? e.message : i18n.t('belge.pdfOlusturulamadi'),
     };
   }
 }
@@ -66,7 +67,7 @@ export async function BelgeYazdir(icerik: BelgeIcerik): Promise<BelgeIslemSonucu
     if (!Print) {
       return {
         ok: false,
-        hata: 'Yazdirma icin yeni native build gerekli (expo-print)',
+        hata: i18n.t('belge.yazdirBuildGerekli'),
       };
     }
     const html = BelgeHtmlSablonOlustur(icerik);
@@ -75,7 +76,7 @@ export async function BelgeYazdir(icerik: BelgeIcerik): Promise<BelgeIslemSonucu
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Yazdirma baslatilamadi',
+      hata: e instanceof Error ? e.message : i18n.t('belge.yazdirBaslatilamadi'),
     };
   }
 }
@@ -90,11 +91,11 @@ export async function BelgePdfPaylas(
   try {
     const Sharing = await SharingModulu();
     if (!Sharing) {
-      return { ok: false, hata: 'Paylasim modulu yuklenemedi' };
+      return { ok: false, hata: i18n.t('belge.paylasimYuklenemedi') };
     }
     const uygun = await Sharing.isAvailableAsync();
     if (!uygun) {
-      return { ok: false, hata: 'Paylasim bu cihazda desteklenmiyor' };
+      return { ok: false, hata: i18n.t('belge.paylasimDesteklenmiyor') };
     }
     await Sharing.shareAsync(pdf.uri, {
       mimeType: 'application/pdf',
@@ -105,7 +106,7 @@ export async function BelgePdfPaylas(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Paylasim basarisiz',
+      hata: e instanceof Error ? e.message : i18n.t('belge.paylasimBasarisiz'),
     };
   }
 }
@@ -129,7 +130,7 @@ export async function WhatsAppBelgeGonder(
         if (uygun) {
           await Sharing.shareAsync(pdf.uri, {
             mimeType: 'application/pdf',
-            dialogTitle: 'WhatsApp ile gönder',
+            dialogTitle: i18n.t('belge.whatsappGonder'),
             UTI: 'com.adobe.pdf',
           });
           return { ok: true, uri: pdf.uri };
@@ -161,7 +162,7 @@ export async function WhatsAppBelgeGonder(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'WhatsApp acilamadi',
+      hata: e instanceof Error ? e.message : i18n.t('belge.whatsappAcilamadi'),
     };
   }
 }
@@ -182,14 +183,69 @@ export async function WhatsAppMetinGonder(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'WhatsApp acilamadi',
+      hata: e instanceof Error ? e.message : i18n.t('belge.whatsappAcilamadi'),
     };
   }
 }
 
+function paylasimIptalMi(e: unknown): boolean {
+  const msg = (
+    e instanceof Error ? e.message : typeof e === 'string' ? e : ''
+  ).toLowerCase();
+  return (
+    msg.includes('cancel') ||
+    msg.includes('dismiss') ||
+    msg.includes('iptal') ||
+    msg.includes('user did not share') ||
+    msg.includes('sharing dismissed')
+  );
+}
+
+/** UTF-8 string → base64 (BOM dahil Excel uyumu için) */
+function utf8Base64(metin: string): string {
+  const btoaFn =
+    typeof globalThis.btoa === 'function'
+      ? globalThis.btoa.bind(globalThis)
+      : null;
+  if (btoaFn) {
+    try {
+      return btoaFn(unescape(encodeURIComponent(metin)));
+    } catch {
+      /* fallback below */
+    }
+  }
+  const bytes: number[] = [];
+  for (let i = 0; i < metin.length; i++) {
+    const c = metin.charCodeAt(i);
+    if (c < 0x80) bytes.push(c);
+    else if (c < 0x800) {
+      bytes.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+    } else {
+      bytes.push(
+        0xe0 | (c >> 12),
+        0x80 | ((c >> 6) & 0x3f),
+        0x80 | (c & 0x3f),
+      );
+    }
+  }
+  const alphabet =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 3) {
+    const a = bytes[i]!;
+    const b = bytes[i + 1];
+    const c = bytes[i + 2];
+    out += alphabet[a >> 2];
+    out += alphabet[((a & 3) << 4) | ((b ?? 0) >> 4)];
+    out += b === undefined ? '=' : alphabet[(((b ?? 0) & 15) << 2) | ((c ?? 0) >> 6)];
+    out += c === undefined ? '=' : alphabet[(c ?? 0) & 63];
+  }
+  return out;
+}
+
 /**
  * Hesap hareketleri → Excel'in açtığı CSV dosyası + paylaşım.
- * Türkçe sütunlar; Excel TR için ; ayırıcı.
+ * Sütunlar i18n; Excel TR için ; ayırıcı + UTF-8 BOM.
  */
 export async function HesapHareketExcelPaylas(
   girdi: HesapHareketleriBelgeGirdi,
@@ -199,7 +255,7 @@ export async function HesapHareketExcelPaylas(
     if (!FS?.cacheDirectory) {
       return {
         ok: false,
-        hata: 'Dosya sistemi bu cihazda kullanılamıyor',
+        hata: i18n.t('belge.dosyaSistemiYok'),
       };
     }
     const csv = HesapHareketExcelCsvOlustur(girdi);
@@ -207,26 +263,57 @@ export async function HesapHareketExcelPaylas(
       .toISOString()
       .slice(0, 10)}.csv`;
     const uri = `${FS.cacheDirectory}${ad}`;
-    await FS.writeAsStringAsync(uri, csv, { encoding: 'utf8' });
+
+    try {
+      await FS.writeAsStringAsync(uri, csv, {
+        encoding: FS.EncodingType?.UTF8 ?? 'utf8',
+      });
+    } catch {
+      await FS.writeAsStringAsync(uri, utf8Base64(csv), {
+        encoding: FS.EncodingType?.Base64 ?? 'base64',
+      });
+    }
 
     const Sharing = await SharingModulu();
-    if (!Sharing) {
-      return { ok: false, hata: 'Paylaşım modülü yüklenemedi' };
+    if (Sharing && (await Sharing.isAvailableAsync())) {
+      try {
+        await Sharing.shareAsync(uri, {
+          // Android Excel uygulamaları text/csv'yi bazen açmaz
+          mimeType:
+            Platform.OS === 'android'
+              ? 'application/vnd.ms-excel'
+              : 'text/csv',
+          dialogTitle: i18n.t('belge.excelPaylasDialog'),
+          UTI: 'public.comma-separated-values-text',
+        });
+        return { ok: true, uri };
+      } catch (e) {
+        if (paylasimIptalMi(e)) return { ok: true, uri, iptal: true };
+        // RN Share yedeğine düş
+      }
     }
-    const uygun = await Sharing.isAvailableAsync();
-    if (!uygun) {
-      return { ok: false, hata: 'Paylaşım bu cihazda desteklenmiyor' };
+
+    try {
+      const { Share } = await import('react-native');
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { url: uri, message: i18n.t('belge.excelPaylasDialog') }
+          : { message: uri, title: ad },
+      );
+      return { ok: true, uri };
+    } catch (e) {
+      if (paylasimIptalMi(e)) return { ok: true, uri, iptal: true };
+      return {
+        ok: false,
+        hata:
+          e instanceof Error ? e.message : i18n.t('belge.excelOlusturulamadi'),
+      };
     }
-    await Sharing.shareAsync(uri, {
-      mimeType: 'text/csv',
-      dialogTitle: 'Excel / CSV olarak paylaş',
-      UTI: 'public.comma-separated-values-text',
-    });
-    return { ok: true, uri };
   } catch (e) {
+    if (paylasimIptalMi(e)) return { ok: true, iptal: true };
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Excel dosyası oluşturulamadı',
+      hata: e instanceof Error ? e.message : i18n.t('belge.excelOlusturulamadi'),
     };
   }
 }

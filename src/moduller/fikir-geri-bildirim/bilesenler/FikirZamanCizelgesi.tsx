@@ -5,10 +5,12 @@ import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari'
 import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { FikirDurumRozeti, fikirDurumRenk } from './FikirDurumRozeti';
 import type { FikirZamanNoktasi } from '../tipler';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 
-function tarihKisa(iso: string) {
+function tarihKisa(iso: string, locale: string) {
   try {
-    return new Date(iso).toLocaleDateString('tr-TR', {
+    return new Date(iso).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -19,11 +21,14 @@ function tarihKisa(iso: string) {
 }
 
 export function FikirZamanCizelgesi({ items }: { items: FikirZamanNoktasi[] }) {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
+
   if (!items?.length) return null;
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.baslik}>Durum zaman çizelgesi</Text>
+      <Text style={styles.baslik}>{t('fikirler.zamanCizelgesi')}</Text>
       {items.map((item, i) => {
         const son = i === items.length - 1;
         const renk = fikirDurumRenk(item.to_status);
@@ -45,7 +50,7 @@ export function FikirZamanCizelgesi({ items }: { items: FikirZamanNoktasi[] }) {
             </View>
             <View style={styles.sag}>
               <FikirDurumRozeti status={item.to_status} label={item.to_label} />
-              <Text style={styles.tarih}>{tarihKisa(item.created_at)}</Text>
+              <Text style={styles.tarih}>{tarihKisa(item.created_at, locale)}</Text>
             </View>
           </View>
         );

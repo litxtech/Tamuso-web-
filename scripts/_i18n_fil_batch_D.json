@@ -1,0 +1,92 @@
+[
+  {
+    "key": "misafirHesap.epostaPlaceholder",
+    "en": "name@gmail.com",
+    "tr": "isim@gmail.com"
+  },
+  {
+    "key": "guvenlik.adminKuyruk",
+    "en": "Admin moderation queue",
+    "tr": "Admin moderasyon kuyruğu"
+  },
+  {
+    "key": "siralamalar.altYuklemeTumu",
+    "en": "All-time top-ups",
+    "tr": "Tüm zamanlar yükleme"
+  },
+  {
+    "key": "ulkeLigi.baslik",
+    "en": "World Country League",
+    "tr": "Dünya Ülke Ligi"
+  },
+  {
+    "key": "ulkeLigi.adminUlkeKodu",
+    "en": "Country code (ISO)",
+    "tr": "Ülke kodu (ISO)"
+  },
+  {
+    "key": "takas.qrCuzdanOzet",
+    "en": "Wallet: {{no}}\n{{maskeli}}",
+    "tr": "Cüzdan: {{no}}\n{{maskeli}}"
+  },
+  {
+    "key": "kisilerX.cagriIdYok",
+    "en": "Call id missing",
+    "tr": "Çağrı kimliği alınamadı"
+  },
+  {
+    "key": "kisilerX.baslatilamadi",
+    "en": "Could not start",
+    "tr": "Başlatılamadı"
+  },
+  {
+    "key": "kisilerX.coinDk",
+    "en": "{{n}} coin / min",
+    "tr": "{{n}} coin / dakika"
+  },
+  {
+    "key": "durumX.onizlemedeCal",
+    "en": "Play in preview",
+    "tr": "Önizlemede çal"
+  },
+  {
+    "key": "durumX.onizlemedeDinle",
+    "en": "Listen in preview",
+    "tr": "Önizlemede dinle"
+  },
+  {
+    "key": "durumX.paylasimYok",
+    "en": "No posts yet",
+    "tr": "Henüz paylaşım yok"
+  },
+  {
+    "key": "durumX.yanitlaniyor",
+    "en": "Replying to {{ad}}",
+    "tr": "{{ad}} yanıtlanıyor"
+  },
+  {
+    "key": "durumX.yorumYaz",
+    "en": "Write a comment…",
+    "tr": "Yorum yaz…"
+  },
+  {
+    "key": "cocukKoruma.btnDegilim",
+    "en": "I am under 18",
+    "tr": "18 yaşından değilim"
+  },
+  {
+    "key": "moderasyon.sebepSec",
+    "en": "Choose a reason.",
+    "tr": "Bir sebep seç."
+  },
+  {
+    "key": "kullanimSuresiFmt.gunSaatKisa",
+    "en": "{{gun}}d {{saat}}h",
+    "tr": "{{gun}}g {{saat}}s"
+  },
+  {
+    "key": "kullanimSuresiFmt.saatDkKisa",
+    "en": "{{saat}}h {{dk}}m",
+    "tr": "{{saat}}s {{dk}}dk"
+  }
+]

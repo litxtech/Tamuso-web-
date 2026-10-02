@@ -3,6 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { BANNER_BORDER_RADIUS } from '../core/BannerConstants';
 import { RenkTokenlari } from '../../tasarim-sistemi/RenkTokenlari';
 import { MedyaUriGuvenli } from '../../moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../i18n/useCeviri';
 
 type Props = {
   uri?: string | null;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function BannerImage({ uri, alt, aspectRatio, flush }: Props) {
+  const { t } = useCeviri();
   const [failed, setFailed] = useState(false);
   const safeUri = MedyaUriGuvenli(uri);
   const radius = flush
@@ -31,7 +33,7 @@ export function BannerImage({ uri, alt, aspectRatio, flush }: Props) {
       source={{ uri: safeUri }}
       style={[styles.img, { aspectRatio }, radius]}
       resizeMode="cover"
-      accessibilityLabel={alt ?? 'Banner görseli'}
+      accessibilityLabel={alt ?? t('banner.gorselA11y')}
       onError={() => setFailed(true)}
     />
   );

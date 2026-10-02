@@ -17,6 +17,7 @@ import {
   GolgeTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   walletNumber: string;
@@ -55,6 +56,7 @@ export function CuzdanQrKarti({
   onWhatsAppPaylas,
   onKameraOku,
 }: Props) {
+  const { t } = useCeviri();
   const no = walletNumber.replace(/\D/g, '');
   const hazir = no.length === 18;
   const uri = useMemo(
@@ -81,7 +83,7 @@ export function CuzdanQrKarti({
                 {(marka || 'MUTA PAY').toUpperCase()}
               </Text>
             </View>
-            <Text style={styles.ustEtiket}>CÜZDAN QR</Text>
+            <Text style={styles.ustEtiket}>{t('cuzdan.cuzdanQr').toUpperCase()}</Text>
           </View>
 
           <View style={styles.qrSahne}>
@@ -92,7 +94,7 @@ export function CuzdanQrKarti({
                   source={{ uri }}
                   style={styles.qrImg}
                   resizeMode="contain"
-                  accessibilityLabel="Cüzdan QR kodu"
+                  accessibilityLabel={t('cuzdan.qrKoduA11y')}
                 />
               ) : (
                 <ActivityIndicator color={RenkTokenlari.accent} />
@@ -101,11 +103,9 @@ export function CuzdanQrKarti({
           </View>
 
           <Text style={styles.noYazi} numberOfLines={1}>
-            {hazir ? formatNo(no) : 'Numara hazırlanıyor…'}
+            {hazir ? formatNo(no) : t('cuzdan.numaraHazirlaniyor')}
           </Text>
-          <Text style={styles.ipucu}>
-            Kamerayla okut · transfer için alıcı adının yalnızca baş harfleri görünür
-          </Text>
+          <Text style={styles.ipucu}>{t('cuzdan.qrIpucu')}</Text>
 
           <View style={styles.aksiyonSatir}>
             {onKameraOku ? (
@@ -115,14 +115,14 @@ export function CuzdanQrKarti({
                   pressed && { opacity: 0.88 },
                 ]}
                 onPress={onKameraOku}
-                accessibilityLabel="QR oku"
+                accessibilityLabel={t('cuzdan.qrOku')}
               >
                 <Ionicons
                   name="scan-outline"
                   size={18}
                   color={RenkTokenlari.accent}
                 />
-                <Text style={styles.aksiyonYazi}>Oku</Text>
+                <Text style={styles.aksiyonYazi}>{t('cuzdan.qrOku')}</Text>
               </Pressable>
             ) : null}
             {onWhatsAppPaylas ? (
@@ -133,11 +133,11 @@ export function CuzdanQrKarti({
                   pressed && { opacity: 0.88 },
                 ]}
                 onPress={onWhatsAppPaylas}
-                accessibilityLabel="WhatsApp ile QR paylaş"
+                accessibilityLabel={t('cuzdan.a11yWaQr')}
               >
                 <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
                 <Text style={[styles.aksiyonYazi, styles.aksiyonWaYazi]}>
-                  WhatsApp
+                  {t('ortak.whatsapp')}
                 </Text>
               </Pressable>
             ) : null}

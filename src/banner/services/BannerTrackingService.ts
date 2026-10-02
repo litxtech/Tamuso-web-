@@ -1,5 +1,4 @@
 import { supabase } from '../../lib/supabase';
-import { AnalyticsOlayEkle } from '../../moduller/guvenlik/analytics/AnalyticsOlayEkle';
 import type { BannerEventType } from '../core/BannerTypes';
 
 const impressed = new Set<string>();
@@ -12,6 +11,10 @@ function impressionKey(
   return `${bannerId}:${sessionId}:${placement}`;
 }
 
+/**
+ * Banner metrikleri yalnızca banner_impressions / banner_events tablolarına yazılır.
+ * analytics_events'e çift yazım yok — admin CTR zaten banner_* RPC'lerinden geliyor.
+ */
 export const BannerTrackingService = {
   isSyntheticBannerId(bannerId: string): boolean {
     return (
@@ -27,13 +30,8 @@ export const BannerTrackingService = {
     screen?: string;
     placement?: string;
   }): Promise<void> {
+    // Sentetik ID'ler banner tablosunda yok; spam üretme
     if (BannerTrackingService.isSyntheticBannerId(input.bannerId)) {
-      void AnalyticsOlayEkle('banner_impression', {
-        banner_id: input.bannerId,
-        placement: input.placement,
-        screen: input.screen,
-        synthetic: true,
-      });
       return;
     }
     const key = impressionKey(
@@ -51,11 +49,6 @@ export const BannerTrackingService = {
         p_screen: input.screen ?? null,
         p_placement: input.placement ?? null,
       });
-      void AnalyticsOlayEkle('banner_impression', {
-        banner_id: input.bannerId,
-        placement: input.placement,
-        screen: input.screen,
-      });
     } catch {
       impressed.delete(key);
     }
@@ -69,12 +62,6 @@ export const BannerTrackingService = {
     screen?: string;
   }): Promise<void> {
     if (BannerTrackingService.isSyntheticBannerId(input.bannerId)) {
-      void AnalyticsOlayEkle('banner_click', {
-        banner_id: input.bannerId,
-        action_type: input.actionType,
-        placement: input.placement,
-        synthetic: true,
-      });
       return;
     }
     try {
@@ -84,11 +71,6 @@ export const BannerTrackingService = {
         p_action_id: input.actionId ?? null,
         p_placement: input.placement ?? null,
         p_screen: input.screen ?? null,
-      });
-      void AnalyticsOlayEkle('banner_click', {
-        banner_id: input.bannerId,
-        action_type: input.actionType,
-        placement: input.placement,
       });
     } catch {
       /* ignore */

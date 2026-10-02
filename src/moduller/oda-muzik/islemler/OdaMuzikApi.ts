@@ -8,6 +8,7 @@ import {
 } from '../../../ortak/medya/DepoyaMedyaYukle';
 import { SesDosyasiSec } from '../../../ortak/medya/DocumentPickerHazirMi';
 import { ProfilMedyasiSec } from '../../kullanici-profili/islemler/ProfilMedyasiYukle';
+import i18n from '../../../i18n';
 
 export const MUSIC_AUDIO_BUCKET = 'music-audio';
 export const MUSIC_COVER_BUCKET = 'music-covers';
@@ -105,6 +106,30 @@ async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Promise<T
   const { data, error } = await supabase.rpc(fn, args);
   if (error) throw new Error(error.message);
   return data as T;
+}
+
+/** Optimistic lock — eşzamanlı komut / stale React version */
+export function OdaMuzikVersionConflictMi(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  return /version conflict/i.test(msg);
+}
+
+/**
+ * Taze session version ile komut çalıştırır.
+ * Conflict olursa bir kez daha dener (çift tap / realtime yarışı).
+ */
+export async function RoomMusicKomutCalistir(
+  roomId: string,
+  komut: (expectedVersion: number) => Promise<RoomMusicSession>,
+): Promise<RoomMusicSession> {
+  const first = await RoomMusicSessionGet(roomId);
+  try {
+    return await komut(first.version);
+  } catch (e) {
+    if (!OdaMuzikVersionConflictMi(e)) throw e;
+    const again = await RoomMusicSessionGet(roomId);
+    return await komut(again.version);
+  }
 }
 
 export async function MusicAdminDashboard() {
@@ -309,12 +334,12 @@ export async function MusicAdminAudioYukle(onProgress?: (pct: number) => void): 
   const secim = await SesDosyasiSec();
   if (!secim.ok) {
     if ('iptal' in secim && secim.iptal) throw new Error('IPTAL');
-    throw new Error('hata' in secim ? secim.hata : 'Dosya seçilemedi');
+    throw new Error(
+      'hata' in secim ? secim.hata : i18n.t('odaMuzik.dosyaSecilemedi'),
+    );
   }
   if (!SesDosyasiMi(secim.uri, secim.mime, secim.name)) {
-    throw new Error(
-      'Desteklenen ses: mp3, m4a, aac, wav, ogg, flac, webm, opus, aiff, caf…',
-    );
+    throw new Error(i18n.t('odaMuzik.desteklenenSes'));
   }
   onProgress?.(10);
   const ext = MedyaUzantisiCoz(secim.uri, secim.mime, 'mp3');
@@ -339,7 +364,7 @@ export async function MusicAdminAudioYukle(onProgress?: (pct: number) => void): 
     storagePath: yukleme.path,
     mimeType: yukleme.contentType ?? secim.mime ?? 'audio/mpeg',
     fileExt: ext,
-    suggestedTitle: secim.name.replace(/\.[^.]+$/, '').trim() || 'Müzik',
+    suggestedTitle: secim.name.replace(/\.[^.]+$/, '').trim() || i18n.t('odaMuzik.varsayilanBaslik'),
   };
 }
 

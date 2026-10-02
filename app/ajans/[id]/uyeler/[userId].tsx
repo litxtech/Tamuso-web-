@@ -15,6 +15,10 @@ import {
   AjansStaffAta,
   AjansUyeDetayGetir,
 } from '../../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import {
+  AjansCrmDurumEtiket,
+  AjansRolEtiket,
+} from '../../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
 import { RenkTokenlari } from '../../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../../src/tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../../src/i18n/useCeviri';
@@ -80,12 +84,14 @@ export default function AjansUyeDetayEkrani() {
         <Text style={styles.alt}>@{profile?.username || '—'} · ID {profile?.public_user_id || '—'}</Text>
         <Text style={styles.alt}>
           {t('ajans.rolDurum', {
-            rol: String(detay?.role ?? 'MEMBER'),
-            durum: crm?.agency_status ?? 'active',
+            rol: AjansRolEtiket(String(detay?.role ?? 'MEMBER'), t),
+            durum: AjansCrmDurumEtiket(crm?.agency_status ?? 'active', t),
           })}
         </Text>
         <Text style={styles.alt}>
-          {t('ajans.onboarding', { stage: crm?.onboarding_stage ?? 'active' })}
+          {t('ajans.onboarding', {
+            stage: AjansCrmDurumEtiket(crm?.onboarding_stage ?? 'active', t),
+          })}
         </Text>
       </AjansKart>
 
@@ -137,11 +143,11 @@ export default function AjansUyeDetayEkrani() {
           }}
         />
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-          {['active', 'trial', 'leave', 'suspended'].map((s) => (
+          {(['active', 'trial', 'leave', 'suspended'] as const).map((s) => (
             <AjansCta
               key={s}
               ghost
-              label={s}
+              label={AjansCrmDurumEtiket(s, t)}
               onPress={() => {
                 void (async () => {
                   const r = await AjansCrmGuncelle({

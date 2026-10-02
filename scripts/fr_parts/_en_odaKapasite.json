@@ -1,0 +1,14 @@
+{
+  "odaKapasite": {
+    "mini": "Mini",
+    "miniAlt": "Intimate room",
+    "social": "Social",
+    "socialAlt": "Everyday chat",
+    "community": "Community",
+    "communityAlt": "Community stage",
+    "stage": "Stage",
+    "stageAlt": "Large stage",
+    "event": "Event",
+    "eventAlt": "Event size"
+  }
+}

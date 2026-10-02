@@ -6,7 +6,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { kullaniciTemaKodunuAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 import { useCeviri } from '../../../i18n/useCeviri';
 
@@ -31,7 +31,7 @@ export function AnaSayfaAramaCubugu({
 }: Props) {
   useTemayaAboneOl();
   const { t } = useCeviri();
-  const acik = kullaniciTemaKodunuAl() === 'acik';
+  const acik = temaAcikMi(kullaniciTemaKodunuAl());
   const yerTutucu = placeholder ?? t('anaSayfa.aramaPlaceholder');
 
   return (
@@ -39,7 +39,7 @@ export function AnaSayfaAramaCubugu({
       style={[
         styles.dis,
         gomulu && styles.gomulu,
-        !gomulu && {
+        {
           backgroundColor: acik ? RenkTokenlari.bgGlass : RenkTokenlari.bgCard,
           borderColor: acik ? RenkTokenlari.border : 'rgba(139,92,246,0.22)',
         },
@@ -99,8 +99,6 @@ const styles = StyleSheet.create({
   gomulu: {
     marginHorizontal: 0,
     marginBottom: 0,
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
   },
   wrap: {
     flex: 1,

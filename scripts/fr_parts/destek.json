@@ -1,0 +1,24 @@
+{
+  "destek": {
+    "baslik": "Assistance",
+    "canliBaslik": "Assistance en direct",
+    "yeniTalep": "Nouvelle demande",
+    "konu": "Sujet",
+    "mesaj": "Message",
+    "temsilciAlt": "Agent d’assistance de la plateforme",
+    "yeniGorusme": "Nouveau chat",
+    "baglaniyor": "Connexion…",
+    "mesajYok": "Aucun message",
+    "yaz": "Écrire un message…",
+    "bitirBaslik": "Terminer le chat",
+    "bitirSoru": "Terminer l’assistance en direct ?",
+    "bitir": "Terminer",
+    "durumBekliyor": "Toprak se connecte…",
+    "durumAktif": "Toprak est en ligne",
+    "durumIdle": "Délai dépassé",
+    "durumKapandi": "Chat fermé",
+    "idleKapandi": "Chat fermé après 3 minutes d’inactivité.",
+    "gorusmeBitti": "Chat terminé.",
+    "misafirAlt": "Finalisez votre compte pour parler avec la plateforme en direct."
+  }
+}

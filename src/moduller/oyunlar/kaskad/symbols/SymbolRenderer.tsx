@@ -18,22 +18,7 @@ import Animated, {
 import { DESTROY_MS } from '../sabitler/KaskadSabitleri';
 import { isEmptyInstanceId, isMultiplier, isScatter } from './SymbolRules';
 import { SymbolImages } from '../assets/VisualAssets';
-import type { GridCell, PerformanceProfile, KaskadSymbolType } from '../tipler/KaskadTipleri';
-import { GercekciSembolKabugu } from '../../ortak/bilesenler/GercekciSembolKabugu';
-
-const SYMBOL_TINT: Record<KaskadSymbolType, string> = {
-  blueCrystal: '#4DA8FF',
-  greenCrystal: '#3DDC84',
-  purpleCrystal: '#B58CFF',
-  redCrystal: '#FF4D6D',
-  goldCrystal: '#FFD36B',
-  stormRing: '#6FE3FF',
-  celestialCup: '#E8C547',
-  timeCore: '#A78BFA',
-  energyCrown: '#FFE08A',
-  portalScatter: '#C4B5FD',
-  stormMultiplier: '#6FE3FF',
-};
+import type { GridCell, PerformanceProfile } from '../tipler/KaskadTipleri';
 
 export type SymbolVisualState =
   | 'normal'
@@ -277,20 +262,13 @@ function SymbolRendererInner({
   });
 
   if (isEmpty) {
-    return (
-      <View style={{ width: size, height: size, padding: size * 0.06 }}>
-        <View style={styles.emptySlot} />
-      </View>
-    );
+    return <View style={{ width: size, height: size }} />;
   }
 
-  const imgSize = size * 0.92;
-  const special = isMultiplier(cell.symbolType) || isScatter(cell.symbolType);
+  const imgSize = size;
   const showMatchRing =
     (visualState === 'matched' || visualState === 'anticipation') &&
     performance !== 'LOW';
-  const tint = SYMBOL_TINT[cell.symbolType] ?? '#FFD36B';
-  const sembolBoyut = imgSize * 0.94;
 
   return (
     <Animated.View
@@ -304,17 +282,15 @@ function SymbolRendererInner({
         anim,
       ]}
     >
-      {(visualState === 'matched' ||
-        visualState === 'anticipation' ||
-        special) &&
+      {(visualState === 'matched' || visualState === 'anticipation') &&
       performance !== 'LOW' ? (
         <Animated.View
           pointerEvents="none"
           style={[
             styles.glowHalo,
             {
-              width: imgSize * 1.18,
-              height: imgSize * 1.18,
+              width: imgSize * 0.86,
+              height: imgSize * 0.86,
               borderRadius: imgSize,
               backgroundColor: isScatter(cell.symbolType)
                 ? 'rgba(167,139,250,0.38)'
@@ -333,8 +309,8 @@ function SymbolRendererInner({
           style={[
             styles.matchRing,
             {
-              width: imgSize * 1.08,
-              height: imgSize * 1.08,
+              width: imgSize * 0.9,
+              height: imgSize * 0.9,
               borderRadius: 12,
             },
             matchRingStyle,
@@ -342,39 +318,31 @@ function SymbolRendererInner({
         />
       ) : null}
 
-      <GercekciSembolKabugu
-        size={imgSize}
-        tint={tint}
-        performance={performance}
-        special={special}
+      <Animated.View
+        style={[
+          {
+            width: imgSize,
+            height: imgSize,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          imgAnim,
+        ]}
       >
-        <Animated.View
-          style={[
-            {
-              width: sembolBoyut,
-              height: sembolBoyut,
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-            imgAnim,
-          ]}
-        >
-          <Image
-            source={SymbolImages[cell.symbolType]}
-            style={{ width: sembolBoyut, height: sembolBoyut }}
-            resizeMode="contain"
-            resizeMethod="resize"
-            fadeDuration={0}
-          />
-        </Animated.View>
-        {isMultiplier(cell.symbolType) && cell.multiplierValue ? (
-          <View style={styles.multBadge} pointerEvents="none">
-            <Text style={[styles.multText, { fontSize: Math.max(10, imgSize * 0.26) }]}>
-              {cell.multiplierValue}×
-            </Text>
-          </View>
-        ) : null}
-      </GercekciSembolKabugu>
+        <Image
+          source={SymbolImages[cell.symbolType]}
+          style={{ width: imgSize, height: imgSize }}
+          resizeMode="contain"
+          fadeDuration={0}
+        />
+      </Animated.View>
+      {isMultiplier(cell.symbolType) && cell.multiplierValue ? (
+        <View style={styles.multBadge} pointerEvents="none">
+          <Text style={[styles.multText, { fontSize: Math.max(10, imgSize * 0.26) }]}>
+            {cell.multiplierValue}×
+          </Text>
+        </View>
+      ) : null}
     </Animated.View>
   );
 }
@@ -394,13 +362,6 @@ export const SymbolRenderer = memo(
 );
 
 const styles = StyleSheet.create({
-  emptySlot: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(201,162,74,0.18)',
-    backgroundColor: 'rgba(8,10,20,0.22)',
-  },
   glowHalo: {
     position: 'absolute',
   },

@@ -1,0 +1,11 @@
+{
+  "konumIzin": {
+    "ayarlar": "Réglages",
+    "ayarlarYolIos": "Vous pouvez gérer les autorisations via Réglages → {{app}}.",
+    "ayarlarYolAndroid": "Vous pouvez gérer les autorisations dans les réglages de l’application.",
+    "reddedildiBaslik": "Localisation indisponible",
+    "reddedildiBody": "L’autorisation est requise pour les fonctionnalités basées sur la localisation. Vous pouvez toujours choisir votre ville manuellement.",
+    "sehirSec": "Choisir une ville",
+    "ayarlariAc": "Ouvrir les réglages"
+  }
+}

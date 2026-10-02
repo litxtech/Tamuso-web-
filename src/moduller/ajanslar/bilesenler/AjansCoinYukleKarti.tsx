@@ -18,10 +18,8 @@ import {
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import type { ArananKullanici } from '../../mesajlasma/okuma/KullanicilariAra';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
-
-function sayi(n: number) {
-  return new Intl.NumberFormat('tr-TR').format(n);
-}
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type HizliUye = {
   user_id: string;
@@ -65,17 +63,18 @@ export function AjansCoinYukleKarti({
   onHizliUye,
   onYukle,
 }: Props) {
+  const { t, dil } = useCeviri();
+  const sayi = (n: number) =>
+    new Intl.NumberFormat(DIL_LOCALE_MAP[dil]).format(n);
+
   if (!yetkili) {
     return (
       <View style={styles.kilitKart}>
         <View style={styles.kilitIcon}>
           <Ionicons name="lock-closed" size={22} color={RenkTokenlari.textDim} />
         </View>
-        <Text style={styles.kilitBaslik}>Coin yükleme yetkisi yok</Text>
-        <Text style={styles.kilitAlt}>
-          Platform bu ajansa coin dağıtım yetkisi verdiğinde burada kullanıcıya
-          coin gönderebilirsin.
-        </Text>
+        <Text style={styles.kilitBaslik}>{t('ajans.coinYetkiYok')}</Text>
+        <Text style={styles.kilitAlt}>{t('ajans.coinYetkiYokAlt')}</Text>
       </View>
     );
   }
@@ -91,15 +90,13 @@ export function AjansCoinYukleKarti({
         <View style={styles.ustSol}>
           <View style={styles.rozet}>
             <Ionicons name="flash" size={14} color="#1A1208" />
-            <Text style={styles.rozetYazi}>Coin sistemi</Text>
+            <Text style={styles.rozetYazi}>{t('ajans.coinSistemi')}</Text>
           </View>
-          <Text style={styles.baslik}>Kullanıcıya coin gönder</Text>
-          <Text style={styles.alt}>
-            İstediğin kullanıcıyı ara, miktarı seç, tek dokunuşla yükle.
-          </Text>
+          <Text style={styles.baslik}>{t('ajans.kullaniciyaCoinGonder')}</Text>
+          <Text style={styles.alt}>{t('ajans.kullaniciyaCoinGonderAlt')}</Text>
         </View>
         <View style={styles.bakiyeKutu}>
-          <Text style={styles.bakiyeLabel}>Bakiye</Text>
+          <Text style={styles.bakiyeLabel}>{t('cuzdan.bakiye')}</Text>
           <Text style={styles.bakiyeDeger}>{sayi(bakiye)}</Text>
         </View>
       </View>
@@ -124,7 +121,7 @@ export function AjansCoinYukleKarti({
                 </View>
               )}
               <Text style={styles.uyeAd} numberOfLines={1}>
-                {u.display_name || u.username || 'Üye'}
+                {u.display_name || u.username || t('ajans.uyeVarsayilan')}
               </Text>
             </Pressable>
           ))}
@@ -135,11 +132,11 @@ export function AjansCoinYukleKarti({
         <Ionicons name="search" size={18} color={RenkTokenlari.textDim} />
         <TextInput
           value={arama}
-          onChangeText={(t) => {
-            onArama(t);
+          onChangeText={(metin) => {
+            onArama(metin);
             if (secili) onSecTemizle();
           }}
-          placeholder="Kullanıcı ara (@ veya isim)"
+          placeholder={t('ajans.kullaniciAraPh')}
           placeholderTextColor={RenkTokenlari.textDim}
           style={styles.aramaInput}
         />
@@ -220,7 +217,7 @@ export function AjansCoinYukleKarti({
       </View>
 
       <View style={styles.miktarKutu}>
-        <Text style={styles.miktarEtiket}>Miktar</Text>
+        <Text style={styles.miktarEtiket}>{t('belge.miktar')}</Text>
         <TextInput
           value={coin}
           onChangeText={onCoin}
@@ -229,7 +226,7 @@ export function AjansCoinYukleKarti({
           placeholderTextColor={RenkTokenlari.textDim}
           style={styles.miktarInput}
         />
-        <Text style={styles.miktarBirim}>coin</Text>
+        <Text style={styles.miktarBirim}>{t('belge.coinBirim')}</Text>
       </View>
 
       <Pressable
@@ -242,7 +239,7 @@ export function AjansCoinYukleKarti({
         ) : (
           <>
             <Ionicons name="send" size={16} color="#1A1208" />
-            <Text style={styles.ctaYazi}>Coin gönder</Text>
+            <Text style={styles.ctaYazi}>{t('ajans.coinGonderBtn')}</Text>
           </>
         )}
       </Pressable>

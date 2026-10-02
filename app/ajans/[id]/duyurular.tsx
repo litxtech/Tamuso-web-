@@ -15,10 +15,12 @@ import {
   AjansDuyuruListesi,
   AjansDuyuruOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 
 export default function AjansDuyurularEkrani() {
+  const { t, dil } = useCeviri();
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [title, setTitle] = useState('');
@@ -40,28 +42,40 @@ export default function AjansDuyurularEkrani() {
 
   useFocusEffect(useCallback(() => { void yukle(); }, [yukle]));
 
+  const locale =
+    dil === 'tr' ? 'tr-TR' : dil === 'es' ? 'es-ES' : dil === 'ar' ? 'ar' : 'en-US';
+
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Duyurular"
-      subtitle="Üyelere duyuru · push"
+      title={t('ajans.duyurularBaslik')}
+      subtitle={t('ajans.duyurularAltAjans')}
       aktif="duyurular"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni duyuru</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniDuyuru')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={title} onChangeText={setTitle} placeholder="Başlık" />
-        <AjansInput value={body} onChangeText={setBody} placeholder="Mesaj" multiline />
+        <AjansInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder={t('ajans.phBaslik')}
+        />
+        <AjansInput
+          value={body}
+          onChangeText={setBody}
+          placeholder={t('ajans.phMesaj')}
+          multiline
+        />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={{ ...TipografiTokenlari.caption, color: RenkTokenlari.text }}>
-            Push gönder (günlük limit 10)
+            {t('ajans.pushGonderLimit')}
           </Text>
           <Switch value={push} onValueChange={setPush} />
         </View>
         <AjansCta
-          label="Gönder"
+          label={t('ortak.gonder')}
           onPress={() => {
             void (async () => {
               const r = await AjansDuyuruOlustur({
@@ -70,7 +84,7 @@ export default function AjansDuyurularEkrani() {
                 body: body.trim(),
                 sendPush: push,
               });
-              if (!r.ok) Alert.alert('Duyuru', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.alertDuyuruAjans'), r.hata);
               else {
                 setTitle('');
                 setBody('');
@@ -82,13 +96,13 @@ export default function AjansDuyurularEkrani() {
       </AjansKart>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           liste.map((d) => (
             <AjansListeSatir
               key={String(d.id)}
               title={String(d.title)}
-              subtitle={`${d.okundu ? 'Okundu' : 'Okunmadı'} · ${new Date(String(d.created_at)).toLocaleString('tr-TR')}`}
+              subtitle={`${d.okundu ? t('ajans.okundu') : t('ajans.okunmadiDurum')} · ${new Date(String(d.created_at)).toLocaleString(locale)}`}
             />
           ))
         )}

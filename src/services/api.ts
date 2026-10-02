@@ -182,7 +182,9 @@ export async function fetchRoomSeats(roomId: string): Promise<RoomSeat[]> {
   const [seatsRes, membersRes] = await Promise.all([
     supabase
       .from('room_seats')
-      .select('*, profile:profiles(*)')
+      .select(
+        '*, profile:profiles!room_seats_user_id_fkey(id, display_name, username, avatar_url, level, is_verified)',
+      )
       .eq('room_id', roomId)
       .order('seat_index'),
     supabase
@@ -190,16 +192,39 @@ export async function fetchRoomSeats(roomId: string): Promise<RoomSeat[]> {
       .select('user_id, role')
       .eq('room_id', roomId),
   ]);
-  if (seatsRes.error) throw seatsRes.error;
+
+  let seatRows = seatsRes.data;
+  if (seatsRes.error || !seatRows) {
+    // FK adı farklı ortamlarda kırılabilir — genel join'e düş
+    const yedek = await supabase
+      .from('room_seats')
+      .select(
+        '*, profile:profiles(id, display_name, username, avatar_url, level, is_verified)',
+      )
+      .eq('room_id', roomId)
+      .order('seat_index');
+    if (yedek.error) throw yedek.error;
+    seatRows = yedek.data;
+  }
+
   const roleMap = new Map<string, string>();
   for (const m of membersRes.data ?? []) {
     if (m.user_id) roleMap.set(m.user_id as string, m.role as string);
   }
 
-  let seats = ((seatsRes.data as RoomSeat[]) ?? []).map((s) => {
+  const profilNormalize = (
+    p: RoomSeat['profile'] | RoomSeat['profile'][] | null | undefined,
+  ): RoomSeat['profile'] | null => {
+    if (!p) return null;
+    if (Array.isArray(p)) return (p[0] as RoomSeat['profile']) ?? null;
+    return p;
+  };
+
+  let seats = ((seatRows as RoomSeat[]) ?? []).map((s) => {
     const role = s.user_id ? roleMap.get(s.user_id) : undefined;
     return {
       ...s,
+      profile: profilNormalize(s.profile as RoomSeat['profile']),
       member_role: (role as RoomSeat['member_role']) ?? null,
       is_cohost: role === 'cohost',
     };
@@ -216,7 +241,7 @@ export async function fetchRoomSeats(roomId: string): Promise<RoomSeat[]> {
   if (eksikIds.length > 0) {
     const { data: profiller } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, display_name, username, avatar_url, level, is_verified')
       .in('id', eksikIds);
     if (profiller?.length) {
       const pMap = new Map(profiller.map((p) => [p.id as string, p]));

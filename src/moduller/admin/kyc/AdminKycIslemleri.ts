@@ -166,6 +166,11 @@ export async function AdminKycDetayGetir(
   };
 }
 
+export async function AdminKycBasvuruSil(id: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_kyc_basvuru_sil', { p_id: id });
+  if (error) throw new Error(error.message);
+}
+
 export async function AdminKycDurumGuncelle(
   id: string,
   status: 'approved' | 'rejected',

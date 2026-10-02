@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import i18n from '../../../i18n';
 import { FinansIdempotencyAnahtariOlustur } from '../../cuzdan/islemler/FinansIdempotencyAnahtariOlustur';
 import { KillSwitchAktifMiSunucu } from '../../ozellik-bayraklari/okuma/KillSwitchAktifMiSunucu';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
@@ -19,13 +20,13 @@ export type CoinYukleSonuc =
  */
 export async function CoinPaketiSatinAl(pkg: CoinPackage): Promise<CoinYukleSonuc> {
   if (await KillSwitchAktifMiSunucu('kill_coin_purchase')) {
-    return { ok: false, hata: 'Satın alma kill switch ile kapalı.' };
+    return { ok: false, hata: i18n.t('cuzdan.coinSatinAlmaKapali') };
   }
 
   if (Platform.OS === 'ios' || Platform.OS === 'android') {
     const iap = await IapIleCoinSatinAl(pkg);
     if (iap.ok) return { ok: true, coinsAdded: iap.coinsAdded, method: 'iap' };
-    if (iap.kod === 'cancel') return { ok: false, hata: 'İptal edildi' };
+    if (iap.kod === 'cancel') return { ok: false, hata: i18n.t('auth.iptalEdildi') };
 
     // Dev fallback: Expo Go / store ürünü yokken
     if (__DEV__ && (iap.kod === 'store' || iap.kod === 'flag')) {
@@ -43,7 +44,7 @@ export async function CoinPaketiSatinAl(pkg: CoinPackage): Promise<CoinYukleSonu
 
   // Web / diğer: Stripe
   if (!(await OzellikBayragiAktifMiSunucu('stripe_enabled'))) {
-    return { ok: false, hata: 'Stripe kapalı (stripe_enabled). iOS’ta IAP kullan.' };
+    return { ok: false, hata: i18n.t('cuzdan.stripeKapali') };
   }
   const stripe = await StripeCheckoutBaslat({ packageId: pkg.id });
   if (!stripe.ok) return { ok: false, hata: stripe.hata };

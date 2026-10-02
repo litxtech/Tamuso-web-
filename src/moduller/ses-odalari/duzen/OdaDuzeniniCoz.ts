@@ -1,70 +1,804 @@
-export type OdaDuzenKodu =
-  | 'floating_glass'
-  | 'aurora_stage'
+import i18n from '../../../i18n';
+
+/** Görünüm / düzen varyantı — sahne yerleşimini belirler */
+export type OdaDuzenVaryant =
+  | 'grid'
+  | 'stage_spotlight'
   | 'orbit'
-  | 'royal_lounge'
-  | 'cosmic'
-  | 'minimal_stage';
+  | 'lounge'
+  | 'diamond'
+  | 'theater'
+  | 'arena'
+  | 'duo_focus'
+  | 'cascade'
+  | 'vip_rail'
+  | 'hex'
+  /** Discord tarzı — tüm koltuklar eşit ızgara, taht yok */
+  | 'equal_grid'
+  /** Clubhouse tarzı — host üstte, eşit konuşmacı ızgarası */
+  | 'club_stage'
+  /** Twitter/X Spaces — host şeridi + alt ızgara */
+  | 'spaces_strip'
+  /** Bigo/Halu parti — büyük host + dalgalı satırlar */
+  | 'party_wave';
+
+export type OdaDuzenKategori =
+  | 'sahne'
+  | 'izgara'
+  | 'yoringe'
+  | 'salon'
+  | 'modern'
+  | 'kompakt'
+  /** Popüler sesli sohbet platform kalıpları */
+  | 'platform';
 
 export type OdaDuzenTanim = {
-  kod: OdaDuzenKodu;
+  kod: string;
   ad: string;
+  alt: string;
   kolon: number;
   halo: boolean;
   sahneOdakli: boolean;
+  varyant: OdaDuzenVaryant;
+  kategori: OdaDuzenKategori;
+  tahtOlcek: 'normal' | 'buyuk' | 'dev';
+  koltukOlcek: 'kompakt' | 'normal' | 'buyuk' | 'mikro';
+  onizleme: readonly [string, string];
+  vurgu: string;
 };
 
-const DUZENLER: Record<OdaDuzenKodu, OdaDuzenTanim> = {
-  floating_glass: {
+type OdaDuzenMeta = Omit<OdaDuzenTanim, 'ad' | 'alt'> & {
+  adKey: string;
+  altKey: string;
+};
+
+export const ODA_DUZEN_KATEGORILERI: readonly {
+  kod: OdaDuzenKategori | 'hepsi';
+  adKey: string;
+}[] = [
+  { kod: 'hepsi', adKey: 'odaDuzen.kategoriHepsi' },
+  { kod: 'sahne', adKey: 'odaDuzen.kategoriSahne' },
+  { kod: 'izgara', adKey: 'odaDuzen.kategoriIzgara' },
+  { kod: 'yoringe', adKey: 'odaDuzen.kategoriYoringe' },
+  { kod: 'salon', adKey: 'odaDuzen.kategoriSalon' },
+  { kod: 'modern', adKey: 'odaDuzen.kategoriModern' },
+  { kod: 'kompakt', adKey: 'odaDuzen.kategoriKompakt' },
+  { kod: 'platform', adKey: 'odaDuzen.kategoriPlatform' },
+] as const;
+
+/**
+ * Ses odası görünüm / düzen kataloğu — modern & premium sahneler.
+ * DB `room_layouts.code` ile uyumlu.
+ */
+const DUZENLER: OdaDuzenMeta[] = [
+  // —— Mevcut 6 (geriye uyumlu) ——
+  {
     kod: 'floating_glass',
-    ad: 'Cam yüzer',
+    adKey: 'odaDuzen.floating_glass',
+    altKey: 'odaDuzen.floating_glassAlt',
     kolon: 4,
     halo: true,
     sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'normal',
+    onizleme: ['#5A3A78', '#1A1228'] as const,
+    vurgu: '#C43BFF',
   },
-  aurora_stage: {
+  {
     kod: 'aurora_stage',
-    ad: 'Aurora sahne',
+    adKey: 'odaDuzen.aurora_stage',
+    altKey: 'odaDuzen.aurora_stageAlt',
     kolon: 3,
     halo: true,
     sahneOdakli: true,
+    varyant: 'stage_spotlight',
+    kategori: 'sahne',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#6A2A88', '#1C1030'] as const,
+    vurgu: '#E84091',
   },
-  orbit: {
+  {
     kod: 'orbit',
-    ad: 'Yörünge',
+    adKey: 'odaDuzen.orbit',
+    altKey: 'odaDuzen.orbitAlt',
     kolon: 4,
     halo: true,
     sahneOdakli: false,
+    varyant: 'orbit',
+    kategori: 'yoringe',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#2A3A88', '#101828'] as const,
+    vurgu: '#6A9CFF',
   },
-  royal_lounge: {
+  {
     kod: 'royal_lounge',
-    ad: 'Kraliyet salonu',
+    adKey: 'odaDuzen.royal_lounge',
+    altKey: 'odaDuzen.royal_loungeAlt',
     kolon: 3,
     halo: true,
     sahneOdakli: true,
+    varyant: 'lounge',
+    kategori: 'salon',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#6A4A18', '#201408'] as const,
+    vurgu: '#F0B429',
   },
-  cosmic: {
+  {
     kod: 'cosmic',
-    ad: 'Kozmik',
+    adKey: 'odaDuzen.cosmic',
+    altKey: 'odaDuzen.cosmicAlt',
     kolon: 4,
     halo: true,
     sahneOdakli: false,
+    varyant: 'hex',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#2A1A68', '#0C0820'] as const,
+    vurgu: '#8B6CFF',
   },
-  minimal_stage: {
+  {
     kod: 'minimal_stage',
-    ad: 'Minimal sahne',
+    adKey: 'odaDuzen.minimal_stage',
+    altKey: 'odaDuzen.minimal_stageAlt',
     kolon: 2,
     halo: false,
     sahneOdakli: true,
+    varyant: 'duo_focus',
+    kategori: 'kompakt',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#2A2A38', '#101018'] as const,
+    vurgu: '#A8A8B8',
   },
-};
 
-/** Klasik 8 yuvarlak koltuk sabit tasarimi yok — Layout Engine */
+  // —— Sahne ——
+  {
+    kod: 'spotlight_pro',
+    adKey: 'odaDuzen.spotlight_pro',
+    altKey: 'odaDuzen.spotlight_proAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'stage_spotlight',
+    kategori: 'sahne',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'normal',
+    onizleme: ['#5A1848', '#180C20'] as const,
+    vurgu: '#FF6AD5',
+  },
+  {
+    kod: 'theater_gold',
+    adKey: 'odaDuzen.theater_gold',
+    altKey: 'odaDuzen.theater_goldAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'theater',
+    kategori: 'sahne',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#5A3A10', '#1C1208'] as const,
+    vurgu: '#E8C878',
+  },
+  {
+    kod: 'podium_elite',
+    adKey: 'odaDuzen.podium_elite',
+    altKey: 'odaDuzen.podium_eliteAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'stage_spotlight',
+    kategori: 'sahne',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#3A2058', '#140C28'] as const,
+    vurgu: '#B794FF',
+  },
+  {
+    kod: 'arena_crown',
+    adKey: 'odaDuzen.arena_crown',
+    altKey: 'odaDuzen.arena_crownAlt',
+    kolon: 2,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'arena',
+    kategori: 'sahne',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#4A1818', '#140808'] as const,
+    vurgu: '#FF5A5A',
+  },
+  {
+    kod: 'grand_stage',
+    adKey: 'odaDuzen.grand_stage',
+    altKey: 'odaDuzen.grand_stageAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'theater',
+    kategori: 'sahne',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'normal',
+    onizleme: ['#1A2858', '#0A1020'] as const,
+    vurgu: '#5EC8F0',
+  },
+  {
+    kod: 'cinematic_wide',
+    adKey: 'odaDuzen.cinematic_wide',
+    altKey: 'odaDuzen.cinematic_wideAlt',
+    kolon: 5,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'theater',
+    kategori: 'sahne',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#281838', '#100818'] as const,
+    vurgu: '#F0A0C0',
+  },
+
+  // —— Izgara ——
+  {
+    kod: 'lattice_pro',
+    adKey: 'odaDuzen.lattice_pro',
+    altKey: 'odaDuzen.lattice_proAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'normal',
+    onizleme: ['#183848', '#0A1820'] as const,
+    vurgu: '#3DB8E8',
+  },
+  {
+    kod: 'crystal_grid',
+    adKey: 'odaDuzen.crystal_grid',
+    altKey: 'odaDuzen.crystal_gridAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#2A3848', '#101820'] as const,
+    vurgu: '#B8C8D8',
+  },
+  {
+    kod: 'neon_matrix',
+    adKey: 'odaDuzen.neon_matrix',
+    altKey: 'odaDuzen.neon_matrixAlt',
+    kolon: 5,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'hex',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#1A3A32', '#061210'] as const,
+    vurgu: '#3DFFC8',
+  },
+  {
+    kod: 'soft_mosaic',
+    adKey: 'odaDuzen.soft_mosaic',
+    altKey: 'odaDuzen.soft_mosaicAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#3A2848', '#141020'] as const,
+    vurgu: '#D0B0FF',
+  },
+  {
+    kod: 'premium_tiles',
+    adKey: 'odaDuzen.premium_tiles',
+    altKey: 'odaDuzen.premium_tilesAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'izgara',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#3A3020', '#14100C'] as const,
+    vurgu: '#E8C878',
+  },
+  {
+    kod: 'hex_pulse',
+    adKey: 'odaDuzen.hex_pulse',
+    altKey: 'odaDuzen.hex_pulseAlt',
+    kolon: 5,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'hex',
+    kategori: 'izgara',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#182848', '#080E18'] as const,
+    vurgu: '#40B8FF',
+  },
+
+  // —— Yörünge ——
+  {
+    kod: 'galaxy_ring',
+    adKey: 'odaDuzen.galaxy_ring',
+    altKey: 'odaDuzen.galaxy_ringAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'orbit',
+    kategori: 'yoringe',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#1E1A58', '#080814'] as const,
+    vurgu: '#8B6CFF',
+  },
+  {
+    kod: 'planet_orbit',
+    adKey: 'odaDuzen.planet_orbit',
+    altKey: 'odaDuzen.planet_orbitAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'orbit',
+    kategori: 'yoringe',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#0E2E48', '#060E18'] as const,
+    vurgu: '#3DB8E8',
+  },
+  {
+    kod: 'lunar_circle',
+    adKey: 'odaDuzen.lunar_circle',
+    altKey: 'odaDuzen.lunar_circleAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'orbit',
+    kategori: 'yoringe',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#2A2A38', '#101018'] as const,
+    vurgu: '#D0D8E0',
+  },
+  {
+    kod: 'star_wheel',
+    adKey: 'odaDuzen.star_wheel',
+    altKey: 'odaDuzen.star_wheelAlt',
+    kolon: 5,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'orbit',
+    kategori: 'yoringe',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#3A1848', '#100818'] as const,
+    vurgu: '#FF80B0',
+  },
+  {
+    kod: 'comet_arc',
+    adKey: 'odaDuzen.comet_arc',
+    altKey: 'odaDuzen.comet_arcAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'cascade',
+    kategori: 'yoringe',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#182848', '#060C18'] as const,
+    vurgu: '#80D0FF',
+  },
+
+  // —— Salon ——
+  {
+    kod: 'velvet_lounge',
+    adKey: 'odaDuzen.velvet_lounge',
+    altKey: 'odaDuzen.velvet_loungeAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'lounge',
+    kategori: 'salon',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#4A2038', '#100810'] as const,
+    vurgu: '#F0A0C0',
+  },
+  {
+    kod: 'champagne_bar',
+    adKey: 'odaDuzen.champagne_bar',
+    altKey: 'odaDuzen.champagne_barAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'lounge',
+    kategori: 'salon',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#4A3418', '#181008'] as const,
+    vurgu: '#E8C878',
+  },
+  {
+    kod: 'nightclub_booth',
+    adKey: 'odaDuzen.nightclub_booth',
+    altKey: 'odaDuzen.nightclub_boothAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'lounge',
+    kategori: 'salon',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#3A1040', '#120818'] as const,
+    vurgu: '#FF5AB8',
+  },
+  {
+    kod: 'sofa_circle',
+    adKey: 'odaDuzen.sofa_circle',
+    altKey: 'odaDuzen.sofa_circleAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'orbit',
+    kategori: 'salon',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#2A2438', '#100E18'] as const,
+    vurgu: '#C9A0FF',
+  },
+  {
+    kod: 'vip_rail',
+    adKey: 'odaDuzen.vip_rail',
+    altKey: 'odaDuzen.vip_railAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'vip_rail',
+    kategori: 'salon',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'normal',
+    onizleme: ['#3A2C1C', '#120E08'] as const,
+    vurgu: '#C89858',
+  },
+  {
+    kod: 'ruby_salon',
+    adKey: 'odaDuzen.ruby_salon',
+    altKey: 'odaDuzen.ruby_salonAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'lounge',
+    kategori: 'salon',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#481018', '#100608'] as const,
+    vurgu: '#FF3D5C',
+  },
+
+  // —— Modern ——
+  {
+    kod: 'glass_cascade',
+    adKey: 'odaDuzen.glass_cascade',
+    altKey: 'odaDuzen.glass_cascadeAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'cascade',
+    kategori: 'modern',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#1A3040', '#081018'] as const,
+    vurgu: '#5EC8F0',
+  },
+  {
+    kod: 'diamond_cut',
+    adKey: 'odaDuzen.diamond_cut',
+    altKey: 'odaDuzen.diamond_cutAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'diamond',
+    kategori: 'modern',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#2A3038', '#0A0C10'] as const,
+    vurgu: '#E8E8F0',
+  },
+  {
+    kod: 'asymmetric_wave',
+    adKey: 'odaDuzen.asymmetric_wave',
+    altKey: 'odaDuzen.asymmetric_waveAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'cascade',
+    kategori: 'modern',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'normal',
+    onizleme: ['#0E3840', '#041012'] as const,
+    vurgu: '#40D4C8',
+  },
+  {
+    kod: 'duo_spotlight',
+    adKey: 'odaDuzen.duo_spotlight',
+    altKey: 'odaDuzen.duo_spotlightAlt',
+    kolon: 2,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'duo_focus',
+    kategori: 'modern',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#4A1220', '#0E0608'] as const,
+    vurgu: '#FF4D6D',
+  },
+  {
+    kod: 'prism_stack',
+    adKey: 'odaDuzen.prism_stack',
+    altKey: 'odaDuzen.prism_stackAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'diamond',
+    kategori: 'modern',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'normal',
+    onizleme: ['#2E1848', '#100E1C'] as const,
+    vurgu: '#B794FF',
+  },
+  {
+    kod: 'halo_frame',
+    adKey: 'odaDuzen.halo_frame',
+    altKey: 'odaDuzen.halo_frameAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'orbit',
+    kategori: 'modern',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#3A1A68', '#0C0818'] as const,
+    vurgu: '#C43BFF',
+  },
+
+  // —— Kompakt ——
+  {
+    kod: 'mini_cluster',
+    adKey: 'odaDuzen.mini_cluster',
+    altKey: 'odaDuzen.mini_clusterAlt',
+    kolon: 3,
+    halo: false,
+    sahneOdakli: false,
+    varyant: 'grid',
+    kategori: 'kompakt',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#243018', '#0A1008'] as const,
+    vurgu: '#A8D060',
+  },
+  {
+    kod: 'intimate_duo',
+    adKey: 'odaDuzen.intimate_duo',
+    altKey: 'odaDuzen.intimate_duoAlt',
+    kolon: 2,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'duo_focus',
+    kategori: 'kompakt',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#4A2838', '#120A12'] as const,
+    vurgu: '#FFB0C8',
+  },
+  {
+    kod: 'focus_pair',
+    adKey: 'odaDuzen.focus_pair',
+    altKey: 'odaDuzen.focus_pairAlt',
+    kolon: 2,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'duo_focus',
+    kategori: 'kompakt',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#1A3A52', '#060E18'] as const,
+    vurgu: '#5EC8F0',
+  },
+  {
+    kod: 'tight_hex',
+    adKey: 'odaDuzen.tight_hex',
+    altKey: 'odaDuzen.tight_hexAlt',
+    kolon: 5,
+    halo: false,
+    sahneOdakli: false,
+    varyant: 'hex',
+    kategori: 'kompakt',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#282C34', '#080A0C'] as const,
+    vurgu: '#9AA4B0',
+  },
+  {
+    kod: 'whisper_circle',
+    adKey: 'odaDuzen.whisper_circle',
+    altKey: 'odaDuzen.whisper_circleAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'orbit',
+    kategori: 'kompakt',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#382858', '#0E0A18'] as const,
+    vurgu: '#D0B0FF',
+  },
+
+  // —— Platform kalıpları (Clubhouse / Discord / Spaces / parti odaları) ——
+  {
+    kod: 'club_stage',
+    adKey: 'odaDuzen.club_stage',
+    altKey: 'odaDuzen.club_stageAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'club_stage',
+    kategori: 'platform',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#F2E8DC', '#E8D8C8'] as const,
+    vurgu: '#5C4033',
+  },
+  {
+    kod: 'presence_grid',
+    adKey: 'odaDuzen.presence_grid',
+    altKey: 'odaDuzen.presence_gridAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'equal_grid',
+    kategori: 'platform',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'normal',
+    onizleme: ['#2B2D31', '#1E1F22'] as const,
+    vurgu: '#5865F2',
+  },
+  {
+    kod: 'spaces_strip',
+    adKey: 'odaDuzen.spaces_strip',
+    altKey: 'odaDuzen.spaces_stripAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'spaces_strip',
+    kategori: 'platform',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'normal',
+    onizleme: ['#15202B', '#0A0E14'] as const,
+    vurgu: '#1D9BF0',
+  },
+  {
+    kod: 'party_wave',
+    adKey: 'odaDuzen.party_wave',
+    altKey: 'odaDuzen.party_waveAlt',
+    kolon: 5,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'party_wave',
+    kategori: 'platform',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#6A1A88', '#1A0830'] as const,
+    vurgu: '#FF4DC4',
+  },
+  {
+    kod: 'party_u',
+    adKey: 'odaDuzen.party_u',
+    altKey: 'odaDuzen.party_uAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'arena',
+    kategori: 'platform',
+    tahtOlcek: 'dev',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#3A1848', '#120818'] as const,
+    vurgu: '#FF7AD9',
+  },
+  {
+    kod: 'dropin_tiles',
+    adKey: 'odaDuzen.dropin_tiles',
+    altKey: 'odaDuzen.dropin_tilesAlt',
+    kolon: 3,
+    halo: true,
+    sahneOdakli: false,
+    varyant: 'equal_grid',
+    kategori: 'platform',
+    tahtOlcek: 'normal',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#313338', '#1E1F22'] as const,
+    vurgu: '#57F287',
+  },
+  {
+    kod: 'greenroom_bar',
+    adKey: 'odaDuzen.greenroom_bar',
+    altKey: 'odaDuzen.greenroom_barAlt',
+    kolon: 4,
+    halo: false,
+    sahneOdakli: true,
+    varyant: 'spaces_strip',
+    kategori: 'platform',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'kompakt',
+    onizleme: ['#121212', '#000000'] as const,
+    vurgu: '#1DB954',
+  },
+  {
+    kod: 'salon_circle',
+    adKey: 'odaDuzen.salon_circle',
+    altKey: 'odaDuzen.salon_circleAlt',
+    kolon: 4,
+    halo: true,
+    sahneOdakli: true,
+    varyant: 'club_stage',
+    kategori: 'platform',
+    tahtOlcek: 'buyuk',
+    koltukOlcek: 'buyuk',
+    onizleme: ['#FFF8F0', '#F5E6D8'] as const,
+    vurgu: '#C45C26',
+  },
+];
+
+function coz(meta: OdaDuzenMeta): OdaDuzenTanim {
+  return {
+    kod: meta.kod,
+    ad: i18n.t(meta.adKey),
+    alt: i18n.t(meta.altKey),
+    kolon: meta.kolon,
+    halo: meta.halo,
+    sahneOdakli: meta.sahneOdakli,
+    varyant: meta.varyant,
+    kategori: meta.kategori,
+    tahtOlcek: meta.tahtOlcek,
+    koltukOlcek: meta.koltukOlcek,
+    onizleme: meta.onizleme,
+    vurgu: meta.vurgu,
+  };
+}
+
+/** Klasik 8 yuvarlak koltuk sabit tasarımı yok — Layout Engine */
 export function OdaDuzeniniCoz(kod?: string | null): OdaDuzenTanim {
-  if (kod && kod in DUZENLER) return DUZENLER[kod as OdaDuzenKodu];
-  return DUZENLER.floating_glass;
+  const meta = DUZENLER.find((d) => d.kod === kod) ?? DUZENLER[0];
+  return coz(meta);
 }
 
 export function OdaDuzenListesiniGetir(): OdaDuzenTanim[] {
-  return Object.values(DUZENLER);
+  return DUZENLER.map(coz);
 }
+
+export function OdaDuzenleriniFiltrele(
+  kategori?: OdaDuzenKategori | 'hepsi' | null,
+): OdaDuzenTanim[] {
+  const hepsi = OdaDuzenListesiniGetir();
+  if (!kategori || kategori === 'hepsi') return hepsi;
+  return hepsi.filter((d) => d.kategori === kategori);
+}
+
+export function OdaDuzenKoduGecerliMi(kod?: string | null): boolean {
+  if (!kod?.trim()) return true;
+  return DUZENLER.some((d) => d.kod === kod.trim());
+}
+
+/** Geriye dönük alias — string union yerine serbest kod */
+export type OdaDuzenKodu = string;

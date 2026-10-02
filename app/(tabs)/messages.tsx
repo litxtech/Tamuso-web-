@@ -25,6 +25,15 @@ import { MesajKonuKarti } from '../../src/moduller/mesajlasma/bilesenler/MesajKo
 import { MesajBosDurum } from '../../src/moduller/mesajlasma/bilesenler/MesajBosDurum';
 import { useMesajInboxKanali } from '../../src/moduller/mesajlasma/gercek-zamanli/useMesajKanali';
 import { useMesajOkunmamis } from '../../src/moduller/mesajlasma/baglam/MesajOkunmamisSaglayici';
+import { useMesajTaslakHaritasi } from '../../src/moduller/mesajlasma/depolama/useMesajTaslakHaritasi';
+import { MesajTaslakSil } from '../../src/moduller/mesajlasma/depolama/MesajTaslakDepolama';
+import {
+  MESAJ_SAYFA_BOYUTU,
+  MesajSayfaOnbellekOku,
+  MesajSayfaOnbellekOkuSync,
+  MesajSayfaOnbellekYaz,
+} from '../../src/moduller/mesajlasma/depolama/MesajSayfaOnbellek';
+import { MesajlariGetir } from '../../src/moduller/mesajlasma/okuma/MesajlariGetir';
 import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -42,9 +51,10 @@ type Sekme = 'sohbet' | 'arsiv' | 'gorusme';
 export default function MessagesScreen() {
   const { t } = useCeviri();
   const acik = OzellikBayragiAktifMi('messages_enabled');
-  const { isGuest, refreshProfile, refreshWallet } = useAuth();
+  const { isGuest, refreshProfile, refreshWallet, user } = useAuth();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const { sayfayiAcincaTemizle, yenile: mesajRozetYenile } = useMesajOkunmamis();
+  const taslaklar = useMesajTaslakHaritasi(user?.id);
   const [konular, setKonular] = useState<MesajKonusu[]>([]);
   const [sekme, setSekme] = useState<Sekme>('sohbet');
   const arsivModu = sekme === 'arsiv';
@@ -150,7 +160,10 @@ export default function MessagesScreen() {
                   void (async () => {
                     const r = await MesajSohbetSil(konu.id);
                     if (!r.ok) Alert.alert(t('mesajlar.silinemedi'), r.hata);
-                    else await load('sessiz');
+                    else {
+                      if (user?.id) await MesajTaslakSil(user.id, konu.id);
+                      await load('sessiz');
+                    }
                   })();
                 },
               },
@@ -254,8 +267,21 @@ export default function MessagesScreen() {
             renderItem={({ item }) => (
               <MesajKonuKarti
                 konu={item}
+                taslakMetin={taslaklar[item.id]}
                 onPress={() => {
                   if (!item?.id) return;
+                  // Instagram: navigasyondan önce son sayfayı ısıt
+                  if (!MesajSayfaOnbellekOkuSync(item.id)) {
+                    void MesajSayfaOnbellekOku(item.id).then((hit) => {
+                      if (hit?.length) return;
+                      void MesajlariGetir({
+                        threadId: item.id,
+                        limit: MESAJ_SAYFA_BOYUTU,
+                      })
+                        .then((msgs) => MesajSayfaOnbellekYaz(item.id, msgs))
+                        .catch(() => null);
+                    });
+                  }
                   router.push(`/mesaj/${item.id}` as any);
                 }}
                 onLongPress={() => konuMenu(item)}

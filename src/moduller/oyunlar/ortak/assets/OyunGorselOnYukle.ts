@@ -19,12 +19,12 @@ export function oyunGorselModulIdleri(
 export async function oyunGorselleriniYukle(
   ids: number[],
   onChunk?: (done: number, total: number) => void,
+  opts?: { wave?: number },
 ): Promise<void> {
   if (ids.length === 0) return;
   let done = 0;
   const total = ids.length;
-  // Küçük dalgalar: ana iş parçacığını boğmadan paralel decode
-  const WAVE = 6;
+  const WAVE = Math.max(1, Math.min(opts?.wave ?? 8, total));
   for (let i = 0; i < ids.length; i += WAVE) {
     const slice = ids.slice(i, i + WAVE);
     await Promise.all(

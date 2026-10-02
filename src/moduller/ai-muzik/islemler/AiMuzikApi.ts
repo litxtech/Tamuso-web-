@@ -269,6 +269,7 @@ export async function AiMuzikOlustur(
         structure_hint: body.structure_hint,
         lyrics_mode: body.lyrics_mode,
         lyrics: body.lyrics,
+        voice_gender: body.voice_gender ?? null,
         idempotency_key: body.idempotency_key,
         revise_track_id: body.revise_track_id ?? null,
         reference_storage_path: body.reference_storage_path ?? null,

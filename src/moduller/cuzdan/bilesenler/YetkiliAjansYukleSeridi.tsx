@@ -17,15 +17,12 @@ import {
   type YetkiliAjans,
 } from '../okuma/YetkiliAjanslariGetir';
 import {
-  AjansCoinPaketleriniUret,
-  AjansPaketMesajMetni,
+  AjansCoinPaketleriniGetir,
   AJANS_COIN_INDIRIM_YUZDE,
   type AjansCoinPaket,
 } from '../katalog/AjansCoinPaketKatalog';
-import {
-  AjansSohbetAcVeyaGetir,
-  MesajGonder,
-} from '../../mesajlasma/islemler/MesajGonder';
+import { AjansPaketTeklifOlustur } from '../islemler/AjansPaketTeklifIslemleri';
+import { AjansSohbetAcVeyaGetir } from '../../mesajlasma/islemler/MesajGonder';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -33,6 +30,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   /** Mağaza kilitliyken mesaj yine açık kalabilir */
@@ -41,8 +39,8 @@ type Props = {
   onPaketleriYenile?: () => void;
 };
 
-function formatTry(n: number): string {
-  return `${n.toLocaleString('tr-TR', {
+function formatTry(n: number, locale: string): string {
+  return `${n.toLocaleString(locale, {
     minimumFractionDigits: n % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   })} ₺`;
@@ -52,12 +50,14 @@ function formatTry(n: number): string {
  * IAP paketlerinin altında: yetkili ajans seç → indirimli paketler görünür.
  */
 export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
+  const { t, i18n } = useCeviri();
   const router = useRouter();
   const [liste, setListe] = useState<YetkiliAjans[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [secili, setSecili] = useState<YetkiliAjans | null>(null);
   const [ajansPaketler, setAjansPaketler] = useState<AjansCoinPaket[]>([]);
+  const locale = i18n.language || 'tr';
 
   const yukle = useCallback(async () => {
     setYukleniyor(true);
@@ -79,8 +79,10 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
         return;
       }
       setSecili(ajans);
-      setAjansPaketler(AjansCoinPaketleriniUret());
-      onPaketleriYenile?.();
+      void AjansCoinPaketleriniGetir(ajans.id).then((p) => {
+        setAjansPaketler(p);
+        onPaketleriYenile?.();
+      });
     },
     [onPaketleriYenile, secili?.id],
   );
@@ -88,41 +90,49 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
   const sohbetAc = async (ajans: YetkiliAjans, paket?: AjansCoinPaket) => {
     if (busyId) return;
     setBusyId(ajans.id);
-    const r = await AjansSohbetAcVeyaGetir(ajans.id);
-    if (!r.ok) {
+    if (paket) {
+      const r = await AjansPaketTeklifOlustur({
+        agencyId: ajans.id,
+        listeFiyatTry: paket.listeFiyatTry,
+      });
       setBusyId(null);
-      Alert.alert('Mesaj', r.hata);
+      if (!r.ok) {
+        Alert.alert(t('cuzdanX.alertMesaj'), r.hata);
+        return;
+      }
+      router.push(`/mesaj/${r.threadId}` as any);
       return;
     }
-    if (paket) {
-      await MesajGonder({
-        threadId: r.threadId,
-        body: AjansPaketMesajMetni(paket),
-      });
-    }
+    const r = await AjansSohbetAcVeyaGetir(ajans.id);
     setBusyId(null);
+    if (!r.ok) {
+      Alert.alert(t('cuzdanX.alertMesaj'), r.hata);
+      return;
+    }
     router.push(`/mesaj/${r.threadId}` as any);
   };
 
   const magazaEtiket =
     Platform.OS === 'ios'
-      ? 'Apple ile ödeme'
+      ? t('cuzdanX.appleOdeme')
       : Platform.OS === 'android'
-        ? 'Google ile ödeme'
-        : 'Mağaza ödemesi';
+        ? t('cuzdanX.googleOdeme')
+        : t('cuzdanX.magazaOdeme');
 
   return (
     <View style={styles.wrap}>
       <View style={styles.ayrac}>
         <View style={styles.ayracCizgi} />
-        <Text style={styles.ayracYazi}>veya</Text>
+        <Text style={styles.ayracYazi}>{t('auth.veya')}</Text>
         <View style={styles.ayracCizgi} />
       </View>
 
-      <Text style={styles.baslik}>Yetkili ajans ile yükle</Text>
+      <Text style={styles.baslik}>{t('cuzdanX.yetkiliAjansBaslik')}</Text>
       <Text style={styles.alt}>
-        Üstte {magazaEtiket} · ajans seçince %{AJANS_COIN_INDIRIM_YUZDE}{' '}
-        indirimli paketler (99 ₺ → 300.000 ₺) görünür.
+        {t('cuzdanX.yetkiliAjansAlt', {
+          magaza: magazaEtiket,
+          pct: ajansPaketler[0]?.indirimYuzde ?? AJANS_COIN_INDIRIM_YUZDE,
+        })}
       </Text>
 
       {yukleniyor ? (
@@ -131,7 +141,7 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
           style={{ marginVertical: 16 }}
         />
       ) : liste.length === 0 ? (
-        <Text style={styles.bos}>Şu an listelenen yetkili ajans yok.</Text>
+        <Text style={styles.bos}>{t('cuzdanX.yetkiliAjansBos')}</Text>
       ) : (
         <View style={styles.liste}>
           {liste.map((a) => {
@@ -161,7 +171,7 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
                       {a.name}
                     </Text>
                     <Text style={styles.meta} numberOfLines={1}>
-                      {a.agency_public_id ?? 'Yetkili dağıtıcı'}
+                      {a.agency_public_id ?? t('cuzdanX.yetkiliDagitici')}
                       {a.slogan ? ` · ${a.slogan}` : ''}
                     </Text>
                   </View>
@@ -181,7 +191,10 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
         <View style={styles.paketBolum}>
           <View style={styles.paketBaslikSatir}>
             <Text style={styles.paketBaslik}>
-              {secili.name} · %{AJANS_COIN_INDIRIM_YUZDE} indirim
+              {t('cuzdanX.ajansIndirimBaslik', {
+                name: secili.name,
+                pct: ajansPaketler[0]?.indirimYuzde ?? AJANS_COIN_INDIRIM_YUZDE,
+              })}
             </Text>
             <Pressable
               style={[styles.mesajBtn, busyId === secili.id && { opacity: 0.6 }]}
@@ -189,12 +202,13 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
               onPress={() => void sohbetAc(secili)}
             >
               <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
-              <Text style={styles.mesajYazi}>Mesaj</Text>
+              <Text style={styles.mesajYazi}>{t('cuzdanX.alertMesaj')}</Text>
             </Pressable>
           </View>
           <Text style={styles.paketAlt}>
-            Paket seç → ajansa talep mesajı gider. Liste fiyatı üzerinden %
-            {AJANS_COIN_INDIRIM_YUZDE} indirimli ödersin.
+            {t('cuzdanX.paketTalepAlt', {
+              pct: ajansPaketler[0]?.indirimYuzde ?? AJANS_COIN_INDIRIM_YUZDE,
+            })}
           </Text>
           <View style={styles.paketGrid}>
             {ajansPaketler.map((p) => (
@@ -211,20 +225,22 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
                 </View>
                 <Text style={styles.paketAd}>{p.title}</Text>
                 <Text style={styles.paketCoin}>
-                  {p.coins.toLocaleString('tr-TR')} coin
+                  {t('cuzdanX.coinAdet', {
+                    count: p.coins.toLocaleString(locale),
+                  })}
                 </Text>
                 <Text style={styles.paketListe}>
-                  {formatTry(p.listeFiyatTry)}
+                  {formatTry(p.listeFiyatTry, locale)}
                 </Text>
-                <Text style={styles.paketOde}>{formatTry(p.odenecekTry)}</Text>
+                <Text style={styles.paketOde}>
+                  {formatTry(p.odenecekTry, locale)}
+                </Text>
               </Pressable>
             ))}
           </View>
         </View>
       ) : liste.length > 0 ? (
-        <Text style={styles.secUyari}>
-          İndirimli paketleri görmek için bir ajans seç.
-        </Text>
+        <Text style={styles.secUyari}>{t('cuzdanX.ajansSecUyari')}</Text>
       ) : null}
     </View>
   );

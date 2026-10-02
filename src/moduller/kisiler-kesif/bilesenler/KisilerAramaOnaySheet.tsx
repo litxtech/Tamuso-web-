@@ -13,7 +13,6 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -91,7 +90,6 @@ export function KisilerAramaOnaySheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onKapat}>
       <Pressable style={styles.backdrop} onPress={onKapat}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-          <CamArkaplan intensity={48} hafif style={StyleSheet.absoluteFill} />
           <View style={styles.icerik}>
             <View style={styles.handle} />
             <View style={styles.baslikSatir}>
@@ -102,7 +100,7 @@ export function KisilerAramaOnaySheet({
                   <Ionicons name="person" size={22} color={RenkTokenlari.textMuted} />
                 </View>
               )}
-              <View style={{ flex: 1 }}>
+              <View style={styles.baslikMetin}>
                 <Text style={styles.baslik}>
                   {t('kisilerX.ileArama', { isim, tur: turLabel })}
                 </Text>
@@ -125,7 +123,7 @@ export function KisilerAramaOnaySheet({
             </View>
 
             {yukleniyor ? (
-              <ActivityIndicator color={RenkTokenlari.primary} style={{ marginVertical: 20 }} />
+              <ActivityIndicator color={RenkTokenlari.primary} style={styles.bekliyor} />
             ) : (
               <View style={styles.bilgi}>
                 <Satir
@@ -157,13 +155,13 @@ export function KisilerAramaOnaySheet({
               accessibilityLabel={turLabel}
             >
               {busy ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={RenkTokenlari.textOnPrimary} />
               ) : (
                 <>
                   <Ionicons
                     name={callType === 'video' ? 'videocam' : 'call'}
                     size={18}
-                    color="#fff"
+                    color={RenkTokenlari.textOnPrimary}
                   />
                   <Text style={styles.ctaYazi}>{turLabel}</Text>
                 </>
@@ -192,14 +190,15 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: RenkTokenlari.scrim,
   },
   sheet: {
     borderTopLeftRadius: YaricapTokenlari.xl,
     borderTopRightRadius: YaricapTokenlari.xl,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: RenkTokenlari.border,
+    backgroundColor: RenkTokenlari.bgElevated,
   },
   icerik: {
     padding: BoslukTokenlari.lg,
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: RenkTokenlari.divider,
     marginBottom: 4,
   },
   baslikSatir: {
@@ -225,9 +224,16 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   avatarBos: {
-    backgroundColor: RenkTokenlari.bgCard,
+    backgroundColor: RenkTokenlari.surface,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  baslikMetin: {
+    flex: 1,
+    minWidth: 0,
+  },
+  bekliyor: {
+    marginVertical: BoslukTokenlari.lg,
   },
   baslik: {
     ...TipografiTokenlari.h2,
@@ -281,7 +287,7 @@ const styles = StyleSheet.create({
   },
   ctaYazi: {
     ...TipografiTokenlari.caption,
-    color: '#fff',
+    color: RenkTokenlari.textOnPrimary,
     fontWeight: '700',
   },
   vazgec: {

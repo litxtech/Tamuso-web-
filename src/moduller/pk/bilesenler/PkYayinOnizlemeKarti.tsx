@@ -21,6 +21,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   mac: PkMacZengin;
@@ -28,12 +29,17 @@ type Props = {
   onPress: () => void;
 };
 
-function tarafAd(mac: PkMacZengin, side: 'a' | 'b') {
+function tarafAd(
+  mac: PkMacZengin,
+  side: 'a' | 'b',
+  takimA: string,
+  takimB: string,
+) {
   const r = side === 'a' ? mac.side_a : mac.side_b;
   return (
     r?.title?.trim() ||
     r?.host_name?.trim() ||
-    (side === 'a' ? 'Takım A' : 'Takım B')
+    (side === 'a' ? takimA : takimB)
   );
 }
 
@@ -49,12 +55,15 @@ function tarafKapak(mac: PkMacZengin, side: 'a' | 'b') {
  * - skor 3 sn gecikmeli
  */
 export function PkYayinOnizlemeKarti({ mac, secili, onPress }: Props) {
+  const { t } = useCeviri();
   const pulse = useRef(new Animated.Value(0)).current;
   const glow = useRef(new Animated.Value(0.45)).current;
   const gecikmeli = useGecikmeliPkOnizleme(mac.score_a, mac.score_b, 3000);
   const kalan = PkKalanSaniye(mac.ends_at);
   const toplam = gecikmeli.score_a + gecikmeli.score_b;
   const oranA = toplam > 0 ? (gecikmeli.score_a / toplam) * 100 : 50;
+  const takimA = t('pk.takimA');
+  const takimB = t('pk.takimB');
 
   useEffect(() => {
     const p = Animated.loop(
@@ -144,7 +153,7 @@ export function PkYayinOnizlemeKarti({ mac, secili, onPress }: Props) {
 
         <View style={styles.onizlemeSatir}>
           <TarafOnizleme
-            ad={tarafAd(mac, 'a')}
+            ad={tarafAd(mac, 'a', takimA, takimB)}
             kapak={tarafKapak(mac, 'a')}
             skor={gecikmeli.score_a}
             renk="#60A5FA"
@@ -157,10 +166,10 @@ export function PkYayinOnizlemeKarti({ mac, secili, onPress }: Props) {
             >
               <Text style={styles.vsText}>VS</Text>
             </LinearGradient>
-            <Text style={styles.gecikmeRozet}>3 sn geriden</Text>
+            <Text style={styles.gecikmeRozet}>{t('pk.onizlemeEtiket')}</Text>
           </View>
           <TarafOnizleme
-            ad={tarafAd(mac, 'b')}
+            ad={tarafAd(mac, 'b', takimA, takimB)}
             kapak={tarafKapak(mac, 'b')}
             skor={gecikmeli.score_b}
             renk="#F472B6"

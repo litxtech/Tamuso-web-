@@ -10,7 +10,7 @@ import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVa
 import { useKullanimSuresi } from '../../src/moduller/kullanim-suresi/baglam/KullanimSuresiSaglayici';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
-import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari, HeaderTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 /** Profil menüsü — hesap hub; tercihler / gizlilik ayrı sayfalarda */
@@ -183,7 +183,8 @@ export default function ProfilAyarlarEkrani() {
 
 const styles = StyleSheet.create({
   scroll: {
-    paddingHorizontal: BoslukTokenlari.xl,
+    paddingHorizontal: HeaderTokenlari.horizontal,
+    paddingTop: HeaderTokenlari.contentGap,
     paddingBottom: BoslukTokenlari.xxxl,
   },
   logout: { alignItems: 'center', paddingVertical: BoslukTokenlari.lg },

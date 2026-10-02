@@ -79,11 +79,12 @@ export function HesapDegeriEtiketAnahtari(score: number): CeviriAnahtari {
 
 /** @deprecated — UI için t(HesapDegeriEtiketAnahtari(score)) kullan */
 export function HesapDegeriEtiketi(score: number): string {
-  if (score >= 750) return 'Prestijli';
-  if (score >= 550) return 'Yüksek güven';
-  if (score >= 350) return 'Güvenilir';
-  if (score >= 150) return 'Yükselen';
-  return 'Yeni';
+  // Lazy import avoids circular init; callers should prefer HesapDegeriEtiketAnahtari + t()
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const i18n = require('../../../i18n').default as {
+    t: (k: string) => string;
+  };
+  return i18n.t(HesapDegeriEtiketAnahtari(score));
 }
 
 const styles = StyleSheet.create({

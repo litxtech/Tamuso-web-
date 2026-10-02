@@ -15,6 +15,7 @@ import {
   OdaGirisAnimasyonuGosterildiMi,
   OdaGirisAnimasyonuIsaretle,
 } from '../animasyon/OdaGirisAnimasyonOturumu';
+import i18n from '../../../i18n';
 
 type Opts = {
   roomId?: string | null;
@@ -131,7 +132,7 @@ export function useOdaSeviyeGiris({
             if (!kademe) return;
             kuyrugaEkle({
               userId: uid,
-              ad: ProfilMiniCache.gosterimAdi(data, 'Kullanıcı'),
+              ad: ProfilMiniCache.gosterimAdi(data, i18n.t('ortak.kullanici')),
               avatarUrl: data.avatar_url ?? null,
               level,
               kademe,

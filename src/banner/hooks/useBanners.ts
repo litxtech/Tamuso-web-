@@ -7,6 +7,10 @@ import {
   OtomatikPromoCacheTemizle,
 } from '../services/PromoBannerAdapter';
 import {
+  OdaPromoBannerlariniUret,
+  OdaPromoOnbellegiTemizle,
+} from '../services/RoomPromoBannerService';
+import {
   OlayBannerCacheTemizle,
   OlayBannerRealtimeDinle,
   OlayBannerlariGetir,
@@ -16,6 +20,7 @@ import type { BannerCampaign, BannerUserContext, BannerUserState } from '../core
 import { uretimOrtamiMi } from '../../yapilandirma/OrtamDegiskenleri';
 import { OzellikBayragiAktifMiSunucu } from '../../moduller/ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
 import { AUTO_ROOM_PROMO_PLACEMENTS } from '../core/BannerConstants';
+import i18n from '../../i18n';
 
 function makeSessionId(): string {
   return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
@@ -96,19 +101,25 @@ export function useBanners(placement: string) {
         OzellikBayragiAktifMiSunucu('auto_event_banners_enabled'),
       ]);
 
-      const [promos, olaylar] = await Promise.all([
+      const [promos, olaylar, odaPromolar] = await Promise.all([
         autoPromoAcik && PROMO_SLOTS.has(placement)
           ? OtomatikPromoBannerlariGetir()
           : Promise.resolve([] as BannerCampaign[]),
         autoEventAcik
           ? OlayBannerlariGetir()
           : Promise.resolve([] as BannerCampaign[]),
+        autoPromoAcik && PROMO_SLOTS.has(placement)
+          ? OdaPromoBannerlariniUret(placement)
+          : Promise.resolve([] as BannerCampaign[]),
       ]);
 
-      if (!autoPromoAcik) OtomatikPromoCacheTemizle();
+      if (!autoPromoAcik) {
+        OtomatikPromoCacheTemizle();
+        OdaPromoOnbellegiTemizle();
+      }
       if (!autoEventAcik) OlayBannerCacheTemizle();
 
-      const birlesik = [...all, ...promos, ...olaylar];
+      const birlesik = [...all, ...promos, ...olaylar, ...odaPromolar];
       const states = await BannerService.fetchUserStates(
         birlesik.map((b) => b.id).filter((id) => !sentetikMi(id)),
       );
@@ -122,13 +133,18 @@ export function useBanners(placement: string) {
 
       const admin = filtered.filter((b) => !sentetikMi(b.id));
       const events = filtered.filter((b) => b.id.startsWith('auto-event-'));
-      const promo = filtered.filter((b) => b.id.startsWith('promo-'));
+      const autoRoom = filtered.filter((b) => b.id.startsWith('auto-room-'));
+      // auto-room varken aynı slotta düz promo-oda'yı tekrarlama
+      const promo = filtered.filter((b) => {
+        if (!b.id.startsWith('promo-')) return false;
+        if (autoRoom.length > 0 && b.id.startsWith('promo-oda-')) return false;
+        return true;
+      });
 
-      // Tüm uygun bannerlar yatay carousel — 3 sn kaydırma
-      const karisik = [...admin, ...events, ...promo];
+      const karisik = [...admin, ...events, ...autoRoom, ...promo];
       setBanners(karisik.slice(0, 8));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Banner yüklenemedi');
+      setError(e instanceof Error ? e.message : i18n.t('banner.yuklenemedi'));
       setBanners([]);
     } finally {
       setLoading(false);

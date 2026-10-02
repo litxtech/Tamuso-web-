@@ -12,7 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   AnaSayfaKesfetAra,
   type KesfetAramaAjans,
+  type KesfetAramaCanli,
   type KesfetAramaKullanici,
+  type KesfetAramaOda,
 } from '../okuma/AnaSayfaKesfetAra';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -21,7 +23,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { kullaniciTemaKodunuAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -31,20 +33,26 @@ type Props = {
   haricUserId?: string | null;
   onKullaniciSec: (k: KesfetAramaKullanici) => void;
   onAjansSec: (a: KesfetAramaAjans) => void;
+  onOdaSec: (o: KesfetAramaOda) => void;
+  onCanliSec: (c: KesfetAramaCanli) => void;
 };
 
-/** Arama kutusunun altında — ilk harften kullanıcı + ajans önerileri */
+/** Arama kutusunun altında — kullanıcı + ajans + ses odası + canlı yayın önerileri */
 export function AnaSayfaAramaOnerileri({
   sorgu,
   haricUserId,
   onKullaniciSec,
   onAjansSec,
+  onOdaSec,
+  onCanliSec,
 }: Props) {
   useTemayaAboneOl();
   const { t } = useCeviri();
-  const acik = kullaniciTemaKodunuAl() === 'acik';
+  const acik = temaAcikMi(kullaniciTemaKodunuAl());
   const [kullanicilar, setKullanicilar] = useState<KesfetAramaKullanici[]>([]);
   const [ajanslar, setAjanslar] = useState<KesfetAramaAjans[]>([]);
+  const [odalar, setOdalar] = useState<KesfetAramaOda[]>([]);
+  const [canlilar, setCanlilar] = useState<KesfetAramaCanli[]>([]);
   const [yukleniyor, setYukleniyor] = useState(false);
   const istekNo = useRef(0);
 
@@ -53,6 +61,8 @@ export function AnaSayfaAramaOnerileri({
     if (q.length < 1) {
       setKullanicilar([]);
       setAjanslar([]);
+      setOdalar([]);
+      setCanlilar([]);
       setYukleniyor(false);
       return;
     }
@@ -70,10 +80,14 @@ export function AnaSayfaAramaOnerileri({
           if (istekNo.current !== no) return;
           setKullanicilar(sonuc.kullanicilar);
           setAjanslar(sonuc.ajanslar);
+          setOdalar(sonuc.odalar);
+          setCanlilar(sonuc.canlilar);
         } catch {
           if (istekNo.current !== no) return;
           setKullanicilar([]);
           setAjanslar([]);
+          setOdalar([]);
+          setCanlilar([]);
         } finally {
           if (istekNo.current === no) setYukleniyor(false);
         }
@@ -86,7 +100,12 @@ export function AnaSayfaAramaOnerileri({
   const q = sorgu.trim();
   if (q.length < 1) return null;
 
-  const bos = !yukleniyor && kullanicilar.length === 0 && ajanslar.length === 0;
+  const bos =
+    !yukleniyor &&
+    kullanicilar.length === 0 &&
+    ajanslar.length === 0 &&
+    odalar.length === 0 &&
+    canlilar.length === 0;
 
   return (
     <View
@@ -113,6 +132,122 @@ export function AnaSayfaAramaOnerileri({
 
         {bos ? (
           <Text style={styles.bos}>{t('anaSayfa.kullaniciVeyaAjansYok')}</Text>
+        ) : null}
+
+        {odalar.length > 0 ? (
+          <View style={styles.bolum}>
+            <Text style={styles.bolumBaslik}>{t('anaSayfa.sesliSohbetOdalari')}</Text>
+            {odalar.map((o) => {
+              const kapak = MedyaUriGuvenli(o.cover_url ?? o.host_avatar_url);
+              const harf = (o.title[0] ?? 'O').toUpperCase();
+              const hostAd =
+                o.host_display_name?.trim() ||
+                (o.host_username ? `@${o.host_username}` : null);
+              return (
+                <Pressable
+                  key={`o:${o.id}`}
+                  onPress={() => onOdaSec(o)}
+                  style={({ pressed }) => [
+                    styles.satir,
+                    pressed && styles.satirPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('anaSayfa.sesA11y', { baslik: o.title })}
+                >
+                  {kapak ? (
+                    <Image source={{ uri: kapak }} style={styles.avatar} />
+                  ) : (
+                    <View
+                      style={[
+                        styles.avatar,
+                        styles.avatarBos,
+                        { backgroundColor: `${RenkTokenlari.success}33` },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.avatarHarf, { color: RenkTokenlari.success }]}
+                      >
+                        {harf}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.copy}>
+                    <Text style={styles.ad} numberOfLines={1}>
+                      {o.title}
+                    </Text>
+                    <Text style={styles.alt} numberOfLines={1}>
+                      {hostAd
+                        ? `${hostAd} · ${o.listener_count}`
+                        : t('anaSayfa.sesOdasiEtiket')}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="mic-outline"
+                    size={14}
+                    color={RenkTokenlari.success}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {canlilar.length > 0 ? (
+          <View style={styles.bolum}>
+            <Text style={styles.bolumBaslik}>{t('anaSayfa.canliYayinlar')}</Text>
+            {canlilar.map((c) => {
+              const kapak = MedyaUriGuvenli(c.host_avatar_url);
+              const harf = (c.title[0] ?? 'C').toUpperCase();
+              const hostAd =
+                c.host_display_name?.trim() ||
+                (c.host_username ? `@${c.host_username}` : null);
+              return (
+                <Pressable
+                  key={`c:${c.id}`}
+                  onPress={() => onCanliSec(c)}
+                  style={({ pressed }) => [
+                    styles.satir,
+                    pressed && styles.satirPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('anaSayfa.canliA11y', { baslik: c.title })}
+                >
+                  {kapak ? (
+                    <Image source={{ uri: kapak }} style={styles.avatar} />
+                  ) : (
+                    <View
+                      style={[
+                        styles.avatar,
+                        styles.avatarBos,
+                        { backgroundColor: `${RenkTokenlari.danger}33` },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.avatarHarf, { color: RenkTokenlari.danger }]}
+                      >
+                        {harf}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.copy}>
+                    <Text style={styles.ad} numberOfLines={1}>
+                      {c.title}
+                    </Text>
+                    <Text style={styles.alt} numberOfLines={1}>
+                      {hostAd
+                        ? `${hostAd} · ${c.viewer_count}`
+                        : t('anaSayfa.yayin')}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="radio-outline"
+                    size={14}
+                    color={RenkTokenlari.danger}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
         ) : null}
 
         {kullanicilar.length > 0 ? (
@@ -236,7 +371,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   liste: {
-    maxHeight: 280,
+    maxHeight: 320,
   },
   loaderSatir: {
     flexDirection: 'row',

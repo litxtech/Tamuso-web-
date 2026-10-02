@@ -1,0 +1,31 @@
+{
+  "hediye": {
+    "baslik": "Cadeau",
+    "gonderBaslik": "Envoyer un cadeau",
+    "coinYukle": "Acheter des pièces",
+    "coinYukleAlt": "1 pièce = ₺0,10 · recharge instantanée",
+    "alici": "À : {{ad}}",
+    "canliHediyeler": "Cadeaux en direct",
+    "hediyeyeDon": "Retour aux cadeaux",
+    "pkKime": "PK — à qui ?",
+    "adet": "Qté",
+    "gonderiliyor": "Envoi…",
+    "gonderToplam": "Envoyer · {{toplam}}",
+    "sekmePopuler": "Populaire",
+    "sekmeTumu": "Tous",
+    "sekmeKlasik": "Classique",
+    "sekmeNadir": "Rare",
+    "sekmeLuks": "Luxe",
+    "sekmeEfsane": "Légendaire",
+    "aliciBulunamadi": "Destinataire introuvable.",
+    "kendineGonderemezsin": "Vous ne pouvez pas vous envoyer un cadeau.",
+    "katalogYukleniyor": "Catalogue en cours de chargement — réessayez sous peu.",
+    "yetersizCoin": "Pas assez de pièces",
+    "yetersizCoinBody": "Rechargez des pièces pour continuer.",
+    "gonderilemedi": "Le cadeau n’a pas pu être envoyé",
+    "gonderimKapali": "L’envoi de cadeaux est temporairement désactivé.",
+    "ozellikKapali": "Les cadeaux sont désactivés.",
+    "birisi": "Quelqu’un",
+    "varsayilanAd": "Cadeau"
+  }
+}

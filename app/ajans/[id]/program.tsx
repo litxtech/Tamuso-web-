@@ -15,8 +15,16 @@ import {
   AjansProgramListesi,
   AjansProgramOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import {
+  AjansKayitDurum,
+  AjansTurEtiket,
+} from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../src/i18n/diller';
 
 export default function AjansProgramEkrani() {
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [title, setTitle] = useState('');
@@ -39,28 +47,28 @@ export default function AjansProgramEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Program"
-      subtitle="Yayın ve oda takvimi"
+      title={t('ajans.programBaslik')}
+      subtitle={t('ajans.programAlt')}
       aktif="program"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni program</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniProgram')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={title} onChangeText={setTitle} placeholder="Başlık" />
+        <AjansInput value={title} onChangeText={setTitle} placeholder={t('ajans.phBaslik')} />
         <AjansCta
-          label="1 saat sonra canlı planla"
+          label={t('ajans.canliPlanla')}
           onPress={() => {
             void (async () => {
               const starts = new Date(Date.now() + 3600000).toISOString();
               const r = await AjansProgramOlustur({
                 agencyId: id,
-                title: title.trim() || 'Planlanan yayın',
+                title: title.trim() || t('ajans.varsayilanProgram'),
                 kind: 'live',
                 startsAt: starts,
               });
-              if (!r.ok) Alert.alert('Program', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.alertProgram'), r.hata);
               else {
                 setTitle('');
                 await yukle();
@@ -71,13 +79,18 @@ export default function AjansProgramEkrani() {
       </AjansKart>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           liste.map((p) => (
             <AjansListeSatir
               key={String(p.id)}
               title={String(p.title)}
-              subtitle={`${p.kind} · ${p.status} · ${new Date(String(p.starts_at)).toLocaleString('tr-TR')} · ${p.host_name ?? ''}`}
+              subtitle={t('ajans.programListeSatir', {
+                kind: AjansTurEtiket(String(p.kind), t),
+                status: AjansKayitDurum(String(p.status), t),
+                zaman: new Date(String(p.starts_at)).toLocaleString(locale),
+                host: p.host_name ?? '',
+              })}
             />
           ))
         )}

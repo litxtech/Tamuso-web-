@@ -1,0 +1,14 @@
+{
+  "medyaIzin": {
+    "mikrofonBaslik": "Autorisation micro",
+    "mikrofonHataIos": "L’autorisation micro est requise. Réglages → {{app}} → Microphone.",
+    "mikrofonHataAndroid": "L’autorisation micro est requise. Réglages → Applications → Autorisations → Microphone.",
+    "mikrofonDinleme": "Une autorisation audio est nécessaire pour entendre les autres dans la salle. Vous ne parlerez pas ; votre micro reste coupé. Vous pouvez l’activer dans les Réglages.",
+    "mikrofonYayin": "Un microphone est requis pour parler. Vous pouvez l’activer dans les Réglages.",
+    "kameraBaslik": "Autorisation caméra",
+    "kameraHataIos": "L’autorisation caméra est requise. Réglages → {{app}} → Caméra.",
+    "kameraHataAndroid": "L’autorisation caméra est requise. Réglages → Applications → Autorisations → Caméra.",
+    "kameraMesaj": "Une caméra est requise pour les appels vidéo. Vous pouvez l’activer dans les Réglages.",
+    "kontrolEdilemedi": "Impossible de vérifier les autorisations médias. Activez le micro/la caméra et réessayez."
+  }
+}

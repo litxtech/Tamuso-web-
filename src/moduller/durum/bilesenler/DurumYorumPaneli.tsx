@@ -26,9 +26,14 @@ import {
 import { DurumMedyasiSecVeYukle } from '../islemler/DurumMedyasiYukle';
 import { DurumTarihSaat } from '../islemler/DurumZaman';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { MesajBaglantiliMetin } from '../../mesajlasma/bilesenler/MesajBaglantiliMetin';
+import { MesajComposerLinkOnizleme } from '../../mesajlasma/bilesenler/MesajComposerLinkOnizleme';
+import { BaglantiOnizlemeBlok } from '../../baglanti/bilesenler/BaglantiOnizlemeBlok';
 import { DurumResimLightbox } from './DurumResimLightbox';
 import { KullaniciGuvenlikMenusu } from '../../moderasyon/bilesenler/KullaniciGuvenlikMenusu';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { UserIdentityRow } from '../../unvanlar/bilesenler/UserIdentityRow';
+import { useUnvanKatalog } from '../../unvanlar/kancalar/useUnvanKatalog';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -59,6 +64,7 @@ export function DurumYorumPaneli({
   onProfil,
 }: Props) {
   const { t } = useCeviri();
+  useUnvanKatalog();
   const insets = useSafeAreaInsets();
   const { yukseklik: klavyeH, acik: klavyeAcik } = useKlavyeYuksekligi(0);
   const [yorumlar, setYorumlar] = useState<DurumYorum[]>([]);
@@ -202,10 +208,26 @@ export function DurumYorumPaneli({
               onPress={() => onProfil?.(y.user_id)}
               style={styles.isimSatir}
             >
-              <Text style={styles.satirIsim}>{y.display_name}</Text>
-              <DogrulanmisTik dogrulandi={y.is_verified} size={12} />
+              <UserIdentityRow
+                displayName={y.display_name}
+                verified={!!y.is_verified}
+                titleId={y.selected_title_id}
+                size="COMPACT"
+                nameStyle={styles.satirIsim}
+              />
             </Pressable>
-            {y.body ? <Text style={styles.satirBody}>{y.body}</Text> : null}
+            {y.body ? (
+              <>
+                <MesajBaglantiliMetin
+                  text={y.body}
+                  style={styles.satirBody}
+                />
+                <BaglantiOnizlemeBlok
+                  metin={y.body}
+                  style={styles.yorumLink}
+                />
+              </>
+            ) : null}
             {y.media_url && /^https?:\/\//i.test(y.media_url.trim()) ? (
               <Pressable
                 onPress={() => setLightboxUri(y.media_url!.trim())}
@@ -364,6 +386,8 @@ export function DurumYorumPaneli({
                 </Pressable>
               </View>
             ) : null}
+
+            <MesajComposerLinkOnizleme metin={metin} />
 
             <View style={styles.inputSatir}>
               <Pressable
@@ -535,6 +559,10 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.text,
     fontSize: 15,
     lineHeight: 22,
+  },
+  yorumLink: {
+    marginTop: 6,
+    maxWidth: '100%',
   },
   yorumResimHit: {
     marginTop: 6,

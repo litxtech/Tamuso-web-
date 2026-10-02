@@ -57,7 +57,7 @@ type Props = {
   baslik?: string;
   onProfilAc?: () => void;
   onNeedUpgrade?: () => void;
-  /** Ekran yüksekliğinin oranı — varsayılan ~0.58 (yarıdan biraz fazla) */
+  /** Ekran yüksekliğinin oranı — varsayılan neredeyse tam kart */
   yukseklikOrani?: number;
 };
 
@@ -90,9 +90,9 @@ function OdaProfilKartiPaneliInner({
   baslik,
   onProfilAc,
   onNeedUpgrade,
-  yukseklikOrani = 0.58,
+  yukseklikOrani = 0.9,
 }: Props) {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
   const insets = useSafeAreaInsets();
   const { height: ekranH } = useWindowDimensions();
   const baslikMetin = baslik ?? t('sesOda.profilBilgileri');
@@ -278,7 +278,9 @@ function OdaProfilKartiPaneliInner({
 
                   {seviye > 0 ? (
                     <View style={styles.seviyePill}>
-                      <Text style={styles.seviyeText}>Seviye {seviye}</Text>
+                      <Text style={styles.seviyeText}>
+                        {t('sesOda.seviyeN', { n: seviye })}
+                      </Text>
                     </View>
                   ) : null}
 
@@ -296,7 +298,7 @@ function OdaProfilKartiPaneliInner({
                       accessibilityLabel={t('sesOda.takipEdilenler')}
                     >
                       <Text style={styles.sosyalDeger}>
-                        {TakipSayaciniFormatla(following)}
+                        {TakipSayaciniFormatla(following, dil)}
                       </Text>
                       <Text style={styles.sosyalEtiket}>{t('sesOda.takip')}</Text>
                     </Pressable>
@@ -308,7 +310,7 @@ function OdaProfilKartiPaneliInner({
                       accessibilityLabel={t('sesOda.takipciler')}
                     >
                       <Text style={styles.sosyalDeger}>
-                        {TakipSayaciniFormatla(followers)}
+                        {TakipSayaciniFormatla(followers, dil)}
                       </Text>
                       <Text style={styles.sosyalEtiket}>{t('sesOda.takipci')}</Text>
                     </Pressable>

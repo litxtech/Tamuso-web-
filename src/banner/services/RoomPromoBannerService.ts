@@ -1,7 +1,8 @@
 import { supabase } from '../../lib/supabase';
 import {
   AUTO_ROOM_PROMO_PLACEMENTS,
-  BANNER_STRIP_ASPECT,
+  BANNER_ROOM_CARD_ASPECT,
+  BANNER_ROOM_CARD_TAG,
 } from '../core/BannerConstants';
 import type { BannerCampaign } from '../core/BannerTypes';
 import {
@@ -10,6 +11,7 @@ import {
   LiderlikSiralamasiniYenile,
   type SiralamaSatiri,
 } from '../../moduller/liderlik-siralamalari/okuma/LiderlikSiralamasiniGetir';
+import i18n from '../../i18n';
 
 export type OdaPromoTur = 'games' | 'coins';
 
@@ -36,7 +38,7 @@ function syntheticId(tur: OdaPromoTur, roomId: string): string {
 }
 
 function odaAdi(aday: OdaPromoAday): string {
-  return aday.room_title?.trim() || 'Ses odası';
+  return aday.room_title?.trim() || i18n.t('banner.promoSesOdasi');
 }
 
 function siralamadanAday(
@@ -140,8 +142,10 @@ export function OdaPromoBannerinaDonustur(
   const canli = aday.room_is_live;
   const oyunMu = aday.tur === 'games';
   const skorMetin = oyunMu
-    ? `${aday.score} oyun`
-    : `${CoinSkoruFormatla(aday.score)} coin`;
+    ? i18n.t('banner.promoOyunSkor', { n: aday.score })
+    : i18n.t('banner.promoCoinSkor', {
+        skor: CoinSkoruFormatla(aday.score),
+      });
 
   return {
     id: syntheticId(aday.tur, aday.room_id),
@@ -149,11 +153,17 @@ export function OdaPromoBannerinaDonustur(
     internal_name: `auto_room_promo_${aday.tur}`,
     title: ad,
     subtitle: oyunMu
-      ? `Bu hafta en çok oyun · ${skorMetin}`
-      : `Bu hafta en çok coin · ${skorMetin}`,
+      ? i18n.t('banner.promoOyunAlt', { skor: skorMetin })
+      : i18n.t('banner.promoCoinAlt', { skor: skorMetin }),
     description: null,
-    badge: canli ? 'CANLI' : oyunMu ? 'OYUN' : 'TREND',
-    label: oyunMu ? 'En çok oyun' : 'En çok coin',
+    badge: canli
+      ? i18n.t('banner.promoCanli')
+      : oyunMu
+        ? i18n.t('banner.promoOyunBadge')
+        : i18n.t('banner.promoTrend'),
+    label: oyunMu
+      ? i18n.t('banner.promoEnCokOyun')
+      : i18n.t('banner.promoEnCokCoin'),
     media_type: aday.room_cover_url ? 'IMAGE_TEXT' : 'GRADIENT',
     media_url: aday.room_cover_url,
     thumbnail_url: aday.room_cover_url,
@@ -163,8 +173,8 @@ export function OdaPromoBannerinaDonustur(
         ? ['#1A0F2E', '#3D1F6E']
         : ['#1A1208', '#6B3A12'],
     },
-    size_type: 'SMALL',
-    aspect_ratio: BANNER_STRIP_ASPECT,
+    size_type: 'CUSTOM',
+    aspect_ratio: BANNER_ROOM_CARD_ASPECT,
     priority: 900 + (oyunMu ? 20 : 10) - aday.rank,
     status: 'ACTIVE',
     start_at: null,
@@ -180,7 +190,11 @@ export function OdaPromoBannerinaDonustur(
     autoplay_video: false,
     loop_video: false,
     carousel_auto_slide_ms: 5500,
-    tags: ['PROMOTION', canli ? 'LIVE' : oyunMu ? 'GAME' : 'HOT'],
+    tags: [
+      BANNER_ROOM_CARD_TAG,
+      'PROMOTION',
+      canli ? 'LIVE' : oyunMu ? 'GAME' : 'HOT',
+    ],
     created_by: null,
     created_at: nowIso(),
     updated_at: nowIso(),
@@ -202,7 +216,9 @@ export function OdaPromoBannerinaDonustur(
       {
         slot: 0,
         action_type: 'INTERNAL_ROOM',
-        button_text: canli ? 'Odaya gir' : 'Odayı aç',
+        button_text: canli
+          ? i18n.t('banner.promoOdayaGir')
+          : i18n.t('banner.promoOdayiAc'),
         target: aday.room_id,
       },
     ],

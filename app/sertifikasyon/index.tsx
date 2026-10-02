@@ -9,11 +9,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
+import { useCeviri } from '../../src/i18n/useCeviri';
 import { BosDurum } from '../../src/components/BosDurum';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -43,46 +43,72 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 
-function durumEtiketi(status: string): { label: string; color: string; bg: string } {
+function durumEtiketi(
+  status: string,
+  t: (key: any, opts?: Record<string, unknown>) => string,
+): { label: string; color: string; bg: string } {
   switch (status) {
     case 'pass':
-      return { label: 'Geçti', color: RenkTokenlari.mint, bg: 'rgba(61,207,176,0.14)' };
+      return {
+        label: t('sertifikasyon.durumGecti'),
+        color: RenkTokenlari.mint,
+        bg: 'rgba(61,207,176,0.14)',
+      };
     case 'fail':
-      return { label: 'Kaldı', color: RenkTokenlari.danger, bg: 'rgba(232,75,106,0.14)' };
+      return {
+        label: t('sertifikasyon.durumKaldi'),
+        color: RenkTokenlari.danger,
+        bg: 'rgba(232,75,106,0.14)',
+      };
     case 'skip':
-      return { label: 'Atlandı', color: RenkTokenlari.textMuted, bg: RenkTokenlari.surface };
+      return {
+        label: t('sertifikasyon.durumAtlandi'),
+        color: RenkTokenlari.textMuted,
+        bg: RenkTokenlari.surface,
+      };
     case 'pending':
     default:
-      return { label: 'Bekliyor', color: RenkTokenlari.accent, bg: 'rgba(240,180,41,0.14)' };
+      return {
+        label: t('sertifikasyon.durumBekliyor'),
+        color: RenkTokenlari.accent,
+        bg: 'rgba(240,180,41,0.14)',
+      };
   }
 }
 
-function kategoriAdi(cat: string): string {
+function kategoriAdi(
+  cat: string,
+  t: (key: any, opts?: Record<string, unknown>) => string,
+): string {
   const map: Record<string, string> = {
-    security: 'Güvenlik',
-    network: 'Ağ',
-    performance: 'Performans',
-    finance: 'Finans',
-    media: 'Medya',
+    security: t('sertifikasyon.katGuvenlik'),
+    network: t('sertifikasyon.katAg'),
+    performance: t('sertifikasyon.katPerformans'),
+    finance: t('sertifikasyon.katFinans'),
+    media: t('sertifikasyon.katMedya'),
     android: 'Android',
     ios: 'iOS',
-    ops: 'Operasyon',
+    ops: t('sertifikasyon.katOps'),
   };
   return map[cat] ?? cat;
 }
 
-function agTipiEtiketi(tip: string): string {
+function agTipiEtiketi(
+  tip: string,
+  t: (key: any, opts?: Record<string, unknown>) => string,
+): string {
   const key = tip.toLowerCase();
   const map: Record<string, string> = {
     wifi: 'Wi‑Fi',
-    cellular: 'Mobil veri',
-    none: 'Bağlantı yok',
-    unknown: 'Bilinmiyor',
+    cellular: t('sertifikasyon.agMobil'),
+    none: t('sertifikasyon.agYok'),
+    unknown: t('sertifikasyon.agBilinmiyor'),
   };
   return map[key] ?? tip;
 }
 
 export default function SertifikasyonHubEkrani() {
+  const { t } = useCeviri();
   const { isGuest, refreshProfile, profile } = useAuth();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const isAdmin = profile?.is_admin === true;
@@ -103,7 +129,7 @@ export default function SertifikasyonHubEkrani() {
     setYukleniyor(true);
     try {
       const ag = await AgBaglantiDurumunuGetir();
-      setAgTip(agTipiEtiketi(String(ag.tip)));
+      setAgTip(agTipiEtiketi(String(ag.tip), t));
       setAgBagli(!!ag.bagli);
       setAgNet(ag.internetErisilebilir !== false);
       setDusukCihaz(DusukCihazModuAktifMi());
@@ -149,7 +175,7 @@ export default function SertifikasyonHubEkrani() {
     } finally {
       setYukleniyor(false);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -183,7 +209,7 @@ export default function SertifikasyonHubEkrani() {
     return (
       <Screen edges={['top']}>
         <View style={styles.yetkisiz}>
-          <Text style={styles.yetkisizYazi}>Bu sayfa yalnızca yöneticiler içindir.</Text>
+          <Text style={styles.yetkisizYazi}>{t('sertifikasyon.yetkisiz')}</Text>
         </View>
       </Screen>
     );
@@ -192,15 +218,19 @@ export default function SertifikasyonHubEkrani() {
   const stresHediye = () => {
     islemiDene('oy_kullan', async () => {
       if (!stressOn && !hubOn) {
-        Alert.alert('Kapalı', 'Özelliklerden stress_tools veya certification_hub açılmalı.');
+        Alert.alert(t('sertifikasyon.alertKapali'), t('sertifikasyon.alertStresKapali'));
         return;
       }
       setBusy(true);
       try {
         const r = await HediyeAnimasyonStresTestiCalistir(40);
         Alert.alert(
-          r.ok ? 'Test geçti' : 'Test kaldı',
-          `Eklenen ${r.eklenen} · Düşürülen ${r.dusuruldu} · ${r.sureMs} ms`,
+          r.ok ? t('sertifikasyon.testGecti') : t('sertifikasyon.testKaldi'),
+          t('sertifikasyon.hediyeSonuc', {
+            eklenen: r.eklenen,
+            dusuruldu: r.dusuruldu,
+            sureMs: r.sureMs,
+          }),
         );
         await load();
       } finally {
@@ -212,17 +242,19 @@ export default function SertifikasyonHubEkrani() {
   const stresLivekit = () => {
     islemiDene('oy_kullan', async () => {
       if (!stressOn && !hubOn) {
-        Alert.alert('Kapalı', 'Özelliklerden stress_tools veya certification_hub açılmalı.');
+        Alert.alert(t('sertifikasyon.alertKapali'), t('sertifikasyon.alertStresKapali'));
         return;
       }
       setBusy(true);
       try {
         const r = await LiveKitBaglantiStresSimulasyonu(5);
         Alert.alert(
-          r.ok ? 'Test geçti' : 'Test kaldı',
-          `Başarılı ${r.basarili} · Başarısız ${r.basarisiz} · ${r.sureMs} ms${
-            r.hata ? `\n${r.hata}` : ''
-          }`,
+          r.ok ? t('sertifikasyon.testGecti') : t('sertifikasyon.testKaldi'),
+          `${t('sertifikasyon.livekitSonuc', {
+            basarili: r.basarili,
+            basarisiz: r.basarisiz,
+            sureMs: r.sureMs,
+          })}${r.hata ? `\n${r.hata}` : ''}`,
         );
         await load();
       } finally {
@@ -235,8 +267,8 @@ export default function SertifikasyonHubEkrani() {
     <Screen edges={['top']}>
       <ModulHataSiniri modulAdi="sertifikasyon">
         <EkranBasligi
-          title="Sertifikasyon"
-          subtitle="Mağaza / yayın öncesi kontrol merkezi"
+          title={t('sertifikasyon.baslik')}
+          subtitle={t('sertifikasyon.altBaslik')}
           fallbackHref="/admin"
         />
         <ScrollView
@@ -245,106 +277,104 @@ export default function SertifikasyonHubEkrani() {
             <RefreshControl refreshing={yukleniyor} onRefresh={() => void load()} />
           }
         >
-          <LinearGradient
-            colors={[...RenkTokenlari.gradientCard]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={AdminStil.hero}
-          >
-            <Text style={AdminStil.heroEyebrow}>Operasyon · kalite</Text>
-            <Text style={AdminStil.heroTitle}>Kontrol paneli</Text>
-            <Text style={AdminStil.heroAlt}>
-              Ağ, performans ve güvenlik kontrollerini buradan izle. Kırmızı olanlar
-              yayın öncesi düzeltilmeli.
-            </Text>
-            <View style={styles.bayrakSatir}>
+          <View style={styles.bayrakSatir}>
               <View style={[styles.bayrak, hubOn ? styles.bayrakAcik : styles.bayrakKapali]}>
-                <Text style={styles.bayrakYazi}>Hub {hubOn ? 'açık' : 'kapalı'}</Text>
+                <Text style={styles.bayrakYazi}>
+                  {hubOn ? t('sertifikasyon.hubAcik') : t('sertifikasyon.hubKapali')}
+                </Text>
               </View>
               <View style={[styles.bayrak, stressOn ? styles.bayrakAcik : styles.bayrakKapali]}>
-                <Text style={styles.bayrakYazi}>Stres {stressOn ? 'açık' : 'kapalı'}</Text>
+                <Text style={styles.bayrakYazi}>
+                  {stressOn ? t('sertifikasyon.stresAcik') : t('sertifikasyon.stresKapali')}
+                </Text>
               </View>
-            </View>
-          </LinearGradient>
+          </View>
 
           <View style={AdminStil.kpiGrid}>
             <View style={AdminStil.kpi}>
               <Text style={[AdminStil.kpiN, { color: RenkTokenlari.mint }]}>{ozet.pass}</Text>
-              <Text style={AdminStil.kpiL}>Geçen</Text>
+              <Text style={AdminStil.kpiL}>{t('sertifikasyon.kpiGecen')}</Text>
             </View>
             <View style={AdminStil.kpi}>
               <Text style={[AdminStil.kpiN, { color: RenkTokenlari.danger }]}>{ozet.fail}</Text>
-              <Text style={AdminStil.kpiL}>Kalan</Text>
+              <Text style={AdminStil.kpiL}>{t('sertifikasyon.kpiKalan')}</Text>
             </View>
             <View style={AdminStil.kpi}>
               <Text style={[AdminStil.kpiN, { color: RenkTokenlari.accent }]}>
                 {ozet.pending}
               </Text>
-              <Text style={AdminStil.kpiL}>Bekleyen</Text>
+              <Text style={AdminStil.kpiL}>{t('sertifikasyon.kpiBekleyen')}</Text>
             </View>
             <View style={AdminStil.kpi}>
               <Text style={AdminStil.kpiN}>{ozet.total}</Text>
-              <Text style={AdminStil.kpiL}>Toplam kontrol</Text>
+              <Text style={AdminStil.kpiL}>{t('sertifikasyon.kpiToplam')}</Text>
             </View>
           </View>
 
-          <Text style={AdminStil.sectionLabel}>Cihaz & ağ durumu</Text>
+          <Text style={AdminStil.sectionLabel}>{t('sertifikasyon.bolumCihazAg')}</Text>
           <View style={styles.durumGrid}>
             <DurumKart
               icon="wifi"
-              baslik="Bağlantı"
-              deger={agBagli ? agTip : 'Yok'}
+              baslik={t('sertifikasyon.baglanti')}
+              deger={agBagli ? agTip : t('sertifikasyon.yok')}
               iyi={agBagli && agNet}
             />
             <DurumKart
               icon="globe-outline"
-              baslik="İnternet"
-              deger={agNet ? 'Erişilebilir' : 'Yok'}
+              baslik={t('sertifikasyon.internet')}
+              deger={agNet ? t('sertifikasyon.erisilebilir') : t('sertifikasyon.yok')}
               iyi={agNet}
             />
             <DurumKart
               icon="phone-portrait-outline"
-              baslik="Cihaz"
-              deger={dusukCihaz ? 'Düşük uç' : 'Normal'}
+              baslik={t('sertifikasyon.cihaz')}
+              deger={dusukCihaz ? t('sertifikasyon.dusukUc') : t('sertifikasyon.normal')}
               iyi={!dusukCihaz}
             />
             <DurumKart
               icon="flash-outline"
-              baslik="Yumuşak düşüş"
-              deger={deg?.aktif ? 'Aktif' : 'Kapalı'}
+              baslik={t('sertifikasyon.yumusakDusus')}
+              deger={deg?.aktif ? t('sertifikasyon.aktif') : t('sertifikasyon.kapali')}
               iyi={!deg?.aktif}
             />
           </View>
 
           <View style={AdminStil.kart}>
-            <Text style={AdminStil.kartBaslik}>Performans kapıları</Text>
-            <Text style={AdminStil.kartAlt}>
-              Ağ veya cihaz zayıfsa uygulama yükü otomatik azaltır.
-            </Text>
+            <Text style={AdminStil.kartBaslik}>{t('sertifikasyon.perfKapilari')}</Text>
+            <Text style={AdminStil.kartAlt}>{t('sertifikasyon.perfKapilariAlt')}</Text>
             <SatirBaslik
-              etiket="Ağır animasyon"
-              deger={deg?.agirAnimasyonIzinli ? 'İzinli' : 'Kısıtlı'}
+              etiket={t('sertifikasyon.agirAnimasyon')}
+              deger={
+                deg?.agirAnimasyonIzinli
+                  ? t('sertifikasyon.izinli')
+                  : t('sertifikasyon.kisitli')
+              }
             />
             <SatirBaslik
-              etiket="Canlı yeniden bağlan"
-              deger={deg?.livekitYenidenBaglanIzinli ? 'İzinli' : 'Kapalı'}
+              etiket={t('sertifikasyon.canliYenidenBaglan')}
+              deger={
+                deg?.livekitYenidenBaglanIzinli
+                  ? t('sertifikasyon.izinli')
+                  : t('sertifikasyon.kapali')
+              }
             />
             <SatirBaslik
-              etiket="Yalnızca önbellek"
-              deger={deg?.yalnizcaOnbellek ? 'Evet' : 'Hayır'}
+              etiket={t('sertifikasyon.yalnizcaOnbellek')}
+              deger={
+                deg?.yalnizcaOnbellek ? t('sertifikasyon.evet') : t('sertifikasyon.hayir')
+              }
             />
             {deg?.sebep?.length ? (
-              <Text style={styles.sebep}>Sebep: {deg.sebep.join(', ')}</Text>
+              <Text style={styles.sebep}>
+                {t('sertifikasyon.sebep', { liste: deg.sebep.join(', ') })}
+              </Text>
             ) : null}
           </View>
 
-          <Text style={AdminStil.sectionLabel}>Mutabakat (son koşular)</Text>
+          <Text style={AdminStil.sectionLabel}>{t('sertifikasyon.mutabakat')}</Text>
           <View style={AdminStil.kart}>
             {mutabakatSatirlari.length === 0 ? (
-              <Text style={AdminStil.kartAlt}>
-                Henüz mutabakat koşusu yok. Finans tutarlılığı için arka planda
-                çalıştırılır.
-              </Text>
+              <Text style={AdminStil.kartAlt}>{t('sertifikasyon.mutabakatBos')}</Text>
             ) : (
               mutabakatSatirlari.map((s) => (
                 <Text key={s} style={styles.mutabakatSatir}>
@@ -354,21 +384,21 @@ export default function SertifikasyonHubEkrani() {
             )}
           </View>
 
-          <Text style={AdminStil.sectionLabel}>Kontrol listesi</Text>
+          <Text style={AdminStil.sectionLabel}>{t('sertifikasyon.kontrolListesi')}</Text>
           {yukleniyor && checks.length === 0 ? (
             <ActivityIndicator color={RenkTokenlari.accent} />
           ) : checks.length === 0 ? (
             <BosDurum
               icon="checkmark-circle-outline"
-              title="Kontrol yok"
-              body="Sertifikasyon hub açıkken kontroller burada görünür."
+              title={t('sertifikasyon.kontrolYok')}
+              body={t('sertifikasyon.kontrolYokBody')}
             />
           ) : (
             gruplu.map(([cat, items]) => (
               <View key={cat} style={AdminStil.kart}>
-                <Text style={styles.kategoriBaslik}>{kategoriAdi(cat)}</Text>
+                <Text style={styles.kategoriBaslik}>{kategoriAdi(cat, t)}</Text>
                 {items.map((c) => {
-                  const d = durumEtiketi(c.status);
+                  const d = durumEtiketi(c.status, t);
                   return (
                     <View key={c.code} style={styles.kontrolSatir}>
                       <View style={styles.kontrolMetin}>
@@ -387,11 +417,9 @@ export default function SertifikasyonHubEkrani() {
             ))
           )}
 
-          <Text style={AdminStil.sectionLabel}>Yük testleri</Text>
+          <Text style={AdminStil.sectionLabel}>{t('sertifikasyon.yukTestleri')}</Text>
           <View style={AdminStil.kart}>
-            <Text style={AdminStil.kartAlt}>
-              Canlı kullanıcıyı etkilemez; animasyon ve bağlantı dayanıklılığını ölçer.
-            </Text>
+            <Text style={AdminStil.kartAlt}>{t('sertifikasyon.yukTestleriAlt')}</Text>
             <Pressable
               style={[styles.aksiyonBtn, busy && styles.aksiyonDisabled]}
               disabled={busy}
@@ -400,9 +428,9 @@ export default function SertifikasyonHubEkrani() {
               <Ionicons name="gift-outline" size={18} color={RenkTokenlari.text} />
               <View style={styles.aksiyonMetin}>
                 <Text style={styles.aksiyonBaslik}>
-                  {busy ? 'Çalışıyor…' : 'Hediye animasyon stresi'}
+                  {busy ? t('sertifikasyon.calisiyor') : t('sertifikasyon.hediyeStres')}
                 </Text>
-                <Text style={styles.aksiyonAlt}>40 hediye kuyruğu · düşürme oranı</Text>
+                <Text style={styles.aksiyonAlt}>{t('sertifikasyon.hediyeStresAlt')}</Text>
               </View>
             </Pressable>
             <Pressable
@@ -413,9 +441,9 @@ export default function SertifikasyonHubEkrani() {
               <Ionicons name="radio-outline" size={18} color={RenkTokenlari.text} />
               <View style={styles.aksiyonMetin}>
                 <Text style={styles.aksiyonBaslik}>
-                  {busy ? 'Çalışıyor…' : 'Bağlantı yeniden bağlanma'}
+                  {busy ? t('sertifikasyon.calisiyor') : t('sertifikasyon.baglantiYeniden')}
                 </Text>
-                <Text style={styles.aksiyonAlt}>LiveKit kopma / tekrar bağlanma</Text>
+                <Text style={styles.aksiyonAlt}>{t('sertifikasyon.baglantiYenidenAlt')}</Text>
               </View>
             </Pressable>
             <Pressable
@@ -424,8 +452,8 @@ export default function SertifikasyonHubEkrani() {
             >
               <Ionicons name="shield-checkmark-outline" size={18} color={RenkTokenlari.mint} />
               <View style={styles.aksiyonMetin}>
-                <Text style={styles.aksiyonBaslik}>Güvenlik merkezine git</Text>
-                <Text style={styles.aksiyonAlt}>Olaylar · çocuk koruma · engeller</Text>
+                <Text style={styles.aksiyonBaslik}>{t('sertifikasyon.guvenlikMerkezi')}</Text>
+                <Text style={styles.aksiyonAlt}>{t('sertifikasyon.guvenlikMerkeziAlt')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={RenkTokenlari.textDim} />
             </Pressable>
@@ -437,7 +465,7 @@ export default function SertifikasyonHubEkrani() {
           onClose={upgradeKapat}
           onCompleted={() => {
             void refreshProfile();
-            Alert.alert('Tamam', 'Hesabın güncellendi.');
+            Alert.alert(t('ortak.tamam'), t('sertifikasyon.hesapGuncellendi'));
           }}
         />
       </ModulHataSiniri>

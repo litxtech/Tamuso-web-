@@ -36,8 +36,7 @@ type BekleyenSecim =
   | { tur: 'sistem'; kod: UygulamaDili };
 
 /**
- * Dil seçimi — önce hedef dilde demo onay kartı;
- * onaydan sonra dil değişir. Arapça’da yeniden başlat uyarısı.
+ * Dil seçimi — Sistem (cihaz/ülke) veya manuel sabit dil.
  */
 export default function DilAyarlariEkrani() {
   const { palet } = useTema();
@@ -55,14 +54,16 @@ export default function DilAyarlariEkrani() {
       govde: tt('ayarlar.dilDemoGovde'),
       onay: tt('ayarlar.dilDemoOnay'),
       iptal: tt('ortak.iptal'),
-      dilAdi: DIL_ETIKETLERI[lng],
+      dilAdi:
+        bekleyen.tur === 'sistem'
+          ? `${tt('ayarlar.sistemDiliniKullan')} · ${DIL_ETIKETLERI[lng]}`
+          : DIL_ETIKETLERI[lng],
       rtlNot: isRtlDil(lng) ? tt('ayarlar.dilDemoRtlNot') : null,
     };
   }, [bekleyen]);
 
   const rtlSonrasiUyar = (hedef: UygulamaDili, reloadGerekli: boolean) => {
-    if (!reloadGerekli && !isRtlDil(hedef)) return;
-    if (!isRtlDil(hedef)) return;
+    if (!reloadGerekli) return;
     const lng = hedef;
     Alert.alert(
       String(i18n.t('ayarlar.dilSecBaslik', { lng })),

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { GaleriAc } from '../../../ortak/medya/ImagePickerHazirMi';
 import {
   DepoyaMedyaYukle,
@@ -17,7 +18,7 @@ export async function OdaKapakSec(): Promise<
     if (secim.hata.includes('build') || secim.hata.includes('native')) {
       return {
         ok: false,
-        hata: 'Fotoğraf seçici bu build’de yok. Yeni development build kur.',
+        hata: i18n.t('sesOda.fotoSeciciBuildYok'),
         iptal: secim.iptal,
       };
     }
@@ -40,7 +41,7 @@ export async function OdaKapakUriIleYukle(
 ): Promise<{ ok: true; url: string } | { ok: false; hata: string }> {
   try {
     const uid = (await supabase.auth.getUser()).data.user?.id;
-    if (!uid) return { ok: false, hata: 'Oturum yok' };
+    if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
     const { YaptirimAktifMi } = await import(
       '../../admin/ses-odalari/AdminSesOdasiIslemleri'
@@ -48,7 +49,7 @@ export async function OdaKapakUriIleYukle(
     if (await YaptirimAktifMi('upload_ban')) {
       return {
         ok: false,
-        hata: 'Yükleme cezan aktif. Medya yükleyemezsin.',
+        hata: i18n.t('durumX.uploadBan'),
       };
     }
 
@@ -68,7 +69,7 @@ export async function OdaKapakUriIleYukle(
       return {
         ok: false,
         hata: up.hata.includes('Bucket')
-          ? 'Medya deposu hazır değil (migration 016).'
+          ? i18n.t('sesOda.medyaDeposuHazirDegil')
           : up.hata,
       };
     }
@@ -78,7 +79,7 @@ export async function OdaKapakUriIleYukle(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Kapak yüklenemedi',
+      hata: e instanceof Error ? e.message : i18n.t('sesOda.kapakYuklenemediKisa'),
     };
   }
 }

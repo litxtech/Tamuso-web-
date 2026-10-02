@@ -4,7 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import type { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
-import { LiveKitVideoViewAl } from '../../livekit/bilesenler/LiveKitVideoViewAl';
+import { AktifRtcSaglayici } from '../../livekit/MedyaBaglantisi';
+import { AgoraVideoYuzeyi } from '../../rtc/AgoraVideoYuzeyi';
+import {
+  LiveKitVideoViewAl,
+  LiveKitVideoViewCacheTemizle,
+} from '../../livekit/bilesenler/LiveKitVideoViewAl';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -26,12 +31,15 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
   durumYazi,
 }: Props) {
   const { t } = useCeviri();
-  const VideoViewComp = LiveKitVideoViewAl();
+  const [VideoViewComp, setVideoViewComp] = useState(() =>
+    LiveKitVideoViewAl(),
+  );
   const [localVideo, setLocalVideo] = useState<LocalVideoTrack | null>(null);
   const [remoteVideo, setRemoteVideo] = useState<RemoteVideoTrack | null>(null);
   const [kameraFacing, setKameraFacing] = useState<'user' | 'environment'>(
     () => LiveKitBaglantiYoneticisi.kameraFacingAl(),
   );
+  const [streamTick, setStreamTick] = useState(0);
 
   useEffect(() => {
     return LiveKitBaglantiYoneticisi.videoDinle((s) => {
@@ -41,6 +49,37 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
     });
   }, []);
 
+  // Native VideoView geç yüklenirse yeniden dene
+  useEffect(() => {
+    if (VideoViewComp || mock) return;
+    const t1 = setTimeout(() => {
+      LiveKitVideoViewCacheTemizle();
+      setVideoViewComp(LiveKitVideoViewAl());
+    }, 400);
+    const t2 = setTimeout(() => {
+      LiveKitVideoViewCacheTemizle();
+      setVideoViewComp(LiveKitVideoViewAl());
+    }, 1200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [VideoViewComp, mock]);
+
+  // mediaStream gecikmeli gelince RTCView boş URL kalmasın — kısa poll
+  useEffect(() => {
+    if (mock) return;
+    let n = 0;
+    const id = setInterval(() => {
+      n += 1;
+      setLocalVideo(LiveKitBaglantiYoneticisi.localVideoTrack());
+      setRemoteVideo(LiveKitBaglantiYoneticisi.remoteVideoTrack());
+      setStreamTick((x) => x + 1);
+      if (n >= 12) clearInterval(id);
+    }, 500);
+    return () => clearInterval(id);
+  }, [mock, rol]);
+
   const track =
     rol === 'host'
       ? localVideo
@@ -48,6 +87,25 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
   const nativeOk = !mock && !!track && !!VideoViewComp;
   // Ön kamera: ayna (selfie konforu). Arka kamera: düz (sağ/sol ters olmasın).
   const mirrorLocal = rol === 'host' && kameraFacing === 'user';
+  void streamTick; // poll re-render — mediaStream.id güncellensin
+  const streamId = (() => {
+    try {
+      const ms = (track as { mediaStream?: { id?: string } } | null)
+        ?.mediaStream;
+      return ms?.id ?? '';
+    } catch {
+      return '';
+    }
+  })();
+  const trackKey = `${track?.sid ?? 'none'}-${streamId || 'waiting'}`;
+
+  if (!mock && AktifRtcSaglayici() === 'agora') {
+    return (
+      <View style={styles.root}>
+        <AgoraVideoYuzeyi yerel={rol === 'host'} />
+      </View>
+    );
+  }
 
   const baslik = mock
     ? t('canliYayin.demoYayin')
@@ -66,6 +124,7 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
     <View style={styles.root}>
       {nativeOk && VideoViewComp && track ? (
         <VideoViewComp
+          key={trackKey}
           style={StyleSheet.absoluteFill}
           videoTrack={track}
           objectFit="cover"

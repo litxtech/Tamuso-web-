@@ -1,0 +1,11 @@
+{
+  "cocukKoruma": {
+    "baslik": "Protection de l’enfance",
+    "govde": "Tamuso est réservé aux personnes âgées de 18 ans ou plus.\n\nLa sécurité des enfants (moins de 18 ans) est notre priorité absolue. Nous avons une TOLÉRANCE ZÉRO envers le matériel d’abus sexuel d’enfants (CSAM), l’exploitation d’enfants, le grooming, le contenu sexuel impliquant des mineurs, ou la participation de mineurs sur la Plateforme.\n\nLes comptes qui violent cette politique sont fermés immédiatement et définitivement. Il n’y a pas d’amnistie. Lorsque la loi l’exige, nous signalons aux autorités.\n\nPour continuer, vous devez confirmer que vous avez 18 ans ou plus. Si vous indiquez avoir moins de 18 ans, votre compte sera fermé et vous serez renvoyé vers le lobby de connexion.\n\nCette confirmation n’est demandée qu’une seule fois par compte.",
+    "btnBuyugum": "J’ai 18 ans ou plus",
+    "btnDegilim": "J’ai moins de 18 ans",
+    "onayUyari": "Si vous confirmez avoir moins de 18 ans, votre compte sera fermé et vous serez envoyé vers le lobby de connexion. Cette action est irréversible.",
+    "btnOnayKapat": "Je confirme — fermer mon compte",
+    "btnVazgec": "Retour"
+  }
+}

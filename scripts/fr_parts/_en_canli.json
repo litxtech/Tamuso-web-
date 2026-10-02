@@ -1,0 +1,16 @@
+{
+  "canli": {
+    "baslik": "Live",
+    "gecBaslik": "Go live",
+    "gecFisilti": "CREATE",
+    "gecOzet": "Voice room, stream, or status — pick what to open.",
+    "sesOdasiBaslik": "Open voice room",
+    "sesOdasiFisilti": "VOICE ROOM",
+    "sesOdasiOzet": "Add a title and cover — the room opens instantly.",
+    "odaBasligi": "Room title",
+    "aciklama": "Description",
+    "aciklamaPlaceholder": "Short topic — shown on the card",
+    "aciliyor": "Opening…",
+    "sesOdasiniAc": "Open voice room"
+  }
+}

@@ -1,0 +1,104 @@
+
+Wrote 24 tokens → C:\Users\ilkse\muta\load-tests\fixtures\tokens.json
+Refreshed 24 sessions (min TTL ~59m)
+TAIL DIAG START 2026-09-23T16:41:29.485Z
+summary C:\Users\ilkse\muta\load-tests\results\tail-diag-500-2026-09-23T16-41-22-279Z.summary.json
+jsonl C:\Users\ilkse\muta\load-tests\results\tail-diag-500-2026-09-23T16-41-22-279Z.json
+generator sampler pid 17168
+TAIL DIAG END 2026-09-23T16:41:34.875Z exit null
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: C:\Users\ilkse\muta\load-tests\scenarios\14_tail_latency_diagnostic.js
+        output: json (C:\Users\ilkse\muta\load-tests\results\tail-diag-500-2026-09-23T16-41-22-279Z.json)
+
+     scenarios: (100.00%) 1 scenario, 500 max VUs, 9m25s max duration (incl. graceful stop):
+              * default: Up to 500 looping VUs for 9m5s over 11 stages (gracefulRampDown: 20s, gracefulStop: 30s)
+
+
+running (0m00.7s), 001/500 VUs, 9834 complete and 0 interrupted iterations
+default   [   0% ] 001/500 VUs  0m00.7s/9m05.0s
+
+running (0m01.7s), 003/500 VUs, 48465 complete and 0 interrupted iterations
+default   [   0% ] 003/500 VUs  0m01.7s/9m05.0s
+
+running (0m02.7s), 006/500 VUs, 87454 complete and 0 interrupted iterations
+default   [   0% ] 006/500 VUs  0m02.7s/9m05.0s
+
+running (0m03.7s), 008/500 VUs, 131651 complete and 0 interrupted iterations
+default   [   1% ] 008/500 VUs  0m03.7s/9m05.0s
+tor=ramping-vus scenario=default source=stacktrace
+time="2026-09-23T19:41:34+03:00" level=error msg="Error: [LOADTEST] Token yok. fixtures/tokens.json veya LOADTEST_ACCESS_TOKEN ayarla. Login flood yapma.\n\tat vuToken (file:///C:/Users/ilkse/muta/load-tests/lib/auth.js:80:11(15))\n\tat runMixedIteration (file:///C:/Users/ilkse/muta/load-tests/lib/actions.js:11:24(3))\n\tat default (file:///C:/Users/ilkse/muta/load-tests/scenarios/14_tail_latency_diagnostic.js:32:20(3))\n" executor=ramping-vus scenario=default source=stacktrace
+time="2026-09-23T19:41:34+03:00" level=error msg="Error: [LOADTEST] Token yok. fixtures/tokens.json veya LOADTEST_ACCESS_TOKEN ayarla. Login flood yapma.\n\tat vuToken (file:///C:/Users/ilkse/muta/load-tests/lib/auth.js:80:11(15))\n\tat runMixedIteration (file:///C:/Users/ilkse/muta/load-tests/lib/actions.js:11:24(3))\n\tat default (file:///C:/Users/ilkse/muta/load-tests/scenarios/14_tail_latency_diagnostic.js:32:20(3))\n" executor=ramping-vus scenario=default source=stacktrace
+time="2026-09-23T19:41:34+03:00" level=error msg="Error: [LOADTEST] Token yok. fixtures/tokens.json veya LOADTEST_ACCESS_TOKEN ayarla. Login flood yapma.\n\tat vuToken (file:///C:/Users/ilkse/muta/load-tests/lib/auth.js:80:11(15))\n\tat runMixedIteration (file:///C:/Users/ilkse/muta/load-tests/lib/actions.js:11:24(3))\n\tat default (file:///C:/Users/ilkse/muta/load-tests/scenarios/14_tail_latency_diagnostic.js:32:20(3))\n" executor=ramping-vus scenario=default source=stacktrace
+{
+  "total": 0,
+  "slow20": 0,
+  "slow_pct": 0,
+  "first_slow": null,
+  "first_vu": null,
+  "correlated_windows": 0,
+  "buckets": {
+    "<100ms": {
+      "count": 0,
+      "pct": 0
+    },
+    "100-250ms": {
+      "count": 0,
+      "pct": 0
+    },
+    "250-500ms": {
+      "count": 0,
+      "pct": 0
+    },
+    "500ms-1s": {
+      "count": 0,
+      "pct": 0
+    },
+    "1-2s": {
+      "count": 0,
+      "pct": 0
+    },
+    "2-5s": {
+      "count": 0,
+      "pct": 0
+    },
+    "5-10s": {
+      "count": 0,
+      "pct": 0
+    },
+    "10-20s": {
+      "count": 0,
+      "pct": 0
+    },
+    "20-30s": {
+      "count": 0,
+      "pct": 0
+    },
+    ">30s": {
+      "count": 0,
+      "pct": 0
+    }
+  },
+  "out": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-rca-analysis.json"
+}
+
+{
+  "started_at": "2026-09-23T16:41:29.485Z",
+  "ended_at": "2026-09-23T16:41:34.875Z",
+  "exit_code": null,
+  "summary_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-41-22-279Z.summary.json",
+  "jsonl_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-41-22-279Z.json",
+  "generator_csv": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-41-22-279Z.generator.csv",
+  "analysis_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-rca-analysis.json",
+  "host": {
+    "cpus": 16,
+    "totalmem_mb": 15707,
+    "platform": "win32"
+  }
+}

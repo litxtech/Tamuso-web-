@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   I18nManager,
   Image,
@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { yuzenTabBarToplamYukseklik } from '../../../components/YuzenTabBosluk';
-import { kullaniciTemaKodunuAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 import { useAuth } from '../../../contexts/AuthContext';
 import {
@@ -137,7 +137,7 @@ export function AnaSayfaCekmeceMenu({
   const acikSv = useSharedValue(0);
   const surukleBaslangic = useSharedValue(0);
   const jesttenGeliyor = useRef(false);
-  const acikTema = kullaniciTemaKodunuAl() === 'acik';
+  const acikTema = temaAcikMi(kullaniciTemaKodunuAl());
   const ustGradient = RenkTokenlari.gradientNight;
   const ustAccent = acikTema
     ? (['rgba(214,46,130,0.14)', 'rgba(91,47,212,0.06)', 'transparent'] as const)
@@ -322,6 +322,21 @@ export function AnaSayfaCekmeceMenu({
     acikSv.value = 0;
   }, [acik, acikSv]);
 
+  /**
+   * Kapalıyken BlurView’i ağaçta tutma.
+   * iOS blur, üst opacity 0 olsa da koyu bir dikdörtgen bırakabiliyor.
+   * Kapanış animasyonu bitince sökülür.
+   */
+  const [perdeTakili, setPerdeTakili] = useState(acik);
+  useEffect(() => {
+    if (acik) {
+      setPerdeTakili(true);
+      return;
+    }
+    const timer = setTimeout(() => setPerdeTakili(false), TIMING.duration);
+    return () => clearTimeout(timer);
+  }, [acik]);
+
   return (
     <View style={styles.kok}>
       <LinearGradient
@@ -397,7 +412,11 @@ export function AnaSayfaCekmeceMenu({
             }}
             onAjansPress={(ajans) => {
               kapat();
-              onOgeSec(`/ajans/profil/${ajans.id}`);
+              onOgeSec(
+                ajans.role === 'member'
+                  ? `/ajans/profil/${ajans.id}`
+                  : `/ajans/${ajans.id}`,
+              );
             }}
           />
 
@@ -469,27 +488,29 @@ export function AnaSayfaCekmeceMenu({
           </GestureDetector>
         ) : null}
 
-        <Animated.View
-          style={[styles.perde, perdeStyle]}
-          pointerEvents={acik ? 'auto' : 'none'}
-          collapsable={false}
-        >
-          <CamArkaplan
-            intensity={48}
-            hafif
-            style={StyleSheet.absoluteFill}
-            pointerEvents="none"
-            fallbackColor="rgba(8,6,14,0.42)"
-          />
-          <View style={styles.perdeTint} pointerEvents="none" />
-          <GestureDetector gesture={ekranKapatPan}>
-            <Pressable
+        {perdeTakili ? (
+          <Animated.View
+            style={[styles.perde, perdeStyle]}
+            pointerEvents={acik ? 'auto' : 'none'}
+            collapsable={false}
+          >
+            <CamArkaplan
+              intensity={48}
+              hafif
               style={StyleSheet.absoluteFill}
-              onPress={kapat}
-              accessibilityLabel={t('anaSayfa.menuKapat')}
+              pointerEvents="none"
+              fallbackColor="rgba(8,6,14,0.42)"
             />
-          </GestureDetector>
-        </Animated.View>
+            <View style={styles.perdeTint} pointerEvents="none" />
+            <GestureDetector gesture={ekranKapatPan}>
+              <Pressable
+                style={StyleSheet.absoluteFill}
+                onPress={kapat}
+                accessibilityLabel={t('anaSayfa.menuKapat')}
+              />
+            </GestureDetector>
+          </Animated.View>
+        ) : null}
       </Animated.View>
     </View>
   );

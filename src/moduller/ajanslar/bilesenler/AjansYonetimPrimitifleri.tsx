@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -19,7 +20,9 @@ import {
 import { premiumCtaGradient } from '../../../tasarim-sistemi/premium/PremiumAmbient';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { useCeviri } from '../../../i18n/useCeviri';
 
+/** Şeffaf cam kart — Ajansım modern yüzey */
 export function AjansKart({
   children,
   accent,
@@ -29,7 +32,13 @@ export function AjansKart({
 }) {
   return (
     <View style={[styles.kart, accent && styles.kartAccent]}>
-      {children}
+      <CamArkaplan
+        intensity={36}
+        hafif
+        style={StyleSheet.absoluteFill}
+        fallbackColor={RenkTokenlari.bgGlass}
+      />
+      <View style={styles.kartIc}>{children}</View>
     </View>
   );
 }
@@ -209,6 +218,7 @@ export function AjansHeroKapak({
   onAction?: () => void;
   children?: React.ReactNode;
 }) {
+  const { t } = useCeviri();
   const banner = bannerUrl ? MedyaUriGuvenli(bannerUrl) : null;
   const logo = logoUrl ? MedyaUriGuvenli(logoUrl) : null;
 
@@ -252,7 +262,7 @@ export function AjansHeroKapak({
                 {verified ? (
                   <View style={[styles.badge, styles.badgeOk]}>
                     <DogrulanmisTik size={12} />
-                    <Text style={styles.badgeYazi}>Doğrulandı</Text>
+                    <Text style={styles.badgeYazi}>{t('ajans.dogrulandi')}</Text>
                   </View>
                 ) : null}
               </View>
@@ -273,26 +283,29 @@ export function AjansHeroKapak({
 
 const styles = StyleSheet.create({
   kart: {
-    backgroundColor: RenkTokenlari.bgCard,
     borderRadius: YaricapTokenlari.lg,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: RenkTokenlari.border,
-    padding: BoslukTokenlari.md,
-    gap: 8,
     overflow: 'hidden',
   },
   kartAccent: {
     borderColor: RenkTokenlari.borderAccent,
+  },
+  kartIc: {
+    padding: BoslukTokenlari.md,
+    gap: 8,
   },
   bolum: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
     fontWeight: '700',
     marginTop: 4,
+    letterSpacing: -0.2,
   },
   hint: {
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.textDim,
+    lineHeight: 18,
   },
   bos: {
     alignItems: 'center',
@@ -305,41 +318,43 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: RenkTokenlari.border,
     borderRadius: YaricapTokenlari.md,
     paddingHorizontal: 12,
     paddingVertical: 11,
     color: RenkTokenlari.text,
-    backgroundColor: RenkTokenlari.surface,
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
   cta: {
     borderRadius: YaricapTokenlari.md,
     paddingVertical: 13,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaGhost: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: RenkTokenlari.border,
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
   ctaYazi: {
     ...TipografiTokenlari.body,
-    color: RenkTokenlari.textOnPrimary,
+    color: '#fff',
     fontWeight: '700',
   },
-  ctaGhostYazi: { color: RenkTokenlari.text },
+  ctaGhostYazi: {
+    color: RenkTokenlari.primarySoft,
+  },
   kpi: {
     flexGrow: 1,
-    flexBasis: '22%',
-    maxWidth: '48%',
-    backgroundColor: RenkTokenlari.surface,
+    flexBasis: '30%',
+    minWidth: 96,
     borderRadius: YaricapTokenlari.md,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.border,
     paddingVertical: 12,
-    paddingHorizontal: 8,
-    alignItems: 'center',
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: RenkTokenlari.border,
     gap: 4,
   },
   kpiEmph: {
@@ -347,15 +362,17 @@ const styles = StyleSheet.create({
     backgroundColor: RenkTokenlari.pressFill,
   },
   kpiDeger: {
-    ...TipografiTokenlari.h2,
+    ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
     fontWeight: '800',
+    fontSize: 16,
   },
-  kpiDegerEmph: { color: RenkTokenlari.primarySoft },
+  kpiDegerEmph: {
+    color: RenkTokenlari.primarySoft,
+  },
   kpiLabel: {
     ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textDim,
-    textAlign: 'center',
+    color: RenkTokenlari.textMuted,
   },
   nokta: {
     width: 7,
@@ -366,9 +383,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: RenkTokenlari.divider,
+    paddingVertical: 8,
   },
   satirBaslikSatir: {
     flexDirection: 'row',
@@ -386,29 +401,28 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.textDim,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: RenkTokenlari.surface,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
   },
   avatarBos: {
+    backgroundColor: RenkTokenlari.pressFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroWrap: {
-    marginHorizontal: -BoslukTokenlari.lg,
-    marginTop: -4,
+    borderRadius: YaricapTokenlari.xl,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: RenkTokenlari.border,
   },
   hero: {
     minHeight: 168,
-    overflow: 'hidden',
     justifyContent: 'flex-end',
   },
   heroIcerik: {
-    paddingHorizontal: BoslukTokenlari.lg,
-    paddingBottom: BoslukTokenlari.lg,
-    paddingTop: BoslukTokenlari.xl,
-    gap: BoslukTokenlari.sm,
+    padding: BoslukTokenlari.md,
+    gap: 10,
   },
   heroSatir: {
     flexDirection: 'row',
@@ -418,33 +432,29 @@ const styles = StyleSheet.create({
   logo: {
     width: 56,
     height: 56,
-    borderRadius: 16,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.2)',
   },
   logoBos: {
-    backgroundColor: RenkTokenlari.surface,
+    backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroAd: {
-    ...TipografiTokenlari.h1,
-    color: RenkTokenlari.textOnOverlay,
+    ...TipografiTokenlari.h2,
+    color: '#fff',
     fontWeight: '800',
+    fontSize: 20,
   },
   heroAlt: {
     ...TipografiTokenlari.caption,
-    color: 'rgba(247,242,248,0.72)',
-  },
-  heroMeta: {
-    ...TipografiTokenlari.caption,
-    color: 'rgba(247,242,248,0.6)',
+    color: 'rgba(255,255,255,0.72)',
   },
   badgeSatir: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginTop: 2,
   },
   badge: {
     flexDirection: 'row',
@@ -452,31 +462,35 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: YaricapTokenlari.pill,
-    backgroundColor: RenkTokenlari.chipFill,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   badgeOk: {
-    borderWidth: 1,
-    borderColor: 'rgba(61,207,176,0.35)',
+    backgroundColor: 'rgba(80,200,140,0.22)',
   },
   badgeYazi: {
     ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textOnOverlay,
+    color: '#fff',
     fontWeight: '700',
+  },
+  heroMeta: {
+    ...TipografiTokenlari.caption,
+    color: 'rgba(255,255,255,0.7)',
   },
   heroBtn: {
     alignSelf: 'flex-start',
-    marginTop: 4,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: YaricapTokenlari.pill,
+    borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.14)',
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.22)',
   },
   heroBtnYazi: {
     ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textOnOverlay,
+    color: '#fff',
     fontWeight: '700',
   },
 });

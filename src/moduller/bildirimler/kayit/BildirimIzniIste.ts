@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { Alert, Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -14,7 +15,7 @@ export async function AndroidBildirimKanallariniKur(): Promise<void> {
   if (Platform.OS !== 'android') return;
 
   await Notifications.setNotificationChannelAsync(ANDROID_BILDIRIM_KANALI, {
-    name: 'Genel',
+    name: i18n.t('bildirimler.kanalGenel'),
     importance: Notifications.AndroidImportance.DEFAULT,
     vibrationPattern: [0, 200, 120, 200],
     lightColor: '#E84091',
@@ -23,7 +24,7 @@ export async function AndroidBildirimKanallariniKur(): Promise<void> {
   });
 
   await Notifications.setNotificationChannelAsync(ANDROID_MESAJ_BILDIRIM_KANALI, {
-    name: 'Mesajlar',
+    name: i18n.t('bildirimler.kanalMesajlar'),
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 180, 100, 180, 100, 180],
     lightColor: '#E84091',
@@ -116,13 +117,13 @@ export async function MesajPushIzniGerekirseIste(): Promise<{
 
   return await new Promise((resolve) => {
     Alert.alert(
-      'Mesaj bildirimleri',
+      i18n.t('bildirimler.mesajBaslik'),
       Platform.OS === 'ios'
-        ? 'Yeni mesaj geldiğinde anında haberdar olmak için bildirimlere izin ver.'
-        : 'Yeni mesaj geldiğinde bildirim almak için izin ver.',
+        ? i18n.t('bildirimler.mesajBodyIos')
+        : i18n.t('bildirimler.mesajBodyAndroid'),
       [
         {
-          text: 'Şimdi değil',
+          text: i18n.t('bildirimler.simdiDegil'),
           style: 'cancel',
           onPress: () => {
             void AsyncStorage.setItem(MESAJ_IZIN_SORULDU_KEY, '1');
@@ -130,7 +131,7 @@ export async function MesajPushIzniGerekirseIste(): Promise<{
           },
         },
         {
-          text: 'İzin ver',
+          text: i18n.t('bildirimler.izinVer'),
           onPress: () => {
             void (async () => {
               const granted = await BildirimIzniIste();

@@ -99,6 +99,59 @@
 --    Apple App ID: com.litxtech.muta
 --      Sign in with Apple = ON, Push Notifications = ON
 
+-- 7b) Authentication → Providers → Spotify
+--    Enable Spotify: ON
+--    Client ID / Secret: https://developer.spotify.com/dashboard
+--    Spotify Redirect URI (Spotify Dashboard'da):
+--      https://vdkqrqtrftzhbtquzked.supabase.co/auth/v1/callback
+--    Supabase Redirect URLs (URL Configuration):
+--      muta://auth/callback
+--    ÖNEMLİ — Spotify Web API:
+--      Developer uygulamasının sahibi Spotify hesabında AKTİF Premium gerekir.
+--      Aksi halde auth log: "403: Active premium subscription required for the owner of the app"
+--      → Supabase: "500: Error getting user profile from external provider"
+--      Premium açıldıktan sonra Spotify birkaç saat gecikebilir.
+--    Development mode: giriş yapacak kullanıcılar Spotify Dashboard →
+--      User Management allowlist'e eklenmeli (Extended Quota Mode onaylanana kadar).
+
+-- 7c) Authentication → Providers → Twitch
+--    Enable Twitch: ON
+--    Client ID / Secret: https://dev.twitch.tv/console/apps
+--    Twitch OAuth Redirect URL (Twitch Console'da):
+--      https://vdkqrqtrftzhbtquzked.supabase.co/auth/v1/callback
+--    Scopes (Twitch + kod): user:read:email openid
+--    Supabase Redirect URLs (URL Configuration):
+--      muta://auth/callback
+--    Uygulama flag: TWITCH_GIRIS_AKTIF = true
+--      (src/moduller/kimlik-dogrulama/giris/TwitchGirisAktif.ts)
+
+-- 7d) Authentication → Providers → X / Twitter (OAuth 2.0)
+--    Enable X / Twitter (OAuth 2.0): ON  (eski Twitter OAuth 1.0a kullanma)
+--    Client ID / Secret: https://developer.x.com/en/portal/dashboard
+--    X Callback URL (Developer Portal → User authentication):
+--      https://vdkqrqtrftzhbtquzked.supabase.co/auth/v1/callback
+--    Request email from users: ON
+--    Scopes (kod): users.read users.email offline.access tweet.read
+--    Supabase Redirect URLs (URL Configuration):
+--      muta://auth/callback
+--    Uygulama: provider 'x' (signInWithOAuth), flag X_GIRIS_AKTIF = true
+--      (src/moduller/kimlik-dogrulama/giris/XGirisAktif.ts)
+
+-- 7e) Authentication → Providers → Google
+--    Enable Google: ON
+--    Client ID / Secret: Google Cloud → Web application OAuth client
+--      https://console.cloud.google.com/auth/clients
+--    Authorized redirect URI (Google Cloud Web client):
+--      https://vdkqrqtrftzhbtquzked.supabase.co/auth/v1/callback
+--    Data Access scopes: openid, userinfo.email, userinfo.profile
+--    Supabase Redirect URLs (URL Configuration):
+--      muta://auth/callback
+--    Uygulama: provider 'google' (PKCE + expo-web-browser), iOS + Android
+--      flag GOOGLE_GIRIS_AKTIF = true
+--      (src/moduller/kimlik-dogrulama/giris/GoogleGirisAktif.ts)
+--    Not: Native Google Sign-In (ID token) ayrıca iOS/Android Client ID ister;
+--      bu sürüm tarayıcı OAuth kullanır — Web Client yeterli.
+
 -- 8) iOS Push (Expo Push + Apple Developer bu hesap)
 --    Device UDID: 00008150-001669683488401C
 --    App ID com.litxtech.muta → Push Notifications ON

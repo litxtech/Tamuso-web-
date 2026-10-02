@@ -13,9 +13,11 @@ import {
   DurumMedyaHttpsMi,
   DurumMuzikPayloadAl,
   DurumOyunKazanciPayloadAl,
+  DurumSesPayloadAl,
   type DurumOggesi,
 } from '../../islemler/DurumIslemleri';
 import { DurumMuzikKarti } from '../../bilesenler/DurumMuzikKarti';
+import { DurumSesKarti } from '../../bilesenler/DurumSesKarti';
 import { DurumOyunKazanciKart } from '../../bilesenler/DurumOyunKazanciKart';
 import { DurumVideoOnizleme } from '../../bilesenler/DurumVideoOnizleme';
 import { RenkTokenlari } from '../../../../tasarim-sistemi/RenkTokenlari';
@@ -26,6 +28,8 @@ import {
   type PaylasilanDurumOnizleme,
 } from '../tipler';
 import { useCeviri } from '../../../../i18n/useCeviri';
+import { MesajBaglantiliMetin } from '../../../mesajlasma/bilesenler/MesajBaglantiliMetin';
+import { BaglantiOnizlemeBlok } from '../../../baglanti/bilesenler/BaglantiOnizlemeBlok';
 
 type Props = {
   onizleme: PaylasilanDurumOnizleme | null | undefined;
@@ -86,17 +90,20 @@ function PaylasilanGonderiKartiIc({
   const mediaUrl = onizleme.media_url ?? '';
   const https = DurumMedyaHttpsMi(mediaUrl);
   const isVideo = onizleme.media_type === 'video' && https;
+  const isAudio = onizleme.media_type === 'audio';
   const isImage =
     https &&
     onizleme.media_type !== 'video' &&
     onizleme.media_type !== 'text' &&
+    onizleme.media_type !== 'audio' &&
     onizleme.post_kind !== 'game_win' &&
     onizleme.post_kind !== 'music';
   const isText =
-    onizleme.media_type === 'text' ||
-    (!https &&
-      onizleme.post_kind !== 'game_win' &&
-      onizleme.post_kind !== 'music');
+    !isAudio &&
+    (onizleme.media_type === 'text' ||
+      (!https &&
+        onizleme.post_kind !== 'game_win' &&
+        onizleme.post_kind !== 'music'));
 
   const fakeOge = {
     post_kind: onizleme.post_kind ?? 'media',
@@ -104,12 +111,12 @@ function PaylasilanGonderiKartiIc({
   } as DurumOggesi;
   const kazanc = DurumOyunKazanciPayloadAl(fakeOge);
   const muzik = DurumMuzikPayloadAl(fakeOge);
+  const ses = DurumSesPayloadAl({
+    media_type: onizleme.media_type === 'audio' ? 'audio' : 'text',
+    payload: onizleme.payload ?? {},
+  });
 
   const cap = metinKisa(onizleme.caption);
-  const captionGoster =
-    genis && onizleme.caption
-      ? onizleme.caption.trim()
-      : cap.text;
 
   const profilGit = () => {
     if (!onizleme.user_id) return;
@@ -175,6 +182,14 @@ function PaylasilanGonderiKartiIc({
           <View style={styles.medyaWrap}>
             <DurumMuzikKarti payload={muzik} />
           </View>
+        ) : isAudio ? (
+          <View style={styles.medyaWrap}>
+            <DurumSesKarti
+              oynaticiId={`paylas-ses:${onizleme.status_id}`}
+              uri={mediaUrl}
+              durationMs={ses?.duration_ms}
+            />
+          </View>
         ) : isVideo ? (
           <View style={styles.video}>
             <DurumVideoOnizleme
@@ -195,17 +210,25 @@ function PaylasilanGonderiKartiIc({
           />
         ) : isText ? (
           <View style={styles.metinKutu}>
-            <Text style={styles.metinPreview} numberOfLines={genis ? 12 : 4}>
-              {(onizleme.caption ?? '').trim() || t('durumX.metinGonderisi')}
-            </Text>
+            <MesajBaglantiliMetin
+              text={
+                (onizleme.caption ?? '').trim() || t('durumX.metinGonderisi')
+              }
+              style={styles.metinPreview}
+              numberOfLines={genis ? 12 : 4}
+            />
+            <BaglantiOnizlemeBlok metin={onizleme.caption} />
           </View>
         ) : null}
 
-        {!isText && captionGoster ? (
+        {!isText && (onizleme.caption ?? '').trim() ? (
           <View style={styles.captionWrap}>
-            <Text style={styles.caption} numberOfLines={genis ? 8 : 3}>
-              {captionGoster}
-            </Text>
+            <MesajBaglantiliMetin
+              text={(onizleme.caption ?? '').trim()}
+              style={styles.caption}
+              numberOfLines={genis ? 8 : 3}
+            />
+            <BaglantiOnizlemeBlok metin={onizleme.caption} />
             {cap.truncated && !genis ? (
               <Pressable
                 onPress={(e) => {

@@ -15,14 +15,17 @@ import {
   DurumMetinGonderisiMi,
   DurumMuzikPayloadAl,
   DurumOyunKazanciPayloadAl,
+  DurumSesPayloadAl,
 } from '../islemler/DurumIslemleri';
 import { DurumZamanMetni } from '../islemler/DurumZaman';
 import { DurumMuzikKarti } from './DurumMuzikKarti';
+import { DurumSesKarti } from './DurumSesKarti';
 import { DurumOyunKazanciKart } from './DurumOyunKazanciKart';
 import { DurumVideoOnizleme } from './DurumVideoOnizleme';
 import { DurumCaptionAcilir } from './DurumCaptionAcilir';
 import { DurumEtkilesimCubugu } from './DurumEtkilesimCubugu';
-import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { UserIdentityRow } from '../../unvanlar/bilesenler/UserIdentityRow';
+import { useUnvanKatalog } from '../../unvanlar/kancalar/useUnvanKatalog';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
@@ -53,20 +56,39 @@ const DurumFotograf = memo(function DurumFotograf({ uri }: { uri: string }) {
   const { height: ekranH } = useWindowDimensions();
   const maxH = Math.round(ekranH * MEDYA_MAX_H_ORAN);
   const [ar, setAr] = useState(MEDYA_FALLBACK_AR);
+  const [wrapW, setWrapW] = useState(0);
+
+  /**
+   * width:% + aspectRatio + maxHeight aynı Image’da olunca RN yüksekliği
+   * kısıtlarken genişliği de düşürür → kenarda bgElevated (siyah) şerit.
+   * Çözüm: wrap her zaman full-width; yüksekliği ölçülen genişlikten hesapla;
+   * Image absoluteFill + cover (portrait’te üst/alt kırpılır, yan şerit yok).
+   */
+  const boxH =
+    wrapW > 0
+      ? Math.min(Math.round(wrapW / Math.max(ar, 0.05)), maxH)
+      : undefined;
 
   return (
-    <View style={[styles.medyaWrap, { maxHeight: maxH }]}>
+    <View
+      style={[
+        styles.medyaWrap,
+        boxH != null ? { height: boxH } : { aspectRatio: MEDYA_FALLBACK_AR },
+      ]}
+      onLayout={(e) => {
+        const w = e.nativeEvent.layout.width;
+        if (w > 0 && Math.abs(w - wrapW) > 0.5) setWrapW(w);
+      }}
+    >
       <Image
         source={{ uri }}
-        style={[styles.medyaImg, { aspectRatio: ar, maxHeight: maxH }]}
+        style={styles.medyaImg}
         resizeMode="cover"
         onLoad={(e) => {
           const w = e.nativeEvent?.source?.width;
           const h = e.nativeEvent?.source?.height;
           if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
-            const next = w / h;
-            // Çok uzun portrait → maxH clamp (aspect korunur, üst/alt crop cover ile)
-            setAr(next);
+            setAr(w / h);
           }
         }}
         onError={() => {
@@ -90,15 +112,19 @@ function DurumKartIc({
   onPaylas,
 }: Props) {
   const { t } = useCeviri();
+  useUnvanKatalog();
   const handle = oge.username ? `@${oge.username}` : null;
   const kazanc = DurumOyunKazanciPayloadAl(oge);
   const muzik = DurumMuzikPayloadAl(oge);
+  const ses = DurumSesPayloadAl(oge);
   const metinGonderisi = DurumMetinGonderisiMi(oge);
   const resimBuyutulebilir =
     !kazanc &&
     !muzik &&
+    !ses &&
     !metinGonderisi &&
     oge.media_type !== 'video' &&
+    oge.media_type !== 'audio' &&
     DurumMedyaHttpsMi(oge.media_url) &&
     typeof onResimPress === 'function';
   const videoUri = DurumMedyaHttpsMi(oge.media_url)
@@ -140,10 +166,13 @@ function DurumKartIc({
             accessibilityRole="button"
             accessibilityLabel={t('durumX.profiliAc')}
           >
-            <Text style={styles.isim} numberOfLines={1}>
-              {oge.display_name}
-            </Text>
-            <DogrulanmisTik dogrulandi={oge.is_verified} size={14} />
+            <UserIdentityRow
+              displayName={oge.display_name}
+              verified={!!oge.is_verified}
+              titleId={oge.selected_title_id}
+              size="COMPACT"
+              nameStyle={styles.isim}
+            />
             {handle ? (
               <Text style={styles.handle} numberOfLines={1}>
                 {handle}
@@ -177,7 +206,16 @@ function DurumKartIc({
         ) : null}
 
         {!metinGonderisi ? (
-          muzik ? (
+          ses ? (
+            <View style={[styles.medyaHit, styles.medyaHitKart]}>
+              <DurumSesKarti
+                oynaticiId={`durum-ses:${oge.id}`}
+                uri={oge.media_url}
+                durationMs={ses.duration_ms}
+                aktif={videoAktif}
+              />
+            </View>
+          ) : muzik ? (
             <View style={[styles.medyaHit, styles.medyaHitKart]}>
               <DurumMuzikKarti payload={muzik} aktif={videoAktif} />
             </View>
@@ -321,10 +359,14 @@ const styles = StyleSheet.create({
   medyaWrap: {
     width: '100%',
     overflow: 'hidden',
+    backgroundColor: RenkTokenlari.bgElevated,
   },
   medyaImg: {
-    width: '100%',
-    backgroundColor: RenkTokenlari.bgElevated,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   medyaVideo: {
     width: '100%',
@@ -335,7 +377,11 @@ const styles = StyleSheet.create({
     backgroundColor: RenkTokenlari.bgElevated,
   },
   videoPlaceholder: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

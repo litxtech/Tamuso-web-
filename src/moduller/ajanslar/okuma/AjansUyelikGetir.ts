@@ -1,6 +1,6 @@
 import { supabase } from '../../../lib/supabase';
 
-export type AjansUyelikRol = 'owner' | 'member' | 'pending' | 'none';
+export type AjansUyelikRol = 'owner' | 'manager' | 'member' | 'pending' | 'none';
 
 export type AjansUyelikAjans = {
   id: string;
@@ -33,7 +33,13 @@ function normalize(raw: unknown): AjansUyelik {
   if (!raw || typeof raw !== 'object') return BOS;
   const d = raw as Record<string, unknown>;
   const role = d.role;
-  if (role !== 'owner' && role !== 'member' && role !== 'pending' && role !== 'none') {
+  if (
+    role !== 'owner' &&
+    role !== 'manager' &&
+    role !== 'member' &&
+    role !== 'pending' &&
+    role !== 'none'
+  ) {
     return BOS;
   }
   const agency = ajansNormalize(d.agency);
@@ -79,23 +85,6 @@ async function AjansUyelikYedekGetir(userId?: string): Promise<AjansUyelik> {
   if (!uid) return BOS;
   const kendim = uid === oturum;
 
-  const { data: hp } = await supabase
-    .from('host_profiles')
-    .select('agency_id, status')
-    .eq('user_id', uid)
-    .maybeSingle();
-  if (hp?.agency_id && hp.status === 'agency') {
-    const agency = await ajansOzet(hp.agency_id);
-    if (agency) {
-      return {
-        role: 'member',
-        agency,
-        application_id: null,
-        application_status: null,
-      };
-    }
-  }
-
   const { data: sahip } = await supabase
     .from('agencies')
     .select(AJANS_ALAN)
@@ -112,6 +101,42 @@ async function AjansUyelikYedekGetir(userId?: string): Promise<AjansUyelik> {
       application_id: null,
       application_status: null,
     };
+  }
+
+  const { data: yonetici } = await supabase
+    .from('agency_staff_roles')
+    .select('agency_id')
+    .eq('user_id', uid)
+    .eq('role_code', 'MANAGER')
+    .limit(1)
+    .maybeSingle();
+  if (yonetici?.agency_id) {
+    const agency = await ajansOzet(yonetici.agency_id);
+    if (agency) {
+      return {
+        role: 'manager',
+        agency,
+        application_id: null,
+        application_status: null,
+      };
+    }
+  }
+
+  const { data: hp } = await supabase
+    .from('host_profiles')
+    .select('agency_id, status')
+    .eq('user_id', uid)
+    .maybeSingle();
+  if (hp?.agency_id && hp.status === 'agency') {
+    const agency = await ajansOzet(hp.agency_id);
+    if (agency) {
+      return {
+        role: 'member',
+        agency,
+        application_id: null,
+        application_status: null,
+      };
+    }
   }
 
   if (kendim) {

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -32,19 +33,33 @@ import {
 } from '../../src/moduller/kullanici-profili/islemler/BankaHesabi';
 import { ProfilMedyasiSil } from '../../src/moduller/kullanici-profili/islemler/ProfilMedyasiSil';
 import {
-  ProfilMedyasiYukle,
+  ProfilMedyasiSec,
+  ProfilMedyasiUriIleYukle,
   type ProfilMedyaTuru,
 } from '../../src/moduller/kullanici-profili/islemler/ProfilMedyasiYukle';
-import { ImagePickerOnIsit } from '../../src/ortak/medya/ImagePickerHazirMi';
-import { MedyaUriGuvenli } from '../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import {
+  ImagePickerModuluYukle,
+  ImagePickerOnIsit,
+} from '../../src/ortak/medya/ImagePickerHazirMi';
+import {
+  MedyaUriGuvenli,
+  MedyaUriOnizlemeGuvenli,
+} from '../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import {
   BolgeleriUlkeyeGore,
   ProfilKonumKatalogunuGetir,
   type ProfilBolge,
-  type ProfilUlke,
 } from '../../src/moduller/kullanici-profili/okuma/ProfilKonumKatalogu';
 import type { Gender } from '../../src/types/models';
 import { UlkeKodunaNormalizeEt } from '../../src/ortak/ulke/UlkeKodunaNormalizeEt';
+import {
+  ulkeBayragi,
+  ulkeGorunenAd,
+} from '../../src/moduller/kisiler-kesif/utils/KisilerYardimcilar';
+import {
+  ulkeLigiKatalogBirlestir,
+  type UlkeListeOgesi,
+} from '../../src/moduller/ulke-ligi/utils/UlkeListesi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
@@ -92,12 +107,17 @@ function adSoyadAyir(displayName: string | null | undefined): {
 
 /** Profil: medya, kimlik, iletişim, şifre, banka/IBAN */
 export default function ProfilDuzenleEkrani() {
-  const { t } = useCeviri();
-  const { profile, user, isGuest, refreshProfile, refreshWallet, updatePassword } =
+  const { t, i18n } = useCeviri();
+  const { profile, user, isGuest, refreshProfile, refreshWallet, updatePassword, patchProfile } =
     useAuth();
   const scrollRef = useRef<KlavyeScrollHandle>(null);
   const [upgradeAcik, setUpgradeAcik] = useState(false);
   const [medyaBusy, setMedyaBusy] = useState<ProfilMedyaTuru | null>(null);
+  /** Yükleme sırasında yerel önizleme (file://) — https gelene kadar */
+  const [medyaOnizleme, setMedyaOnizleme] = useState<{
+    avatar?: string;
+    cover?: string;
+  }>({});
   const [buyut, setBuyut] = useState<{ uri: string; tur: ProfilMedyaTuru } | null>(
     null,
   );
@@ -116,7 +136,9 @@ export default function ProfilDuzenleEkrani() {
   const [dogumGun, setDogumGun] = useState('');
   const [countryCode, setCountryCode] = useState('TR');
   const [regionId, setRegionId] = useState<string>('');
-  const [ulkeler, setUlkeler] = useState<ProfilUlke[]>([]);
+  const [ulkeler, setUlkeler] = useState<UlkeListeOgesi[]>(() =>
+    ulkeLigiKatalogBirlestir([]),
+  );
   const [bolgeler, setBolgeler] = useState<ProfilBolge[]>([]);
   const [profilBusy, setProfilBusy] = useState(false);
 
@@ -176,19 +198,17 @@ export default function ProfilDuzenleEkrani() {
     void ProfilKonumKatalogunuGetir()
       .then((k) => {
         if (iptal) return;
-        setUlkeler(k.countries);
+        // Sunucu + tam ISO — yerelleştirilmiş adlar UI'da ulkeGorunenAd ile
+        setUlkeler(ulkeLigiKatalogBirlestir(k.countries));
         setBolgeler(k.regions);
-        if (k.countries.length === 1) {
-          setCountryCode((prev) => prev || k.countries[0].code);
-        }
       })
       .catch(() => {
-        /* migration once */
+        if (!iptal) setUlkeler(ulkeLigiKatalogBirlestir([]));
       });
     return () => {
       iptal = true;
     };
-  }, []);
+  }, [i18n.language]);
 
   useFocusEffect(
     useCallback(() => {
@@ -237,17 +257,24 @@ export default function ProfilDuzenleEkrani() {
     return true;
   };
 
-  const medyaUrl = (tur: ProfilMedyaTuru) =>
-    tur === 'cover' ? profile?.cover_url ?? null : profile?.avatar_url ?? null;
+  const medyaUrl = (tur: ProfilMedyaTuru) => {
+    const lokal = tur === 'cover' ? medyaOnizleme.cover : medyaOnizleme.avatar;
+    if (lokal) return lokal;
+    return tur === 'cover'
+      ? profile?.cover_url ?? null
+      : profile?.avatar_url ?? null;
+  };
 
   const medyaAc = (tur: ProfilMedyaTuru) => {
     if (misafirEngel()) return;
+    // Sheet açıkken modülü ısıt — Ekle’ye basınca import beklemesin
     ImagePickerOnIsit({ izinIste: false });
+    void ImagePickerModuluYukle();
     setMedyaMenuTur(tur);
   };
 
   const medyaTikla = (tur: ProfilMedyaTuru) => {
-    const url = medyaUrl(tur);
+    const url = MedyaUriOnizlemeGuvenli(medyaUrl(tur));
     if (url) {
       setBuyut({ uri: url, tur });
       return;
@@ -255,21 +282,45 @@ export default function ProfilDuzenleEkrani() {
     medyaAc(tur);
   };
 
+  /** Sheet zaten kapandıktan sonra çağrılır (Modal+picker yarışı yok). */
   const medyaSec = async (tur: ProfilMedyaTuru) => {
     if (misafirEngel()) return;
-    setMedyaBusy(tur);
-    // Galeriyi sheet kapanmasını beklemeden başlat (gesture + native açılış)
-    const sonucPromise = ProfilMedyasiYukle(tur);
-    setMedyaMenuTur(null);
-    const sonuc = await sonucPromise;
-    setMedyaBusy(null);
-    if (!sonuc.ok) {
-      if (sonuc.iptal) return;
-      Alert.alert(t('ortak.medya'), sonuc.hata);
+    // Önce galeri — busy/spinner picker’ı geciktirmesin
+    const secim = await ProfilMedyasiSec(tur);
+    if (!secim.ok) {
+      if (secim.iptal) return;
+      Alert.alert(t('ortak.medya'), secim.hata);
       return;
     }
-    dirtyRef.current = false;
-    await refreshProfile();
+    setMedyaOnizleme((prev) => ({ ...prev, [tur]: secim.medya.uri }));
+    setMedyaBusy(tur);
+    try {
+      const sonuc = await ProfilMedyasiUriIleYukle(
+        tur,
+        secim.medya.uri,
+        secim.medya.mimeType,
+      );
+      if (!sonuc.ok) {
+        setMedyaOnizleme((prev) => {
+          const next = { ...prev };
+          delete next[tur];
+          return next;
+        });
+        Alert.alert(t('ortak.medya'), sonuc.hata);
+        return;
+      }
+      dirtyRef.current = false;
+      if (tur === 'avatar') patchProfile({ avatar_url: sonuc.url });
+      else patchProfile({ cover_url: sonuc.url });
+      setMedyaOnizleme((prev) => {
+        const next = { ...prev };
+        delete next[tur];
+        return next;
+      });
+      await refreshProfile();
+    } finally {
+      setMedyaBusy(null);
+    }
   };
 
   const medyaSil = (tur: ProfilMedyaTuru) => {
@@ -283,16 +334,25 @@ export default function ProfilDuzenleEkrani() {
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            setMedyaMenuTur(null);
             setMedyaBusy(tur);
-            const sonuc = await ProfilMedyasiSil(tur);
-            setMedyaBusy(null);
-            if (!sonuc.ok) {
-              Alert.alert(t('ortak.medya'), sonuc.hata);
-              return;
+            try {
+              const sonuc = await ProfilMedyasiSil(tur);
+              if (!sonuc.ok) {
+                Alert.alert(t('ortak.medya'), sonuc.hata);
+                return;
+              }
+              dirtyRef.current = false;
+              if (tur === 'avatar') patchProfile({ avatar_url: null });
+              else patchProfile({ cover_url: null });
+              setMedyaOnizleme((prev) => {
+                const next = { ...prev };
+                delete next[tur];
+                return next;
+              });
+              await refreshProfile();
+            } finally {
+              setMedyaBusy(null);
             }
-            dirtyRef.current = false;
-            await refreshProfile();
           })();
         },
       },
@@ -313,7 +373,7 @@ export default function ProfilDuzenleEkrani() {
       Alert.alert(t('profil.dogumTarihi'), t('profilDuzenle.dogumBirlikteSec'));
       return;
     }
-    if (!regionId) {
+    if (ilListesi.length > 0 && !regionId) {
       Alert.alert(t('profilDuzenle.konum'), t('profilDuzenle.ilGerekli'));
       return;
     }
@@ -327,7 +387,7 @@ export default function ProfilDuzenleEkrani() {
         gender: gender || null,
         birth_date,
         country_code: UlkeKodunaNormalizeEt(countryCode) || 'TR',
-        region_id: regionId,
+        region_id: ilListesi.length > 0 ? regionId || null : null,
       });
       if (!sonuc.ok) {
         Alert.alert(t('profil.baslik'), sonuc.hata);
@@ -335,7 +395,14 @@ export default function ProfilDuzenleEkrani() {
       }
       dirtyRef.current = false;
       await refreshProfile();
-      Alert.alert(t('ortak.kaydedildi'), t('profilDuzenle.profilGuncellendi'));
+      if (sonuc.cooldown_message) {
+        Alert.alert(
+          t('profil.baslik'),
+          t('ulkeLigi.ulkeDegisimCooldown', { mesaj: sonuc.cooldown_message }),
+        );
+      } else {
+        Alert.alert(t('ortak.kaydedildi'), t('profilDuzenle.profilGuncellendi'));
+      }
     } catch (e) {
       Alert.alert(
         t('profil.baslik'),
@@ -352,7 +419,16 @@ export default function ProfilDuzenleEkrani() {
   const cinsiyetLabel = cinsiyetAnahtar ? t(cinsiyetAnahtar) : '';
   const dogumGunOpts = gunler(dogumYil || '2000', dogumAy || '01');
   const yilOpts = dogumYillar();
-  const ulkeTek = ulkeler.length <= 1;
+  const ulkeBayrakAd = countryCode
+    ? `${ulkeBayragi(countryCode)} ${
+        ulkeler.find((u) => u.code === countryCode)?.name ||
+        ulkeGorunenAd(countryCode)
+      }`.trim()
+    : '';
+  const ulkeSecenekleri = ulkeler.map((u) => ({
+    id: u.code,
+    label: `${ulkeBayragi(u.code)} ${u.name}`.trim(),
+  }));
 
   const emailKaydet = async () => {
     if (misafirEngel()) return;
@@ -410,10 +486,25 @@ export default function ProfilDuzenleEkrani() {
 
   const klavyeKaydir = useCallback(
     (e?: Parameters<typeof KlavyeFocusKaydir>[1]) => {
-      KlavyeFocusKaydir(scrollRef.current, e, { ustBosluk: 56, delayMs: 80 });
+      KlavyeFocusKaydir(scrollRef.current, e, { ustBosluk: 72, delayMs: 80 });
     },
     [],
   );
+
+  /** Formun en altı (banka) — ekstra boşluk + bir kez sona yaklaştır */
+  const bankaKlavyeKaydir = useCallback(
+    (e?: Parameters<typeof KlavyeFocusKaydir>[1]) => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+      KlavyeFocusKaydir(scrollRef.current, e, {
+        ustBosluk: 96,
+        delayMs: Platform.OS === 'ios' ? 90 : 140,
+      });
+    },
+    [],
+  );
+
+  const coverGoster = MedyaUriOnizlemeGuvenli(medyaUrl('cover'));
+  const avatarGoster = MedyaUriOnizlemeGuvenli(medyaUrl('avatar'));
 
   return (
     <Screen edges={['top']}>
@@ -427,7 +518,7 @@ export default function ProfilDuzenleEkrani() {
         style={styles.scrollFlex}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
-        ekstraPad={56}
+        ekstraPad={120}
       >
         <Text style={styles.section}>{t('profilDuzenle.fotograflar')}</Text>
         <View style={styles.coverWrap}>
@@ -438,16 +529,17 @@ export default function ProfilDuzenleEkrani() {
             disabled={medyaBusy !== null}
             accessibilityLabel={t('profil.kapakFotografi')}
           >
-            {MedyaUriGuvenli(profile?.cover_url) ? (
+            {coverGoster ? (
               <Image
-                source={{ uri: MedyaUriGuvenli(profile?.cover_url)! }}
+                key={coverGoster}
+                source={{ uri: coverGoster }}
                 style={styles.cover}
               />
             ) : (
               <LinearGradient colors={[...RenkTokenlari.gradientPlaceholder]} style={styles.cover} />
             )}
             <View style={styles.coverOverlay} pointerEvents="none">
-              {!MedyaUriGuvenli(profile?.cover_url) ? (
+              {!coverGoster ? (
                 <>
                   <Ionicons name="image-outline" size={18} color="#fff" />
                   <Text style={styles.coverHint}>
@@ -483,9 +575,10 @@ export default function ProfilDuzenleEkrani() {
               disabled={medyaBusy !== null}
               accessibilityLabel={t('profil.profilFotografi')}
             >
-              {MedyaUriGuvenli(profile?.avatar_url) ? (
+              {avatarGoster ? (
                 <Image
-                  source={{ uri: MedyaUriGuvenli(profile?.avatar_url)! }}
+                  key={avatarGoster}
+                  source={{ uri: avatarGoster }}
                   style={styles.avatar}
                 />
               ) : (
@@ -609,42 +702,35 @@ export default function ProfilDuzenleEkrani() {
         <Text style={styles.sectionSub}>
           {t('profilDuzenle.konumAlt')}
         </Text>
-        {!ulkeTek ? (
-          <ProfilSecimAlani
-            label={t('profil.ulke')}
-            valueLabel={
-              ulkeler.find((u) => u.code === countryCode)?.name ?? countryCode
-            }
-            options={ulkeler.map((u) => ({ id: u.code, label: u.name }))}
-            onSelect={(id) => {
-              dirtyRef.current = true;
-              setCountryCode(id);
-              setRegionId('');
-            }}
-          />
-        ) : (
-          <View style={styles.ulkeKilit}>
-            <Text style={styles.ulkeKilitLabel}>{t('profil.ulke')}</Text>
-            <Text style={styles.ulkeKilitDeger}>
-              {ulkeler[0]?.name ?? t('profilDuzenle.ulkeTurkiye')}
-            </Text>
-          </View>
-        )}
         <ProfilSecimAlani
-          label={t('profil.il')}
-          valueLabel={seciliIl ? `${seciliIl.code} · ${seciliIl.name}` : ''}
-          placeholder={t('profilDuzenle.ilPlaceholder')}
+          label={t('profil.ulke')}
+          valueLabel={ulkeBayrakAd || countryCode}
+          placeholder={t('auth.ulkeAra')}
           searchable
-          options={ilListesi.map((i) => ({
-            id: i.id,
-            label: i.name,
-            alt: t('profilDuzenle.plaka', { kod: i.code }),
-          }))}
+          options={ulkeSecenekleri}
           onSelect={(id) => {
             dirtyRef.current = true;
-            setRegionId(id);
+            setCountryCode(id);
+            setRegionId('');
           }}
         />
+        {ilListesi.length > 0 ? (
+          <ProfilSecimAlani
+            label={t('profil.il')}
+            valueLabel={seciliIl ? `${seciliIl.code} · ${seciliIl.name}` : ''}
+            placeholder={t('profilDuzenle.ilPlaceholder')}
+            searchable
+            options={ilListesi.map((i) => ({
+              id: i.id,
+              label: i.name,
+              alt: t('profilDuzenle.plaka', { kod: i.code }),
+            }))}
+            onSelect={(id) => {
+              dirtyRef.current = true;
+              setRegionId(id);
+            }}
+          />
+        ) : null}
 
         <TextField
           label={t('auth.telefon')}
@@ -717,14 +803,14 @@ export default function ProfilDuzenleEkrani() {
               value={hesapSahibi}
               onChangeText={setHesapSahibi}
               placeholder={t('profilDuzenle.hesapSahibiPlaceholder')}
-              onFocus={klavyeKaydir}
+              onFocus={bankaKlavyeKaydir}
             />
             <TextField
               label={t('profilDuzenle.bankaAdi')}
               value={bankaAdi}
               onChangeText={setBankaAdi}
               placeholder={t('profilDuzenle.bankaAdiPlaceholder')}
-              onFocus={klavyeKaydir}
+              onFocus={bankaKlavyeKaydir}
             />
             <TextField
               label="IBAN"
@@ -732,13 +818,15 @@ export default function ProfilDuzenleEkrani() {
               onChangeText={setIban}
               autoCapitalize="characters"
               placeholder="TR00 0000 0000 0000 0000 0000 00"
-              onFocus={klavyeKaydir}
+              onFocus={bankaKlavyeKaydir}
             />
             <GradientButton
               title={t('profilDuzenle.bankaKaydet')}
               onPress={() => void bankaKaydet()}
               loading={bankaBusy}
             />
+            {/* Klavye açıkken son alanların kaydırılacağı boşluk */}
+            <View style={styles.bankaAltBosluk} />
           </>
         )}
       </KlavyeScrollView>
@@ -764,18 +852,15 @@ export default function ProfilDuzenleEkrani() {
         varMi={medyaMenuTur ? Boolean(medyaUrl(medyaMenuTur)) : false}
         busy={medyaBusy !== null}
         onKapat={() => setMedyaMenuTur(null)}
-        onGoruntule={() => {
-          if (!medyaMenuTur) return;
-          const url = medyaUrl(medyaMenuTur);
-          const tur = medyaMenuTur;
-          setMedyaMenuTur(null);
+        onGoruntule={(tur) => {
+          const url = medyaUrl(tur);
           if (url) setBuyut({ uri: url, tur });
         }}
-        onEkleVeyaDegistir={() => {
-          if (medyaMenuTur) void medyaSec(medyaMenuTur);
+        onEkleVeyaDegistir={(tur) => {
+          void medyaSec(tur);
         }}
-        onSil={() => {
-          if (medyaMenuTur) medyaSil(medyaMenuTur);
+        onSil={(tur) => {
+          medyaSil(tur);
         }}
       />
     </Screen>
@@ -788,6 +873,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: BoslukTokenlari.xl,
     paddingBottom: BoslukTokenlari.xxxl,
     gap: BoslukTokenlari.md,
+  },
+  bankaAltBosluk: {
+    height: 180,
   },
   section: {
     ...TipografiTokenlari.h2,

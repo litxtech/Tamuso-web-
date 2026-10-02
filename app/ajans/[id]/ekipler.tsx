@@ -15,8 +15,10 @@ import {
   AjansEkipListesi,
   AjansEkipOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 
 export default function AjansEkiplerEkrani() {
+  const { t } = useCeviri();
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [ad, setAd] = useState('');
@@ -39,22 +41,26 @@ export default function AjansEkiplerEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Ekipler"
-      subtitle="Takımlar ve renkler"
+      title={t('ajans.ekipler')}
+      subtitle={t('ajans.ekiplerAlt')}
       aktif="ekipler"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni ekip</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniEkip')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={ad} onChangeText={setAd} placeholder="Örn: Gece Ekibi" />
+        <AjansInput
+          value={ad}
+          onChangeText={setAd}
+          placeholder={t('ajans.ekipPh')}
+        />
         <AjansCta
-          label="Oluştur"
+          label={t('ortak.olustur')}
           onPress={() => {
             void (async () => {
               const r = await AjansEkipOlustur({ agencyId: id, name: ad.trim() });
-              if (!r.ok) Alert.alert('Ekip', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.alertEkip'), r.hata);
               else {
                 setAd('');
                 await yukle();
@@ -65,13 +71,16 @@ export default function AjansEkiplerEkrani() {
       </AjansKart>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           liste.map((e) => (
             <AjansListeSatir
               key={String(e.id)}
               title={String(e.name)}
-              subtitle={`${e.uye_sayisi ?? 0} üye · ${e.color ?? ''}`}
+              subtitle={t('ajans.uyeRenk', {
+                count: e.uye_sayisi ?? 0,
+                renk: e.color ?? '',
+              })}
             />
           ))
         )}

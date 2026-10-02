@@ -29,7 +29,7 @@ export async function OdaModerasyonUygula(input: {
   reason?: string;
 }): Promise<{ ok: boolean; hata?: string }> {
   if (!(await OzellikBayragiAktifMiSunucu('moderation_enabled'))) {
-    return { ok: false, hata: 'moderation_enabled kapalı.' };
+    return { ok: false, hata: i18n.t('sesOda.moderasyonKapali') };
   }
   const { error } = await supabase.rpc('oda_moderasyon_uygula', {
     p_room_id: input.roomId,

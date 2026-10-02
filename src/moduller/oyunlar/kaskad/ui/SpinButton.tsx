@@ -2,7 +2,7 @@
  * SpinButton — prosedürel kristal/enerji düğmesi + dönen halka.
  */
 
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -52,6 +52,12 @@ function SpinButtonInner({
   const pressScale = useSharedValue(1);
   const glow = useSharedValue(0.4);
   const ringSpin = useSharedValue(0);
+  const [artFailed, setArtFailed] = useState(false);
+  const useArt = Boolean(art) && !artFailed;
+
+  useEffect(() => {
+    setArtFailed(false);
+  }, [art]);
 
   useEffect(() => {
     if (state === 'idle' && !reduceMotion) {
@@ -95,17 +101,18 @@ function SpinButtonInner({
   const clickable = state === 'idle' || state === 'autoplay';
   const disabled = state === 'disabled';
   const clipR = size / 2;
+  const busy = state === 'requesting' || state === 'animating';
 
   return (
     <Animated.View
       style={[
         styles.shadowWrap,
         { width: size, height: size, borderRadius: clipR },
-        art ? styles.shadowGold : null,
+        useArt ? styles.shadowGold : null,
         wrapStyle,
       ]}
     >
-      {!reduceMotion && !disabled && !art ? (
+      {!reduceMotion && !disabled && !useArt ? (
         <Animated.View
           pointerEvents="none"
           style={[
@@ -135,7 +142,7 @@ function SpinButtonInner({
           pressScale.value = withTiming(1, { duration: 110 });
         }}
         accessibilityRole="button"
-        accessibilityLabel={state === 'autoplay' ? 'Autoplay durdur' : 'Spin'}
+        accessibilityLabel={state === 'autoplay' ? 'Autoplay durdur' : 'Başlat'}
         style={{
           width: size,
           height: size,
@@ -143,33 +150,22 @@ function SpinButtonInner({
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'transparent',
+          backgroundColor: '#1A1408',
         }}
       >
-        {art ? (
-          <View
+        {useArt ? (
+          <Image
+            source={art}
             style={{
               width: size,
               height: size,
-              borderRadius: clipR,
-              overflow: 'hidden',
-              backgroundColor: 'transparent',
-              borderWidth: 1.5,
-              borderColor: 'rgba(246,226,122,0.92)',
+              opacity: disabled ? 0.45 : busy ? 0.55 : 1,
+              backgroundColor: '#1A1408',
             }}
-          >
-            <Image
-              source={art}
-              style={{
-                width: size,
-                height: size,
-                opacity: disabled ? 0.45 : 1,
-                backgroundColor: 'transparent',
-              }}
-              resizeMode="cover"
-              fadeDuration={0}
-            />
-          </View>
+            resizeMode="cover"
+            fadeDuration={0}
+            onError={() => setArtFailed(true)}
+          />
         ) : (
           <LinearGradient
             colors={
@@ -198,20 +194,30 @@ function SpinButtonInner({
                 backgroundColor: 'rgba(8,12,24,0.88)',
                 borderWidth: 1.5,
                 borderColor: 'rgba(111,227,255,0.45)',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             />
           </LinearGradient>
         )}
         <View style={styles.overlay} pointerEvents="none">
-          {state === 'requesting' || state === 'animating' ? (
-            <ActivityIndicator color="#E8F6FF" size="large" />
+          {busy ? (
+            <ActivityIndicator color="#F6E27A" size="large" />
           ) : state === 'autoplay' ? (
             <>
               <Ionicons name="stop" size={size * 0.2} color="#E8F6FF" />
               <Text style={styles.autoCount}>{autoplayLeft}</Text>
             </>
-          ) : art ? null : (
-            <Text style={[styles.text, { fontSize: size * 0.15 }]}>SPIN</Text>
+          ) : (
+            <Text
+              style={[
+                styles.text,
+                { fontSize: size * 0.13 },
+                useArt ? styles.textOnArt : null,
+              ]}
+            >
+              BAŞLAT
+            </Text>
           )}
         </View>
       </Pressable>
@@ -246,9 +252,15 @@ const styles = StyleSheet.create({
   text: {
     color: '#F7F2E8',
     fontWeight: '900',
-    letterSpacing: 2.6,
-    textShadowColor: 'rgba(0,0,0,0.75)',
+    letterSpacing: 2.2,
+    textShadowColor: 'rgba(0,0,0,0.85)',
     textShadowRadius: 6,
+  },
+  textOnArt: {
+    color: '#FFF6D0',
+    textShadowColor: 'rgba(0,0,0,0.95)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
   },
   autoCount: {
     color: '#E8F6FF',

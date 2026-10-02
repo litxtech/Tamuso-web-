@@ -5,6 +5,7 @@ import { UygulamaKimligi } from '../../../yapilandirma/UygulamaKimligi';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useTema } from '../../../tasarim-sistemi/tema/TemaSaglayici';
+import { useCeviri } from '../../../i18n/useCeviri';
 import { GorunumSecimKartlari } from './GorunumSecimKartlari';
 
 /**
@@ -13,6 +14,7 @@ import { GorunumSecimKartlari } from './GorunumSecimKartlari';
  */
 export function GorunumSecimEkrani() {
   const { palet } = useTema();
+  const { t } = useCeviri();
 
   return (
     <Screen edges={['top', 'bottom']}>
@@ -21,10 +23,10 @@ export function GorunumSecimEkrani() {
           {UygulamaKimligi.APP_NAME}
         </Text>
         <Text style={[styles.baslik, { color: palet.text }]}>
-          Görünümünü seç
+          {t('gorunum.secBaslik')}
         </Text>
         <Text style={[styles.alt, { color: palet.textMuted }]}>
-          Temayı sekmeden seç. İstediğin zaman ayarlardan değiştirebilirsin.
+          {t('gorunum.secAlt')}
         </Text>
         <GorunumSecimKartlari />
       </View>

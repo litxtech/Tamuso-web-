@@ -1,0 +1,12 @@
+{
+  "engellenen": {
+    "baslik": "Blocked accounts",
+    "kullanicilarBaslik": "Blocked users",
+    "altBaslik": "You can unblock them here",
+    "bos": "No blocked accounts",
+    "bosKisa": "Nobody blocked",
+    "bosBody": "People you block appear in this list.",
+    "engeliKaldir": "Unblock",
+    "kaldirBody": "{{ad}} can find you and message you again."
+  }
+}

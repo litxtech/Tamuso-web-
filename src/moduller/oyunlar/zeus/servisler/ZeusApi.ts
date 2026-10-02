@@ -118,7 +118,7 @@ export async function warmupZeusSpin(): Promise<void> {
     await oyunEdgeJsonCagir(
       'zeus-spin',
       { ping: true },
-      { deneme: 2, timeoutMs: 6_000 },
+      { deneme: 1, timeoutMs: 2_500 },
     );
   } catch {
     /* ısındırma oyunu kilitlemesin */

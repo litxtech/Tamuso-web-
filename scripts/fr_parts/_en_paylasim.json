@@ -1,0 +1,29 @@
+{
+  "paylasim": {
+    "baslik": "Share",
+    "altBaslik": "Download via link · invite code",
+    "davet": "INVITE",
+    "aciklama": "When friends tap your link, they go to the App Store / Play download page. You manage store URLs from the admin panel.",
+    "hesabiTamamla": "Complete your account to share",
+    "davetKodun": "Your invite code",
+    "tiklama": "{{count}} clicks",
+    "paylasimLinki": "Share link",
+    "kopyalandiBaslik": "Copied",
+    "kopyalandiBody": "Link copied to clipboard.",
+    "kopyalaBasarisiz": "Could not copy to clipboard. A new build is required.",
+    "paylasimHata": "Share",
+    "whatsappPaylas": "WhatsApp / share",
+    "aciliyor": "Opening…",
+    "derinLinkKopyala": "Copy in-app link",
+    "admin": {
+      "kodMin": "Code must be at least 2 characters",
+      "baslikGerekli": "Title is required",
+      "urlHttps": "URL must start with http(s)"
+    },
+    "kodAlinamadi": "Could not get invite code. Has migration 020 been applied?",
+    "mesajKatil": "Join {{ad}} — voice, stage, and live rooms await.{{kodSatiri}}\n\nDownload: {{url}}",
+    "davetKoduSatiri": "\nInvite code: {{kod}}",
+    "indirBaslik": "Download {{ad}}",
+    "basarisiz": "Share failed"
+  }
+}

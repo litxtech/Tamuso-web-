@@ -13,7 +13,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { kullaniciTemaKodunuAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 
 export type FeedFiltre = 'tumu' | 'canli' | 'ses';
@@ -34,7 +34,7 @@ type Props = {
 
 export function AnaSayfaFiltreCipleri({ ogeler, secili, onSec }: Props) {
   useTemayaAboneOl();
-  const acik = kullaniciTemaKodunuAl() === 'acik';
+  const acik = temaAcikMi(kullaniciTemaKodunuAl());
 
   return (
     <Animated.View entering={FadeIn.duration(260)}>

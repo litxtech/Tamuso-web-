@@ -1,0 +1,377 @@
+[
+  {
+    "key": "cuzdanX.satinAlmaDurduruldu",
+    "en": "Coin purchases are temporarily paused.",
+    "tr": "Coin satın alma geçici olarak durduruldu."
+  },
+  {
+    "key": "cuzdanX.coinYukle",
+    "en": "Top up coins",
+    "tr": "Coin yükle"
+  },
+  {
+    "key": "cuzdanX.toplamCoin",
+    "en": "Total {{toplam}} coins",
+    "tr": "Toplam {{toplam}} coin"
+  },
+  {
+    "key": "cuzdanX.gecerliElmasGir",
+    "en": "Enter a valid diamond amount.",
+    "tr": "Geçerli bir elmas miktarı gir."
+  },
+  {
+    "key": "cuzdanX.elmasYetersiz",
+    "en": "Your diamond balance is insufficient.",
+    "tr": "Elmas bakiyesi yetersiz."
+  },
+  {
+    "key": "cuzdanX.ibanKaydet",
+    "en": "Save your IBAN and bank name first.",
+    "tr": "Önce IBAN ve banka adını kaydet."
+  },
+  {
+    "key": "cuzdanX.numaraHazirDegil",
+    "en": "Your wallet number is not ready yet.",
+    "tr": "Numara henüz hazır değil."
+  },
+  {
+    "key": "cuzdanX.satinAlmaKapali",
+    "en": "Purchases temporarily closed",
+    "tr": "Satın alma geçici olarak kapalı"
+  },
+  {
+    "key": "cuzdanX.hareketAlt",
+    "en": "Top-ups · gifts · games · withdrawals — tap for details",
+    "tr": "Yükleme · hediye · oyun · çekim — detay için dokun"
+  },
+  {
+    "key": "cuzdanX.oyunOzet",
+    "en": "Games: {{oyun}} · Wins (1st): {{kazanc}} · Rate {{oran}}% · {{lig}}",
+    "tr": "Oyun: {{oyun}} · Kazanç (1.): {{kazanc}} · Oran %{{oran}} · {{lig}}"
+  },
+  {
+    "key": "cuzdanX.hareketYok",
+    "en": "No activity yet",
+    "tr": "Henüz hareket yok"
+  },
+  {
+    "key": "cuzdanX.hediyeAlt",
+    "en": "Received gifts · diamonds · TRY value · tap for details",
+    "tr": "Alınan hediye · elmas · TL karşılığı · detay için dokun"
+  },
+  {
+    "key": "cuzdanX.hediyeYok",
+    "en": "No gifts yet",
+    "tr": "Henüz hediye yok"
+  },
+  {
+    "key": "cuzdanX.ibanYok",
+    "en": "No IBAN saved — add it from profile editing",
+    "tr": "IBAN kayıtlı değil — profil düzenlemeden ekle"
+  },
+  {
+    "key": "cuzdanX.cekimTalebiOlustur",
+    "en": "Create withdrawal request",
+    "tr": "Çekim talebi oluştur"
+  },
+  {
+    "key": "cuzdanX.cekimTalebiYok",
+    "en": "No withdrawal requests",
+    "tr": "Çekim talebi yok"
+  },
+  {
+    "key": "cuzdanX.elmasSatir",
+    "en": "{{adet}} diamonds · {{yontem}}",
+    "tr": "{{adet}} elmas · {{yontem}}"
+  },
+  {
+    "key": "cuzdanX.kartiPaylasBaslik",
+    "en": "Share wallet card",
+    "tr": "Cüzdan kartını paylaş"
+  },
+  {
+    "key": "cuzdanX.kartiPaylasAlt",
+    "en": "Pick a user — wallet number and QR are sent via in-app message.",
+    "tr": "Kullanıcı seç — cüzdan no ve QR uygulama içi mesajla gider."
+  },
+  {
+    "key": "cuzdanX.kartiPaylasSoru",
+    "en": "Send the wallet card message to {{ad}}?",
+    "tr": "{{ad}} kullanıcısına cüzdan kartı mesajı gönderilsin mi?"
+  },
+  {
+    "key": "cuzdanX.kartIletildi",
+    "en": "The wallet card was sent as a message.",
+    "tr": "Cüzdan kartı mesaj olarak iletildi."
+  },
+  {
+    "key": "cuzdanX.sohbeteGit",
+    "en": "Go to chat",
+    "tr": "Sohbete git"
+  },
+  {
+    "key": "cuzdanX.paketSecOde",
+    "en": "Pick a pack · pay with {{kanal}} · added to your balance instantly",
+    "tr": "Paketi seç · {{kanal}} ile öde · bakiyene anında eklenir"
+  },
+  {
+    "key": "cuzdanX.paketSecGuvenli",
+    "en": "Pick a pack · pay securely · added to your balance instantly",
+    "tr": "Paketi seç · güvenli öde · bakiyene anında eklenir"
+  },
+  {
+    "key": "cuzdanX.anindaYukleme",
+    "en": "Instant top-up",
+    "tr": "Anında yükleme"
+  },
+  {
+    "key": "cuzdanX.satinAlA11y",
+    "en": "{{baslik}}, {{adet}} coins, buy for {{fiyat}}",
+    "tr": "{{baslik}}, {{adet}} coin, {{fiyat}} satın al"
+  },
+  {
+    "key": "cuzdanX.coinBilgi",
+    "en": "Coins are used for gifts, games, and in-app features; they cannot be cashed out.",
+    "tr": "Coinler hediye, oyun ve uygulama içi özelliklerde kullanılır; gerçek paraya çevrilemez."
+  },
+  {
+    "key": "cuzdanX.a11yKartPaylas",
+    "en": "Share wallet card in the app",
+    "tr": "Cüzdan kartını uygulama içi paylaş"
+  },
+  {
+    "key": "cuzdanX.a11yWaQr",
+    "en": "Share QR via WhatsApp",
+    "tr": "WhatsApp ile QR paylaş"
+  },
+  {
+    "key": "cuzdanX.yuklemeHarcama",
+    "en": "Top-up / spend",
+    "tr": "Yükleme / harcama"
+  },
+  {
+    "key": "cuzdanX.satinAlOnay",
+    "en": "{{baslik}}{{bonus}}\nTotal {{toplam}} coins\n{{fiyat}}\nPayment: {{kanal}}",
+    "tr": "{{baslik}}{{bonus}}\nToplam {{toplam}} coin\n{{fiyat}}\nÖdeme: {{kanal}}"
+  },
+  {
+    "key": "cuzdanX.cekimOdemeBilgisi",
+    "en": "After approval, funds are sent to your registered bank account within {{gun}} business days.",
+    "tr": "Talep onaylandıktan sonra {{gun}} iş günü içinde kayıtlı banka hesabına aktarılır."
+  },
+  {
+    "key": "cuzdanX.uiBrandTagline",
+    "en": "Summary of voice room, posts, messages, live activity, and platform rewards.",
+    "tr": "Ses odası, gönderi, mesaj ve canlı yayın aktiviteleri ile platform ödüllerinin özeti."
+  },
+  {
+    "key": "cuzdanX.uiPlatformLabel",
+    "en": "Platform service share",
+    "tr": "Platform hizmet payı"
+  },
+  {
+    "key": "cuzdanX.uiSellerNetLabel",
+    "en": "Estimated account summary",
+    "tr": "Tahmini hesap özeti"
+  },
+  {
+    "key": "cuzdanX.uiPaymentNote",
+    "en": "Account activity is processed in the 01–15 and 15–31 periods of each month.",
+    "tr": "Hesap hareketleri ayın 01–15 ve 15–31 dönemlerinde işlenir."
+  },
+  {
+    "key": "cuzdanX.uiLanguageNote",
+    "en": "Amounts shown are an in-app virtual item catalog summary; not a real-money payout.",
+    "tr": "Gösterilen tutarlar uygulama içi sanal öğe katalog özetidir; gerçek para ödemesi değildir."
+  },
+  {
+    "key": "cuzdanX.uiTakasSubtitle",
+    "en": "Transfer between accounts",
+    "tr": "Hesaplar arası transfer"
+  },
+  {
+    "key": "cuzdanX.uiCoinInfo",
+    "en": "Coins are virtual items used within Tamuso; they are not a real-money payout outside the app.",
+    "tr": "Coinler Tamuso içinde kullanılan sanal öğelerdir; uygulama dışı gerçek para ödemesi değildir."
+  },
+  {
+    "key": "cuzdanX.uiPurchaseLocked",
+    "en": "Purchases are temporarily unavailable.",
+    "tr": "Satın alma geçici olarak kapalı."
+  },
+  {
+    "key": "cuzdanX.uiHeroNote",
+    "en": "Your wallet balance helps manage content, gifts, and platform activity.",
+    "tr": "Cüzdan bakiyen; içerik, hediye ve platform aktivitelerini yönetmek içindir."
+  },
+  {
+    "key": "cuzdanX.oturumGerekli",
+    "en": "Sign-in required",
+    "tr": "Oturum gerekli"
+  },
+  {
+    "key": "cuzdanX.paketSecilmedi",
+    "en": "No package selected",
+    "tr": "Paket seçilmedi"
+  },
+  {
+    "key": "cuzdanX.stripeInitBasarisiz",
+    "en": "Stripe init failed",
+    "tr": "Stripe init başarısız"
+  },
+  {
+    "key": "cuzdanX.publishableKeyEksik",
+    "en": "Publishable key missing (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).",
+    "tr": "Publishable key eksik (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY)."
+  },
+  {
+    "key": "cuzdanX.iapEdgeHatasi",
+    "en": "IAP edge error",
+    "tr": "IAP edge hatası"
+  },
+  {
+    "key": "cuzdanX.paymentSheetYalnizMobil",
+    "en": "PaymentSheet is mobile-only.",
+    "tr": "PaymentSheet yalnız mobil."
+  },
+  {
+    "key": "cuzdanX.stripeNativeSonrakiBuild",
+    "en": "Stripe native will be enabled in the next build.",
+    "tr": "Stripe native bir sonraki build ile aktif olacak."
+  },
+  {
+    "key": "cuzdan.ledgerPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerStripe",
+    "en": "Card top-up",
+    "tr": "Kart ile yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAgencyDistribution",
+    "en": "Agency coin top-up",
+    "tr": "Ajans coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminTopup",
+    "en": "Admin coin top-up",
+    "tr": "Yönetim coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminDeduct",
+    "en": "Admin coin deduction",
+    "tr": "Yönetim coin eksiltme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminPenalty",
+    "en": "Admin coin penalty",
+    "tr": "Yönetim coin cezası"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadBet",
+    "en": "Cosmic Cascade — entry",
+    "tr": "Kozmik Kaskad — katılım"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadWin",
+    "en": "Cosmic Cascade — reward",
+    "tr": "Kozmik Kaskad — ödül"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadRefund",
+    "en": "Cosmic Cascade — refund",
+    "tr": "Kozmik Kaskad — iade"
+  },
+  {
+    "key": "cuzdan.ledgerLiveGift",
+    "en": "Live stream gift",
+    "tr": "Canlı yayın hediyesi"
+  },
+  {
+    "key": "cuzdan.refCoinPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.refKaskadRound",
+    "en": "Cosmic Cascade round",
+    "tr": "Kozmik Kaskad turu"
+  },
+  {
+    "key": "cuzdan.qrKoduA11y",
+    "en": "Wallet QR code",
+    "tr": "Cüzdan QR kodu"
+  },
+  {
+    "key": "belge.paylasAlt",
+    "en": "Share as PDF",
+    "tr": "PDF olarak paylaş"
+  },
+  {
+    "key": "belge.whatsappGonder",
+    "en": "Send via WhatsApp",
+    "tr": "WhatsApp ile gönder"
+  },
+  {
+    "key": "belge.henuzHediyeYok",
+    "en": "No gifts yet",
+    "tr": "Henüz hediye yok"
+  },
+  {
+    "key": "belge.kazancYukleme",
+    "en": "Earnings / top-up",
+    "tr": "Kazanç / yükleme"
+  },
+  {
+    "key": "belge.admin.son24sYukleme",
+    "en": "Top-ups (24h)",
+    "tr": "Son 24s yükleme"
+  },
+  {
+    "key": "banner.hedefEkranYok",
+    "en": "No target screen",
+    "tr": "Hedef ekran yok"
+  },
+  {
+    "key": "banner.derinBagYok",
+    "en": "No deep link",
+    "tr": "Deep link yok"
+  },
+  {
+    "key": "banner.placement.VOICE_ROOM_TOP",
+    "en": "Voice room top",
+    "tr": "Ses odası üst"
+  },
+  {
+    "key": "banner.placement.VOICE_ROOM_BOTTOM",
+    "en": "Voice room bottom",
+    "tr": "Ses odası alt"
+  },
+  {
+    "key": "banner.placement.GAME_CENTER_TOP",
+    "en": "Game center top",
+    "tr": "Oyun merkezi üst"
+  },
+  {
+    "key": "banner.placement.HOME_BOTTOM",
+    "en": "Home bottom (auto game)",
+    "tr": "Ana sayfa alt (otomatik oyun)"
+  },
+  {
+    "key": "banner.auto.live_coins",
+    "en": "Live coin threshold",
+    "tr": "Canlı coin eşiği"
+  },
+  {
+    "key": "banner.hedefIdYok",
+    "en": "Missing target id",
+    "tr": "Hedef id yok"
+  },
+  {
+    "key": "banner.gecersizDeepLink",
+    "en": "Invalid deep link",
+    "tr": "Geçersiz deep link"
+  }
+]

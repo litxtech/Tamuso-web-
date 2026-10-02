@@ -1,0 +1,30 @@
+{
+  "moderasyon": {
+    "sebepSpam": "Spam or scam",
+    "sebepHarassment": "Harassment or bullying",
+    "sebepHate": "Hate speech",
+    "sebepSexual": "Sexual / inappropriate content",
+    "sebepChildSafety": "Child abuse / underage content",
+    "sebepViolence": "Violence or threats",
+    "sebepImpersonation": "Impersonation",
+    "sebepOther": "Other",
+    "sebepSec": "Choose a reason.",
+    "icerikBulunamadi": "Content not found.",
+    "gonderilemedi": "Could not send",
+    "raporuGonder": "Submit report",
+    "ekDetay": "Extra details (optional)",
+    "odaNeden": "Why are you reporting this voice room?",
+    "canliNeden": "Why are you reporting this live stream?",
+    "sesOdasi": "Voice room",
+    "canliYayin": "Live stream",
+    "guvenlikHint": "Safety actions that follow Apple and Google rules",
+    "neIcin": "What are you reporting?",
+    "misafirBildirUyari": "Guests can report too; completing your account is recommended if you want to block someone.",
+    "misafirEngelle": "Complete your account to block someone.",
+    "engelleOnay": "{{ad}} will be blocked. Their content is hidden from you; they cannot message, call, or follow you.",
+    "engelleBasarisiz": "Failed",
+    "engellendiBaslik": "Blocked",
+    "engellendiBody": "This user can no longer interact with you directly, and their content will not be shown to you. You can unblock them in Profile → Blocked accounts.",
+    "buKisi": "This person"
+  }
+}

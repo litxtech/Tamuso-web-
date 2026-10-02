@@ -51,7 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       ITSAppUsesNonExemptEncryption: false,
       LSApplicationQueriesSchemes: ['whatsapp', 'whatsapp-business'],
       CFBundleAllowMixedLocalizations: true,
-      CFBundleLocalizations: ['tr', 'en', 'es', 'ar'],
+      CFBundleLocalizations: ['tr', 'en', 'es', 'pt', 'ar'],
     },
   },
   android: {
@@ -90,6 +90,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-secure-store',
+    [
+      'expo-local-authentication',
+      {
+        faceIDPermission:
+          'Tamuso uses Face ID to unlock the app when you return. For example, after you leave Tamuso, Face ID confirms it is you before your messages and wallet are shown.',
+      },
+    ],
     'expo-font',
     'expo-dev-client',
     'expo-apple-authentication',

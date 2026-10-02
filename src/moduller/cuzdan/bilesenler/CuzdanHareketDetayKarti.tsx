@@ -18,7 +18,7 @@ import {
   type LedgerSatiri,
 } from '../okuma/CuzdanLedgeriniGetir';
 import type { HediyeGecmisiKaydi } from '../../hediyeler/okuma/HediyeGecmisiniGetir';
-import { CEKIM_ODEME_BILGISI } from '../cekim/CekimOdemeBilgisi';
+import { CEKIM_ODEME_IS_GUNU } from '../cekim/CekimOdemeBilgisi';
 import {
   CoinTryKarsiligi,
   TryYazi,
@@ -34,6 +34,9 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { AktifDil } from '../../../i18n';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 
 export type CuzdanHareketDetay =
   | { tur: 'ledger'; veri: LedgerSatiri }
@@ -58,9 +61,9 @@ type Props = {
   onKapat: () => void;
 };
 
-function formatTarih(iso: string): string {
+function formatTarih(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleString('tr-TR', {
+    return new Date(iso).toLocaleString(locale, {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
@@ -73,9 +76,9 @@ function formatTarih(iso: string): string {
   }
 }
 
-function formatSaat(iso: string): string {
+function formatSaat(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleTimeString('tr-TR', {
+    return new Date(iso).toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -96,6 +99,8 @@ function Satir({ etiket, deger }: { etiket: string; deger: string }) {
 
 /** Hareket detay kartı — banka dekontu + PDF/WhatsApp */
 export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
+  const { t } = useCeviri();
+  const locale = DIL_LOCALE_MAP[AktifDil()];
   const [paylasAcik, setPaylasAcik] = useState(false);
 
   const belge = useMemo(
@@ -105,7 +110,7 @@ export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
 
   if (!detay) return null;
 
-  let baslik = 'Hareket detayı';
+  let baslik = t('cuzdanX.hareketDetay');
   let tutar = '';
   let tutarRenk: string = RenkTokenlari.text;
   let ozet: { id: string; etiket: string; deger: string }[] = [];
@@ -117,23 +122,23 @@ export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
     tutar = LedgerTutarYazi(r);
     tutarRenk = pozitif ? RenkTokenlari.mint : RenkTokenlari.danger;
     ozet = [
-      { id: 'tur', etiket: 'İşlem türü', deger: LedgerSebepEtiketi(r.reason) },
-      { id: 'birim', etiket: 'Para birimi', deger: LedgerBirimEtiketi(r.currency) },
-      { id: 'tutar', etiket: 'Tutar', deger: tutar },
+      { id: 'tur', etiket: t('cuzdanX.islemTuru'), deger: LedgerSebepEtiketi(r.reason) },
+      { id: 'birim', etiket: t('cuzdanX.paraBirimi'), deger: LedgerBirimEtiketi(r.currency) },
+      { id: 'tutar', etiket: t('cuzdanX.tutar'), deger: tutar },
       {
         id: 'bakiye',
-        etiket: 'İşlem sonrası bakiye',
-        deger: `${r.balance_after.toLocaleString('tr-TR')} ${LedgerBirimEtiketi(r.currency)}`,
+        etiket: t('cuzdanX.islemSonrasiBakiye'),
+        deger: `${r.balance_after.toLocaleString(locale)} ${LedgerBirimEtiketi(r.currency)}`,
       },
-      { id: 'kaynak', etiket: 'Kaynak', deger: LedgerRefEtiketi(r.ref_type) },
+      { id: 'kaynak', etiket: t('cuzdanX.kaynak'), deger: LedgerRefEtiketi(r.ref_type) },
       {
         id: 'yon',
-        etiket: 'Yön',
-        deger: pozitif ? 'Hesaba giriş' : 'Hesaptan çıkış',
+        etiket: t('cuzdanX.yon'),
+        deger: pozitif ? t('cuzdanX.hesabaGirisYon') : t('cuzdanX.hesaptanCikisYon'),
       },
-      { id: 'tarih', etiket: 'Tarih', deger: formatTarih(r.created_at) },
-      { id: 'saat', etiket: 'Saat', deger: formatSaat(r.created_at) },
-      { id: 'islem_no', etiket: 'İşlem no', deger: r.id.slice(0, 13).toUpperCase() },
+      { id: 'tarih', etiket: t('cuzdanX.tarih'), deger: formatTarih(r.created_at, locale) },
+      { id: 'saat', etiket: t('cuzdanX.saat'), deger: formatSaat(r.created_at, locale) },
+      { id: 'islem_no', etiket: t('cuzdanX.islemNo'), deger: r.id.slice(0, 13).toUpperCase() },
     ];
   } else if (detay.tur === 'hediye') {
     const h = detay.veri;
@@ -141,46 +146,64 @@ export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
     const kim =
       h.karsi_profil?.display_name ??
       h.karsi_profil?.username ??
-      'Kullanıcı';
-    baslik = h.gift?.name ?? 'Hediye';
+      t('ortak.kullanici');
+    baslik = h.gift?.name ?? t('cuzdan.hediye');
     tutar = gonderildi
-      ? `−${h.coins_spent.toLocaleString('tr-TR')} coin`
-      : `+${h.diamonds_earned.toLocaleString('tr-TR')} elmas`;
+      ? `−${h.coins_spent.toLocaleString(locale)} coin`
+      : `+${h.diamonds_earned.toLocaleString(locale)} ${t('cuzdan.birimElmas')}`;
     tutarRenk = gonderildi ? RenkTokenlari.danger : RenkTokenlari.mint;
     const tryDeger = CoinTryKarsiligi(h.coins_spent);
     ozet = [
       {
         id: 'hediye',
-        etiket: 'Hediye',
+        etiket: t('cuzdan.hediye'),
         deger: `${h.gift?.emoji ?? ''} ${baslik}${h.quantity > 1 ? ` ×${h.quantity}` : ''}`.trim(),
       },
-      { id: 'yon', etiket: 'Yön', deger: gonderildi ? 'Gönderildi' : 'Alındı' },
-      { id: 'kim', etiket: gonderildi ? 'Alıcı' : 'Gönderen', deger: kim },
-      { id: 'oda', etiket: 'Oda', deger: h.oda?.title ?? '—' },
-      { id: 'tutar', etiket: 'Tutar', deger: tutar },
+      {
+        id: 'yon',
+        etiket: t('cuzdanX.yon'),
+        deger: gonderildi ? t('cuzdan.gonderilen') : t('cuzdan.alinan'),
+      },
+      {
+        id: 'kim',
+        etiket: gonderildi ? t('cuzdanX.etiketAlici') : t('cuzdanX.etiketGonderen'),
+        deger: kim,
+      },
+      {
+        id: 'oda',
+        etiket: t('cuzdanX.etiketOda'),
+        deger: h.oda?.title ?? t('cuzdan.tire'),
+      },
+      { id: 'tutar', etiket: t('cuzdanX.tutar'), deger: tutar },
       {
         id: 'katalog',
-        etiket: gonderildi ? 'Katalog değeri' : 'Alınan karşılık (katalog)',
+        etiket: gonderildi
+          ? t('cuzdanX.uiKatalogLabel')
+          : t('cuzdanX.alinanKarsilik'),
         deger: TryYazi(tryDeger),
       },
-      { id: 'tarih', etiket: 'Tarih', deger: formatTarih(h.created_at) },
-      { id: 'saat', etiket: 'Saat', deger: formatSaat(h.created_at) },
-      { id: 'islem_no', etiket: 'İşlem no', deger: h.id.slice(0, 13).toUpperCase() },
+      { id: 'tarih', etiket: t('cuzdanX.tarih'), deger: formatTarih(h.created_at, locale) },
+      { id: 'saat', etiket: t('cuzdanX.saat'), deger: formatSaat(h.created_at, locale) },
+      { id: 'islem_no', etiket: t('cuzdanX.islemNo'), deger: h.id.slice(0, 13).toUpperCase() },
     ];
   } else {
     const c = detay.veri;
-    baslik = 'Elmas çekimi';
-    tutar = `−${c.diamonds.toLocaleString('tr-TR')} elmas`;
+    baslik = t('cuzdanX.elmasCekimi');
+    tutar = `−${c.diamonds.toLocaleString(locale)} ${t('cuzdan.birimElmas')}`;
     tutarRenk = RenkTokenlari.accent;
     ozet = [
-      { id: 'islem', etiket: 'İşlem', deger: 'Çekim talebi' },
-      { id: 'miktar', etiket: 'Miktar', deger: tutar },
-      { id: 'yontem', etiket: 'Yöntem', deger: c.method },
-      { id: 'durum', etiket: 'Durum', deger: detay.durumEtiket },
-      { id: 'odeme', etiket: 'Ödeme süresi', deger: CEKIM_ODEME_BILGISI },
-      { id: 'tarih', etiket: 'Tarih', deger: formatTarih(c.created_at) },
-      { id: 'saat', etiket: 'Saat', deger: formatSaat(c.created_at) },
-      { id: 'talep_no', etiket: 'Talep no', deger: c.id.slice(0, 13).toUpperCase() },
+      { id: 'islem', etiket: t('cuzdanX.etiketIslem'), deger: t('cuzdanX.cekimTalebi') },
+      { id: 'miktar', etiket: t('cuzdanX.etiketMiktar'), deger: tutar },
+      { id: 'yontem', etiket: t('cuzdanX.etiketYontem'), deger: c.method },
+      { id: 'durum', etiket: t('cuzdanX.etiketDurum'), deger: detay.durumEtiket },
+      {
+        id: 'odeme',
+        etiket: t('cuzdanX.odemeSuresi'),
+        deger: t('cuzdanXExtra.odemeBilgisi', { gun: CEKIM_ODEME_IS_GUNU }),
+      },
+      { id: 'tarih', etiket: t('cuzdanX.tarih'), deger: formatTarih(c.created_at, locale) },
+      { id: 'saat', etiket: t('cuzdanX.saat'), deger: formatSaat(c.created_at, locale) },
+      { id: 'talep_no', etiket: t('cuzdanX.talepNo'), deger: c.id.slice(0, 13).toUpperCase() },
     ];
   }
 
@@ -198,7 +221,7 @@ export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
           <View style={styles.kartWrap}>
             <LinearGradient colors={[...RenkTokenlari.gradientCard]} style={styles.kart}>
               <View style={styles.ust}>
-                <Text style={styles.fisilti}>İŞLEM DEKONTU</Text>
+                <Text style={styles.fisilti}>{t('cuzdanX.islemDekontu')}</Text>
                 <Pressable onPress={onKapat} style={styles.kapat} hitSlop={8}>
                   <Ionicons name="close" size={18} color={RenkTokenlari.text} />
                 </Pressable>
@@ -216,10 +239,10 @@ export function CuzdanHareketDetayKarti({ detay, onKapat }: Props) {
               <View style={styles.aksiyonlar}>
                 <BelgePaylasDugmesi
                   onPress={() => setPaylasAcik(true)}
-                  label="PDF / WhatsApp"
+                  label={t('cuzdanX.pdfWhatsapp')}
                 />
                 <Pressable onPress={onKapat} style={styles.tamamHit}>
-                  <Text style={styles.tamamYazi}>Kapat</Text>
+                  <Text style={styles.tamamYazi}>{t('ortak.kapat')}</Text>
                 </Pressable>
               </View>
             </LinearGradient>

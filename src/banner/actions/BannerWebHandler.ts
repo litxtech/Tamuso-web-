@@ -5,6 +5,7 @@ import {
   type ActionContext,
 } from './BannerActionContext';
 import { isSafeHttpsUrl } from '../webview/WebViewSecurity';
+import i18n from '../../i18n';
 
 export async function handleWebAction(
   action: BannerAction,
@@ -13,8 +14,8 @@ export async function handleWebAction(
   const url = (action.url ?? action.target ?? '').trim();
   if (!url || url === 'https://' || url === 'http://') {
     Alert.alert(
-      'Eksik bağlantı',
-      'Bu banner için web adresi tanımlanmamış. Admin panelinden tam HTTPS URL gir.',
+      i18n.t('banner.eksikBaglantiBaslik'),
+      i18n.t('banner.eksikBaglantiBody'),
     );
     return { ok: false, error: 'URL yok' };
   }
@@ -22,8 +23,8 @@ export async function handleWebAction(
   const check = isSafeHttpsUrl(url);
   if (!check.ok) {
     Alert.alert(
-      'Geçersiz bağlantı',
-      check.reason ?? 'Geçerli bir https:// adresi gerekli.',
+      i18n.t('banner.gecersizBaglantiBaslik'),
+      check.reason ?? i18n.t('banner.gecersizBaglantiBody'),
     );
     return { ok: false, error: check.reason };
   }

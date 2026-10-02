@@ -16,6 +16,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { GradientButton } from '../../src/components/GradientButton';
+import { useCeviri } from '../../src/i18n/useCeviri';
 import { AktifPaylasimLinkleriniGetir } from '../../src/moduller/paylasim-linkleri/okuma/PaylasimLinkleriniGetir';
 import { PaylasimTiklamaKaydet } from '../../src/moduller/paylasim-linkleri/okuma/DavetKodunuAl';
 import type { AppPaylasimLinki } from '../../src/moduller/paylasim-linkleri/tipler';
@@ -29,6 +30,7 @@ import {
 
 /** Deep link / paylaşım açılışı: indirme hedefleri + davet kodu */
 export default function PaylasAcilisEkrani() {
+  const { t } = useCeviri();
   const { kod } = useLocalSearchParams<{ kod?: string }>();
   const davet = (kod ?? '').toString().trim().toUpperCase();
   const [linkler, setLinkler] = useState<AppPaylasimLinki[]>([]);
@@ -55,9 +57,9 @@ export default function PaylasAcilisEkrani() {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Bağlantı', 'Link açılamadı.');
+      Alert.alert(t('paylasim.baglanti'), t('paylasim.linkAcilamadi'));
     }
-  }, []);
+  }, [t]);
 
   const platformOncelik =
     Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : 'web';
@@ -71,15 +73,17 @@ export default function PaylasAcilisEkrani() {
   return (
     <Screen edges={['top']}>
       <EkranBasligi
-        title="Uygulamayı indir"
-        subtitle={davet ? `Davet: ${davet}` : OrtamDegiskenleri.uygulamaAdi}
+        title={t('paylasim.uygulamayiIndir')}
+        subtitle={
+          davet
+            ? t('paylasim.davetEtiket', { kod: davet })
+            : OrtamDegiskenleri.uygulamaAdi
+        }
       />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={[...RenkTokenlari.gradientCard]} style={styles.hero}>
           <Text style={styles.heroBaslik}>{OrtamDegiskenleri.uygulamaAdi}</Text>
-          <Text style={styles.heroAlt}>
-            Ses odaları, sahne ve canlı anlar. Arkadaşın seni davet etti.
-          </Text>
+          <Text style={styles.heroAlt}>{t('paylasim.heroAlt')}</Text>
           {davet ? (
             <View style={styles.kodChip}>
               <Text style={styles.kodYazi}>{davet}</Text>
@@ -93,7 +97,7 @@ export default function PaylasAcilisEkrani() {
           <>
             {onerilen ? (
               <GradientButton
-                title={`${onerilen.title} ile indir`}
+                title={t('paylasim.ileIndir', { title: onerilen.title })}
                 onPress={() => void ac(onerilen.url)}
               />
             ) : null}
@@ -130,7 +134,7 @@ export default function PaylasAcilisEkrani() {
             </View>
 
             <Pressable onPress={() => router.replace('/(tabs)')} style={styles.ana}>
-              <Text style={styles.anaYazi}>Uygulamaya devam et</Text>
+              <Text style={styles.anaYazi}>{t('paylasim.uygulamayaDevam')}</Text>
             </Pressable>
           </>
         )}

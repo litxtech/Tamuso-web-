@@ -1,0 +1,5 @@
+pairs=3849 unique=3174 cached=27
+translated 25 new (cache=53)
+translated 50 new (cache=78)
+ERR [1] 'Discover · fees · calling': <urlopen error [Errno 11001] getaddrinfo failed>
+ERR [2] 'Security center': <urlopen error [Errno 11001] getaddrinfo failed>

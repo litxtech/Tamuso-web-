@@ -7,6 +7,7 @@ export type AnaSayfaBolumKodu =
   | 'trending'
   | 'official_city_rooms'
   | 'city_league'
+  | 'country_league'
   | 'events'
   | 'pk_now'
   | 'popular_agencies'
@@ -42,6 +43,10 @@ export const ANA_SAYFA_BOLUM_CEVIR: Record<
   city_league: {
     baslik: 'anaSayfa.bolumCityLeague',
     alt: 'anaSayfa.bolumCityLeagueAlt',
+  },
+  country_league: {
+    baslik: 'anaSayfa.bolumCountryLeague',
+    alt: 'anaSayfa.bolumCountryLeagueAlt',
   },
   events: {
     baslik: 'anaSayfa.bolumEvents',
@@ -80,6 +85,10 @@ export function AnaSayfaBolumleriniGetir(): AnaSayfaBolum[] {
     {
       kod: 'city_league',
       aktif: OzellikBayragiAktifMi('city_league_enabled'),
+    },
+    {
+      kod: 'country_league',
+      aktif: OzellikBayragiAktifMi('country_league_enabled'),
     },
     {
       kod: 'events',

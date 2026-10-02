@@ -21,6 +21,8 @@ import {
 import type { GorusmeTuru, ThreadKarsiProfil } from '../tipler';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { GorusmeCeviriSohbetPaneli } from './GorusmeCeviriSohbetPaneli';
+import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 
 export function sureMetni(saniye: number): string {
   const h = Math.floor(saniye / 3600);
@@ -69,6 +71,8 @@ type AktifProps = {
   speaker: boolean;
   cameraOn: boolean;
   mock?: boolean;
+  /** DM thread — görüşme içi sohbet + çeviri */
+  threadId?: string | null;
   /** Son 1 dk billing geri sayımı (sn) */
   billingRemainingSec?: number | null;
   billingLowBalance?: boolean;
@@ -97,6 +101,7 @@ export function GorusmeAktifEkrani({
   speaker,
   cameraOn,
   mock,
+  threadId,
   billingRemainingSec,
   billingLowBalance,
   onMute,
@@ -109,6 +114,7 @@ export function GorusmeAktifEkrani({
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
   const saniye = useGorusmeSuresi(baglandi, answeredAt);
+  const [sohbetAcik, setSohbetAcik] = useState(false);
   const ad =
     peer?.display_name?.trim() ||
     peer?.username?.trim() ||
@@ -116,6 +122,11 @@ export function GorusmeAktifEkrani({
   const video = callType === 'video';
   const avatarUri = MedyaUriGuvenli(peer?.avatar_url);
   const harf = ad.charAt(0).toLocaleUpperCase('tr-TR');
+  const sohbetVar =
+    !!threadId &&
+    baglandi &&
+    (OzellikBayragiAktifMi('live_chat_translation_enabled') ||
+      OzellikBayragiAktifMi('messages_enabled'));
 
   return (
     <View style={styles.root} collapsable={false}>
@@ -240,6 +251,13 @@ export function GorusmeAktifEkrani({
                 label={t('gorusme.cevir')}
                 onPress={onFlip}
               />
+            ) : null}
+            {sohbetVar ? (
+              <Kontrol
+                icon="chatbubble-ellipses"
+                label={t('aiCeviri.gorusmeSohbetKisa')}
+                onPress={() => setSohbetAcik(true)}
+              />
             ) : !video ? (
               <Kontrol
                 icon="ellipsis-horizontal"
@@ -264,6 +282,14 @@ export function GorusmeAktifEkrani({
           <Text style={styles.bitirYazi}>{t('gorusme.bitir')}</Text>
         </View>
       </View>
+
+      {threadId ? (
+        <GorusmeCeviriSohbetPaneli
+          threadId={threadId}
+          visible={sohbetAcik}
+          onClose={() => setSohbetAcik(false)}
+        />
+      ) : null}
     </View>
   );
 }

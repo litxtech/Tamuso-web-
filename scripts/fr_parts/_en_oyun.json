@@ -1,0 +1,24 @@
+{
+  "oyun": {
+    "baslik": "Games",
+    "kaskad": "Cascade",
+    "zeus": "Zeus",
+    "nox": "Nox",
+    "davetEyebrow": "GAME INVITE",
+    "varsayilanAd": "Tamuso Game",
+    "davetBody": "{{host}} started a game. Want to join?",
+    "birOyuncu": "A player",
+    "davetMeta": "{{sn}} s · {{joined}}/{{max}} players",
+    "katil": "JOIN",
+    "izle": "WATCH",
+    "simdiDegil": "NOT NOW",
+    "odaAcikKalir": "The room above stays open. The card sits above the dock; seats stay put.",
+    "acikOyunYok": "No games open right now",
+    "acikOyunYokBody": "Games were turned off in admin. Try again later.",
+    "oyna": "PLAY",
+    "soloSunucu": "Solo · server result",
+    "noxBody": "5×3 payline · wild · scatter bonus · server result",
+    "zeusBody": "6×5 cascade · 4 Zeus = 15 free spins · multipliers",
+    "kaskadBody": "6×5 cascade · portal scatter · multipliers · bonus rounds"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bildirimAyar": {
+    "tumu": "Toutes les notifications",
+    "tumuAlt": "Si désactivé, aucune notification push n’est envoyée",
+    "mesajlar": "Messages",
+    "mesajlarAlt": "Lorsqu’un message privé arrive",
+    "hediyeler": "Cadeaux",
+    "hediyelerAlt": "Lorsque quelqu’un vous envoie un cadeau",
+    "canli": "Lives",
+    "canliAlt": "Lorsqu’une personne que vous suivez passe en live",
+    "odalar": "Salles",
+    "odalarAlt": "Invitations et mises à jour de salles",
+    "sosyal": "Social",
+    "sosyalAlt": "Nouveaux abonnés et événements sociaux",
+    "cuzdan": "Portefeuille",
+    "cuzdanAlt": "Recharges, retraits et solde",
+    "sistem": "Système",
+    "sistemAlt": "Annonces et messages système importants"
+  }
+}

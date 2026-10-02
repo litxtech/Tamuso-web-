@@ -1,0 +1,547 @@
+[
+  {
+    "key": "odaTema.neon_auroraAlt",
+    "en": "Pink · magenta aurora",
+    "tr": "Pembe · magenta aurora"
+  },
+  {
+    "key": "odaTema.cosmic_voidAlt",
+    "en": "Deep indigo void",
+    "tr": "Derin indigo boşluk"
+  },
+  {
+    "key": "odaTema.arctic_mistAlt",
+    "en": "Ice-blue mist",
+    "tr": "Buz mavisi sis"
+  },
+  {
+    "key": "odaTema.cherry_noirAlt",
+    "en": "Dark red scene",
+    "tr": "Koyu kırmızı sahne"
+  },
+  {
+    "key": "odaTema.emerald_hazeAlt",
+    "en": "Forest-green haze",
+    "tr": "Orman yeşili pus"
+  },
+  {
+    "key": "odaTema.electric_lilacAlt",
+    "en": "Neon lilac glow",
+    "tr": "Neon leylak parıltı"
+  },
+  {
+    "key": "odaTema.ocean_depthAlt",
+    "en": "Deep teal wave",
+    "tr": "Derin teal dalga"
+  },
+  {
+    "key": "odaTema.velvet_roseAlt",
+    "en": "Soft rose scene",
+    "tr": "Yumuşak rose sahne"
+  },
+  {
+    "key": "odaTema.obsidian_noirAlt",
+    "en": "Matte black luxury",
+    "tr": "Mat siyah lüks"
+  },
+  {
+    "key": "odaTema.amethyst_duskAlt",
+    "en": "Purple gem glow",
+    "tr": "Mor taş ışıltısı"
+  },
+  {
+    "key": "odaTema.noir_sapphireAlt",
+    "en": "Deep blue jewel",
+    "tr": "Koyu mavi mücevher"
+  },
+  {
+    "key": "odaTema.graphite_smokeAlt",
+    "en": "Soft anthracite haze",
+    "tr": "Soft antrasit sis"
+  },
+  {
+    "key": "odaTema.indigo_velvetAlt",
+    "en": "Deep indigo fabric",
+    "tr": "Derin indigo kumaş"
+  },
+  {
+    "key": "odaTema.plasma_pinkAlt",
+    "en": "Neon plasma glow",
+    "tr": "Neon plazma parıltı"
+  },
+  {
+    "key": "odaTema.laser_violetAlt",
+    "en": "Sharp violet beam",
+    "tr": "Keskin violet ışın"
+  },
+  {
+    "key": "odaTema.hologram_tealAlt",
+    "en": "Futuristic glass teal",
+    "tr": "Futuristik cam yeşili"
+  },
+  {
+    "key": "odaTema.neon_citrusAlt",
+    "en": "Acid lemon accent",
+    "tr": "Asit limon vurgu"
+  },
+  {
+    "key": "odaTema.synthwave_duskAlt",
+    "en": "80s retro wave",
+    "tr": "80'ler retro dalga"
+  },
+  {
+    "key": "odaTema.volt_blueAlt",
+    "en": "Electric blue pulse",
+    "tr": "Elektrik mavi nabız"
+  },
+  {
+    "key": "odaTema.champagne_suiteAlt",
+    "en": "VIP lounge gold",
+    "tr": "VIP lounge altın"
+  },
+  {
+    "key": "odaTema.platinum_loungeAlt",
+    "en": "Cool metallic luxury",
+    "tr": "Soğuk metalik lüks"
+  },
+  {
+    "key": "odaTema.amber_throneAlt",
+    "en": "Warm amber VIP",
+    "tr": "Sıcak amber VIP"
+  },
+  {
+    "key": "odaTema.ruby_vipAlt",
+    "en": "Red jewel stage",
+    "tr": "Kırmızı mücevher sahne"
+  },
+  {
+    "key": "odaTema.jade_palaceAlt",
+    "en": "Elegant jade shimmer",
+    "tr": "Zarif yeşim ışıltı"
+  },
+  {
+    "key": "odaTema.forest_whisperAlt",
+    "en": "Deep green calm",
+    "tr": "Derin yeşil huzur"
+  },
+  {
+    "key": "odaTema.lagoon_breezeAlt",
+    "en": "Turquoise water texture",
+    "tr": "Turkuaz su dokusu"
+  },
+  {
+    "key": "odaTema.moss_templeAlt",
+    "en": "Natural stone green",
+    "tr": "Doğal taş yeşili"
+  },
+  {
+    "key": "odaTema.glacier_peakAlt",
+    "en": "Ice crystal blue",
+    "tr": "Buz kristali mavi"
+  },
+  {
+    "key": "odaTema.desert_mirageAlt",
+    "en": "Warm sand gold",
+    "tr": "Sıcak kum altını"
+  },
+  {
+    "key": "odaTema.tropical_nightAlt",
+    "en": "Night ocean · coral",
+    "tr": "Gece okyanus · mercan"
+  },
+  {
+    "key": "odaTema.blush_satinAlt",
+    "en": "Soft pink satin",
+    "tr": "Yumuşak pembe saten"
+  },
+  {
+    "key": "odaTema.crimson_silkAlt",
+    "en": "Velvet red silk",
+    "tr": "Kadife kırmızı ipek"
+  },
+  {
+    "key": "odaTema.peach_glowAlt",
+    "en": "Warm peach glow",
+    "tr": "Sıcak peach glow"
+  },
+  {
+    "key": "odaTema.lavender_dreamAlt",
+    "en": "Pastel lavender haze",
+    "tr": "Pastel lavanta pus"
+  },
+  {
+    "key": "odaTema.bordeaux_nightAlt",
+    "en": "Wine-red night",
+    "tr": "Şarap kırmızısı gece"
+  },
+  {
+    "key": "odaTema.nebula_roseAlt",
+    "en": "Pink cosmic cloud",
+    "tr": "Pembe kozmik bulut"
+  },
+  {
+    "key": "odaTema.starlight_indigoAlt",
+    "en": "Night-sky indigo",
+    "tr": "Gece gökyüzü indigo"
+  },
+  {
+    "key": "odaTema.galaxy_tealAlt",
+    "en": "Space-green spiral",
+    "tr": "Uzay yeşili spiral"
+  },
+  {
+    "key": "odaTema.pulsar_purpleAlt",
+    "en": "Pulsing purple star",
+    "tr": "Nabız eden mor yıldız"
+  },
+  {
+    "key": "odaTema.comet_trailAlt",
+    "en": "Ice-blue trail",
+    "tr": "Buz mavisi iz"
+  },
+  {
+    "key": "odaTema.void_emberAlt",
+    "en": "Dark space · ember",
+    "tr": "Koyu uzay · köz"
+  },
+  {
+    "key": "odaTema.chrome_frostAlt",
+    "en": "Cold metal glass",
+    "tr": "Soğuk metal cam"
+  },
+  {
+    "key": "odaTema.copper_wireAlt",
+    "en": "Warm copper shimmer",
+    "tr": "Sıcak bakır ışıltı"
+  },
+  {
+    "key": "odaTema.titanium_edgeAlt",
+    "en": "Sharp grey metal",
+    "tr": "Keskin gri metal"
+  },
+  {
+    "key": "odaTema.bronze_mirrorAlt",
+    "en": "Mirrored bronze surface",
+    "tr": "Aynalı bronz yüzey"
+  },
+  {
+    "key": "odaTema.mercury_glassAlt",
+    "en": "Liquid metal glass",
+    "tr": "Sıvı metal cam"
+  },
+  {
+    "key": "odaTema.steel_neonAlt",
+    "en": "Metal + blue neon",
+    "tr": "Metal + mavi neon"
+  },
+  {
+    "key": "odaTema.spaces_skyAlt",
+    "en": "Night sky · blue accent",
+    "tr": "Gece gökyüzü · mavi vurgu"
+  },
+  {
+    "key": "odaTema.party_neonAlt",
+    "en": "Live party · pink neon",
+    "tr": "Canlı parti · pembe neon"
+  },
+  {
+    "key": "odaTema.greenroom_darkAlt",
+    "en": "Black stage · green accent",
+    "tr": "Siyah sahne · yeşil vurgu"
+  },
+  {
+    "key": "odaTema.salon_warmAlt",
+    "en": "Open cream · orange accent",
+    "tr": "Açık krem · turuncu vurgu"
+  },
+  {
+    "key": "odaDuzen.floating_glassAlt",
+    "en": "Glass grid · soft halo",
+    "tr": "Cam ızgara · soft halo"
+  },
+  {
+    "key": "odaDuzen.orbitAlt",
+    "en": "Center podium · arc seats",
+    "tr": "Merkez taht · yay yerleşim"
+  },
+  {
+    "key": "odaDuzen.podium_eliteAlt",
+    "en": "Premium podium stage",
+    "tr": "Premium podyum sahne"
+  },
+  {
+    "key": "odaDuzen.crystal_gridAlt",
+    "en": "Crystal glass layout",
+    "tr": "Cam kristal dizilim"
+  },
+  {
+    "key": "odaDuzen.premium_tilesAlt",
+    "en": "VIP tile grid",
+    "tr": "VIP karo ızgara"
+  },
+  {
+    "key": "odaDuzen.hex_pulseAlt",
+    "en": "5-column pulse layout",
+    "tr": "5 kolon nabız dizilim"
+  },
+  {
+    "key": "odaDuzen.planet_orbitAlt",
+    "en": "Orbital mic ring",
+    "tr": "Orbital mikrofon halkası"
+  },
+  {
+    "key": "odaDuzen.star_wheelAlt",
+    "en": "Star wheel layout",
+    "tr": "Yıldız tekerlek düzeni"
+  },
+  {
+    "key": "odaDuzen.comet_arcAlt",
+    "en": "Cascading comet arc",
+    "tr": "Kademeli kuyruk yayı"
+  },
+  {
+    "key": "odaDuzen.champagne_barAlt",
+    "en": "Lounge bar layout",
+    "tr": "Lounge bar düzeni"
+  },
+  {
+    "key": "odaDuzen.nightclub_boothAlt",
+    "en": "Club booth seats",
+    "tr": "Gece kulübü koltuk"
+  },
+  {
+    "key": "odaDuzen.vip_railAlt",
+    "en": "Horizontal VIP mic rail",
+    "tr": "Yatay VIP mikrofon rayı"
+  },
+  {
+    "key": "odaDuzen.glass_cascadeAlt",
+    "en": "Cascading glass rows",
+    "tr": "Kademeli cam dizilim"
+  },
+  {
+    "key": "odaDuzen.diamond_cutAlt",
+    "en": "Diamond row layout",
+    "tr": "Elmas satır yerleşimi"
+  },
+  {
+    "key": "odaDuzen.prism_stackAlt",
+    "en": "Prism diamond layers",
+    "tr": "Prizma elmas katman"
+  },
+  {
+    "key": "odaDuzen.halo_frameAlt",
+    "en": "Halo orbit frame",
+    "tr": "Halo halkalı yörünge"
+  },
+  {
+    "key": "odaDuzen.mini_clusterAlt",
+    "en": "Compact cluster grid",
+    "tr": "Kompakt küme ızgara"
+  },
+  {
+    "key": "odaDuzen.intimate_duoAlt",
+    "en": "Dating · close duo",
+    "tr": "Flört · yakın ikili"
+  },
+  {
+    "key": "odaDuzen.focus_pairAlt",
+    "en": "Two-person focus",
+    "tr": "İki kişilik odak"
+  },
+  {
+    "key": "odaDuzen.tight_hexAlt",
+    "en": "Dense compact hex",
+    "tr": "Yoğun kompakt hex"
+  },
+  {
+    "key": "odaDuzen.spaces_stripAlt",
+    "en": "Host + horizontal speaker strip",
+    "tr": "Host + yatay konuşmacı şeridi"
+  },
+  {
+    "key": "odaDuzen.dropin_tiles",
+    "en": "Drop-in tiles",
+    "tr": "Drop-in karolar"
+  },
+  {
+    "key": "odaDuzen.greenroom_barAlt",
+    "en": "Host strip · compact audience",
+    "tr": "Host şeridi · kompakt dinleyici"
+  },
+  {
+    "key": "gorunum.sampanyaAlt",
+    "en": "VIP gold noir",
+    "tr": "VIP altın noir"
+  },
+  {
+    "key": "gorunum.zumrutAlt",
+    "en": "Forest VIP lounge",
+    "tr": "Orman VIP lounge"
+  },
+  {
+    "key": "gorunum.obsidyenAlt",
+    "en": "Matte black luxury",
+    "tr": "Mat siyah lüks"
+  },
+  {
+    "key": "gorunum.neon_sehirAlt",
+    "en": "Cyber pink · mint",
+    "tr": "Siber pembe · mint"
+  },
+  {
+    "key": "gorunum.inciAlt",
+    "en": "Light rose pearl",
+    "tr": "Açık rose inci"
+  },
+  {
+    "key": "gorunum.mint_sabahAlt",
+    "en": "Light emerald dawn",
+    "tr": "Açık zümrüt sabah"
+  },
+  {
+    "key": "sesOda.istegiReddet",
+    "en": "Decline {{ad}}’s request",
+    "tr": "{{ad}} isteğini reddet"
+  },
+  {
+    "key": "sesOda.istegiOnayla",
+    "en": "Approve {{ad}}’s request",
+    "tr": "{{ad}} isteğini onayla"
+  },
+  {
+    "key": "sesOda.saDk",
+    "en": "{{sa}} h {{dk}} min",
+    "tr": "{{sa}} sa {{dk}} dk"
+  },
+  {
+    "key": "sesOda.demoCanliOda",
+    "en": "Demo live room",
+    "tr": "Demo canlı oda"
+  },
+  {
+    "key": "odaMuzik.aiStudio",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "odaMuzik.sesBilgi",
+    "en": "Audio: {{ext}} · {{path}}",
+    "tr": "Ses: {{ext}} · {{path}}"
+  },
+  {
+    "key": "olusturTab.sesOdasiAlt",
+    "en": "Mic seats · chat · gifts",
+    "tr": "Mikrofon koltukları · sohbet · hediye"
+  },
+  {
+    "key": "olusturTab.canliYayinAlt",
+    "en": "Take the stage on camera · audience",
+    "tr": "Kamera ile sahneye çık · izleyici kitlesi"
+  },
+  {
+    "key": "olusturTab.durumAlt",
+    "en": "Short moment · share a photo or text",
+    "tr": "Kısa an · foto veya metin paylaş"
+  },
+  {
+    "key": "olusturTab.odaOnerisi",
+    "en": "{{ad}}'s room",
+    "tr": "{{ad}}'ın odası"
+  },
+  {
+    "key": "olusturTab.girisGerekli",
+    "en": "Sign-in required",
+    "tr": "Giriş gerekli"
+  },
+  {
+    "key": "olusturTab.baslikGerekliBody",
+    "en": "Write a short title for the room.",
+    "tr": "Oda için kısa bir başlık yaz."
+  },
+  {
+    "key": "olusturTab.odaAcilamaz",
+    "en": "Cannot open room",
+    "tr": "Oda açılamaz"
+  },
+  {
+    "key": "olusturTab.odaYasakBody",
+    "en": "You are banned from opening voice rooms. Try again when the ban expires or is lifted.",
+    "tr": "Ses odası açma yasağın var. Süre dolunca veya yönetim kaldırınca tekrar deneyebilirsin."
+  },
+  {
+    "key": "olusturTab.odanizVar",
+    "en": "You have a voice room",
+    "tr": "Ses odanız var"
+  },
+  {
+    "key": "olusturTab.odanizVarBody",
+    "en": "\"{{baslik}}\" is still open.\n\nIf you continue, the previous room closes and a new voice room opens.",
+    "tr": "\"{{baslik}}\" hâlâ açık.\n\nDevam ederseniz önceki oda kapanacak ve yeni ses odası açılacak."
+  },
+  {
+    "key": "olusturTab.odanizVarBodyKisa",
+    "en": "If you continue, the previous room closes and a new voice room opens.",
+    "tr": "Devam ederseniz önceki oda kapanacak ve yeni ses odası açılacak."
+  },
+  {
+    "key": "olusturTab.odamaGit",
+    "en": "Go to my room",
+    "tr": "Odama git"
+  },
+  {
+    "key": "olusturTab.odaKapatilamadi",
+    "en": "Could not close the previous room",
+    "tr": "Önceki oda kapatılamadı"
+  },
+  {
+    "key": "olusturTab.odaAcilamadi",
+    "en": "Could not open room",
+    "tr": "Oda açılamadı"
+  },
+  {
+    "key": "olusturTab.odaAcilamadiYasak",
+    "en": "You may be banned from opening voice rooms, lack permission, or already have an open room.",
+    "tr": "Ses odası açma yasağın olabilir, yetkin yok veya zaten açık bir odan var."
+  },
+  {
+    "key": "olusturTab.migrationHint",
+    "en": "Make sure the Supabase migration has been run.",
+    "tr": "Supabase migration çalıştırıldığından emin ol."
+  },
+  {
+    "key": "olusturTab.kapakEkle",
+    "en": "Add a cover photo",
+    "tr": "Kapak fotoğrafı ekle"
+  },
+  {
+    "key": "olusturTab.kapakYoksa",
+    "en": "Otherwise the {{tema}} theme is used",
+    "tr": "Yoksa {{tema}} teması kullanılır"
+  },
+  {
+    "key": "olusturTab.odaKapakResmi",
+    "en": "Room cover image",
+    "tr": "Oda kapak resmi"
+  },
+  {
+    "key": "olusturTab.temaYedek",
+    "en": "Photo set — theme as fallback ({{tema}})",
+    "tr": "Foto yüklü — tema yedek ({{tema}})"
+  },
+  {
+    "key": "olusturTab.temaSahne",
+    "en": "{{tema}} · full-screen stage in the room",
+    "tr": "{{tema}} · odada tam ekran sahne"
+  },
+  {
+    "key": "olusturTab.boyutAlt",
+    "en": "Seat and listener capacity",
+    "tr": "Koltuk ve dinleyici kapasitesi"
+  },
+  {
+    "key": "olusturTab.dinleyiciBin",
+    "en": "{{adet}}k listeners",
+    "tr": "{{adet}}k dinleyici"
+  }
+]

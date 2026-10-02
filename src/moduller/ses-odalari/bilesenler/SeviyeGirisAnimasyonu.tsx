@@ -597,19 +597,30 @@ function BannerSahne({
   }));
 
   const kartStil = useAnimatedStyle(() => {
-    const ty = interpolate(
+    // Bigo tarzı: sağdan kayarak gir, hafif bounce
+    const tx = interpolate(
       progress.value,
-      [0.04, 0.16, 0.82, 1],
-      [-48, 0, 0, -28],
+      [0.02, 0.18, 0.28, 0.82, 1],
+      [W * 0.55, -8, 0, 0, W * 0.35],
       Extrapolation.CLAMP,
     );
     const s = interpolate(
       progress.value,
-      [0.04, 0.18, 0.86, 1],
-      [0.82, 1, 1, 0.92],
+      [0.04, 0.2, 0.86, 1],
+      [0.88, 1.04, 1, 0.94],
       Extrapolation.CLAMP,
     );
-    return { transform: [{ translateY: ty }, { scale: s }] };
+    return { transform: [{ translateX: tx }, { scale: s }] };
+  });
+
+  const isikCubuguStil = useAnimatedStyle(() => {
+    const o = interpolate(
+      progress.value,
+      [0.12, 0.22, 0.7, 0.9],
+      [0, 1, 0.85, 0],
+      Extrapolation.CLAMP,
+    );
+    return { opacity: o };
   });
 
   const auraStil = useAnimatedStyle(() => {
@@ -642,6 +653,7 @@ function BannerSahne({
       <Animated.View style={[styles.kart, { maxWidth: kartW }, kartStil]}>
         <LinearGradient colors={[...renkler]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.cerceve}>
           <View style={styles.ic}>
+            <Animated.View style={[styles.vipIsikCubugu, { backgroundColor: renkler[0] }, isikCubuguStil]} />
             <Animated.View
               style={[styles.aura, { backgroundColor: `${renkler[1]}33` }, auraStil]}
             />
@@ -659,13 +671,14 @@ function BannerSahne({
             ))}
             <Animated.View style={[styles.bannerSweep, sweepStil]}>
               <LinearGradient
-                colors={['transparent', 'rgba(255,255,255,0.35)', 'transparent']}
+                colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
                 start={{ x: 0, y: 0.5 }}
                 end={{ x: 1, y: 0.5 }}
                 style={StyleSheet.absoluteFill}
               />
             </Animated.View>
             <View style={styles.avatarWrapBanner}>
+              <View style={[styles.avatarHalo, { borderColor: renkler[0] }]} />
               {MedyaUriGuvenli(avatarUrl) ? (
                 <Image source={{ uri: MedyaUriGuvenli(avatarUrl)! }} style={[styles.avatarBanner, { borderColor: renkler[0] }]} />
               ) : (
@@ -877,6 +890,25 @@ const styles = StyleSheet.create({
     width: AVATAR_BANNER * 0.78,
     height: AVATAR_BANNER * 0.78,
     zIndex: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarHalo: {
+    position: 'absolute',
+    width: '118%',
+    height: '118%',
+    borderRadius: 999,
+    borderWidth: 1.5,
+    opacity: 0.7,
+  },
+  vipIsikCubugu: {
+    position: 'absolute',
+    left: 0,
+    top: 8,
+    bottom: 8,
+    width: 3,
+    borderRadius: 2,
+    zIndex: 4,
   },
   avatarBanner: {
     width: '100%',

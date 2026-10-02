@@ -1,0 +1,19 @@
+{
+  "politikalar": {
+    "simdiKapali": "Policies are currently off.",
+    "kayitBasarisiz": "Could not save policy acceptance",
+    "tosBaslik": "Terms of Use",
+    "tosKisa": "Platform rules and responsibilities",
+    "tosKabulMetni": "I have read and accept the Terms of Use",
+    "privacyBaslik": "Privacy Policy",
+    "privacyKisa": "How personal data is processed",
+    "privacyKabulMetni": "I have read and accept the Privacy Policy",
+    "childSafetyBaslik": "Child Safety Policy",
+    "childSafetyKisa": "18+ · zero tolerance · no amnesty",
+    "childSafetyKabulMetni": "I have read and accept the Child Safety Policy",
+    "communityBaslik": "Community Guidelines",
+    "communityKisa": "UGC zero tolerance · report · block",
+    "communityKabulMetni": "I have read the Community Guidelines and accept zero tolerance for inappropriate content / harassment",
+    "communityGovde": "TAMUSO COMMUNITY GUIDELINES\n\nLast updated: 22 September 2026\nVersion: 1.0\n\nTamuso is open to user-generated content (status, comments, messages, voice rooms, live streams).\nZERO TOLERANCE applies to inappropriate content and abuse.\n\n────────────────────────────────\n1. AGE\n────────────────────────────────\nThe Platform is for ages 18 and over only. Underage content or participation is prohibited.\n\n────────────────────────────────\n2. PROHIBITED CONTENT AND BEHAVIOR\n────────────────────────────────\nStrictly prohibited:\n• Harassment, threats, stalking, bullying\n• Hate speech and discrimination\n• Pornographic / sexual exploitation content\n• Non-consensual sexual content\n• Any content related to child sexual abuse (CSAM) — no amnesty\n• Threats of violence or real-world harm\n• Fraud, phishing, spam\n• Impersonation\n• Sharing personal information without consent (doxxing)\n• Copyright infringement\n• Unlawful content\n• Platform abuse, bots, exploits\n\n────────────────────────────────\n3. MODERATION AND 24 HOURS\n────────────────────────────────\n• Users can use Report / Block tools.\n• Reports enter the moderation queue; our target is review within 24 hours.\n• On violation, content is removed; repeat or severe violations may lead to warning, suspension, or account closure.\n\n────────────────────────────────\n4. CONTACT\n────────────────────────────────\nIn-app: Safety → Contact Us\nEmail: support@litxtech.com\nLive Support: Settings / Safety\n\nThese guidelines apply together with the Terms of Use and Child Safety Policy.\n"
+  }
+}

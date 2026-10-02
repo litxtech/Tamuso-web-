@@ -1,0 +1,11 @@
+{
+  "misafirHesap": {
+    "baslik": "Finaliser votre compte",
+    "alt": "La messagerie, les cadeaux et le micro nécessitent un compte vérifié par e-mail. Votre identité est protégée.",
+    "adSoyadGerekli": "Le prénom et le nom sont obligatoires.",
+    "tamamlamaBasarisiz": "Échec de la finalisation",
+    "epostaPlaceholder": "nom@gmail.com",
+    "hesabiOlustur": "Créer un compte",
+    "simdiDegil": "Pas maintenant"
+  }
+}

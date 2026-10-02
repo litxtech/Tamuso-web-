@@ -17,6 +17,7 @@ type GiftTxRow = {
   id: string;
   room_id: string | null;
   sender_id: string;
+  receiver_id?: string | null;
   gift_id: string;
   quantity: number;
   coins_spent?: number;
@@ -77,13 +78,21 @@ export function useOdaHediyeCanlisi(params: {
                 Number(row.coins_spent) || (gift ? gift.coin_cost * adet : 0);
 
               const profil = await ProfilMiniCache.al(row.sender_id);
+              const alici = row.receiver_id
+                ? await ProfilMiniCache.al(row.receiver_id)
+                : null;
 
+              const aliciAd = alici ? ProfilMiniCache.gosterimAdi(alici) : null;
               HediyeAnimasyonuKuyrugu.ekle({
                 id: `rt_${row.id}`,
                 giftId: row.gift_id,
                 emoji: gift?.emoji ?? '🎁',
                 name: HediyeAdiCevir(gift?.code, gift?.name),
                 senderName: ProfilMiniCache.gosterimAdi(profil),
+                receiverName: aliciAd,
+                alicilar: aliciAd
+                  ? [{ ad: aliciAd, avatarUrl: alici?.avatar_url ?? null }]
+                  : undefined,
                 durationMs: gift?.duration_ms ?? (adet > 1 ? 2600 : 2200),
                 fullScreen: !!(gift?.full_screen || coin >= 999 || adet >= 77),
                 coinCost: gift?.coin_cost ?? coin,

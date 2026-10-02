@@ -152,6 +152,9 @@ export function CuzdanMetinAl(
     block.locales[locale] ||
     block.locales.tr ||
     block.locales.en ||
+    block.locales.es ||
+    block.locales.pt ||
+    block.locales.ar ||
     Object.values(block.locales)[0] ||
     fallback
   );

@@ -9,6 +9,7 @@ export function useMisafirIslemKapisi(isGuest: boolean) {
 
   const islemiDene = useCallback(
     (islem: MisafirEngelliIslem, devam: () => void) => {
+      if (typeof devam !== 'function') return;
       if (MisafirIslemEngellendiMi(isGuest, islem)) {
         setUpgradeAcik(true);
         return;

@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useCeviri } from '../../src/i18n/useCeviri';
 import { SlotOyunEkrani } from '../../src/moduller/oyunlar/slot/ekranlar/SlotOyunEkrani';
 import { registerNoxReels } from '../../src/moduller/oyunlar/slot/SlotKayit';
 import { isGameVisible } from '../../src/moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
@@ -18,6 +19,7 @@ import {
 type Durum = 'yukleniyor' | 'acik' | 'kapali';
 
 export default function NoxOyunSayfasi() {
+  const { t } = useCeviri();
   const { user } = useAuth();
   const [durum, setDurum] = useState<Durum>('yukleniyor');
 
@@ -56,12 +58,10 @@ export default function NoxOyunSayfasi() {
   if (durum === 'kapali') {
     return (
       <View style={styles.merkez}>
-        <Text style={styles.baslik}>NOX REELS</Text>
-        <Text style={styles.mesaj}>
-          Oyun şu an kapalı. Daha sonra tekrar dene.
-        </Text>
+        <Text style={styles.baslik}>{t('oyun.nox')}</Text>
+        <Text style={styles.mesaj}>{t('oyun.acikOyunYokBody')}</Text>
         <Pressable style={styles.btn} onPress={kapat}>
-          <Text style={styles.btnText}>Geri dön</Text>
+          <Text style={styles.btnText}>{t('ortak.geriDon')}</Text>
         </Pressable>
       </View>
     );

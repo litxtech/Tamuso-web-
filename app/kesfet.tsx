@@ -50,6 +50,7 @@ import {
   YaricapTokenlari,
 } from '../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../src/i18n/useCeviri';
+import { SesOdasinaGit } from '../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
 
 const FILTRE_IKONLARI: Record<KesfetFiltresi, keyof typeof Ionicons.glyphMap> = {
   global: 'grid-outline',
@@ -140,6 +141,16 @@ export default function KesfetEkrani() {
         icon: 'trophy-outline',
         href: '/sehir/lig',
         tint: RenkTokenlari.accent,
+      });
+    }
+
+    if (OzellikBayragiAktifMi('country_league_enabled')) {
+      liste.push({
+        key: 'ulke',
+        label: t('ulkeLigi.feedButon'),
+        icon: 'globe-outline',
+        href: '/ulke',
+        tint: RenkTokenlari.violet,
       });
     }
 
@@ -236,7 +247,7 @@ export default function KesfetEkrani() {
   const ilkYukleme = loading && rooms.length === 0;
 
   const odaAc = useCallback((oda: Room) => {
-    router.push(`/lobi/${oda.id}` as any);
+    void SesOdasinaGit({ roomId: oda.id, room: oda });
   }, []);
 
   const hostAc = useCallback((hostId: string) => {

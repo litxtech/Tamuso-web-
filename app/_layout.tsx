@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import '../src/tasarim-sistemi/tema/StilYama';
 import { InteractionManager, LogBox } from 'react-native';
@@ -17,6 +17,9 @@ import { SesOdasiPipKurulum } from '../src/moduller/ses-odalari/pip/useSesOdasiP
 import { GorusmeGlobalKatman } from '../src/moduller/gorusme/bilesenler/GorusmeGlobalKatman';
 import { OyunKazancBalonuSaglayici } from '../src/moduller/oyunlar/kazanc-balonu/OyunKazancBalonuSaglayici';
 import { CocukKorumaOnayKarti } from '../src/moduller/cocuk-koruma/bilesenler/CocukKorumaOnayKarti';
+import { KritikDuyuruKapisi } from '../src/moduller/duyurular/bilesenler/KritikDuyuruKapisi';
+import { BiyometriKilitKapisi } from '../src/moduller/kimlik-dogrulama/biyometri/BiyometriKilitKapisi';
+import { SurumPolitikaKapisi } from '../src/moduller/surum-politikasi/bilesenler/SurumPolitikaKapisi';
 import { UygulamaHataSiniri } from '../src/ortak/hata-sinirlari/UygulamaHataSiniri';
 import { ModulHataSiniri } from '../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { ImagePickerOnIsit } from '../src/ortak/medya/ImagePickerHazirMi';
@@ -24,17 +27,20 @@ import { TemaSaglayici, useTema } from '../src/tasarim-sistemi/tema/TemaSaglayic
 import { TabBarGuvenlikKur } from '../src/components/tab-navigasyon/TabBarGuvenlik';
 import { YuzenTabBar } from '../src/components/YuzenTabBar';
 import { DilSaglayici } from '../src/i18n/DilSaglayici';
+import { OzellikBayrakSaglayici } from '../src/moduller/ozellik-bayraklari/OzellikBayrakSaglayici';
+import { RtcYenilemeKatmani } from '../src/moduller/rtc/RtcYenilemeKatmani';
+import { StudioUretimServisi } from '../src/moduller/studio/v2/ui/StudioUretimServisi';
 import '../src/i18n';
 import '../src/moduller/livekit/polyfill/AbortReasonPolyfill';
 
-// Tab bar AppState/Dimensions kilidi — en erken
+// Tab bar AppState/Dimensions kilidi â€” en erken
 try {
   TabBarGuvenlikKur();
 } catch {
   /* ignore */
 }
 
-// LiveKit / WebRTC gürültülü DEBUG logları
+// LiveKit / WebRTC gÃ¼rÃ¼ltÃ¼lÃ¼ DEBUG loglarÄ±
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { LiveKitGurultuLoglariniKapat } = require('../src/moduller/livekit/polyfill/LiveKitGurultuLoglariniKapat') as {
@@ -51,9 +57,10 @@ LogBox.ignoreLogs([
   'WS closed unexpectedly',
   'rn-webrtc',
   'ping timeout triggered',
+  'Received leave request while trying to (re)connect',
 ]);
 
-/** LiveKit globals — expo-audio ile AVAudioSession cakismasin */
+/** LiveKit globals â€” expo-audio ile AVAudioSession cakismasin */
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { LiveKitGlobalsKaydet } = require('../src/moduller/livekit/polyfill/LiveKitGlobalsKaydet') as {
@@ -61,7 +68,7 @@ try {
   };
   LiveKitGlobalsKaydet?.();
 } catch {
-  /* native eksik / bozuk — baglanti mock'a dusar */
+  /* native eksik / bozuk â€” baglanti mock'a dusar */
 }
 
 /** Android FGS + iOS arka plan ses oturumu */
@@ -71,7 +78,7 @@ try {
   /* native yok / Expo Go */
 }
 
-/** Android ses odası PiP aksiyonları */
+/** Android ses odasÄ± PiP aksiyonlarÄ± */
 try {
   SesOdasiPipKurulum();
 } catch {
@@ -86,6 +93,8 @@ export const unstable_settings = {
 
 function ImagePickerArkaPlanIsit() {
   useEffect(() => {
+    // Modül import'unu hemen başlat — ilk galeri tıklamasında cold-load olmasın
+    ImagePickerOnIsit({ izinIste: false });
     const gorev = InteractionManager.runAfterInteractions(() => {
       ImagePickerOnIsit({ izinIste: false });
     });
@@ -108,8 +117,10 @@ function KokIcerik() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: palet.bg }}>
       <UygulamaHataSiniri>
+        <SurumPolitikaKapisi>
         <AuthProvider>
           <DilSaglayiciKoku>
+          <OzellikBayrakSaglayici>
           <CuzdanUiProvider>
           <KullanimSuresiSaglayici>
           <BildirimSaglayici>
@@ -125,14 +136,14 @@ function KokIcerik() {
                 screenOptions={{
                   headerShown: false,
                   contentStyle: { backgroundColor: palet.bg },
-                  // fade: eski + yeni başlık üst üste biner; slide temiz
+                  // fade: eski + yeni baÅŸlÄ±k Ã¼st Ã¼ste biner; slide temiz
                   animation: 'slide_from_right',
                 }}
               >
           <Stack.Screen
             name="(tabs)"
             options={{
-              // Ana kabuk kaydırılarak pop edilmesin — hamburger kenarı ile çakışır
+              // Ana kabuk kaydÄ±rÄ±larak pop edilmesin â€” hamburger kenarÄ± ile Ã§akÄ±ÅŸÄ±r
               gestureEnabled: false,
               fullScreenGestureEnabled: false,
             }}
@@ -184,9 +195,17 @@ function KokIcerik() {
           <Stack.Screen name="ajans/[id]/gorevler" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ajans/[id]/analitik" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ajans/[id]/islemler" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/cuzdan" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/paketler" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/satis-linkleri" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/satis-takibi" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/dekontlar" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/faturalar" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ajans/[id]/ayarlar" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ajans/[id]/destek" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ajans/[id]/guvenlik" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/[id]/dogrulama" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ajans/satis/[kod]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen
             name="admin/ajanslar/index"
             options={{ animation: 'slide_from_right' }}
@@ -205,6 +224,12 @@ function KokIcerik() {
           <Stack.Screen name="admin/sehir-secim" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="platform/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="duyuru/index" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="duyuru/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="announcements/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="admin/duyurular/index" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="admin/duyurular/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="admin/duyurular/[id]/analitik" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="admin/duyurular/[id]/izleyiciler" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="politika/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="politika/[kod]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="guvenlik/index" options={{ animation: 'slide_from_right' }} />
@@ -254,6 +279,14 @@ function KokIcerik() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
+            name="admin/dogrulama/index"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="admin/dogrulama/[id]"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
             name="admin/takas/index"
             options={{ animation: 'slide_from_right' }}
           />
@@ -283,11 +316,19 @@ function KokIcerik() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
+            name="admin/ajans-paketleri"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
             name="admin/satin-alma-itirazlar"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen name="admin/oyunlar" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="admin/oyun-test" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen
+            name="admin/oyun-algoritma/index"
+            options={{ animation: 'slide_from_right' }}
+          />
           <Stack.Screen
             name="admin/bannerlar/index"
             options={{ animation: 'slide_from_right' }}
@@ -310,7 +351,19 @@ function KokIcerik() {
           />
           <Stack.Screen name="webview" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen
+            name="odeme-basarili"
+            options={{
+              animation: 'fade',
+              presentation: 'modal',
+              gestureEnabled: true,
+            }}
+          />
+          <Stack.Screen
             name="admin/ozellikler"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="admin/hamburger-menu"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen name="paylasim/index" options={{ animation: 'slide_from_right' }} />
@@ -350,7 +403,7 @@ function KokIcerik() {
             options={{
               animation: 'fade',
               presentation: 'fullScreenModal',
-              // Tema bg sızmasın — sahne gradient üst tonu
+              // Tema bg sÄ±zmasÄ±n â€” sahne gradient Ã¼st tonu
               contentStyle: { backgroundColor: '#0B1A14' },
               statusBarTranslucent: true,
               statusBarStyle: 'light',
@@ -366,6 +419,26 @@ function KokIcerik() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
+            name="admin/surum-guncelleme"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="admin/rtc-altyapi"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="admin/studio"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="studio/index"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="studio/[id]"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
             name="admin/cocuk-koruma"
             options={{ animation: 'slide_from_right' }}
           />
@@ -374,16 +447,22 @@ function KokIcerik() {
               <AktifSesOdasiMiniBar />
               <AktifSesOdasiPipKart />
               <GorusmeGlobalKatman />
+              <RtcYenilemeKatmani />
+              <StudioUretimServisi />
               <OyunKazancBalonuSaglayici />
               <CocukKorumaOnayKarti />
+              <KritikDuyuruKapisi />
+              <BiyometriKilitKapisi />
             </GorusmeGelenSaglayici>
           </ModulHataSiniri>
           </MesajOkunmamisSaglayici>
           </BildirimSaglayici>
           </KullanimSuresiSaglayici>
           </CuzdanUiProvider>
+          </OzellikBayrakSaglayici>
           </DilSaglayiciKoku>
         </AuthProvider>
+        </SurumPolitikaKapisi>
       </UygulamaHataSiniri>
     </GestureHandlerRootView>
   );
@@ -392,6 +471,11 @@ function KokIcerik() {
 function DilSaglayiciKoku({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
   return (
-    <DilSaglayici profilDili={profile?.language ?? null}>{children}</DilSaglayici>
+    <DilSaglayici
+      profilDili={profile?.language ?? null}
+      profilUlke={profile?.country_code ?? null}
+    >
+      {children}
+    </DilSaglayici>
   );
 }

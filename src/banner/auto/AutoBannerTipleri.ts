@@ -1,5 +1,7 @@
 /** Olay tabanlı otomatik banner ayarları / liste */
 
+import i18n from '../../i18n';
+
 export type AutoBannerKind =
   | 'room_coins'
   | 'live_coins'
@@ -53,13 +55,21 @@ export type AutoBannerKayit = {
   deactivate_reason: string | null;
 };
 
-export const AUTO_BANNER_KIND_LABELS: Record<AutoBannerKind, string> = {
-  room_coins: 'Oda coin eşiği',
-  live_coins: 'Canlı coin eşiği',
-  seats_full: 'Koltuklar dolu',
-  game_coins: 'Oyun coin eşiği',
-  gift_burst: 'Hediye yağmuru',
-};
+export function autoBannerKindLabel(kind: AutoBannerKind): string {
+  return i18n.t(`banner.auto.${kind}`);
+}
+
+/** Lazy i18n — dil değişince doğru etiket */
+export const AUTO_BANNER_KIND_LABELS: Record<AutoBannerKind, string> = new Proxy(
+  {} as Record<AutoBannerKind, string>,
+  {
+    get(_target, prop: string | symbol) {
+      if (typeof prop !== 'string') return undefined;
+      if (prop === '$$typeof' || prop.startsWith('@@')) return undefined;
+      return autoBannerKindLabel(prop as AutoBannerKind);
+    },
+  },
+);
 
 export const AUTO_BANNER_AYAR_VARSAYILAN: AutoBannerAyarlari = {
   enabled: true,

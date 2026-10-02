@@ -1,7 +1,8 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 function rpcHata(error: { message?: string } | null): never {
-  throw new Error(error?.message ?? 'Ajans işlem başarısız');
+  throw new Error(error?.message ?? i18n.t('ajans.islemBasarisiz'));
 }
 
 export type AjansIzinler = {
@@ -240,6 +241,30 @@ export async function AjansDavetListesi(agencyId: string) {
 export async function AjansDavetIptal(inviteId: string) {
   const { error } = await supabase.rpc('ajans_davet_iptal', {
     p_invite_id: inviteId,
+  });
+  if (error) return { ok: false as const, hata: error.message };
+  return { ok: true as const };
+}
+
+export async function AjansYoneticiAta(input: {
+  agencyId: string;
+  username: string;
+}) {
+  const { error } = await supabase.rpc('ajans_yonetici_ata', {
+    p_agency_id: input.agencyId,
+    p_username: input.username.trim(),
+  });
+  if (error) return { ok: false as const, hata: error.message };
+  return { ok: true as const };
+}
+
+export async function AjansYoneticiIptal(input: {
+  agencyId: string;
+  userId: string;
+}) {
+  const { error } = await supabase.rpc('ajans_yonetici_iptal', {
+    p_agency_id: input.agencyId,
+    p_user_id: input.userId,
   });
   if (error) return { ok: false as const, hata: error.message };
   return { ok: true as const };
@@ -627,7 +652,7 @@ export function saniyeSaatMetni(saniye: number): string {
   const s = Math.max(0, Math.floor(saniye || 0));
   const sa = Math.floor(s / 3600);
   const dk = Math.floor((s % 3600) / 60);
-  if (sa <= 0 && dk <= 0) return '0 sa';
-  if (sa <= 0) return `${dk} dk`;
-  return `${sa} sa ${dk} dk`;
+  if (sa <= 0 && dk <= 0) return i18n.t('ajans.saKisa', { n: 0 });
+  if (sa <= 0) return i18n.t('ajans.dkSadece', { dk });
+  return i18n.t('ajans.saDkKisa', { sa, dk });
 }

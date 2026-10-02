@@ -3,7 +3,7 @@
  * Finansal bakiye / IAP ile karıştırma.
  */
 
-export type CuzdanUiLocale = 'tr' | 'en' | 'ar';
+export type CuzdanUiLocale = 'tr' | 'en' | 'es' | 'pt' | 'ar' | 'fr' | 'fil';
 
 export type CuzdanIconSource = 'ionicon' | 'url' | 'default';
 

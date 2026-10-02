@@ -1,0 +1,8 @@
+.env
+fixtures/tokens.json
+results/*.json
+results/*.csv
+results/*.summary.json
+node_modules/
+bin/
+*.zip

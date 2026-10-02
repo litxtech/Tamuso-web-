@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { GaleriAc } from '../../../ortak/medya/ImagePickerHazirMi';
 import {
@@ -26,7 +27,7 @@ export async function FikirGorseliSecVeYukle(opts?: {
 
     const asset = secim.asset;
     const uid = (await supabase.auth.getUser()).data.user?.id;
-    if (!uid) return { ok: false, hata: 'Oturum yok' };
+    if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') as string };
 
     const ext = MedyaUzantisiCoz(asset.uri, asset.mimeType, 'jpg');
     const path = `${uid}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
@@ -54,7 +55,10 @@ export async function FikirGorseliSecVeYukle(opts?: {
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Görsel yüklenemedi',
+      hata:
+        e instanceof Error
+          ? e.message
+          : (i18n.t('fikirler.gorselYuklenemedi') as string),
     };
   }
 }

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type MahkemeKurSonuc =
   | { ok: true; disputeId: string; threadId: string; already: boolean }
@@ -16,14 +17,14 @@ export async function TakasMahkemeKur(input: {
     if (/yargic/i.test(error.message) || /yargıç/i.test(error.message)) {
       return {
         ok: false,
-        hata: 'Platform yargıcı henüz atanmamış. Destek / admin ile iletişime geçin.',
+        hata: i18n.t('takas.yargicAtanmamis'),
       };
     }
     if (/gerekçe|gerekce|10 karakter/i.test(error.message)) {
-      return { ok: false, hata: 'Anlaşmazlık gerekçesi en az 10 karakter olmalı.' };
+      return { ok: false, hata: i18n.t('takas.mahkemeGerekceMin') };
     }
     if (/Forbidden/i.test(error.message)) {
-      return { ok: false, hata: 'Bu teklif için mahkeme açma yetkiniz yok.' };
+      return { ok: false, hata: i18n.t('takas.mahkemeYetkiYok') };
     }
     return { ok: false, hata: error.message };
   }
@@ -34,7 +35,7 @@ export async function TakasMahkemeKur(input: {
     already?: boolean;
   };
   if (!row?.thread_id || !row?.dispute_id) {
-    return { ok: false, hata: 'Mahkeme oluşturulamadı.' };
+    return { ok: false, hata: i18n.t('takas.mahkemeOlusturulamadi') };
   }
   return {
     ok: true,

@@ -1,0 +1,12 @@
+{
+  "engellenen": {
+    "baslik": "Comptes bloqués",
+    "kullanicilarBaslik": "Utilisateurs bloqués",
+    "altBaslik": "Vous pouvez les débloquer ici",
+    "bos": "Aucun compte bloqué",
+    "bosKisa": "Personne bloqué",
+    "bosBody": "Les personnes que vous bloquez apparaissent dans cette liste.",
+    "engeliKaldir": "Débloquer",
+    "kaldirBody": "{{ad}} pourra à nouveau vous trouver et vous écrire."
+  }
+}

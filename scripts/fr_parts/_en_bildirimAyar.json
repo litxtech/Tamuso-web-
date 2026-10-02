@@ -1,0 +1,20 @@
+{
+  "bildirimAyar": {
+    "tumu": "All notifications",
+    "tumuAlt": "If off, no push is sent at all",
+    "mesajlar": "Messages",
+    "mesajlarAlt": "When a private message arrives",
+    "hediyeler": "Gifts",
+    "hediyelerAlt": "When someone sends you a gift",
+    "canli": "Live streams",
+    "canliAlt": "When someone you follow goes live",
+    "odalar": "Rooms",
+    "odalarAlt": "Room invites and room updates",
+    "sosyal": "Social",
+    "sosyalAlt": "New followers and social events",
+    "cuzdan": "Wallet",
+    "cuzdanAlt": "Top-ups, withdrawals, and balance",
+    "sistem": "System",
+    "sistemAlt": "Announcements and important system messages"
+  }
+}

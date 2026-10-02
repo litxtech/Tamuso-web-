@@ -96,7 +96,8 @@ function htmlLanding(opts: {
 /**
  * Public share / install redirect.
  * GET /share-redirect?c=DAVETKODU&landing=1
- * UA ile App Store / Play / web'e yönlendirir.
+ * GET /share-redirect?ajans_satis=KOD → ajans-pay
+ * NOT: verify_jwt = false
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -114,10 +115,18 @@ Deno.serve(async (req) => {
     const shareCode = (url.searchParams.get('c') ?? url.searchParams.get('code') ?? '')
       .trim()
       .toUpperCase() || null;
+    const ajansSatis = (url.searchParams.get('ajans_satis') ?? '').trim().toUpperCase() || null;
     const forceLanding = url.searchParams.get('landing') === '1';
     const ua = req.headers.get('user-agent') ?? '';
     const platform = platformFromUa(ua);
     const appName = Deno.env.get('APP_DISPLAY_NAME') ?? 'Tamuso';
+
+    // Eski satış linkleri bozulmasın → yeni ödeme sayfasına
+    if (ajansSatis) {
+      const pay =
+        `${supabaseUrl.replace(/\/$/, '')}/functions/v1/ajans-pay?c=${encodeURIComponent(ajansSatis)}`;
+      return Response.redirect(pay, 302);
+    }
 
     const admin = createClient(supabaseUrl, serviceKey);
 

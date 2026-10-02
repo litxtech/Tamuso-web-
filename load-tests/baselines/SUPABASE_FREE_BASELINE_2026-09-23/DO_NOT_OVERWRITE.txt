@@ -1,0 +1,9 @@
+DO NOT OVERWRITE / DELETE / RE-RUN INTO THIS FOLDER.
+
+Baseline id: SUPABASE_FREE_BASELINE_2026-09-23
+
+This is the immutable Free-tier capture from 2026-09-23.
+Future compute-tier comparisons must write to:
+  load-tests/results/runs/<LOADTEST_RUN_ID>/
+
+See BASELINE.md and manifest.json.

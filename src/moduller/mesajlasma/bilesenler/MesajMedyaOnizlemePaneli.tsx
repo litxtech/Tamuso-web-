@@ -43,22 +43,26 @@ type Props = {
 
 function YerelVideoOnizleme({ uri }: { uri: string }) {
   const player = useVideoPlayer(uri, (p) => {
-    p.loop = true;
-    p.muted = true;
-    p.play();
+    try {
+      p.loop = true;
+      p.muted = true;
+      if (typeof p.play === 'function') p.play();
+    } catch {
+      /* native henüz hazır değil */
+    }
   });
 
   useEffect(() => {
     try {
       player.muted = true;
       player.loop = true;
-      player.play();
+      if (typeof player.play === 'function') player.play();
     } catch {
       /* native hazır değil */
     }
     return () => {
       try {
-        player.pause();
+        if (typeof player.pause === 'function') player.pause();
       } catch {
         /* noop */
       }

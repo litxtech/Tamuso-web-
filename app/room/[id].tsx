@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Keyboard,
   Platform,
@@ -13,6 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
 import { useCeviri } from '../../src/i18n/useCeviri';
@@ -55,7 +55,6 @@ import { useOdaSeviyeGiris } from '../../src/moduller/ses-odalari/animasyon/useO
 import { OdaCanliAtmosfer } from '../../src/moduller/ses-odalari/bilesenler/OdaCanliAtmosfer';
 import { OdaSahneArkaPlan } from '../../src/moduller/ses-odalari/bilesenler/OdaSahneArkaPlan';
 import { OdaProfilCubugu } from '../../src/moduller/ses-odalari/bilesenler/OdaProfilCubugu';
-import { OdaProfilKartiPaneli } from '../../src/moduller/ses-odalari/bilesenler/OdaProfilKartiPaneli';
 import { OdaBilgiPaneli } from '../../src/moduller/ses-odalari/bilesenler/OdaBilgiPaneli';
 import {
   OdaKatilimciAksiyonPaneli,
@@ -102,25 +101,26 @@ import { OdaDinleyiciPaneli } from '../../src/moduller/ses-odalari/bilesenler/Od
 import { OdaSesHacmiButonu } from '../../src/moduller/ses-odalari/bilesenler/OdaSesHacmiButonu';
 import { OdaMuzikButonu } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikButonu';
 import { OdaMuzikPlak } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikPlak';
-import { OdaMuzikIsikShow } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikIsikShow';
-import {
-  OdaMuzikAcilisAnimasyonu,
-  type MuzikButonHedef,
-} from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikAcilisAnimasyonu';
 import { OdaMuzikKutuphanesiSheet } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikKutuphanesiSheet';
 import { useOdaMuzikSession } from '../../src/moduller/oda-muzik/kancalar/useOdaMuzikSession';
 import { useOdaMuzikDucking } from '../../src/moduller/oda-muzik/kancalar/useOdaMuzikDucking';
 import {
+  RoomMusicKomutCalistir,
   RoomMusicPause,
   RoomMusicQueueAdd,
   RoomMusicResume,
   RoomMusicSeek,
+  RoomMusicSessionGet,
   RoomMusicSet,
   RoomMusicSetVolume,
   RoomMusicSkip,
   RoomMusicStop,
+  type RoomMusicSession,
 } from '../../src/moduller/oda-muzik/islemler/OdaMuzikApi';
-import { OdaMuzikPozisyonMs } from '../../src/moduller/oda-muzik/oynatici/OdaMuzikOynatici';
+import {
+  OdaMuzikBitisDinle,
+  OdaMuzikPozisyonMs,
+} from '../../src/moduller/oda-muzik/oynatici/OdaMuzikOynatici';
 import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
 import {
   ODA_DOCK_BTN,
@@ -130,12 +130,12 @@ import { OdaKapakDuzenlePaneli } from '../../src/moduller/ses-odalari/bilesenler
 import { OdaOyunDockButonu } from '../../src/moduller/ses-odalari/bilesenler/OdaOyunDockButonu';
 import { OdaCanliYorumAkisi } from '../../src/moduller/oda-sohbeti/bilesenler/OdaCanliYorumAkisi';
 import { OdaCanliYorumComposer } from '../../src/moduller/oda-sohbeti/bilesenler/OdaCanliYorumComposer';
-import { CanliYorumCekilebilirKart } from '../../src/moduller/canli-sohbet/bilesenler/CanliYorumCekilebilirKart';
 import {
   OdaModerasyonUygula,
   type ModerasyonAksiyonu,
 } from '../../src/moduller/moderasyon/islemler/ModerasyonIslemleri';
 import { HediyeMagazaPaneli } from '../../src/moduller/hediyeler/bilesenler/HediyeMagazaPaneli';
+import type { HediyePkAlici } from '../../src/moduller/hediyeler/islemler/HediyeMagazaTipleri';
 import { CoinYuklePaneli } from '../../src/moduller/cuzdan/bilesenler/CoinYuklePaneli';
 import { useCoinYuklePaneli } from '../../src/moduller/cuzdan/islemler/useCoinYuklePaneli';
 import { HEDIYE_FALLBACK_50 } from '../../src/moduller/hediyeler/katalog/HediyeFallback50';
@@ -147,9 +147,7 @@ import { useKlavyeYuksekligi } from '../../src/bilesenler/klavye/useKlavyeYuksek
 import { SonGezileneKaydet, SonGezilendenSil } from '../../src/moduller/ana-sayfa/depolama/SonGezilenDepolama';
 
 /**
- * Sesli oda — sahne (koltuklar) + alt panelde yorum akışı + composer + dock.
- * Yorum input sol altta; kontrol butonları sağında.
- * Oyun motoru tembel yüklenir; odaya girişte donma olmaz.
+ * Sesli oda — sahne (koltuklar) + canlı yayın tarzı float yorumlar + alt dock.
  */
 
 function koltuklarEsit(a: RoomSeat[], b: RoomSeat[]): boolean {
@@ -173,6 +171,43 @@ function koltuklarEsit(a: RoomSeat[], b: RoomSeat[]): boolean {
     }
   }
   return true;
+}
+
+/** Realtime yenilemede profil kaybolursa önceki isim/avatar korunur */
+function koltukProfilKoruyarakBirles(
+  prev: RoomSeat[],
+  next: RoomSeat[],
+): RoomSeat[] {
+  return next.map((s) => {
+    if (!s.user_id) return s;
+    const profilZayif =
+      !s.profile ||
+      (!s.profile.display_name && !s.profile.username && !s.profile.avatar_url);
+    if (!profilZayif) return s;
+    const eski =
+      prev.find((p) => p.id === s.id && p.user_id === s.user_id) ??
+      prev.find((p) => p.user_id === s.user_id);
+    if (!eski?.profile) return s;
+    return {
+      ...s,
+      profile: {
+        ...eski.profile,
+        ...(s.profile ?? {}),
+        avatar_url: s.profile?.avatar_url ?? eski.profile.avatar_url,
+        display_name: s.profile?.display_name ?? eski.profile.display_name,
+        username: s.profile?.username ?? eski.profile.username,
+        level: s.profile?.level ?? eski.profile.level,
+      },
+    };
+  });
+}
+
+function koltuklariUygula(
+  prev: RoomSeat[],
+  next: RoomSeat[],
+): RoomSeat[] {
+  const birlesik = koltukProfilKoruyarakBirles(prev, next);
+  return koltuklarEsit(prev, birlesik) ? prev : birlesik;
 }
 
 /** Strict Mode / Fast Refresh ayni topic'e ikinci .on() eklemesin. */
@@ -206,6 +241,7 @@ export default function RoomScreen() {
   >(null);
   const [cikiyor, setCikiyor] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const [hediyeAliciIdler, setHediyeAliciIdler] = useState<string[]>([]);
   const [gameOpen, setGameOpen] = useState(false);
   const [odaKartAcik, setOdaKartAcik] = useState(false);
   const [odaBilgiAcik, setOdaBilgiAcik] = useState(false);
@@ -223,27 +259,6 @@ export default function RoomScreen() {
   const [odaSesHacmi, setOdaSesHacmi] = useState(1);
   const odaSesHacmiRef = useRef(1);
   odaSesHacmiRef.current = odaSesHacmi;
-  const [muzikAcilis, setMuzikAcilis] = useState<{
-    key: string;
-    title: string;
-    artist?: string | null;
-    cover?: string | null;
-  } | null>(null);
-  const muzikBtnRef = useRef<View>(null);
-  const muzikBtnHedef = useRef<MuzikButonHedef | null>(null);
-  const [muzikHedefTick, setMuzikHedefTick] = useState(0);
-  const sonMuzikTrackRef = useRef<string | null>(null);
-  const [profilKart, setProfilKart] = useState<{
-    userId: string;
-    displayName?: string | null;
-    username?: string | null;
-    avatarUrl?: string | null;
-    bio?: string | null;
-    level?: number | null;
-    coins?: number | null;
-    diamonds?: number | null;
-    baslik?: string;
-  } | null>(null);
   const [hostProfilYedek, setHostProfilYedek] = useState<Profile | null>(null);
   const [balonOyunKodu, setBalonOyunKodu] = useState<GameCode | null>(null);
   const [lastGift, setLastGift] = useState<string | null>(null);
@@ -252,6 +267,8 @@ export default function RoomScreen() {
   const [medyaHazirTick, setMedyaHazirTick] = useState(0);
   const [chatOpen, setChatOpen] = useState(true);
   const [yorumYenile, setYorumYenile] = useState(0);
+  /** Yorum paneli kapalıyken gelen yeni mesaj / hediye sayısı */
+  const [yorumUyari, setYorumUyari] = useState(0);
   /** Oyun oturumu açıkken lazy katman unmount olmasın */
   const [oyunMonteli, setOyunMonteli] = useState(false);
   const [sahipGiris, setSahipGiris] = useState<{
@@ -277,8 +294,28 @@ export default function RoomScreen() {
   const isModerator = isHost || isCohost || isPlatformAdmin;
   const muzikFlag = OzellikBayragiAktifMi('voice_room_music_enabled');
   const duckFlag = OzellikBayragiAktifMi('music_ducking_enabled');
-  const { session: muzikSession, yenile: muzikYenile } = useOdaMuzikSession(
+  const {
+    session: muzikSession,
+    yenile: muzikYenile,
+    setSession: muzikSessionUygula,
+  } = useOdaMuzikSession(
     muzikFlag && room?.id && !isDemo ? room.id : null,
+  );
+
+  /** Stale version / çift tap → conflict; uncaught promise bırakma */
+  const muzikKomut = React.useCallback(
+    async (run: (expectedVersion: number) => Promise<RoomMusicSession>) => {
+      if (!room?.id) return false;
+      try {
+        const next = await RoomMusicKomutCalistir(room.id, run);
+        await muzikSessionUygula(next);
+        return true;
+      } catch {
+        await muzikYenile();
+        return false;
+      }
+    },
+    [room?.id, muzikSessionUygula, muzikYenile],
   );
   useOdaMuzikDucking(
     Boolean(
@@ -289,30 +326,77 @@ export default function RoomScreen() {
     ),
   );
   const muzikYonetebilir = Boolean(muzikSession?.can_manage ?? isModerator);
-  const muzikCalıyor =
-    muzikSession?.state === 'PLAYING' || muzikSession?.state === 'PAUSED';
+  const muzikCalıyor = muzikSession?.state === 'PLAYING';
+  const muzikLiderBen =
+    !!user?.id && muzikSession?.leader_user_id === user.id;
 
   useEffect(() => {
-    const trackId = muzikSession?.track?.id ?? null;
-    if (muzikCalıyor && trackId && trackId !== sonMuzikTrackRef.current) {
-      sonMuzikTrackRef.current = trackId;
-      setMuzikAcilis({
-        key: `${trackId}-${Date.now()}`,
-        title: muzikSession?.track?.title ?? t('sesOda.muzik'),
-        artist: muzikSession?.track?.artist_name,
-        cover: muzikSession?.track?.cover_url,
-      });
-      muzikBtnRef.current?.measureInWindow((x, y, w, h) => {
-        if (w > 0 && h > 0) {
-          muzikBtnHedef.current = { x, y, w, h };
-          setMuzikHedefTick((n) => n + 1);
+    if (!room?.id || !muzikLiderBen) return;
+    return OdaMuzikBitisDinle(() => {
+      void muzikKomut(async () => {
+        const guncel = await RoomMusicSessionGet(room.id);
+        if (guncel.state !== 'PLAYING') return guncel;
+        if ((guncel.queue?.length ?? 0) > 0) {
+          return RoomMusicSkip(room.id, 1, guncel.version);
         }
+        return RoomMusicStop(room.id, guncel.version);
       });
+    });
+  }, [muzikKomut, muzikLiderBen, room?.id]);
+
+  // Yorum paneli kapalıyken yeni chat/hediye → Yorumlar butonunda uyarı
+  useEffect(() => {
+    if (chatOpen) {
+      setYorumUyari(0);
+      return;
     }
-    if (!muzikCalıyor) {
-      sonMuzikTrackRef.current = null;
+    if (isDemo || !room?.id) return;
+
+    const imza = `oda-yorum-uyari-${room.id}`;
+    for (const ch of supabase.getChannels()) {
+      const topic = ch.topic ?? '';
+      if (topic === imza || topic === `realtime:${imza}` || topic.includes(imza)) {
+        void supabase.removeChannel(ch);
+      }
     }
-  }, [muzikCalıyor, muzikSession?.track?.id, muzikSession?.track?.title, muzikSession?.track?.artist_name, muzikSession?.track?.cover_url]);
+
+    const uid = user?.id ?? null;
+    const channel = supabase
+      .channel(`${imza}-${Date.now().toString(36)}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'room_chat_messages',
+          filter: `room_id=eq.${room.id}`,
+        },
+        (payload: { new: Record<string, unknown> }) => {
+          const sender = payload.new?.user_id;
+          if (uid && sender === uid) return;
+          setYorumUyari((n) => Math.min(99, n + 1));
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'gift_transactions',
+          filter: `room_id=eq.${room.id}`,
+        },
+        (payload: { new: Record<string, unknown> }) => {
+          const sender = payload.new?.sender_id;
+          if (uid && sender === uid) return;
+          setYorumUyari((n) => Math.min(99, n + 1));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [chatOpen, isDemo, room?.id, user?.id]);
 
   const seviyeGirisSelf = useMemo(() => {
     if (!user?.id || isDemo) return null;
@@ -463,7 +547,7 @@ export default function RoomScreen() {
             );
             void fetchRoomSeats(id)
               .then((s) => {
-                setSeats((prev) => (koltuklarEsit(prev, s) ? prev : s));
+                setSeats((prev) => koltuklariUygula(prev, s));
               })
               .catch(() => undefined);
           }
@@ -567,10 +651,6 @@ export default function RoomScreen() {
     Keyboard.dismiss();
   }, [oyunAktif]);
 
-  React.useEffect(() => {
-    if (gameOpen) setOyunMonteli(true);
-  }, [gameOpen]);
-
   /** Başvuru kabul edilmeden / koltuktan düşünce ses yayınlanmaz */
   React.useEffect(() => {
     if (isDemo || isHost || !user?.id || !room) return;
@@ -612,8 +692,12 @@ export default function RoomScreen() {
     if (AktifSesOdasiArkaPlandaMi()) return;
     // load() join bitmeden ikinci join atma
     if (!medyaIlkBaglantiBitti.current) return;
+    // Zaten yayıncıysa zorla reconnect etme → LeaveRequest race
+    if (MedyaYayinciMi()) {
+      konusmaciYukseltildi.current = true;
+      return;
+    }
     // load() zaten speaker bağladıysa tekrar join etme
-    if (konusmaciYukseltildi.current && MedyaYayinciMi()) return;
     if (konusmaciYukseltildi.current) return;
     konusmaciYukseltildi.current = true;
     const roomName = room.livekit_room_name ?? `voice_${room.id}`;
@@ -630,7 +714,7 @@ export default function RoomScreen() {
         AktifSesOdasiGuncelle({ micAcik });
       } else {
         konusmaciYukseltildi.current = false;
-        if (medya.hata !== 'Bağlantı iptal edildi') {
+        if (medya.hata !== t('sesOda.baglantiIptalEdildi') && medya.hata !== 'Ba\u011flant\u0131 iptal edildi') {
           Alert.alert(t('sesOda.mikrofon'), medya.hata ?? t('sesOda.konusmaciBaglantiHatasi'));
         }
       }
@@ -652,7 +736,7 @@ export default function RoomScreen() {
     const yenile = () => {
       void fetchRoomSeats(room.id)
         .then((next) => {
-          setSeats((prev) => (koltuklarEsit(prev, next) ? prev : next));
+          setSeats((prev) => koltuklariUygula(prev, next));
         })
         .catch(() => undefined);
     };
@@ -709,7 +793,8 @@ export default function RoomScreen() {
     } catch {
       channel = null;
     }
-    const poll = setInterval(yenile, 5_000);
+    // Realtime asıl kaynak; poll yalnızca yedek — sık çekim ısınma üretir
+    const poll = setInterval(yenile, 15_000);
     return () => {
       clearInterval(poll);
       if (channel) void supabase.removeChannel(channel);
@@ -819,6 +904,7 @@ export default function RoomScreen() {
     void islemiDene('mikrofon', async () => {
       if (isDemo) {
         setMuted((m) => !m);
+        void Haptics.selectionAsync().catch(() => undefined);
         return;
       }
       if (!room) return;
@@ -844,6 +930,8 @@ export default function RoomScreen() {
         setMuted(sonraki);
         MedyaMikrofonAyarla(!sonraki);
         AktifSesOdasiGuncelle({ micAcik: !sonraki });
+        // Clubhouse/Bigo: mute SFX yok — sadece hafif haptic
+        void Haptics.selectionAsync().catch(() => undefined);
         return;
       }
 
@@ -912,68 +1000,16 @@ export default function RoomScreen() {
     };
   }, [room?.host_id, room?.host?.id, isDemo]);
 
-  const profilKartAc = useCallback(
-    (input: {
-      userId: string;
-      displayName?: string | null;
-      username?: string | null;
-      avatarUrl?: string | null;
-      bio?: string | null;
-      level?: number | null;
-      baslik?: string;
-    }) => {
-      if (!input.userId || isDemo) return;
-      const kendi = input.userId === user?.id;
-      setProfilKart({
-        ...input,
-        coins: kendi ? wallet?.coins : undefined,
-        diamonds: kendi ? wallet?.diamonds : undefined,
-      });
-      void ProfilGetir(input.userId).then((p) => {
-        if (!p) return;
-        setProfilKart((prev) =>
-          prev?.userId === p.id
-            ? {
-                ...prev,
-                displayName: p.display_name ?? prev.displayName,
-                username: p.username ?? prev.username,
-                avatarUrl: p.avatar_url ?? prev.avatarUrl,
-                bio: p.bio ?? prev.bio,
-                level: p.level ?? prev.level,
-              }
-            : prev,
-        );
-      });
-    },
-    [isDemo, user?.id, wallet?.coins, wallet?.diamonds],
-  );
-
   const odaSahibiKartAc = useCallback(() => {
-    const hid = room?.host_id;
-    if (!hid) return;
-    profilKartAc({
-      userId: hid,
-      displayName: odaSahibi?.display_name,
-      username: odaSahibi?.username,
-      avatarUrl: odaSahibi?.avatar_url,
-      bio: odaSahibi?.bio,
-      level: odaSahibi?.level,
-      baslik: t('sesOda.odaSahibi'),
-    });
-  }, [room?.host_id, odaSahibi, profilKartAc]);
+    if (!room?.host_id) return;
+    profileZiyaretEt(room.host_id);
+  }, [room?.host_id, profileZiyaretEt]);
 
   const yorumProfilAc = useCallback(
     (item: CanliSohbetMesajGorunum) => {
-      profilKartAc({
-        userId: item.user_id,
-        displayName: item.display_name,
-        username: item.username,
-        avatarUrl: item.avatar_url,
-        level: item.level,
-        baslik: t('ortak.profil'),
-      });
+      profileZiyaretEt(item.user_id);
     },
-    [profilKartAc],
+    [profileZiyaretEt],
   );
 
   const moderasyonMesaji = (action: ModerasyonAksiyonu): string => {
@@ -1331,6 +1367,17 @@ export default function RoomScreen() {
     ],
   );
 
+  const koltukTik = useCallback(
+    (seat: RoomSeat) => {
+      if (!seat.user_id) {
+        koltukMenusu(seat);
+        return;
+      }
+      profileZiyaretEt(seat.user_id);
+    },
+    [koltukMenusu, profileZiyaretEt],
+  );
+
   const load = useCallback(async () => {
     const loadNesil = ++odaLoadNesil.current;
     medyaIlkBaglantiBitti.current = false;
@@ -1520,9 +1567,7 @@ export default function RoomScreen() {
       setMedyaHazirTick((n) => n + 1);
       if (medya.ok) {
         setLkDurum(
-          medya.mock
-            ? `${t('sesOda.demo')} · ${medya.saglayici}`
-            : `${t('sesOda.bagliOnEk')} · ${medya.saglayici}`,
+          medya.mock ? t('sesOda.demo') : t('sesOda.bagliOnEk'),
         );
         MedyaHoparlorAyarla(true);
         MedyaUzakSesHacmiAyarla(odaSesHacmiRef.current);
@@ -1575,7 +1620,8 @@ export default function RoomScreen() {
         setLkDurum(medya.hata ?? t('ortak.baglantiHatasi'));
         if (
           (hostMu || koltukta) &&
-          medya.hata !== 'Bağlantı iptal edildi'
+          medya.hata !== t('sesOda.baglantiIptalEdildi') &&
+          medya.hata !== 'Ba\u011flant\u0131 iptal edildi'
         ) {
           konusmaciYukseltildi.current = false;
           Alert.alert(
@@ -1622,72 +1668,172 @@ export default function RoomScreen() {
         // Profil ziyareti: ses + mic açık kalsın
         if (AktifSesOdasiArkaPlandaMi()) return;
         KonusmaciSesSeviyesi.mockDurdur();
-        // Strict Mode / hızlı remount LiveKit'i öldürmesin — yeni focus iptal eder
+        // Strict Mode / hızlı remount LiveKit'i öldürmesin — yeni focus iptal eder.
+        // 500ms kısa kalıyordu: join hâlâ Connecting iken Kes → LeaveRequest.
         setTimeout(() => {
           if (odaFocusNesil.current !== oturum) return;
           if (AktifSesOdasiArkaPlandaMi()) return;
           void MedyaOdasiKes();
           AktifSesOdasiBitir();
-        }, 500);
+        }, 1800);
       };
     }, [load, id]),
   );
 
+  const hediyeAlicilari = useMemo(() => {
+    if (!room?.host_id) return [] as HediyePkAlici[];
+    const liste: HediyePkAlici[] = [];
+    const ekle = (
+      id: string,
+      ad: string,
+      rol: 'sahip' | 'konuk',
+      avatarUrl?: string | null,
+    ) => {
+      if (!id || id === user?.id || liste.some((x) => x.id === id)) return;
+      liste.push({ id, ad, rol, avatarUrl: avatarUrl ?? null });
+    };
+    const sahipAd =
+      odaSahibi?.display_name?.trim() ||
+      odaSahibi?.username?.trim() ||
+      room.host?.display_name?.trim() ||
+      room.host?.username?.trim() ||
+      t('kesfet.evSahibi');
+    ekle(
+      room.host_id,
+      sahipAd,
+      'sahip',
+      odaSahibi?.avatar_url ?? room.host?.avatar_url,
+    );
+    const koltuklar = [...seats]
+      .filter((s) => s.user_id && s.user_id !== room.host_id)
+      .sort((a, b) => a.seat_index - b.seat_index);
+    for (const koltuk of koltuklar) {
+      if (!koltuk.user_id) continue;
+      const ad =
+        koltuk.profile?.display_name?.trim() ||
+        koltuk.profile?.username?.trim() ||
+        t('ortak.kullanici');
+      ekle(koltuk.user_id, ad, 'konuk', koltuk.profile?.avatar_url);
+    }
+    return liste;
+  }, [odaSahibi, room?.host, room?.host_id, seats, t, user?.id]);
+
+  const hediyeKartAcikOnce = useRef(false);
+  useEffect(() => {
+    const yeniAcildi = giftOpen && !hediyeKartAcikOnce.current;
+    hediyeKartAcikOnce.current = giftOpen;
+    if (!giftOpen) return;
+    setHediyeAliciIdler((cur) => {
+      const gecerli = cur.filter((id) => hediyeAlicilari.some((a) => a.id === id));
+      if (yeniAcildi && gecerli.length === 0) {
+        const ilk = hediyeAlicilari[0]?.id;
+        return ilk ? [ilk] : [];
+      }
+      return gecerli;
+    });
+  }, [giftOpen, hediyeAlicilari]);
+
+  const hediyeAliciToggle = useCallback((id: string) => {
+    setHediyeAliciIdler((cur) =>
+      cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+    );
+  }, []);
+
   const onSendGift = (gift: Gift, quantity = 1) => {
     if (!user || !room) return;
+    const secilen = hediyeAlicilari.filter((a) => hediyeAliciIdler.includes(a.id));
+    if (secilen.length === 0) {
+      Alert.alert(t('hediye.baslik'), t('hediye.aliciBulunamadi'));
+      return;
+    }
     const adet = Math.max(1, quantity);
-    const maliyet = gift.coin_cost * adet;
+    const maliyet = gift.coin_cost * adet * secilen.length;
     if (maliyet > (wallet?.coins ?? 0)) {
       // Panel içi coin modu — HediyeMagazaPaneli yetmezken coinAc çağırır
       coinYukle.paketleriYenile();
       return;
     }
+    const aliciAdlari = secilen.map((a) => a.ad).join(', ');
+    const aliciAvatarlar = secilen.map((a) => ({
+      ad: a.ad,
+      avatarUrl: a.avatarUrl ?? null,
+    }));
     islemiDene('hediye_gonder', async () => {
       if (isDemo) {
-        setLastGift(`${gift.emoji} ${gift.name}${adet > 1 ? ` x${adet}` : ''}`);
+        setLastGift(
+          t('sesOda.hediyeSatir', {
+            emoji: gift.emoji,
+            ad: gift.name,
+            adet: adet > 1 ? ` ×${adet}` : '',
+            alici: aliciAdlari,
+          }),
+        );
         HediyeAnimasyonuKuyrugu.ekle({
           giftId: gift.id,
           emoji: gift.emoji,
           name: adet > 1 ? `${gift.name} x${adet}` : gift.name,
           senderName: profile?.display_name ?? profile?.username ?? t('gorusme.sen'),
+          receiverName: aliciAdlari,
+          alicilar: aliciAvatarlar,
           durationMs: 2200,
           fullScreen: gift.coin_cost >= 999 || adet >= 77,
           coinCost: gift.coin_cost,
           quantity: adet,
         });
         setTimeout(() => setLastGift(null), 1800);
+        setGiftOpen(false);
         return;
       }
       if (gift.id.startsWith('fb_')) {
         Alert.alert(t('sesOda.hediye'), t('sesOda.katalogYukleniyor'));
         return;
       }
-      const sonuc = await HediyeGonder({
-        giftId: gift.id,
-        receiverId: room.host_id,
-        roomId: room.id,
-        quantity: adet,
-      });
-      if (!sonuc.ok) {
-        const yetersiz = /insufficient|yetersiz/i.test(sonuc.hata ?? '');
-        if (yetersiz) {
-          coinYukle.paketleriYenile();
-          Alert.alert(t('sesOda.yetersizCoin'), t('sesOda.hediyeCoinYukle'));
-          return;
+      const giden: typeof secilen = [];
+      let harcanan = 0;
+      for (const alici of secilen) {
+        const sonuc = await HediyeGonder({
+          giftId: gift.id,
+          receiverId: alici.id,
+          roomId: room.id,
+          quantity: adet,
+        });
+        if (!sonuc.ok) {
+          const yetersiz = /insufficient|yetersiz/i.test(sonuc.hata ?? '');
+          if (yetersiz) {
+            coinYukle.paketleriYenile();
+            Alert.alert(t('sesOda.yetersizCoin'), t('sesOda.hediyeCoinYukle'));
+          } else {
+            Alert.alert(t('sesOda.hediye'), sonuc.hata ?? t('sesOda.gonderilemedi'));
+          }
+          break;
         }
-        Alert.alert(t('sesOda.hediye'), sonuc.hata ?? t('sesOda.gonderilemedi'));
-        return;
+        harcanan += sonuc.coinsSpent;
+        giden.push(alici);
       }
-      if (sonuc.coinsSpent > 0) {
-        adjustWallet({ coins: -sonuc.coinsSpent });
+      if (harcanan > 0) {
+        adjustWallet({ coins: -harcanan });
       }
       void refreshWallet();
-      setLastGift(`${gift.emoji} ${gift.name}${adet > 1 ? ` x${adet}` : ''}`);
+      if (giden.length === 0) return;
+      const gidenAdlar = giden.map((a) => a.ad).join(', ');
+      setLastGift(
+        t('sesOda.hediyeSatir', {
+          emoji: gift.emoji,
+          ad: gift.name,
+          adet: adet > 1 ? ` ×${adet}` : '',
+          alici: gidenAdlar,
+        }),
+      );
       HediyeAnimasyonuKuyrugu.ekle({
         giftId: gift.id,
         emoji: gift.emoji,
         name: adet > 1 ? `${gift.name} x${adet}` : gift.name,
         senderName: profile?.display_name ?? profile?.username ?? t('gorusme.sen'),
+        receiverName: gidenAdlar,
+        alicilar: giden.map((a) => ({
+          ad: a.ad,
+          avatarUrl: a.avatarUrl ?? null,
+        })),
         durationMs: 2200,
         fullScreen: gift.coin_cost >= 999 || adet >= 77,
         coinCost: gift.coin_cost,
@@ -1723,15 +1869,11 @@ export default function RoomScreen() {
     });
   };
 
-  if (loading) {
-    return (
-      <Screen koyuSahne>
-        <ActivityIndicator color={colors.primary} style={{ marginTop: 80 }} />
-      </Screen>
-    );
-  }
-
+  // Spinner yok — tıklanınca sahne hemen açılsın; veri arka planda gelir
   if (!room) {
+    if (loading) {
+      return <Screen koyuSahne edges={['top']} />;
+    }
     return (
       <Screen koyuSahne>
         <Text style={{ color: colors.text, textAlign: 'center', marginTop: 80 }}>
@@ -1769,6 +1911,7 @@ export default function RoomScreen() {
           topic={room.topic}
           coverUrl={room.cover_url}
           themeCode={room.theme_code}
+          layoutCode={room.layout_code}
           maxSeats={room.max_seats ?? (seats.length || 8)}
           doluKoltuk={seats.filter((s) => !!s.user_id).length}
           onClose={() => setOdaKartAcik(false)}
@@ -1781,6 +1924,9 @@ export default function RoomScreen() {
                     topic: next.topic,
                     cover_url: next.cover_url,
                     theme_code: next.theme_code,
+                    ...(next.layout_code !== undefined
+                      ? { layout_code: next.layout_code }
+                      : null),
                     ...(next.max_seats != null
                       ? { max_seats: next.max_seats }
                       : null),
@@ -1797,40 +1943,13 @@ export default function RoomScreen() {
             if (next.max_seats != null) {
               void fetchRoomSeats(room.id)
                 .then((s) => {
-                  setSeats((prev) => (koltuklarEsit(prev, s) ? prev : s));
+                  setSeats((prev) => koltuklariUygula(prev, s));
                 })
                 .catch(() => undefined);
             }
           }}
         />
       ) : null}
-
-      <OdaProfilKartiPaneli
-        visible={!!profilKart}
-        onClose={() => setProfilKart(null)}
-        userId={profilKart?.userId}
-        viewerId={user?.id}
-        isGuest={isGuest}
-        displayName={profilKart?.displayName}
-        username={profilKart?.username}
-        avatarUrl={profilKart?.avatarUrl}
-        bio={profilKart?.bio}
-        level={profilKart?.level}
-        coins={profilKart?.coins}
-        diamonds={profilKart?.diamonds}
-        baslik={profilKart?.baslik}
-        yukseklikOrani={0.58}
-        onNeedUpgrade={upgradeAc}
-        onProfilAc={
-          profilKart?.userId && !isDemo
-            ? () => {
-                const uid = profilKart.userId;
-                setProfilKart(null);
-                profileZiyaretEt(uid);
-              }
-            : undefined
-        }
-      />
 
       <OdaKatilimciAksiyonPaneli
         visible={!!katilimciMenu}
@@ -1870,10 +1989,7 @@ export default function RoomScreen() {
 
         {/* SAHNE */}
         <View style={styles.stage} pointerEvents={klavyeAcik ? 'box-none' : 'auto'}>
-          <OdaCanliAtmosfer yogunluk="hafif" />
-          {muzikFlag && muzikSession?.state === 'PLAYING' ? (
-            <OdaMuzikIsikShow aktif />
-          ) : null}
+          <OdaCanliAtmosfer yogunluk="kapali" themeCode={room.theme_code} />
           <View style={styles.topBar}>
             <View style={styles.topBarSol}>
               <OdaProfilCubugu
@@ -1921,22 +2037,10 @@ export default function RoomScreen() {
             <View style={styles.topBarSpacer} />
             <View style={styles.topBarSag}>
               {muzikFlag ? (
-                <View
-                  ref={muzikBtnRef}
-                  collapsable={false}
-                  onLayout={() => {
-                    muzikBtnRef.current?.measureInWindow((x, y, w, h) => {
-                      if (w > 0 && h > 0) {
-                        muzikBtnHedef.current = { x, y, w, h };
-                      }
-                    });
-                  }}
-                >
-                  <OdaMuzikButonu
-                    playing={muzikCalıyor}
-                    onPress={() => setMuzikSheetAcik(true)}
-                  />
-                </View>
+                <OdaMuzikButonu
+                  playing={muzikCalıyor}
+                  onPress={() => setMuzikSheetAcik(true)}
+                />
               ) : null}
               <ModulHataSiniri modulAdi="oda-dinleyici" varyant="kart">
                 <OdaDinleyiciPaneli
@@ -1999,17 +2103,6 @@ export default function RoomScreen() {
             </View>
           </View>
 
-          {muzikFlag && muzikAcilis ? (
-            <OdaMuzikAcilisAnimasyonu
-              animKey={`${muzikAcilis.key}-${muzikHedefTick}`}
-              title={muzikAcilis.title}
-              artistName={muzikAcilis.artist}
-              coverUrl={muzikAcilis.cover}
-              hedef={muzikBtnHedef.current}
-              onBitti={() => setMuzikAcilis(null)}
-            />
-          ) : null}
-
           <TamusoBanner placement="VOICE_ROOM_TOP" screen="VOICE_ROOM" compact />
 
           <ScrollView
@@ -2026,9 +2119,35 @@ export default function RoomScreen() {
               seats={seats}
               hostId={room.host_id}
               layoutCode={room.layout_code}
-              onSeatPress={koltukMenusu}
+              onSeatPress={koltukTik}
+              onSeatLongPress={koltukMenusu}
             />
           </ScrollView>
+
+          {/* Yorumlar — canlı yayın gibi sahne üstünde şeffaf float */}
+          {chatOpen && !isDemo && !oyunAktif ? (
+            <View
+              style={[
+                styles.yorumFloat,
+                { height: klavyeAcik ? 140 : 200 },
+              ]}
+              pointerEvents="box-none"
+            >
+              <ModulHataSiniri modulAdi="oda-sohbeti" varyant="kart">
+                <OdaCanliYorumAkisi
+                  roomId={room.id}
+                  currentUserId={user?.id}
+                  hostId={room.host_id}
+                  moderatorMu={isModerator}
+                  yenileSinyali={yorumYenile}
+                  baslikGizle
+                  floatMod
+                  onProfil={yorumProfilAc}
+                  gifts={gifts}
+                />
+              </ModulHataSiniri>
+            </View>
+          ) : null}
 
           {oyunlarAcik && !isDemo && !klavyeAcik ? (
             <View style={styles.oyunFab} pointerEvents="box-none">
@@ -2048,59 +2167,71 @@ export default function RoomScreen() {
 
           {lastGift ? (
             <View style={styles.giftToast}>
-              <Text style={styles.giftToastText}>
-                {t('sesOda.hediyeGonderildi', { hediye: lastGift })}
-              </Text>
+              <Text style={styles.giftToastText}>{lastGift}</Text>
             </View>
           ) : null}
         </View>
 
-        {/* ALT KART — yorum + composer + dock tek yüzey (oyun açıkken gizle) */}
+        {/* ALT DOCK — canlı yayın gibi şeffaf; yorumlar sahnede float */}
         {!oyunAktif ? (
         <View
           style={[
-            styles.altKart,
+            styles.altDock,
             {
-              // Klavyeyi padding ile şişirme — sahne orantısız yukarı kaymasın.
-              // Tüm alt kartı klavye kadar kaldır.
               marginBottom: klavyeAcik ? klavyeH : 0,
               paddingBottom: Math.max(insets.bottom, 6),
             },
           ]}
         >
-          {chatOpen && !isDemo ? (
-            <View style={styles.yorumBolum} pointerEvents="box-none">
-              <ModulHataSiniri modulAdi="oda-sohbeti" varyant="kart">
-                <CanliYorumCekilebilirKart
-                  birlesik
-                  klavyeAcik={klavyeAcik}
-                  onClose={() => setChatOpen(false)}
-                >
-                  <OdaCanliYorumAkisi
-                    roomId={room.id}
-                    currentUserId={user?.id}
-                    hostId={room.host_id}
-                    moderatorMu={isModerator}
-                    yenileSinyali={yorumYenile}
-                    baslikGizle
-                    onProfil={yorumProfilAc}
-                  />
-                </CanliYorumCekilebilirKart>
-              </ModulHataSiniri>
-            </View>
-          ) : !isDemo && !chatOpen ? (
+          {!isDemo && !chatOpen ? (
             <Pressable
-              onPress={() => setChatOpen(true)}
-              style={styles.yorumAcChip}
+              onPress={() => {
+                setYorumUyari(0);
+                setChatOpen(true);
+              }}
+              style={[
+                styles.yorumAcChip,
+                yorumUyari > 0 && styles.yorumAcChipUyari,
+              ]}
               accessibilityRole="button"
-              accessibilityLabel={t('sesOda.yorumlariGoster')}
+              accessibilityLabel={
+                yorumUyari > 0
+                  ? `${t('sesOda.yorumlariGoster')} (${yorumUyari})`
+                  : t('sesOda.yorumlariGoster')
+              }
             >
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={14}
-                color={colors.textMuted}
-              />
-              <Text style={styles.yorumAcYazi}>{t('sesOda.yorumlar')}</Text>
+              <View>
+                <Ionicons
+                  name="chatbubble-ellipses-outline"
+                  size={14}
+                  color={yorumUyari > 0 ? '#fff' : colors.textMuted}
+                />
+                {yorumUyari > 0 ? (
+                  <View style={styles.yorumUyariRozet}>
+                    <Text style={styles.yorumUyariYazi}>
+                      {yorumUyari > 9 ? '9+' : String(yorumUyari)}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text
+                style={[
+                  styles.yorumAcYazi,
+                  yorumUyari > 0 && styles.yorumAcYaziUyari,
+                ]}
+              >
+                {t('sesOda.yorumlar')}
+              </Text>
+            </Pressable>
+          ) : chatOpen && !isDemo ? (
+            <Pressable
+              onPress={() => setChatOpen(false)}
+              style={styles.yorumGizleChip}
+              accessibilityRole="button"
+              accessibilityLabel={t('canliYayin.a11yYorumlariGizle')}
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-down" size={12} color="rgba(255,255,255,0.55)" />
             </Pressable>
           ) : null}
 
@@ -2152,9 +2283,7 @@ export default function RoomScreen() {
                     onDegisti={() => {
                       void fetchRoomSeats(room.id)
                         .then((next) => {
-                          setSeats((prev) =>
-                            koltuklarEsit(prev, next) ? prev : next,
-                          );
+                          setSeats((prev) => koltuklariUygula(prev, next));
                         })
                         .catch(() => undefined);
                     }}
@@ -2211,6 +2340,7 @@ export default function RoomScreen() {
                 }
                 startModalVisible={gameOpen}
                 onStartModalClose={() => setGameOpen(false)}
+                onGameStarted={() => setOyunMonteli(true)}
                 onOverlayClosed={() => {
                   setGameOpen(false);
                   setOyunMonteli(false);
@@ -2231,12 +2361,14 @@ export default function RoomScreen() {
           gifts={gifts}
           coins={wallet?.coins}
           aliciAdi={
-            odaSahibi?.display_name ??
-            odaSahibi?.username ??
-            room.host?.display_name ??
-            room.host?.username ??
-            t('kesfet.evSahibi')
+            hediyeAlicilari
+              .filter((a) => hediyeAliciIdler.includes(a.id))
+              .map((a) => a.ad)
+              .join(', ') || null
           }
+          pkAlicilar={hediyeAlicilari.length > 0 ? hediyeAlicilari : undefined}
+          seciliAliciIdler={hediyeAliciIdler}
+          onPkAliciSec={hediyeAliciToggle}
           onSend={onSendGift}
           onClose={() => setGiftOpen(false)}
           coinPackages={coinYukle.packages}
@@ -2253,54 +2385,49 @@ export default function RoomScreen() {
           session={muzikSession}
           onClose={() => setMuzikSheetAcik(false)}
           onSelect={async (trackId) => {
-            await RoomMusicSet(room.id, trackId, muzikSession?.version);
-            await muzikYenile();
-            setMuzikSheetAcik(false);
+            const ok = await muzikKomut((v) =>
+              RoomMusicSet(room.id, trackId, v),
+            );
+            if (ok) setMuzikSheetAcik(false);
           }}
           onQueue={async (trackId) => {
-            await RoomMusicQueueAdd(room.id, trackId);
-            await muzikYenile();
+            try {
+              const next = await RoomMusicQueueAdd(room.id, trackId);
+              await muzikSessionUygula(next);
+              if (next.state !== 'PLAYING' && next.state !== 'PAUSED') {
+                await muzikKomut((v) => RoomMusicSkip(room.id, 1, v));
+              }
+            } catch {
+              await muzikYenile();
+            }
           }}
           onPause={() => {
-            void RoomMusicPause(
-              room.id,
-              OdaMuzikPozisyonMs(),
-              muzikSession?.version,
-            ).then(() => muzikYenile());
+            void muzikKomut((v) =>
+              RoomMusicPause(room.id, OdaMuzikPozisyonMs(), v),
+            );
           }}
           onResume={() => {
-            void RoomMusicResume(room.id, muzikSession?.version).then(() =>
-              muzikYenile(),
-            );
+            void muzikKomut((v) => RoomMusicResume(room.id, v));
           }}
           onPrev={() => {
-            void RoomMusicSkip(room.id, -1, muzikSession?.version).then(() =>
-              muzikYenile(),
-            );
+            void muzikKomut((v) => RoomMusicSkip(room.id, -1, v));
           }}
           onNext={() => {
-            void RoomMusicSkip(room.id, 1, muzikSession?.version).then(() =>
-              muzikYenile(),
+            const sirada = (muzikSession?.queue?.length ?? 0) > 0;
+            void muzikKomut((v) =>
+              sirada
+                ? RoomMusicSkip(room.id, 1, v)
+                : RoomMusicStop(room.id, v),
             );
           }}
           onStop={() => {
-            void RoomMusicStop(room.id, muzikSession?.version).then(() =>
-              muzikYenile(),
-            );
+            void muzikKomut((v) => RoomMusicStop(room.id, v));
           }}
           onSeek={(positionMs) => {
-            void RoomMusicSeek(
-              room.id,
-              positionMs,
-              muzikSession?.version,
-            ).then(() => muzikYenile());
+            void muzikKomut((v) => RoomMusicSeek(room.id, positionMs, v));
           }}
           onVolume={(volume) => {
-            void RoomMusicSetVolume(
-              room.id,
-              volume,
-              muzikSession?.version,
-            ).then(() => muzikYenile());
+            void muzikKomut((v) => RoomMusicSetVolume(room.id, volume, v));
           }}
         />
       ) : null}
@@ -2469,25 +2596,24 @@ const styles = StyleSheet.create({
     zIndex: 400,
     elevation: 400,
   },
-  altKart: {
+  altDock: {
     flexShrink: 0,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    backgroundColor: 'rgba(12, 10, 18, 0.96)',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
     zIndex: 50,
     elevation: 50,
   },
-  yorumBolum: {
-    overflow: 'visible',
-    zIndex: 6,
+  yorumFloat: {
+    position: 'absolute',
+    left: 8,
+    bottom: 4,
+    width: '78%',
+    maxWidth: 340,
+    zIndex: 8,
+    elevation: 8,
   },
   yorumAcChip: {
     alignSelf: 'flex-start',
-    marginLeft: 14,
-    marginTop: 10,
+    marginLeft: 12,
     marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
@@ -2495,9 +2621,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+  yorumAcChipUyari: {
+    borderColor: 'rgba(255,80,100,0.55)',
+    backgroundColor: 'rgba(180,30,50,0.35)',
+  },
+  yorumGizleChip: {
+    alignSelf: 'flex-start',
+    marginLeft: 10,
+    marginBottom: 2,
+    width: 28,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.28)',
   },
   yorumAcYazi: {
     ...typography.caption,
@@ -2505,16 +2646,38 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  yorumAcYaziUyari: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  yorumUyariRozet: {
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    paddingHorizontal: 3,
+    backgroundColor: '#FF3B5C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.35)',
+  },
+  yorumUyariYazi: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '800',
+    lineHeight: 10,
+  },
   dockBolum: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 12,
     paddingRight: 12,
-    paddingTop: 8,
+    paddingTop: 6,
     paddingBottom: 4,
     gap: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.06)',
     zIndex: 90,
     elevation: 90,
   },
@@ -2532,11 +2695,11 @@ const styles = StyleSheet.create({
     width: ODA_DOCK_BTN,
     height: ODA_DOCK_BTN,
     borderRadius: ODA_DOCK_BTN / 2,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.18)',
     flexShrink: 0,
   },
   controlBtnAktif: {

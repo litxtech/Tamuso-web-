@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -9,8 +9,11 @@ import {
 } from 'react-native';
 import type { BannerCampaign } from '../core/BannerTypes';
 import { BannerCard } from './BannerCard';
+import { BannerRoomCard } from './BannerRoomCard';
 import { BANNER_CAROUSEL_DEFAULT_MS } from '../core/BannerConstants';
+import { bannerOdaKartMi } from '../core/BannerPlacementEngine';
 import { RenkTokenlari } from '../../tasarim-sistemi/RenkTokenlari';
+import { BoslukTokenlari } from '../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 
 type Props = {
   banners: BannerCampaign[];
@@ -19,16 +22,26 @@ type Props = {
   sessionId: string;
   compact?: boolean;
   onDismiss?: (bannerId: string) => void;
+  /** Admin simülasyon — tıklama kapalı */
+  interaktif?: boolean;
 };
 
-export function BannerCarousel({
+/** Yatay şerit carousel — oda kartı karışmaz, tam genişlik */
+function YataySeritCarousel({
   banners,
   placement,
   screen,
   sessionId,
   compact,
   onDismiss,
-}: Props) {
+}: {
+  banners: BannerCampaign[];
+  placement: string;
+  screen?: string;
+  sessionId: string;
+  compact?: boolean;
+  onDismiss?: (bannerId: string) => void;
+}) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [width, setWidth] = useState(0);
@@ -65,9 +78,10 @@ export function BannerCarousel({
   };
 
   if (banners.length === 0) return null;
+
   if (banners.length === 1) {
     return (
-      <View style={styles.center} onLayout={onLayout}>
+      <View style={styles.seritWrap} onLayout={onLayout}>
         <BannerCard
           banner={banners[0]}
           placement={placement}
@@ -82,7 +96,7 @@ export function BannerCarousel({
   }
 
   return (
-    <View style={styles.center} onLayout={onLayout}>
+    <View style={styles.seritWrap} onLayout={onLayout}>
       {width > 0 ? (
         <ScrollView
           ref={scrollRef}
@@ -124,11 +138,106 @@ export function BannerCarousel({
   );
 }
 
+/** Oda kartı satırı — feed ızgarası; yatay şeritle aynı satırda olmaz */
+function OdaKartSatiri({
+  banners,
+  placement,
+  screen,
+  sessionId,
+  interaktif,
+}: {
+  banners: BannerCampaign[];
+  placement: string;
+  screen?: string;
+  sessionId: string;
+  interaktif: boolean;
+}) {
+  if (banners.length === 0) return null;
+  return (
+    <View style={styles.roomRow}>
+      {banners.slice(0, 2).map((b) => (
+        <View key={b.id} style={styles.roomCol}>
+          <BannerRoomCard
+            banner={b}
+            placement={placement}
+            screen={screen}
+            sessionId={sessionId}
+            interaktif={interaktif}
+          />
+        </View>
+      ))}
+      {banners.length === 1 ? <View style={styles.roomCol} /> : null}
+    </View>
+  );
+}
+
+/**
+ * Yatay (şerit) ve oda kartı ölçüleri ayrı satırlarda.
+ * Aynı carousel’de karışmaz → boşluk / oran bozulması olmaz.
+ */
+export function BannerCarousel({
+  banners,
+  placement,
+  screen,
+  sessionId,
+  compact,
+  onDismiss,
+  interaktif = true,
+}: Props) {
+  const { seritler, odaKartlari } = useMemo(() => {
+    const serit: BannerCampaign[] = [];
+    const oda: BannerCampaign[] = [];
+    for (const b of banners) {
+      if (bannerOdaKartMi(b)) oda.push(b);
+      else serit.push(b);
+    }
+    return { seritler: serit, odaKartlari: oda };
+  }, [banners]);
+
+  if (seritler.length === 0 && odaKartlari.length === 0) return null;
+
+  return (
+    <View style={styles.kok}>
+      {seritler.length > 0 ? (
+        <YataySeritCarousel
+          banners={seritler}
+          placement={placement}
+          screen={screen}
+          sessionId={sessionId}
+          compact={compact}
+          onDismiss={onDismiss}
+        />
+      ) : null}
+      {odaKartlari.length > 0 ? (
+        <OdaKartSatiri
+          banners={odaKartlari}
+          placement={placement}
+          screen={screen}
+          sessionId={sessionId}
+          interaktif={interaktif}
+        />
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  center: {
+  kok: {
     width: '100%',
-    alignSelf: 'center',
-    alignItems: 'center',
+    gap: BoslukTokenlari.sm,
+  },
+  seritWrap: {
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+  roomRow: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: BoslukTokenlari.sm,
+  },
+  roomCol: {
+    flex: 1,
+    minWidth: 0,
   },
   dots: {
     flexDirection: 'row',

@@ -518,7 +518,7 @@ function KozmikKaskadEkraniGovde({
   useEffect(() => {
     if (!bootDone || ready) return;
     if (!imagesWarmed) {
-      const t = setTimeout(() => setImagesWarmed(true), 360);
+      const t = setTimeout(() => setImagesWarmed(true), 2500);
       return () => clearTimeout(t);
     }
 
@@ -712,13 +712,16 @@ function KozmikKaskadEkraniGovde({
 
     pendingSpinKeyRef.current = null;
     spinRetryCountRef.current = 0;
-    // Kazanc/kayip anlik header bakiyesine yansir
-    patchWallet({ coins: res.data.balanceAfter });
+    // Animasyon bitene kadar kazanç sızmasın (yalnızca bahis düşmüş bakiye)
+    patchWallet({
+      coins: res.data.balanceAfter - res.data.totalWin,
+    });
     trackKaskad('spin_success');
     try {
       await playResult(res.data);
     } finally {
       if (!mountedRef.current || leavingRef.current) return;
+      patchWallet({ coins: res.data.balanceAfter });
       // Autoplay sayaci spin bitince dusur; sonra spinning kapat
       if (autoplayLeftRef.current > 0) {
         if (

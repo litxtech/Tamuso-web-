@@ -37,10 +37,11 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../src/i18n/diller';
 
-function saat(iso: string): string {
+function saat(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleTimeString('tr-TR', {
+    return new Date(iso).toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -50,7 +51,8 @@ function saat(iso: string): string {
 }
 
 export default function CanliDestekEkrani() {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const { user, isGuest, refreshProfile } = useAuth();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const [oturum, setOturum] = useState<DestekOturum | null>(null);
@@ -281,7 +283,7 @@ export default function CanliDestekEkrani() {
                     {item.body}
                   </Text>
                   <Text style={benim ? styles.saatBen : styles.saat}>
-                    {saat(item.created_at)}
+                    {saat(item.created_at, locale)}
                   </Text>
                 </View>
               );

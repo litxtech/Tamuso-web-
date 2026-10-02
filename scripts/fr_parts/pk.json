@@ -1,0 +1,30 @@
+{
+  "pk": {
+    "baslik": "PK",
+    "alt": "Aura claire · aperçu retardé de 3 s",
+    "kapali": "Le PK est désactivé pour le moment.",
+    "onizlemeEtiket": "Aperçu · 3 secondes de retard",
+    "skorMeta": "Le score en direct est affiché avec 3 s de retard",
+    "canliOnizlemeler": "Aperçus PK en direct",
+    "bosBaslik": "Aucun PK en direct",
+    "bosBody": "Lorsque de nouveaux matchs démarrent, des cartes à aura claire apparaissent ici.",
+    "skorOlaylari": "Événements de score",
+    "skorBosBaslik": "Pas encore de score",
+    "skorBosBody": "Les cadeaux et actions sont listés ici.",
+    "skorVarsayilan": "score",
+    "yayinci": "Hôte",
+    "davetEtti": "Vous a invité à un PK en direct",
+    "davetEttiBaslikli": "« {{baslik}} » vous a invité au PK",
+    "macDk": "Match de {{dk}} min · {{sn}} s",
+    "takimA": "Équipe A",
+    "takimB": "Équipe B",
+    "canli": "En direct",
+    "davetBadge": "INVITATION PK",
+    "davetYanitlanamadi": "Impossible de répondre à l’invitation",
+    "davetBaslik": "Invitation PK",
+    "davetSecAlt": "Choisissez un streamer en direct — le PK démarre pour 5 min une fois accepté",
+    "baskaCanliYok": "Aucun autre live",
+    "davetBtn": "Inviter",
+    "macOlusturulamadi": "Impossible de créer le match"
+  }
+}

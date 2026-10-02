@@ -34,17 +34,17 @@ import { BetSelector } from '../../kaskad/ui/BetSelector';
 import { GameFooter } from '../../kaskad/ui/GameFooter';
 import type { SpinButtonState } from '../../kaskad/ui/SpinButton';
 import {
-  beginKaskadAudioSession,
-  playKaskadSfx,
-  preloadKaskadAudio,
-  setKaskadVoiceDuck,
-  startKaskadCountUp,
-  startKaskadMusic,
-  stopKaskadCountUp,
-  stopAllKaskadAudio,
-} from '../../kaskad/ses/GameAudioManager';
+  beginZeusAudioSession,
+  playZeusSfx,
+  preloadZeusAudio,
+  setZeusVoiceDuck,
+  startZeusCountUp,
+  startZeusMusic,
+  stopZeusCountUp,
+  stopAllZeusAudio,
+} from '../ses/ZeusAudio';
 import { ZeusArkaPlan } from '../arkaplan/ZeusArkaPlan';
-import { preloadZeusAssets, zeusVisualsCached } from '../assets/preloadZeusAssets';
+import { preloadZeusAssets, resetZeusVisualCache, zeusVisualsCached } from '../assets/preloadZeusAssets';
 import { UiImages } from '../assets/VisualAssets';
 import {
   markZeusRoundPlayed,
@@ -122,6 +122,8 @@ function ZeusEkraniGovde({
   const isAdminTest = isAdmin && adminTestMode && !roomId;
   const [ready, setReady] = useState(false);
   const [imagesWarmed, setImagesWarmed] = useState(zeusVisualsCached);
+  const [preloadOk, setPreloadOk] = useState(zeusVisualsCached);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loadPct, setLoadPct] = useState(8);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [paytableOpen, setPaytableOpen] = useState(false);
@@ -155,9 +157,15 @@ function ZeusEkraniGovde({
   } | null>(null);
   const [retriggerToast, setRetriggerToast] = useState<number | null>(null);
   const [bonusToast, setBonusToast] = useState<number | null>(null);
+  const [panelWin, setPanelWin] = useState(0);
+  const [panelBase, setPanelBase] = useState(0);
+  const [panelMult, setPanelMult] = useState(1);
+  const [panelTier, setPanelTier] = useState<ZeusWinTier>('NONE');
+  const [winSticky, setWinSticky] = useState(false);
 
-  const performance: PerformanceProfile = reduceMotion ? 'LOW' : 'HIGH';
-  const speedFactor = reduceMotion ? FAST_SPEED_FACTOR : 1;
+  const performance: PerformanceProfile = 'MEDIUM';
+  /** Varsayılan turbo — slotlar hızla iner, turlar kısa */
+  const speedFactor = reduceMotion ? FAST_SPEED_FACTOR : 0.42;
 
   const remainingRef = useRef(0);
   const persistentRef = useRef(0);
@@ -189,11 +197,19 @@ function ZeusEkraniGovde({
       setDropping({});
       setAnticipation(false);
       setBigWin(null);
+      setPanelWin(0);
+      setPanelBase(0);
+      setPanelMult(1);
+      setPanelTier('NONE');
+      setWinSticky(false);
 
       const initialDrop = dropDistancesFromAbove(
         result.initialGrid,
         isEmptyInstanceId,
       );
+      for (const k of Object.keys(initialDrop)) {
+        initialDrop[k] = Math.min(initialDrop[k] ?? 0, 1);
+      }
 
       const controller = createPlaybackController({
         speedFactor,
@@ -208,11 +224,11 @@ function ZeusEkraniGovde({
               setGrid(
                 (meta?.grid as GridMatrix | undefined) ?? result.initialGrid,
               );
-              void playKaskadSfx('symbols_falling');
+              void playZeusSfx('symbols_falling');
               break;
             case 'EVALUATE':
               setDropping({});
-              void playKaskadSfx('symbol_land');
+              void playZeusSfx('symbol_land');
               break;
             case 'WIN_HIGHLIGHT': {
               const ids = new Set(
@@ -221,7 +237,18 @@ function ZeusEkraniGovde({
                 ) ?? [],
               );
               setMatchedIds(ids);
-              void playKaskadSfx('symbol_match');
+              const stepWin = Number(meta?.win ?? 0);
+              if (stepWin > 0) {
+                setPanelWin((prev) => {
+                  const next = prev + stepWin;
+                  setPanelBase(next);
+                  setPanelMult(1);
+                  setPanelTier(next >= bet * 20 ? 'NICE' : 'NORMAL');
+                  setWinSticky(true);
+                  return next;
+                });
+              }
+              void playZeusSfx('symbol_match');
               if (ids.size >= 10) {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }
@@ -229,9 +256,9 @@ function ZeusEkraniGovde({
             }
             case 'EXPLOSION':
               setDestroyingIds(new Set((meta?.removedIds as string[]) ?? []));
-              void playKaskadSfx('symbol_destroy');
-              void playKaskadSfx('character_cast');
-              void playKaskadSfx('lightning');
+              void playZeusSfx('symbol_destroy');
+              void playZeusSfx('character_cast');
+              void playZeusSfx('lightning');
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               break;
             case 'CASCADE': {
@@ -244,60 +271,74 @@ function ZeusEkraniGovde({
               const fromEngine = meta?.dropping as
                 | Record<string, number>
                 | undefined;
-              setDropping(
+              const droppingMap =
                 fromEngine ??
-                  dropDistancesBetween(
-                    gridRef.current,
-                    after,
-                    isEmptyInstanceId,
-                  ),
-              );
+                dropDistancesBetween(
+                  gridRef.current,
+                  after,
+                  isEmptyInstanceId,
+                );
+              for (const k of Object.keys(droppingMap)) {
+                droppingMap[k] = Math.min(droppingMap[k] ?? 0, 3);
+              }
+              setDropping(droppingMap);
               setGrid(after);
-              void playKaskadSfx('cascade_start');
+              void playZeusSfx('cascade_start');
               break;
             }
             case 'MULTIPLIER':
               setDropping({});
               setMultTotal(Math.max(1, Number(meta?.applied ?? result.appliedMultiplier)));
-              void playKaskadSfx('multiplier_spawn');
+              setPanelBase(Number(meta?.base ?? result.sequenceBaseWin));
+              setPanelMult(Math.max(1, Number(meta?.applied ?? result.appliedMultiplier)));
+              setPanelWin(Number(meta?.total ?? result.totalWin));
+              setPanelTier(result.winTier === 'NONE' ? 'NORMAL' : result.winTier);
+              setWinSticky(result.totalWin > 0);
+              void playZeusSfx('multiplier_spawn');
               {
                 const maxOrb = Math.max(
                   0,
                   ...(((meta?.orbs as number[] | undefined) ?? result.orbValues)),
                 );
-                if (maxOrb >= 25) void playKaskadSfx('multiplier_large');
-                else if (maxOrb >= 8) void playKaskadSfx('multiplier_medium');
-                else void playKaskadSfx('multiplier_small');
+                if (maxOrb >= 25) void playZeusSfx('multiplier_large');
+                else if (maxOrb >= 8) void playZeusSfx('multiplier_medium');
+                else void playZeusSfx('multiplier_small');
               }
-              void playKaskadSfx('multiplier_collect');
+              void playZeusSfx('multiplier_collect');
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
               break;
             case 'SCATTER_CHECK':
               setDropping({});
               setAnticipation(Number(meta?.scatterCount ?? 0) >= 3);
-              if (Number(meta?.scatterCount ?? 0) > 0) {
-                void playKaskadSfx('scatter_land');
+              if (result.totalWin > 0) {
+                setPanelWin(result.totalWin);
+                setPanelBase(result.sequenceBaseWin);
+                setPanelMult(Math.max(1, result.appliedMultiplier));
+                setPanelTier(result.winTier === 'NONE' ? 'NORMAL' : result.winTier);
+                setWinSticky(true);
+                void startZeusCountUp();
+                if (
+                  result.winTier !== 'BIG' &&
+                  result.winTier !== 'MEGA' &&
+                  result.winTier !== 'SENSATIONAL'
+                ) {
+                  void playZeusSfx('normal_win');
+                }
               }
-              if (
-                result.totalWin > 0 &&
-                result.winTier !== 'BIG' &&
-                result.winTier !== 'MEGA' &&
-                result.winTier !== 'SENSATIONAL'
-              ) {
-                void startKaskadCountUp();
-                void playKaskadSfx('normal_win');
+              if (Number(meta?.scatterCount ?? 0) > 0) {
+                void playZeusSfx('scatter_land');
               }
               if (Number(meta?.scatterCount ?? 0) >= 3) {
-                void playKaskadSfx('scatter_anticipation');
+                void playZeusSfx('scatter_anticipation');
               }
               break;
             case 'FREE_SPIN_TRIGGER':
               setAnticipation(false);
               setBonusToast(Number(meta?.freeSpins ?? result.bonus?.freeSpins ?? 0));
               setTimeout(() => setBonusToast(null), 1800);
-              void playKaskadSfx('bonus_trigger');
-              void playKaskadSfx('bonus_intro');
-              void playKaskadSfx('free_spin_start');
+              void playZeusSfx('bonus_trigger');
+              void playZeusSfx('bonus_intro');
+              void playZeusSfx('free_spin_start');
               void Haptics.notificationAsync(
                 Haptics.NotificationFeedbackType.Success,
               );
@@ -305,7 +346,7 @@ function ZeusEkraniGovde({
             case 'RETRIGGER':
               setRetriggerToast(Number(meta?.extra ?? result.retriggerSpins));
               setTimeout(() => setRetriggerToast(null), 1800);
-              void playKaskadSfx('retrigger');
+              void playZeusSfx('retrigger');
               void Haptics.notificationAsync(
                 Haptics.NotificationFeedbackType.Success,
               );
@@ -315,27 +356,44 @@ function ZeusEkraniGovde({
                 tier: (meta?.tier as ZeusWinTier) ?? result.winTier,
                 amount: Number(meta?.amount ?? result.totalWin),
               });
+              setPanelWin(Number(meta?.amount ?? result.totalWin));
+              setPanelBase(result.sequenceBaseWin);
+              setPanelMult(Math.max(1, result.appliedMultiplier));
+              setPanelTier((meta?.tier as ZeusWinTier) ?? result.winTier);
+              setWinSticky(true);
               {
                 const tier = (meta?.tier as ZeusWinTier) ?? result.winTier;
-                void startKaskadCountUp();
-                if (tier === 'SENSATIONAL') void playKaskadSfx('legendary_win');
-                else if (tier === 'MEGA') void playKaskadSfx('mega_win');
-                else if (tier === 'BIG') void playKaskadSfx('big_win');
-                else void playKaskadSfx('normal_win');
+                void startZeusCountUp();
+                if (tier === 'SENSATIONAL') void playZeusSfx('legendary_win');
+                else if (tier === 'MEGA') void playZeusSfx('mega_win');
+                else if (tier === 'BIG') void playZeusSfx('big_win');
+                else void playZeusSfx('normal_win');
               }
               void Haptics.notificationAsync(
                 Haptics.NotificationFeedbackType.Success,
               );
               break;
             case 'ROUND_END':
-              stopKaskadCountUp(true);
-              break;
-            case 'READY':
-              stopKaskadCountUp(false);
+              stopZeusCountUp(true);
               setMatchedIds(new Set());
               setDestroyingIds(new Set());
               setDropping({});
               setAnticipation(false);
+              if (result.totalWin > 0) {
+                setPanelWin(result.totalWin);
+                setPanelBase(result.sequenceBaseWin);
+                setPanelMult(Math.max(1, result.appliedMultiplier));
+                setPanelTier(result.winTier === 'NONE' ? 'NORMAL' : result.winTier);
+                setWinSticky(true);
+              }
+              break;
+            case 'READY':
+              stopZeusCountUp(false);
+              setMatchedIds(new Set());
+              setDestroyingIds(new Set());
+              setDropping({});
+              setAnticipation(false);
+              setBigWin(null);
               break;
             default:
               break;
@@ -344,11 +402,14 @@ function ZeusEkraniGovde({
       });
 
       playbackCancelRef.current = () => controller.cancel();
-      await controller.play(result);
-      playbackCancelRef.current = null;
+      try {
+        await controller.play(result);
+      } finally {
+        playbackCancelRef.current = null;
+      }
       void markZeusRoundPlayed(result.roundId);
     },
-    [speedFactor],
+    [bet, speedFactor],
   );
 
   const doSpin = useCallback(async () => {
@@ -357,7 +418,7 @@ function ZeusEkraniGovde({
     if (!isFree && !isAdminTest && balance < bet) {
       setAutoplayRemaining(0);
       coinYukleAc();
-      void playKaskadSfx('insufficient_balance');
+      void playZeusSfx('insufficient_balance');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
@@ -366,68 +427,108 @@ function ZeusEkraniGovde({
     setSpinning(true);
     setPhase('SPIN_REQUEST');
     setSpinHata(null);
-    void playKaskadSfx('spin_press');
+    setWinSticky(false);
+    setPanelWin(0);
+    setBigWin(null);
+    void playZeusSfx('spin_press');
     void Haptics.selectionAsync();
 
     const idempotencyKey =
       pendingSpinKeyRef.current ?? newZeusIdempotencyKey();
     pendingSpinKeyRef.current = idempotencyKey;
 
-    const res = await requestZeusSpin({
-      betAmount: bet,
-      idempotencyKey,
-      roomId: roomId ?? null,
-      adminTest: isAdminTest,
-    });
-
-    if (leavingRef.current) {
-      if (res.ok) patchWallet({ coins: res.data.balanceAfter });
-      return;
-    }
-
-    if (!res.ok) {
-      const yetersiz =
-        res.code === 'insufficient_balance' ||
-        /insufficient|yetersiz/i.test(res.hata);
+    const unlockSpin = () => {
       spinningRef.current = false;
       setSpinning(false);
       setPhase('READY');
-      if (yetersiz) {
-        pendingSpinKeyRef.current = null;
-        setAutoplayRemaining(0);
-        coinYukleAc();
-        void playKaskadSfx('insufficient_balance');
-        return;
-      }
-      pendingSpinKeyRef.current = null;
-      setSpinHata(res.hata);
-      setAutoplayRemaining(0);
-      void playKaskadSfx('error');
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
+    };
 
-    pendingSpinKeyRef.current = null;
-    patchWallet({ coins: res.data.balanceAfter });
-    remainingRef.current = res.data.remainingFreeSpins;
-    persistentRef.current = res.data.persistentMultiplierAfter;
-    setBonusSpins(res.data.remainingFreeSpins);
-    setBonusMode(res.data.remainingFreeSpins > 0 || res.data.isFreeSpin);
-    setPersistentMult(
-      res.data.remainingFreeSpins > 0 ? res.data.persistentMultiplierAfter : 0,
-    );
+    const watchdog = setTimeout(() => {
+      if (!spinningRef.current || leavingRef.current) return;
+      playbackCancelRef.current?.();
+      unlockSpin();
+      setSpinHata('Bağlantı zaman aşımı — tekrar dene');
+      setAutoplayRemaining(0);
+      void playZeusSfx('error');
+    }, 28_000);
 
     try {
-      await playResult(res.data);
-    } finally {
-      if (!leavingRef.current) {
-        spinningRef.current = false;
-        setSpinning(false);
-        setPhase('READY');
-        if (autoplayLeftRef.current > 0) {
-          setAutoplayRemaining(autoplayLeftRef.current - 1);
+      const res = await requestZeusSpin({
+        betAmount: bet,
+        idempotencyKey,
+        roomId: roomId ?? null,
+        adminTest: isAdminTest,
+      });
+
+      if (leavingRef.current) {
+        if (res.ok) patchWallet({ coins: res.data.balanceAfter });
+        unlockSpin();
+        return;
+      }
+
+      if (!res.ok) {
+        const yetersiz =
+          res.code === 'insufficient_balance' ||
+          /insufficient|yetersiz/i.test(res.hata);
+        unlockSpin();
+        if (yetersiz) {
+          pendingSpinKeyRef.current = null;
+          setAutoplayRemaining(0);
+          coinYukleAc();
+          void playZeusSfx('insufficient_balance');
+          return;
+        }
+        pendingSpinKeyRef.current = null;
+        setSpinHata(res.hata);
+        setAutoplayRemaining(0);
+        void playZeusSfx('error');
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+
+      pendingSpinKeyRef.current = null;
+      // Animasyon bitene kadar kazanç sızmasın (yalnızca bahis düşmüş bakiye)
+      patchWallet({
+        coins: res.data.balanceAfter - res.data.totalWin,
+      });
+      remainingRef.current = res.data.remainingFreeSpins;
+      persistentRef.current = res.data.persistentMultiplierAfter;
+      setBonusSpins(res.data.remainingFreeSpins);
+      setBonusMode(res.data.remainingFreeSpins > 0 || res.data.isFreeSpin);
+      setPersistentMult(
+        res.data.remainingFreeSpins > 0 ? res.data.persistentMultiplierAfter : 0,
+      );
+
+      try {
+        await playResult(res.data);
+      } finally {
+        if (!leavingRef.current) {
+          patchWallet({ coins: res.data.balanceAfter });
+          spinningRef.current = false;
+          setSpinning(false);
+          setMatchedIds(new Set());
+          setDestroyingIds(new Set());
+          setDropping({});
+          setAnticipation(false);
+          setPhase('READY');
+          if (autoplayLeftRef.current > 0) {
+            setAutoplayRemaining(autoplayLeftRef.current - 1);
+          }
+        } else {
+          unlockSpin();
         }
       }
+    } catch {
+      if (!leavingRef.current) {
+        unlockSpin();
+        setSpinHata('Tur oynatılamadı — tekrar dene');
+        setAutoplayRemaining(0);
+        void playZeusSfx('error');
+      } else {
+        unlockSpin();
+      }
+    } finally {
+      clearTimeout(watchdog);
     }
   }, [
     balance,
@@ -442,46 +543,45 @@ function ZeusEkraniGovde({
 
   useEffect(() => {
     registerZeus();
-    beginKaskadAudioSession();
-    setKaskadVoiceDuck(voiceActive);
-    void preloadKaskadAudio();
-    void playKaskadSfx('game_open');
-    void startKaskadMusic(false);
+    beginZeusAudioSession();
+    setZeusVoiceDuck(voiceActive);
+    void preloadZeusAudio();
+    void warmupZeusSpin();
+    void playZeusSfx('game_open');
+
     let alive = true;
+    setGrid(
+      generateInitialGrid(config, createSeededRng(Date.now() ^ 0x5f3759df), {
+        allowSpecial: true,
+      }),
+    );
+    // Tahta hemen açılsın — sembol decode arka planda
+    setPreloadOk(true);
+    setImagesWarmed(true);
+    setReady(true);
+    setPhase('READY');
+    setLoadPct(100);
+    void startZeusMusic(false);
+    void preloadZeusAssets();
+
     void (async () => {
-      setLoadPct(12);
-      const [, unfinished] = await Promise.all([
-        preloadZeusAssets((prog) => {
-          if (!alive) return;
-          setLoadPct(12 + Math.round(prog * 70));
-        }),
-        restoreUnfinishedZeusRound().catch(() => null),
-        warmupZeusSpin(),
-      ]);
-      if (!alive) return;
-      if (unfinished?.result) {
-        remainingRef.current = unfinished.result.remainingFreeSpins;
-        persistentRef.current = unfinished.result.persistentMultiplierAfter;
-        setBonusSpins(unfinished.result.remainingFreeSpins);
-        setBonusMode(
-          unfinished.result.remainingFreeSpins > 0 || unfinished.result.isFreeSpin,
-        );
-        setPersistentMult(
-          unfinished.result.remainingFreeSpins > 0
-            ? unfinished.result.persistentMultiplierAfter
-            : 0,
-        );
-        setGrid(unfinished.result.initialGrid);
-        unfinishedRef.current = unfinished.result;
-      } else {
-        setGrid(
-          generateInitialGrid(config, createSeededRng(Date.now() ^ 0x5f3759df), {
-            allowSpecial: true,
-          }),
-        );
-      }
-      setLoadPct(96);
+      const unfinished = await restoreUnfinishedZeusRound().catch(() => null);
+      if (!alive || !unfinished?.result) return;
+      remainingRef.current = unfinished.result.remainingFreeSpins;
+      persistentRef.current = unfinished.result.persistentMultiplierAfter;
+      setBonusSpins(unfinished.result.remainingFreeSpins);
+      setBonusMode(
+        unfinished.result.remainingFreeSpins > 0 || unfinished.result.isFreeSpin,
+      );
+      setPersistentMult(
+        unfinished.result.remainingFreeSpins > 0
+          ? unfinished.result.persistentMultiplierAfter
+          : 0,
+      );
+      setGrid(unfinished.result.initialGrid);
+      unfinishedRef.current = unfinished.result;
     })();
+
     const rm = AccessibilityInfo.addEventListener(
       'reduceMotionChanged',
       setReduceMotion,
@@ -491,30 +591,46 @@ function ZeusEkraniGovde({
       alive = false;
       leavingRef.current = true;
       playbackCancelRef.current?.();
-      stopAllKaskadAudio();
+      stopAllZeusAudio();
       rm.remove();
     };
   }, [config]);
 
   useEffect(() => {
-    setKaskadVoiceDuck(voiceActive);
+    setZeusVoiceDuck(voiceActive);
   }, [voiceActive]);
 
   useEffect(() => {
     if (!ready) return;
-    void startKaskadMusic(bonusMode);
+    void startZeusMusic(bonusMode);
   }, [bonusMode, ready]);
 
-  useEffect(() => {
-    if (ready) return;
-    if (!imagesWarmed) {
-      const t = setTimeout(() => setImagesWarmed(true), 360);
-      return () => clearTimeout(t);
-    }
-    setLoadPct(100);
-    setReady(true);
-    setPhase('READY');
-  }, [imagesWarmed, ready]);
+  const retryPreload = useCallback(() => {
+    resetZeusVisualCache();
+    setReady(false);
+    setImagesWarmed(false);
+    setPreloadOk(false);
+    setLoadFailed(false);
+    setLoadPct(8);
+    void (async () => {
+      const ok = await preloadZeusAssets((prog) => {
+        setLoadPct(12 + Math.round(prog * 80));
+      });
+      setPreloadOk(true);
+      setImagesWarmed(true);
+      setReady(true);
+      setPhase('READY');
+      setGrid(
+        generateInitialGrid(config, createSeededRng(Date.now() ^ 0x5f3759df), {
+          allowSpecial: true,
+        }),
+      );
+      setLoadPct(100);
+      if (!ok && typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.warn('[ZEUS] preload soft-fail — board opened anyway');
+      }
+    })();
+  }, [config]);
 
   useEffect(() => {
     if (!ready || spinningRef.current) return;
@@ -559,22 +675,44 @@ function ZeusEkraniGovde({
     autoplayStop.current = true;
     setAutoplayRemaining(0);
     playbackCancelRef.current?.();
-    stopAllKaskadAudio();
+    stopAllZeusAudio();
     onClose();
   }, [onClose, setAutoplayRemaining]);
 
   const betPresets = config.betPresets;
   const kazancGorunur =
+    winSticky ||
     phase === 'READY' ||
     phase === 'ROUND_END' ||
     phase === 'BIG_WIN' ||
-    phase === 'MULTIPLIER';
+    phase === 'MULTIPLIER' ||
+    phase === 'WIN_HIGHLIGHT' ||
+    phase === 'SCATTER_CHECK' ||
+    phase === 'FREE_SPIN' ||
+    phase === 'FREE_SPIN_TRIGGER' ||
+    phase === 'RETRIGGER';
+  const kazancAmount =
+    panelWin > 0 ? panelWin : lastResult?.totalWin && winSticky
+      ? lastResult.totalWin
+      : panelWin;
+  const kazancBase =
+    panelBase > 0 ? panelBase : lastResult?.sequenceBaseWin ?? 0;
+  const kazancMult =
+    panelMult > 1 ? panelMult : lastResult?.appliedMultiplier ?? 1;
+  const kazancTier =
+    panelTier !== 'NONE'
+      ? panelTier
+      : lastResult?.winTier && lastResult.winTier !== 'NONE'
+        ? lastResult.winTier
+        : 'NONE';
 
   if (!ready) {
     return (
       <View style={[styles.root, { paddingTop: embedded ? 4 : insets.top }]}>
         <ZeusOnYukleme
           progress={loadPct}
+          failed={loadFailed}
+          onRetry={retryPreload}
           onImagesWarmed={() => setImagesWarmed(true)}
         />
       </View>
@@ -591,7 +729,6 @@ function ZeusEkraniGovde({
       />
 
       <ZeusBaslik
-        balance={balance}
         multiplierTotal={multTotal}
         persistentMultiplier={persistentMult}
         bonusLabel={
@@ -627,7 +764,7 @@ function ZeusEkraniGovde({
           <ZeusKarakter
             phase={phase}
             bonusMode={bonusMode}
-            size={embedded ? 210 : 168}
+            size={embedded ? 150 : 120}
             performance={performance}
             reduceMotion={reduceMotion}
           />
@@ -645,16 +782,16 @@ function ZeusEkraniGovde({
             compact={embedded}
             maxHeight={
               stageH > 0
-                ? Math.max(160, stageH - (embedded ? 48 : 58))
+                ? Math.max(180, stageH - (embedded ? 28 : 36))
                 : undefined
             }
           />
           <ZeusKazanc
-            visible={kazancGorunur}
-            totalWin={lastResult?.totalWin ?? 0}
-            baseWin={lastResult?.sequenceBaseWin ?? 0}
-            totalMultiplier={lastResult?.appliedMultiplier ?? 1}
-            tier={lastResult?.winTier ?? 'NONE'}
+            visible={kazancGorunur && kazancAmount > 0}
+            totalWin={kazancAmount}
+            baseWin={kazancBase}
+            totalMultiplier={kazancMult}
+            tier={kazancTier}
             compact={embedded}
           />
         </View>
@@ -866,31 +1003,33 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: -12,
+    top: -28,
     alignItems: 'center',
     zIndex: 0,
+    opacity: 0.55,
   },
   karakterKatmanGomulu: {
     position: 'absolute',
     left: 0,
     right: 0,
-    top: -36,
+    top: -44,
     alignItems: 'center',
     zIndex: 0,
+    opacity: 0.5,
   },
   boardSlot: {
     flex: 1,
     minHeight: 0,
     zIndex: 2,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingTop: 72,
+    justifyContent: 'flex-start',
+    paddingTop: 8,
     paddingBottom: 4,
-    gap: 8,
+    gap: 6,
   },
   boardSlotGomulu: {
-    paddingTop: 64,
-    gap: 6,
+    paddingTop: 4,
+    gap: 4,
   },
   toast: {
     position: 'absolute',

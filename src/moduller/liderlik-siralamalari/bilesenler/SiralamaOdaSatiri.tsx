@@ -2,7 +2,6 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { CoinSkoruFormatla } from '../okuma/LiderlikSiralamasiniGetir';
 import type { SiralamaSatiri } from '../okuma/LiderlikSiralamasiniGetir';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -12,6 +11,8 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { SesOdasinaGit } from '../../ses-odalari/navigasyon/SesOdasinaGit';
 
 const MEDAL: Record<number, string[]> = {
   1: ['#F6D365', '#FDA085'],
@@ -24,11 +25,12 @@ export function SiralamaOdaSatiri({
 }: {
   item: SiralamaSatiri;
 }) {
+  const { t } = useCeviri();
   const rank = item.rank ?? 0;
   const ad =
     item.room_title?.trim() ||
     item.display_name?.trim() ||
-    'Oda';
+    t('olusturTab.oda');
   const host = item.username?.trim() || null;
   const kapak = MedyaUriGuvenli(item.room_cover_url || item.avatar_url);
   const medal = MEDAL[rank];
@@ -40,7 +42,7 @@ export function SiralamaOdaSatiri({
       disabled={!odaId}
       onPress={() => {
         if (!odaId) return;
-        router.push(`/lobi/${odaId}` as any);
+        void SesOdasinaGit({ roomId: odaId });
       }}
       accessibilityRole="button"
       accessibilityLabel={`${rank}. ${ad}`}
@@ -74,12 +76,12 @@ export function SiralamaOdaSatiri({
           {item.room_is_live ? (
             <View style={styles.canli}>
               <View style={styles.canliNokta} />
-              <Text style={styles.canliYazi}>CANLI</Text>
+              <Text style={styles.canliYazi}>{t('kesfet.canliRozet')}</Text>
             </View>
           ) : null}
         </View>
         <Text style={styles.user} numberOfLines={1}>
-          {host ? `${host} odası` : 'Oda harcaması'}
+          {host ? t('siralamalar.hostOdasi', { host }) : t('siralamalar.odaHarcamasi')}
         </Text>
       </View>
 

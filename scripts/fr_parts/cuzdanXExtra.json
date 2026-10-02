@@ -1,0 +1,16 @@
+{
+  "cuzdanXExtra": {
+    "odemeBilgisi": "Après approbation, les fonds sont envoyés vers votre compte bancaire enregistré sous {{gun}} jours ouvrés.",
+    "pdfExcel": "PDF / Excel",
+    "dekontBaslik": "Reçu du portefeuille",
+    "hediyeBelgesi": "Reçu de cadeau",
+    "cekimTalebi": "Demande de retrait",
+    "islemSonrasiBakiye": "Solde après transaction",
+    "harcananCoin": "Pièces dépensées",
+    "kazanilanElmas": "Diamants gagnés",
+    "dekontNot": "Reçu de transaction du portefeuille Tamuso.",
+    "hediyeNot": "Reçu de transaction cadeau Tamuso.",
+    "gonderildiOk": "Envoyé → {{kim}}",
+    "alindiOk": "Reçu ← {{kim}}"
+  }
+}

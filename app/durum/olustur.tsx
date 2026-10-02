@@ -23,11 +23,14 @@ import { useKlavyeYuksekligi } from '../../src/bilesenler/klavye/useKlavyeYuksek
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
-import { DurumMedyasiSecVeYukle } from '../../src/moduller/durum/islemler/DurumMedyasiYukle';
+import { DurumMedyasiSecVeYukle, DurumSesDosyasiYukle } from '../../src/moduller/durum/islemler/DurumMedyasiYukle';
 import {
   DurumMedyaHttpsMi,
   DurumOlustur,
 } from '../../src/moduller/durum/islemler/DurumIslemleri';
+import { DurumSesKarti } from '../../src/moduller/durum/bilesenler/DurumSesKarti';
+import { DurumSesKayitPaneli } from '../../src/moduller/durum/bilesenler/DurumSesKayitPaneli';
+import { MesajSesYoneticisi } from '../../src/moduller/mesajlasma/ses/MesajSesYoneticisi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
@@ -35,6 +38,7 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { MesajComposerLinkOnizleme } from '../../src/moduller/mesajlasma/bilesenler/MesajComposerLinkOnizleme';
 
 export default function DurumOlusturEkrani() {
   const { t } = useCeviri();
@@ -44,7 +48,12 @@ export default function DurumOlusturEkrani() {
   const scrollRef = useRef<ScrollView>(null);
   const captionY = useRef(0);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [mediaType, setMediaType] = useState<'image' | 'video' | 'audio'>('image');
+  const [sesTaslak, setSesTaslak] = useState<{
+    uri: string;
+    durationMs: number;
+  } | null>(null);
+  const [sesKayit, setSesKayit] = useState(false);
   const [caption, setCaption] = useState('');
   const [mood, setMood] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -81,6 +90,9 @@ export default function DurumOlusturEkrani() {
         }
         setMediaUrl(r.url.trim());
         setMediaType(r.mediaType);
+        setSesTaslak(null);
+        setSesKayit(false);
+        void MesajSesYoneticisi.durdur();
       })();
     });
   };
@@ -94,7 +106,12 @@ export default function DurumOlusturEkrani() {
       .filter(Boolean)
       .join(' · ');
 
-    if (!mediaUrl && !birlesik) {
+    if (sesKayit) {
+      Alert.alert(t('durum.baslik'), t('durum.sesOnceDurdur'));
+      return;
+    }
+
+    if (!mediaUrl && !sesTaslak && !birlesik) {
       Alert.alert(t('durum.baslik'), t('durum.bosUyari'));
       return;
     }
@@ -108,17 +125,34 @@ export default function DurumOlusturEkrani() {
     islemiDene('durum_paylas', () => {
       void (async () => {
         setBusy(true);
+        let yayinUrl = mediaUrl;
+        let yayinTur: 'image' | 'video' | 'text' | 'audio' = medyaVar
+          ? mediaType
+          : 'text';
+        let sureMs: number | null = null;
+        if (sesTaslak) {
+          const up = await DurumSesDosyasiYukle(sesTaslak.uri);
+          if (!up.ok) {
+            setBusy(false);
+            Alert.alert(t('durum.baslik'), up.hata);
+            return;
+          }
+          yayinUrl = up.url;
+          yayinTur = 'audio';
+          sureMs = sesTaslak.durationMs;
+        }
         const r = await DurumOlustur(
-          medyaVar
+          yayinTur === 'text'
             ? {
-                mediaType,
-                mediaUrl: mediaUrl!.trim(),
-                caption: birlesik || undefined,
-              }
-            : {
                 mediaType: 'text',
                 mediaUrl: null,
                 caption: birlesik,
+              }
+            : {
+                mediaType: yayinTur,
+                mediaUrl: yayinUrl!.trim(),
+                caption: birlesik || undefined,
+                durationMs: sureMs,
               },
         );
         setBusy(false);
@@ -192,7 +226,36 @@ export default function DurumOlusturEkrani() {
               })}
             </ScrollView>
 
-            {mediaUrl && DurumMedyaHttpsMi(mediaUrl) ? (
+            {sesKayit ? (
+              <DurumSesKayitPaneli
+                onBitti={(uri, durationMs) => {
+                  setMediaUrl(null);
+                  setSesTaslak({ uri, durationMs });
+                  setSesKayit(false);
+                }}
+                onVazgec={() => setSesKayit(false)}
+                onHata={(mesaj) => Alert.alert(t('durum.baslik'), mesaj)}
+              />
+            ) : sesTaslak ? (
+              <View style={styles.sesOnizleme}>
+                <DurumSesKarti
+                  oynaticiId="durum-ses-taslak"
+                  uri={sesTaslak.uri}
+                  durationMs={sesTaslak.durationMs}
+                />
+                <Pressable
+                  onPress={() => {
+                    setSesTaslak(null);
+                    void MesajSesYoneticisi.durdur();
+                  }}
+                  style={styles.sesKaldir}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('durum.sesKaldir')}
+                >
+                  <Text style={styles.sesKaldirYazi}>{t('durum.sesKaldir')}</Text>
+                </Pressable>
+              </View>
+            ) : mediaUrl && DurumMedyaHttpsMi(mediaUrl) ? (
               <Pressable
                 style={[styles.onizleme, klavyeAcik && styles.onizlemeKucuk]}
                 onPress={Keyboard.dismiss}
@@ -250,9 +313,27 @@ export default function DurumOlusturEkrani() {
                   />
                   <Text style={styles.secYazi}>{t('ortak.video')}</Text>
                 </Pressable>
+                <Pressable
+                  style={styles.secBtn}
+                  onPress={() => {
+                    islemiDene('durum_paylas', () => {
+                      setMediaUrl(null);
+                      setSesKayit(true);
+                    });
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('durum.ses')}
+                >
+                  <Ionicons
+                    name="mic-outline"
+                    size={28}
+                    color={RenkTokenlari.mint}
+                  />
+                  <Text style={styles.secYazi}>{t('durum.ses')}</Text>
+                </Pressable>
               </View>
             )}
-            {!mediaUrl ? (
+            {!mediaUrl && !sesTaslak && !sesKayit ? (
               <Text style={styles.istegeBagli}>
                 {t('durum.medyaIstegeBagli')}
               </Text>
@@ -268,16 +349,17 @@ export default function DurumOlusturEkrani() {
                 value={caption}
                 onChangeText={setCaption}
                 placeholder={
-                  mediaUrl
+                  mediaUrl || sesTaslak
                     ? t('durum.aciklamaPlaceholder')
                     : t('durum.neDusunuyorsun')
                 }
                 placeholderTextColor={RenkTokenlari.textDim}
                 multiline
-                maxLength={mediaUrl ? 500 : undefined}
+                maxLength={mediaUrl || sesTaslak ? 500 : undefined}
                 onFocus={metneKaydir}
               />
-              {mediaUrl ? (
+              <MesajComposerLinkOnizleme metin={caption} />
+              {mediaUrl || sesTaslak ? (
                 <Text style={styles.sayac}>{caption.length}/500</Text>
               ) : null}
             </View>
@@ -370,6 +452,19 @@ const styles = StyleSheet.create({
   secYazi: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
+    fontWeight: '700',
+  },
+  sesOnizleme: {
+    gap: 8,
+  },
+  sesKaldir: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  sesKaldirYazi: {
+    ...TipografiTokenlari.caption,
+    color: RenkTokenlari.primarySoft,
     fontWeight: '700',
   },
   istegeBagli: {

@@ -31,7 +31,7 @@ import {
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 
 export default function FikirDetayEkrani() {
-  const { t } = useCeviri();
+  const { t, i18n } = useCeviri();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [fikir, setFikir] = useState<FikirDetay | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -44,12 +44,12 @@ export default function FikirDetayEkrani() {
       setFikir(await FikirDetayGetir(id));
       setHata(null);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Yüklenemedi');
+      setHata(e instanceof Error ? e.message : t('fikirler.yuklenemedi'));
       setFikir(null);
     } finally {
       setYukleniyor(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,7 +84,7 @@ export default function FikirDetayEkrani() {
       <ModulHataSiniri modulAdi="fikir-detay">
         <EkranBasligi
           title={t('fikirler.detay')}
-          subtitle="Durum · ekip cevabı"
+          subtitle={t('fikirler.detayAlt')}
           onBack={() => router.back()}
         />
         {yukleniyor && !fikir ? (
@@ -124,12 +124,14 @@ export default function FikirDetayEkrani() {
 
             {fikir.status === 'COMPLETED' ? (
               <View style={styles.tamamlandi}>
-                <Text style={styles.tamamlandiBaslik}>✨ HAYATA GEÇİRİLDİ</Text>
+                <Text style={styles.tamamlandiBaslik}>
+                  {t('fikirler.hayataGecirildiBanner')}
+                </Text>
                 <Text style={styles.tamamlandiAlt}>
-                  Bu öneri Tamuso'ya eklendi.
+                  {t('fikirler.hayataGecirildiAlt')}
                 </Text>
                 {fikir.is_mine ? (
-                  <Text style={styles.katki}>✨ Tamuso'ya Katkıda Bulundu</Text>
+                  <Text style={styles.katki}>{t('fikirler.katkidaBulundu')}</Text>
                 ) : null}
               </View>
             ) : null}
@@ -162,10 +164,14 @@ export default function FikirDetayEkrani() {
                   color={fikir.i_voted ? RenkTokenlari.accent : RenkTokenlari.text}
                 />
                 <Text style={styles.destekYazi}>
-                  {fikir.i_voted ? 'Desteğini kaldır' : 'Bu fikri destekliyorum'}
+                  {fikir.i_voted
+                    ? t('fikirler.destegiKaldir')
+                    : t('fikirler.fikriDestekle')}
                 </Text>
                 <Text style={styles.destekSayi}>
-                  💡 {fikir.vote_count.toLocaleString('tr-TR')} kişi destekliyor
+                  {t('fikirler.kisiDestekliyor', {
+                    count: fikir.vote_count.toLocaleString(i18n.language || 'en'),
+                  })}
                 </Text>
               </Pressable>
             ) : null}
@@ -174,11 +180,11 @@ export default function FikirDetayEkrani() {
 
             {fikir.admin_replies?.length ? (
               <View style={styles.cevapBlok}>
-                <Text style={styles.bolum}>Tamuso Ekibi</Text>
+                <Text style={styles.bolum}>{t('fikirler.ekipAdi')}</Text>
                 {fikir.admin_replies.map((r) => (
                   <View key={r.id} style={styles.cevapKart}>
                     <View style={styles.rozet}>
-                      <Text style={styles.rozetYazi}>Tamuso Ekibi</Text>
+                      <Text style={styles.rozetYazi}>{t('fikirler.ekipAdi')}</Text>
                     </View>
                     <Text style={styles.cevapGovde}>{r.body}</Text>
                   </View>
@@ -188,13 +194,17 @@ export default function FikirDetayEkrani() {
 
             {fikir.rewards?.length ? (
               <View style={styles.odulBlok}>
-                <Text style={styles.bolum}>Tamuso Katkı Ödülü</Text>
+                <Text style={styles.bolum}>{t('fikirler.katkiOdulu')}</Text>
                 {fikir.rewards.map((rw) => (
                   <View key={rw.id} style={styles.odulKart}>
                     <Text style={styles.odulYazi}>
                       {rw.reward_type === 'coin'
-                        ? `+${Number(rw.reward_amount ?? 0).toLocaleString('tr-TR')} Coin`
-                        : '🏅 Tamuso Katkıcısı Rozeti'}
+                        ? t('fikirler.coinOdul', {
+                            count: Number(rw.reward_amount ?? 0).toLocaleString(
+                              i18n.language || 'en',
+                            ),
+                          })
+                        : t('fikirler.katkiciRozeti')}
                     </Text>
                     {rw.user_message ? (
                       <Text style={styles.odulNot}>{rw.user_message}</Text>

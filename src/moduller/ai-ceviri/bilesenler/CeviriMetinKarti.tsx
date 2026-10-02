@@ -1,9 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useMetinCevirisi } from '../kancalar/useMetinCevirisi';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { MesajBaglantiliMetin } from '../../mesajlasma/bilesenler/MesajBaglantiliMetin';
 
 type Props = {
   text: string;
@@ -13,6 +20,8 @@ type Props = {
   /** Çeviriyi kapat (ör. hediye satırı) */
   enabled?: boolean;
   numberOfLines?: number;
+  /** DM bubble: URL tıklanabilir */
+  linkify?: boolean;
 };
 
 /**
@@ -27,9 +36,13 @@ export function CeviriMetinKarti({
   varyant = 'live',
   enabled = true,
   numberOfLines,
+  linkify = false,
 }: Props) {
   const { dil } = useCeviri();
   const { orijinal, altSatir } = useMetinCevirisi(text, dil, context, enabled);
+  const baglantiAktif =
+    linkify || varyant === 'bubble' || varyant === 'bubbleMine';
+  const mine = varyant === 'bubbleMine';
 
   const primaryStyle =
     varyant === 'bubbleMine'
@@ -53,13 +66,29 @@ export function CeviriMetinKarti({
             ? styles.originalCall
             : styles.originalLive;
 
+  const metinSatiri = (
+    deger: string,
+    stil: StyleProp<TextStyle>,
+    linkMi: boolean,
+  ) =>
+    linkMi && baglantiAktif ? (
+      <MesajBaglantiliMetin
+        text={deger}
+        style={stil}
+        mine={mine}
+        numberOfLines={numberOfLines}
+      />
+    ) : (
+      <Text style={stil} numberOfLines={numberOfLines}>
+        {deger}
+      </Text>
+    );
+
   // Çeviri yok: yalnız orijinal
   if (!altSatir) {
     return (
       <View style={styles.wrap}>
-        <Text style={primaryStyle} numberOfLines={numberOfLines}>
-          {orijinal || text}
-        </Text>
+        {metinSatiri(orijinal || text, primaryStyle, true)}
       </View>
     );
   }
@@ -76,9 +105,7 @@ export function CeviriMetinKarti({
         varyant === 'bubbleMine' && styles.cardBubbleMine,
       ]}
     >
-      <Text style={primaryStyle} numberOfLines={numberOfLines}>
-        {altSatir}
-      </Text>
+      {metinSatiri(altSatir, primaryStyle, true)}
       <View
         style={[
           styles.divider,
@@ -87,9 +114,7 @@ export function CeviriMetinKarti({
           varyant === 'live' && styles.dividerLive,
         ]}
       />
-      <Text style={secondaryStyle} numberOfLines={numberOfLines}>
-        {orijinal || text}
-      </Text>
+      {metinSatiri(orijinal || text, secondaryStyle, true)}
     </View>
   );
 }

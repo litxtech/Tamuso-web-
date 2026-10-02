@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { ProfilMiniCache } from '../../kullanici-profili/onbellek/ProfilMiniCache';
 import { BenimHostOdamGetir } from './BenimHostOdam';
 import { OyunKazancBalonu } from './OyunKazancBalonu';
 import type { OyunKazancDuyurusu } from './OyunKazancDuyuruTipleri';
@@ -80,11 +81,7 @@ export function OyunKazancBalonuSaglayici() {
           const row = payload.new as unknown as RawRow;
           if (!row?.id || !row.win_amount) return;
           void (async () => {
-            const { data: profil } = await supabase
-              .from('profiles')
-              .select('display_name, username, avatar_url')
-              .eq('id', row.user_id)
-              .maybeSingle();
+            const profil = await ProfilMiniCache.al(row.user_id);
             ekle({
               id: row.id,
               user_id: row.user_id,
@@ -95,10 +92,7 @@ export function OyunKazancBalonuSaglayici() {
               bet_amount: Number(row.bet_amount) || 0,
               round_id: row.round_id,
               created_at: row.created_at,
-              display_name:
-                profil?.display_name ||
-                profil?.username ||
-                'Birisi',
+              display_name: ProfilMiniCache.gosterimAdi(profil),
               avatar_url: profil?.avatar_url ?? null,
             });
           })();

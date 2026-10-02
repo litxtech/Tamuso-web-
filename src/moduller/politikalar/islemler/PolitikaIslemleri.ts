@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
 import {
   PolitikaKayittanGorunum,
@@ -99,7 +100,7 @@ export async function GuncelPolitikalariGetir(): Promise<PolitikaSurumu[]> {
 
 export async function PolitikaKabulEt(policyVersionId: string) {
   if (!(await OzellikBayragiAktifMiSunucu('policies_enabled'))) {
-    return { ok: false as const, hata: 'Politikalar şu an kapalı.' };
+    return { ok: false as const, hata: i18n.t('politikalar.simdiKapali') };
   }
   const { error } = await supabase.rpc('politika_kabul_et', {
     p_policy_version_id: policyVersionId,
@@ -127,7 +128,7 @@ export async function KayitPolitikaKabulKaydet(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Politika kaydı başarısız',
+      hata: e instanceof Error ? e.message : i18n.t('politikalar.kayitBasarisiz'),
     };
   }
 }

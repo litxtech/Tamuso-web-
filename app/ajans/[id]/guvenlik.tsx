@@ -15,8 +15,10 @@ import {
   AjansGuvenlikAck,
   AjansGuvenlikListesi,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 
 export default function AjansGuvenlikEkrani() {
+  const { t, dil } = useCeviri();
   const id = useAjansRouteId();
   const [olaylar, setOlaylar] = useState<Array<Record<string, unknown>>>([]);
   const [audit, setAudit] = useState<Array<Record<string, unknown>>>([]);
@@ -41,35 +43,38 @@ export default function AjansGuvenlikEkrani() {
 
   useFocusEffect(useCallback(() => { void yukle(); }, [yukle]));
 
+  const locale =
+    dil === 'tr' ? 'tr-TR' : dil === 'es' ? 'es-ES' : dil === 'ar' ? 'ar' : 'en-US';
+
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Güvenlik"
-      subtitle="Olaylar ve audit"
+      title={t('ajans.rayGuvenlik')}
+      subtitle={t('ajans.guvenlikAlt')}
       aktif="guvenlik"
       yukleniyor={yukleniyor && olaylar.length === 0 && audit.length === 0}
       refreshing={yukleniyor && (olaylar.length > 0 || audit.length > 0)}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Güvenlik olayları</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.guvenlikOlaylari')}</AjansBolumBaslik>
       <AjansKart>
         {olaylar.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           olaylar.map((e) => (
             <AjansKart key={String(e.id)}>
               <AjansListeSatir
                 title={String(e.title)}
-                subtitle={`${e.severity} · ${e.acked ? 'onaylı' : 'yeni'} · ${new Date(String(e.created_at)).toLocaleString('tr-TR')}`}
+                subtitle={`${e.severity} · ${e.acked ? t('ajans.onayli') : t('ajans.durumYeni')} · ${new Date(String(e.created_at)).toLocaleString(locale)}`}
               />
               {!e.acked ? (
                 <AjansCta
                   ghost
-                  label="Onayla (ACK)"
+                  label={t('ajans.onaylaAck')}
                   onPress={() => {
                     void (async () => {
                       const r = await AjansGuvenlikAck(String(e.id));
-                      if (!r.ok) Alert.alert('Güvenlik', r.hata);
+                      if (!r.ok) Alert.alert(t('ajans.rayGuvenlik'), r.hata);
                       else await yukle();
                     })();
                   }}
@@ -80,16 +85,16 @@ export default function AjansGuvenlikEkrani() {
         )}
       </AjansKart>
 
-      <AjansBolumBaslik>Audit log</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.auditLog')}</AjansBolumBaslik>
       <AjansKart>
         {audit.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           audit.map((a) => (
             <AjansListeSatir
               key={String(a.id)}
               title={String(a.summary)}
-              subtitle={`${a.actor_name ?? '—'} · ${a.action} · ${new Date(String(a.created_at)).toLocaleString('tr-TR')}`}
+              subtitle={`${a.actor_name ?? '—'} · ${a.action} · ${new Date(String(a.created_at)).toLocaleString(locale)}`}
             />
           ))
         )}

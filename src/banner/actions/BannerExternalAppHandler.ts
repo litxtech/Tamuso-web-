@@ -1,6 +1,7 @@
 import { Linking, Alert } from 'react-native';
 import type { BannerAction } from '../core/BannerTypes';
 import { isSafeHttpsUrl } from '../webview/WebViewSecurity';
+import i18n from '../../i18n';
 
 /**
  * Genel external app resolver — Telegram, YouTube, TikTok, X, Facebook, Maps.
@@ -64,10 +65,12 @@ export async function handleExternalApp(
 
   const resolver = RESOLVERS[app];
   if (!resolver) {
-    // Generic: try url / deep link directly
     const url = action.url ?? target;
     if (!url) {
-      Alert.alert('Uygulama', 'Hedef tanımlı değil.');
+      Alert.alert(
+        i18n.t('banner.uygulamaBaslik'),
+        i18n.t('banner.hedefTanimliDegil'),
+      );
       return { ok: false, error: 'no_target' };
     }
     try {
@@ -79,7 +82,10 @@ export async function handleExternalApp(
     } catch {
       /* */
     }
-    Alert.alert('Uygulama', 'Bu uygulama açılamadı.');
+    Alert.alert(
+      i18n.t('banner.uygulamaBaslik'),
+      i18n.t('banner.uygulamaAcilamadi'),
+    );
     return { ok: false, error: 'open_failed' };
   }
 
@@ -118,6 +124,9 @@ export async function handleExternalApp(
     }
   }
 
-  Alert.alert('Uygulama', `${app} açılamadı.`);
+  Alert.alert(
+    i18n.t('banner.uygulamaBaslik'),
+    i18n.t('banner.uygulamaAdAcilamadi', { app }),
+  );
   return { ok: false, error: 'open_failed' };
 }

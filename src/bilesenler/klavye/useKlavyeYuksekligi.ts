@@ -47,9 +47,10 @@ export function useKlavyeYuksekligi(ekstraPad = 0): {
         return Math.max(0, overlap + ekstraPad);
       }
 
-      // İlk karede agresif pad uygulama — resize henüz gelmemiş olabilir.
+      // İlk karede tam pad yok (zıplama); yine de son input’lar için
+      // minimum yer bırak — resize/overlap gelene kadar banka alanları örtülmesin.
       if (!agresif) {
-        return Math.max(0, ekstraPad);
+        return Math.max(0, ekstraPad, Math.ceil(keyboardH * 0.55));
       }
 
       return Math.max(0, keyboardH + ekstraPad);

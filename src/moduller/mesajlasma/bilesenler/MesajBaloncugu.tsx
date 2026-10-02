@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,11 +28,20 @@ import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { fizikselHiza } from '../../../i18n/rtl';
 import { MesajSesKarti } from './MesajSesKarti';
 import { MesajMuzikKarti } from './MesajMuzikKarti';
+import { MesajDosyaKarti } from './MesajDosyaKarti';
 import { MesajLinkOnizlemeKarti } from './MesajLinkOnizlemeKarti';
+import { MesajBaglantiliMetin } from './MesajBaglantiliMetin';
 import { MesajViewOnceKarti } from './MesajViewOnceKarti';
+import { MesajAjansPaketTeklifKarti } from './MesajAjansPaketTeklifKarti';
+import { MesajAjansPaketFisKarti } from './MesajAjansPaketFisKarti';
 import { MesajKartTokenlari } from '../tasarim/MesajKartTokenlari';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { CeviriMetinKarti } from '../../ai-ceviri/bilesenler/CeviriMetinKarti';
+import { MesajIlkUrl } from '../yardimcilar/MesajUrlAyikla';
+import {
+  DosyaMimeTahmin,
+  UzakDosyayiIndirVePaylas,
+} from '../islemler/MesajDosyaIndir';
 
 type Props = {
   item: DirektMesaj;
@@ -108,17 +118,26 @@ export function MesajBaloncugu({
   const isVideo = item.message_type === 'video' && !!safeMediaUri;
   const isVoice = item.message_type === 'voice';
   const isMusic = item.message_type === 'music';
+  const isFile = item.message_type === 'file' && !!safeMediaUri;
   const isViewOnce = !!item.view_once && (item.message_type === 'image' || item.message_type === 'video');
   const isBrokenMedia =
-    (item.message_type === 'image' || item.message_type === 'video') &&
+    (item.message_type === 'image' || item.message_type === 'video' || item.message_type === 'file') &&
     !safeMediaUri &&
     !isViewOnce;
   const isMedya = isImage || isVideo;
   const isSystem = item.message_type === 'system';
   const isSharedPost = item.message_type === 'shared_post';
+  const isAgencyOffer = item.message_type === 'agency_package_offer';
+  const isAgencyReceipt = item.message_type === 'agency_package_receipt';
   const davet = AjansDavetMesajindanKoduCikar(item.body);
   const [davetBusy, setDavetBusy] = useState(false);
   const [davetGonderildi, setDavetGonderildi] = useState(false);
+  const [indirBusy, setIndirBusy] = useState(false);
+  /** Aynı URI ile her render yeni source üretmek Android'de görseli baştan fade eder. */
+  const imageSource = useMemo(
+    () => (isImage && safeMediaUri ? { uri: safeMediaUri } : null),
+    [isImage, safeMediaUri],
+  );
   const goruldu = mine && !sending && !failed && mesajGorulduMu(item, peerLastReadAt);
   const edited = !!item.edited_at;
 
@@ -196,6 +215,15 @@ export function MesajBaloncugu({
     );
   };
 
+  const sar = (node: React.ReactNode) => (
+    <View
+      style={highlighted ? styles.highlight : undefined}
+      accessibilityHint={yanitAktif ? t('mesajV2.doubleTapToReply') : undefined}
+    >
+      {node}
+    </View>
+  );
+
   if (isSystem) {
     return (
       <View style={styles.system}>
@@ -248,6 +276,86 @@ export function MesajBaloncugu({
           ) : null}
         </View>
       </Pressable>,
+    );
+  }
+
+  if (isAgencyOffer) {
+    return sar(
+      <View style={[styles.sharedWrap, hiza, icHiza, sending && styles.sending]}>
+        <MesajAjansPaketTeklifKarti
+          item={item}
+          mine={mine}
+          onLongPress={onLongPress}
+        />
+        <View style={styles.sharedMeta}>
+          <Text style={mine ? styles.timeMine : styles.time}>
+            {saat(item.created_at, locale)}
+          </Text>
+          {mine ? (
+            <Ionicons
+              name={
+                failed
+                  ? 'alert-circle'
+                  : sending
+                    ? queued
+                      ? 'cloud-upload-outline'
+                      : 'time-outline'
+                    : goruldu
+                      ? 'checkmark-done'
+                      : 'checkmark'
+              }
+              size={14}
+              color={
+                failed
+                  ? RenkTokenlari.danger
+                  : goruldu
+                    ? RenkTokenlari.mint
+                    : 'rgba(18,4,12,0.55)'
+              }
+            />
+          ) : null}
+        </View>
+      </View>,
+    );
+  }
+
+  if (isAgencyReceipt) {
+    return sar(
+      <View style={[styles.sharedWrap, hiza, icHiza, sending && styles.sending]}>
+        <MesajAjansPaketFisKarti
+          item={item}
+          mine={mine}
+          onLongPress={onLongPress}
+        />
+        <View style={styles.sharedMeta}>
+          <Text style={mine ? styles.timeMine : styles.time}>
+            {saat(item.created_at, locale)}
+          </Text>
+          {mine ? (
+            <Ionicons
+              name={
+                failed
+                  ? 'alert-circle'
+                  : sending
+                    ? queued
+                      ? 'cloud-upload-outline'
+                      : 'time-outline'
+                    : goruldu
+                      ? 'checkmark-done'
+                      : 'checkmark'
+              }
+              size={14}
+              color={
+                failed
+                  ? RenkTokenlari.danger
+                  : goruldu
+                    ? RenkTokenlari.mint
+                    : 'rgba(18,4,12,0.55)'
+              }
+            />
+          ) : null}
+        </View>
+      </View>,
     );
   }
 
@@ -348,15 +456,6 @@ export function MesajBaloncugu({
       </Pressable>
     ) : null;
 
-  const sar = (node: React.ReactNode) => (
-    <View
-      style={highlighted ? styles.highlight : undefined}
-      accessibilityHint={yanitAktif ? t('mesajV2.doubleTapToReply') : undefined}
-    >
-      {node}
-    </View>
-  );
-
   if (isViewOnce) {
     return sar(
       <Pressable
@@ -422,6 +521,36 @@ export function MesajBaloncugu({
     );
   }
 
+  if (isFile) {
+    const fileName =
+      (typeof item.media_meta?.file_name === 'string'
+        ? item.media_meta.file_name
+        : null) ||
+      item.body ||
+      'dosya.pdf';
+    const mime =
+      typeof item.media_meta?.mime === 'string' ? item.media_meta.mime : 'application/pdf';
+    return sar(
+      <Pressable
+        onPress={() => ciftTik()}
+        onLongPress={onLongPress}
+        delayLongPress={300}
+        style={[styles.kartWrap, hiza, icHiza, sending && styles.sending]}
+      >
+        {replyBlok}
+        <MesajDosyaKarti
+          mediaUrl={item.media_url}
+          fileName={fileName}
+          mime={mime}
+          body={item.body}
+          mine={mine}
+          onLongPress={onLongPress}
+        />
+        {metaSatiri(false)}
+      </Pressable>,
+    );
+  }
+
   if (isBrokenMedia) {
     return (
       <Pressable
@@ -441,6 +570,25 @@ export function MesajBaloncugu({
   }
 
   if (isMedya && safeMediaUri) {
+    const medyaIndir = () => {
+      if (indirBusy) return;
+      setIndirBusy(true);
+      const ad = isImage
+        ? `tamuso-foto-${item.id.slice(0, 8)}.jpg`
+        : `tamuso-video-${item.id.slice(0, 8)}.mp4`;
+      void UzakDosyayiIndirVePaylas(safeMediaUri, ad, {
+        mimeType: DosyaMimeTahmin(ad),
+        dialogTitle: t('mesajlar.indir'),
+      })
+        .catch((e) =>
+          Alert.alert(
+            t('ortak.hata'),
+            e instanceof Error ? e.message : t('mesajlar.indirBasarisiz'),
+          ),
+        )
+        .finally(() => setIndirBusy(false));
+    };
+
     return sar(
       <Pressable
         onPress={() =>
@@ -462,13 +610,16 @@ export function MesajBaloncugu({
         }
       >
         {replyBlok}
-        <View style={styles.medyaGovde} pointerEvents="none">
-          {isImage ? (
-            <Image
-              source={{ uri: safeMediaUri }}
-              style={styles.mediaFull}
-              resizeMode="cover"
-            />
+        <View style={styles.medyaGovde} pointerEvents="box-none">
+          {isImage && imageSource ? (
+            <View style={styles.mediaFull} collapsable={false}>
+              <Image
+                source={imageSource}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+                fadeDuration={0}
+              />
+            </View>
           ) : (
             <View style={styles.videoFull}>
               <DurumVideoOnizleme
@@ -482,6 +633,22 @@ export function MesajBaloncugu({
               </View>
             </View>
           )}
+          <Pressable
+            style={styles.medyaIndir}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              medyaIndir();
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('mesajlar.indir')}
+          >
+            {indirBusy ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name="download-outline" size={18} color="#fff" />
+            )}
+          </Pressable>
           {!item.body ? metaSatiri(true) : null}
         </View>
         {item.body ? (
@@ -491,9 +658,14 @@ export function MesajBaloncugu({
                 text={item.body}
                 context="dm"
                 varyant={mine ? 'bubbleMine' : 'bubble'}
+                linkify
               />
             ) : (
-              <Text style={styles.medyaCaption}>{item.body}</Text>
+              <MesajBaglantiliMetin
+                text={item.body}
+                style={styles.medyaCaption}
+                mine={mine}
+              />
             )}
             {metaSatiri(false)}
           </View>
@@ -502,16 +674,21 @@ export function MesajBaloncugu({
     );
   }
 
-  const linkKart =
-    item.link_preview && (item.link_preview.title || item.link_preview.image_url) ? (
-      <MesajLinkOnizlemeKarti
-        preview={item.link_preview}
-        url={item.link_url}
-        mine={mine}
-      />
-    ) : null;
+  const linkHedef =
+    item.link_url ||
+    item.link_preview?.url ||
+    (item.message_type === 'text' || item.body
+      ? MesajIlkUrl(item.body)
+      : null);
+  const linkKart = linkHedef ? (
+    <MesajLinkOnizlemeKarti
+      preview={item.link_preview}
+      url={linkHedef}
+      mine={mine}
+    />
+  ) : null;
 
-  const icerik = (
+  const balonIcerik = (
     <>
       {replyBlok}
       {davet ? (
@@ -563,45 +740,53 @@ export function MesajBaloncugu({
             text={item.body}
             context="dm"
             varyant={mine ? 'bubbleMine' : 'bubble'}
+            linkify
           />
         ) : (
-          <Text style={mine ? styles.bodyMine : styles.body}>{item.body}</Text>
+          <MesajBaglantiliMetin
+            text={item.body}
+            style={mine ? styles.bodyMine : styles.body}
+            mine={mine}
+          />
         )
       ) : null}
-      {linkKart}
       {metaSatiri(false)}
     </>
   );
 
-  if (mine) {
-    return sar(
-      <Pressable
-        onPress={() => ciftTik()}
-        onLongPress={onLongPress}
-        delayLongPress={300}
-      >
-        <LinearGradient
-          colors={[...RenkTokenlari.gradientPrimary]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.bubble, styles.mine, hiza, sending && styles.sending]}
+  // Link kartı balon DIŞINDA — şeffaf cam, etrafı transparan
+  const paket = (
+    <View style={[styles.linkPaket, hiza, icHiza]}>
+      {mine ? (
+        <Pressable
+          onPress={() => ciftTik()}
+          onLongPress={onLongPress}
+          delayLongPress={300}
         >
-          {icerik}
-        </LinearGradient>
-      </Pressable>,
-    );
-  }
-
-  return sar(
-    <Pressable
-      onPress={() => ciftTik()}
-      onLongPress={onLongPress}
-      delayLongPress={300}
-      style={[styles.bubble, styles.theirs, hiza]}
-    >
-      {icerik}
-    </Pressable>,
+          <LinearGradient
+            colors={[...RenkTokenlari.gradientPrimary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.bubble, styles.mine, sending && styles.sending]}
+          >
+            {balonIcerik}
+          </LinearGradient>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={() => ciftTik()}
+          onLongPress={onLongPress}
+          delayLongPress={300}
+          style={[styles.bubble, styles.theirs]}
+        >
+          {balonIcerik}
+        </Pressable>
+      )}
+      {linkKart}
+    </View>
   );
+
+  return sar(paket);
 }
 
 const styles = StyleSheet.create({
@@ -612,6 +797,12 @@ const styles = StyleSheet.create({
   kartWrap: {
     maxWidth: '86%',
     gap: 4,
+  },
+  /** Link kartı balon dışında — şeffaf boşluk */
+  linkPaket: {
+    maxWidth: '86%',
+    gap: 4,
+    backgroundColor: 'transparent',
   },
   /** shared taraf hizası render-time fizikselHiza ile — statik alignSelf YOK */
   sharedMeta: {
@@ -684,10 +875,23 @@ const styles = StyleSheet.create({
   medyaGovde: {
     position: 'relative',
   },
+  medyaIndir: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    zIndex: 2,
+  },
   mediaFull: {
     width: 248,
     height: 248,
     backgroundColor: 'rgba(0,0,0,0.12)',
+    overflow: 'hidden',
   },
   videoFull: {
     width: 248,

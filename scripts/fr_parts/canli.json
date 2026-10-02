@@ -1,0 +1,16 @@
+{
+  "canli": {
+    "baslik": "Live",
+    "gecBaslik": "Passer en live",
+    "gecFisilti": "CRÉER",
+    "gecOzet": "Salle vocale, diffusion ou statut — choisissez ce qu’il faut ouvrir.",
+    "sesOdasiBaslik": "Ouvrir une salle vocale",
+    "sesOdasiFisilti": "SALLE VOCALE",
+    "sesOdasiOzet": "Ajoutez un titre et une couverture — la salle s’ouvre instantanément.",
+    "odaBasligi": "Titre de la salle",
+    "aciklama": "Description",
+    "aciklamaPlaceholder": "Sujet court — affiché sur la carte",
+    "aciliyor": "Ouverture…",
+    "sesOdasiniAc": "Ouvrir la salle vocale"
+  }
+}

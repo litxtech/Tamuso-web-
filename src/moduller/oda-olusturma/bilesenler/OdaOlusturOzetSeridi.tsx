@@ -7,6 +7,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   modAd: string;
@@ -32,14 +33,15 @@ export function OdaOlusturOzetSeridi({
   temaKod,
   temaRenkler,
 }: Props) {
+  const { t } = useCeviri();
   return (
     <LinearGradient colors={[...temaRenkler]} style={styles.wrap}>
-      <Text style={styles.eyebrow}>SAHNE ÖZETİ</Text>
+      <Text style={styles.eyebrow}>{t('olusturTab.sahneOzeti')}</Text>
       <View style={styles.grid}>
-        <OzetSatir etiket="Mod" deger={modAd} kod={modKod} />
-        <OzetSatir etiket="Boyut" deger={kapasiteAd} kod={kapasiteKod} />
-        <OzetSatir etiket="Düzen" deger={duzenAd} kod={duzenKod} />
-        <OzetSatir etiket="Tema" deger={temaAd} kod={temaKod} />
+        <OzetSatir etiket={t('olusturTab.mod')} deger={modAd} kod={modKod} />
+        <OzetSatir etiket={t('olusturTab.boyut')} deger={kapasiteAd} kod={kapasiteKod} />
+        <OzetSatir etiket={t('olusturTab.duzen')} deger={duzenAd} kod={duzenKod} />
+        <OzetSatir etiket={t('olusturTab.tema')} deger={temaAd} kod={temaKod} />
       </View>
     </LinearGradient>
   );

@@ -1,0 +1,114 @@
+Ensuring sample sessions (refresh veya mint)...
+
+Wrote 24 tokens → C:\Users\ilkse\muta\load-tests\fixtures\tokens.json
+Refreshed 24 sessions (min TTL ~59m)
+Tokens ready: 24
+Tokens OK: 24 (TTL yeterli, mint atlandı)
+
+========== CCU 100 START 2026-09-23T16:12:19.841Z ==========
+)=91.77ms p(99)=107.55ms max=143.86ms
+     lat_rpc_bildirimlerimi_listele........: avg=78.93ms  min=67.52ms med=77.18ms p(90)=87.35ms p(95)=92.11ms p(99)=105.02ms max=113.66ms
+     lat_rpc_durum_akisi...................: avg=84.57ms  min=68.53ms med=79.38ms p(90)=91.84ms p(95)=98ms    p(99)=137.52ms max=1.01s   
+     lat_rpc_durum_akisi_takip.............: avg=84.05ms  min=69ms    med=78.8ms  p(90)=91.26ms p(95)=99.57ms p(99)=125.74ms max=1.05s   
+     lat_rpc_liderlik_siralamasi_listele...: avg=89.35ms  min=68.21ms med=78.19ms p(90)=89.26ms p(95)=99.08ms p(99)=296.87ms max=1.17s   
+     lat_rpc_mesaj_konularini_getir........: avg=81.2ms   min=69.96ms med=78.55ms p(90)=89.14ms p(95)=95.2ms  p(99)=137.93ms max=198.92ms
+     lat_rpc_takip_edilenleri_listele......: avg=79.68ms  min=68.69ms med=78.39ms p(90)=89.09ms p(95)=94.67ms p(99)=99.04ms  max=106.94ms
+     lat_rpc_takipcileri_listele...........: avg=82.45ms  min=69.3ms  med=79ms    p(90)=90.79ms p(95)=97.18ms p(99)=126.75ms max=358.89ms
+     ok_home_blocks........................: 1374    6.05091/s
+     ok_home_live_sessions.................: 1374    6.05091/s
+     ok_home_rooms.........................: 1374    6.05091/s
+     ok_live_live_list.....................: 235     1.034908/s
+     ok_profile_get........................: 750     3.302899/s
+     ok_profile_stats......................: 750     3.302899/s
+     ok_room_live_list.....................: 235     1.034908/s
+     ok_rpc_bildirim_okunmamis_sayim.......: 196     0.863158/s
+     ok_rpc_bildirimlerimi_listele.........: 196     0.863158/s
+     ok_rpc_durum_akisi....................: 544     2.395702/s
+     ok_rpc_durum_akisi_takip..............: 431     1.898066/s
+     ok_rpc_liderlik_siralamasi_listele....: 477     2.100644/s
+     ok_rpc_mesaj_konularini_getir.........: 482     2.122663/s
+     ok_rpc_takip_edilenleri_listele.......: 234     1.030504/s
+     ok_rpc_takipcileri_listele............: 234     1.030504/s
+     op_latency............................: avg=82.87ms  min=66.69ms med=78.66ms p(90)=89.67ms p(95)=95.05ms p(99)=127.51ms max=1.17s   
+     op_ok.................................: 8886    39.132743/s
+     status_2xx............................: 8886    39.132743/s
+     vus...................................: 1       min=1            max=100
+     vus_max...............................: 100     min=100          max=100
+
+
+running (3m47.1s), 000/100 VUs, 4723 complete and 0 interrupted iterations
+default ✓ [ 100% ] 000/100 VUs  3m40s
+time="2026-09-23T19:12:21+03:00" level=warning msg="Error from API server" error="listen tcp 127.0.0.1:6565: bind: Normal olarak her yuva adresi (iletişim kuralı/ağ adresi/bağlantı noktası) için yalnızca bir kullanıma izin veriliyor."
+Cooldown 45000ms (VU drain / cooldown)...
+Tokens OK: 24 (TTL yeterli, mint atlandı)
+
+========== CCU 500 START 2026-09-23T16:16:55.758Z ==========
+=28.26s  
+     lat_rpc_bildirimlerimi_listele........: avg=145.22ms min=65.44ms med=74.5ms  p(90)=86.59ms  p(95)=139.94ms p(99)=1.81s    max=21.56s  
+     lat_rpc_durum_akisi...................: avg=727.49ms min=66.23ms med=77.02ms p(90)=98.39ms  p(95)=633.26ms p(99)=24.91s   max=31.39s  
+     lat_rpc_durum_akisi_takip.............: avg=798.64ms min=65.99ms med=75.93ms p(90)=93.38ms  p(95)=799.18ms p(99)=26.06s   max=30.79s  
+     lat_rpc_liderlik_siralamasi_listele...: avg=578.6ms  min=67.03ms med=75.21ms p(90)=95.25ms  p(95)=317.95ms p(99)=24.28s   max=30.54s  
+     lat_rpc_mesaj_konularini_getir........: avg=676.86ms min=64.82ms med=75.43ms p(90)=92.47ms  p(95)=339ms    p(99)=25.19s   max=30.96s  
+     lat_rpc_takip_edilenleri_listele......: avg=160.73ms min=66.42ms med=75.02ms p(90)=91.13ms  p(95)=209.58ms p(99)=2.39s    max=20.43s  
+     lat_rpc_takipcileri_listele...........: avg=591.47ms min=66.36ms med=75.52ms p(90)=94.04ms  p(95)=281.68ms p(99)=25.44s   max=29.41s  
+     ok_home_blocks........................: 6258    26.131937/s
+     ok_home_live_sessions.................: 6258    26.131937/s
+     ok_home_rooms.........................: 6258    26.131937/s
+     ok_live_live_list.....................: 1065    4.44719/s
+     ok_profile_get........................: 3113    12.999156/s
+     ok_profile_stats......................: 3113    12.999156/s
+     ok_room_live_list.....................: 1065    4.44719/s
+     ok_rpc_bildirim_okunmamis_sayim.......: 1043    4.355323/s
+     ok_rpc_bildirimlerimi_listele.........: 1043    4.355323/s
+     ok_rpc_durum_akisi....................: 2248    9.38712/s
+     ok_rpc_durum_akisi_takip..............: 1992    8.318124/s
+     ok_rpc_liderlik_siralamasi_listele....: 2075    8.664712/s
+     ok_rpc_mesaj_konularini_getir.........: 2139    8.931961/s
+     ok_rpc_takip_edilenleri_listele.......: 1044    4.359499/s
+     ok_rpc_takipcileri_listele............: 1044    4.359499/s
+     op_latency............................: avg=521.3ms  min=64.82ms med=76.38ms p(90)=94.51ms  p(95)=277.68ms p(99)=22.96s   max=31.56s  
+     op_ok.................................: 39758   166.020063/s
+     status_2xx............................: 39758   166.020063/s
+     vus...................................: 1       min=1              max=500
+     vus_max...............................: 500     min=500            max=500
+
+
+running (3m59.5s), 000/500 VUs, 20977 complete and 0 interrupted iterations
+default ✓ [ 100% ] 000/500 VUs  3m53s
+Sağlık eşiği tutmadı — daha yüksek CCU yok. unhealthy_for_escalation: p99 22960.253354000022ms >= 1500ms
+
+===== FINAL TABLE =====
+CCU | RPS | p50 | p90 | p95 | p99 | Max | Error % | 429 | 5xx
+100 | 39.13 | 78.66 | 89.67 | 95.06 | 127.51 | 1171.81 | 0 | 0 | 0
+500 | 166.02 | 76.39 | 94.51 | 277.69 | 22960.25 | 31566.96 | 0 | 0 | 0
+1000 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A
+2500 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A
+5000 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A
+7500 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A
+10000 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A
+
+İLK PERFORMANS BOZULMASI: 500
+BREAKING POINT: 500
+EN YÜKSEK SAĞLIKLI TEST EDİLEN CCU: 100
+STOP REASON: unhealthy_for_escalation: p99 22960.253354000022ms >= 1500ms
+EN YAVAŞ 10 RPC/OPERATION:
+  1. [CCU 500] rpc:durum_akisi_takip p95=799.19 p99=26068.81 count=1992 err%=0
+  2. [CCU 500] rpc:durum_akisi p95=633.27 p99=24913.08 count=2248 err%=0
+  3. [CCU 500] profile:get p95=613.53 p99=25964.77 count=3113 err%=0
+  4. [CCU 500] home:rooms p95=339.68 p99=24687.85 count=6258 err%=0
+  5. [CCU 500] rpc:mesaj_konularini_getir p95=339.01 p99=25198.8 count=2139 err%=0
+  6. [CCU 500] rpc:liderlik_siralamasi_listele p95=317.96 p99=24281.18 count=2075 err%=0
+  7. [CCU 500] rpc:takipcileri_listele p95=281.69 p99=25447.66 count=1044 err%=0
+  8. [CCU 500] home:live_sessions p95=276.43 p99=24798.14 count=6258 err%=0
+  9. [CCU 500] room:live_list p95=261.57 p99=25772.41 count=1065 err%=0
+  10. [CCU 500] profile:stats p95=246.75 p99=1934.96 count=3113 err%=0
+EN FAZLA HATA VEREN OPERATION: N/A
+429 BAŞLADIĞI CCU: N/A
+5xx BAŞLADIĞI CCU: N/A
+TEST GENERATOR DURUMU: belirgin generator bottleneck yok (cpu/mem eşiği)
+  gen@CCU100: cpu%=0 mem%=67.3
+  gen@CCU500: cpu%=0 mem%=67.4
+SUPABASE CPU: N/A
+SUPABASE RAM: N/A
+DB CONNECTIONS: N/A
+DISK IO: N/A

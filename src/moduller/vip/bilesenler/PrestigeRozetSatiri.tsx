@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   vipLevel: number | string | null | undefined;
@@ -26,14 +27,15 @@ export function PrestigeRozetSatiri({
   charmLevel,
   rechargeLevel,
 }: Props) {
+  const { t } = useCeviri();
   const chips: Array<{ id: string; label: string; hot?: boolean }> = [];
-  const vip = chipMetin('VIP', vipLevel);
+  const vip = chipMetin(t('siralamalar.boardVip'), vipLevel);
   if (vip) chips.push({ id: 'vip', label: vip, hot: true });
-  const hediye = chipMetin('Hediye', gifterLevel);
+  const hediye = chipMetin(t('siralamalar.boardHediye'), gifterLevel);
   if (hediye) chips.push({ id: 'gifter', label: hediye });
-  const cekicilik = chipMetin('Çekicilik', charmLevel);
+  const cekicilik = chipMetin(t('siralamalar.boardCekicilik'), charmLevel);
   if (cekicilik) chips.push({ id: 'charm', label: cekicilik });
-  const yukleme = chipMetin('Yükleme', rechargeLevel);
+  const yukleme = chipMetin(t('siralamalar.boardYukleme'), rechargeLevel);
   if (yukleme) chips.push({ id: 'recharge', label: yukleme });
   if (chips.length === 0) return null;
 

@@ -7,6 +7,7 @@ import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari'
 import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 import type { AjansUyelikAjans } from '../okuma/AjansUyelikGetir';
 
 type Varyant = 'uye' | 'basvur' | 'beklemede';
@@ -27,14 +28,20 @@ export function AjansProfilRozeti({
   onPress,
   tamGenislik,
 }: Props) {
+  const { t } = useCeviri();
   const uye = varyant === 'uye';
   const beklemede = varyant === 'beklemede';
-  const ad = ajans?.name?.trim() || 'Ajans';
+  const ad = ajans?.name?.trim() || t('ajans.baslik');
   const alt = uye
-    ? 'Ajans profili'
+    ? t('ajans.aksiyonProfil')
     : beklemede
-      ? 'Başvuru inceleniyor'
-      : 'Ajansa katıl';
+      ? t('ajans.basvuruInceleniyor')
+      : t('ajans.ajansaKatil');
+  const baslik = uye
+    ? ad
+    : beklemede
+      ? t('ajans.basvuruInceleniyor')
+      : t('ajans.ajansaBasvur');
 
   return (
     <Pressable
@@ -45,7 +52,7 @@ export function AjansProfilRozeti({
         pressed && styles.pressed,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={uye ? ad : beklemede ? alt : 'Ajansa başvur'}
+      accessibilityLabel={uye ? ad : beklemede ? alt : t('ajans.ajansaBasvur')}
     >
       <LinearGradient
         colors={
@@ -83,7 +90,7 @@ export function AjansProfilRozeti({
             style={[styles.baslik, uye && styles.baslikUye]}
             numberOfLines={1}
           >
-            {uye ? ad : beklemede ? 'Başvuru inceleniyor' : 'Ajansa başvur'}
+            {baslik}
           </Text>
           <Text style={[styles.alt, uye && styles.altUye]} numberOfLines={1}>
             {alt}

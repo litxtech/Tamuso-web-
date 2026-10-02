@@ -31,46 +31,86 @@ function ZeusKazancInner({
   visible,
   compact = false,
 }: Props) {
-  const [displayedWin, setDisplayedWin] = useState(totalWin);
+  const [displayedWin, setDisplayedWin] = useState(0);
+  const [heldWin, setHeldWin] = useState(0);
+  const [heldTier, setHeldTier] = useState<ZeusWinTier>('NONE');
+  const [heldBase, setHeldBase] = useState(0);
+  const [heldMult, setHeldMult] = useState(1);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pop = useSharedValue(1);
+  const lastTargetRef = useRef(0);
 
   useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (!visible || totalWin <= 0) {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!visible) {
+      return;
+    }
+
+    if (totalWin <= 0) {
       setDisplayedWin(0);
+      setHeldWin(0);
+      setHeldTier('NONE');
+      lastTargetRef.current = 0;
+      return;
+    }
+
+    setHeldWin(totalWin);
+    setHeldTier(tier);
+    setHeldBase(baseWin);
+    setHeldMult(totalMultiplier);
+
+    const sameTarget = lastTargetRef.current === totalWin;
+    lastTargetRef.current = totalWin;
+    if (sameTarget) {
+      setDisplayedWin(totalWin);
       return;
     }
 
     const duration = winCountDurationMs(tier);
     const startedAt = Date.now();
-    setDisplayedWin(0);
+    const from = displayedWin > 0 && displayedWin < totalWin ? displayedWin : 0;
+    setDisplayedWin(from);
     pop.value = 0.92;
     pop.value = withSequence(
-      withTiming(1.08, { duration: 180, easing: Easing.out(Easing.cubic) }),
-      withTiming(1, { duration: 220 }),
+      withTiming(1.1, { duration: 200, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 280 }),
     );
     timerRef.current = setInterval(() => {
       const progress = Math.min(1, (Date.now() - startedAt) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayedWin(totalWin * eased);
+      setDisplayedWin(from + (totalWin - from) * eased);
       if (progress >= 1 && timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+        setDisplayedWin(totalWin);
       }
     }, 32);
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, [pop, tier, totalWin, visible]);
+    // displayedWin bilerek deps dışı — count-up sıfırlanmasın
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseWin, pop, tier, totalMultiplier, totalWin, visible]);
 
   const popStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pop.value }],
   }));
 
-  if (!visible || totalWin <= 0) {
+  const showWin = visible && (totalWin > 0 || heldWin > 0);
+  const showAmount = totalWin > 0 ? displayedWin : heldWin;
+  const showTier = totalWin > 0 ? tier : heldTier;
+  const showBase = totalWin > 0 ? baseWin : heldBase;
+  const showMult = totalWin > 0 ? totalMultiplier : heldMult;
+
+  if (!showWin) {
     return (
       <View style={[styles.wrap, compact && styles.wrapCompact]}>
         <Text style={styles.label}>KAZANÇ</Text>
@@ -81,19 +121,19 @@ function ZeusKazancInner({
 
   return (
     <Animated.View
-      style={[styles.wrap, compact && styles.wrapCompact, popStyle]}
+      style={[styles.wrap, compact && styles.wrapCompact, styles.wrapWin, popStyle]}
       accessibilityLiveRegion="polite"
-      accessibilityLabel={`Kazanç ${Math.floor(totalWin).toLocaleString('tr-TR')} coin`}
+      accessibilityLabel={`Kazanç ${Math.floor(showAmount).toLocaleString('tr-TR')} coin`}
     >
-      <Text style={styles.label}>{WIN_TIER_LABELS[tier] || 'KAZANÇ'}</Text>
+      <Text style={styles.label}>{WIN_TIER_LABELS[showTier] || 'KAZANÇ'}</Text>
       <View style={styles.row}>
-        {totalMultiplier > 1 ? (
+        {showMult > 1 ? (
           <Text style={styles.formula}>
-            {Math.floor(baseWin).toLocaleString('tr-TR')} × {totalMultiplier} ={' '}
+            {Math.floor(showBase).toLocaleString('tr-TR')} × {showMult} ={' '}
           </Text>
         ) : null}
         <Text style={[styles.value, compact && styles.valueCompact]}>
-          {Math.floor(displayedWin).toLocaleString('tr-TR')}
+          {Math.floor(showAmount).toLocaleString('tr-TR')}
         </Text>
         <Text style={styles.coin}> COIN</Text>
       </View>
@@ -115,6 +155,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(232,197,71,0.35)',
     backgroundColor: 'rgba(12,14,24,0.55)',
     overflow: 'hidden',
+  },
+  wrapWin: {
+    borderColor: 'rgba(246,226,122,0.75)',
+    backgroundColor: 'rgba(28,18,8,0.82)',
   },
   wrapCompact: {
     minHeight: 40,

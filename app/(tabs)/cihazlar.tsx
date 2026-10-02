@@ -26,6 +26,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { DIL_LOCALE_MAP } from '../../src/i18n/diller';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 type Oturum = {
@@ -37,7 +38,8 @@ type Oturum = {
 };
 
 export default function CihazlarEkrani() {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
+  const sayiLocale = DIL_LOCALE_MAP[dil];
   const [liste, setListe] = useState<Oturum[]>([]);
   const [buCihaz, setBuCihaz] = useState('');
   const [loading, setLoading] = useState(true);
@@ -135,7 +137,7 @@ export default function CihazlarEkrani() {
                   </Text>
                   <Text style={styles.cardMeta}>
                     v{item.app_version ?? '?'} ·{' '}
-                    {new Date(item.last_seen_at).toLocaleString('tr-TR')}
+                    {new Date(item.last_seen_at).toLocaleString(sayiLocale)}
                   </Text>
                 </View>
                 {!bu ? (

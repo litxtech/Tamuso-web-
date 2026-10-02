@@ -15,6 +15,15 @@ export type AdminModul = {
 /** Admin hub + arama katalogu (tek kaynak) */
 export const ADMIN_MODULLER: AdminModul[] = [
   {
+    icon: 'cloud-download-outline',
+    label: 'Sürüm ve güncelleme',
+    alt: 'iOS · Android · zorunlu güncelleme',
+    href: '/admin/surum-guncelleme',
+    tint: RenkTokenlari.primarySoft,
+    bolum: 'Uygulama Yönetimi',
+    anahtarlar: ['sürüm', 'version', 'force', 'app store', 'play', 'güncelleme'],
+  },
+  {
     icon: 'people-outline',
     label: 'Kullanıcılar',
     alt: 'Dosya · ban · ihtar · harcama',
@@ -177,6 +186,24 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['görüşme', 'call', 'ekran'],
   },
   {
+    icon: 'git-compare-outline',
+    label: 'RTC altyapısı',
+    alt: 'LiveKit · Agora yedek · manuel geçiş',
+    href: '/admin/rtc-altyapi',
+    tint: RenkTokenlari.accent,
+    bolum: 'Güvenlik',
+    anahtarlar: ['livekit', 'agora', 'rtc', 'ses', 'yayın'],
+  },
+  {
+    icon: 'sparkles-outline',
+    label: 'Tamuso Studio',
+    alt: 'Oyun oluşturma · bayraklar',
+    href: '/admin/studio',
+    tint: RenkTokenlari.violet,
+    bolum: 'Oyunlar',
+    anahtarlar: ['studio', 'oyun', 'creator'],
+  },
+  {
     icon: 'shield-checkmark-outline',
     label: 'Platform güvenliği',
     alt: 'Cihaz · silinen dönüş · benzer mail',
@@ -276,6 +303,15 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['komisyon', 'pay', 'elmas'],
   },
   {
+    icon: 'aperture-outline',
+    label: 'Fruit Wheel',
+    alt: 'Tur · meyve · çarpan · limit',
+    href: '/admin/fruit-wheel',
+    tint: '#E6CE92',
+    bolum: 'Ürün',
+    anahtarlar: ['fruit', 'çark', 'meyve'],
+  },
+  {
     icon: 'game-controller-outline',
     label: 'Oyun yönetimi',
     alt: 'Aç/kapa · test · Kaskad RTP',
@@ -328,6 +364,15 @@ export const ADMIN_MODULLER: AdminModul[] = [
     tint: RenkTokenlari.mint,
     bolum: 'Ürün',
     anahtarlar: ['flag', 'kill', 'bayrak', 'duyuru'],
+  },
+  {
+    icon: 'megaphone-outline',
+    label: 'Duyuru Merkezi',
+    alt: 'Yayın · hedef · analitik',
+    href: '/admin/duyurular',
+    tint: RenkTokenlari.accent,
+    bolum: 'Ürün',
+    anahtarlar: ['duyuru', 'announcement', 'yayın'],
   },
   {
     icon: 'menu-outline',
@@ -440,6 +485,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
 ];
 
 export const ADMIN_BOLUM_SIRASI = [
+  'Uygulama Yönetimi',
   'İnsanlar',
   'Güvenlik',
   'Ürün',

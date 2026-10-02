@@ -28,16 +28,20 @@ import {
   DurumMedyaHttpsMi,
   DurumMetinGonderisiMi,
   DurumOyunKazanciPayloadAl,
+  DurumSesPayloadAl,
   DurumSil,
   type DurumOggesi,
 } from '../../src/moduller/durum/islemler/DurumIslemleri';
 import { DurumOyunKazanciKart } from '../../src/moduller/durum/bilesenler/DurumOyunKazanciKart';
+import { DurumSesKarti } from '../../src/moduller/durum/bilesenler/DurumSesKarti';
 import { DurumCaptionAcilir } from '../../src/moduller/durum/bilesenler/DurumCaptionAcilir';
 import { DurumTarihSaat } from '../../src/moduller/durum/islemler/DurumZaman';
 import { useHediyeMagaza } from '../../src/moduller/hediyeler/islemler/useHediyeMagaza';
 import { HediyeMagazaBaglamasi } from '../../src/moduller/hediyeler/bilesenler/HediyeMagazaBaglamasi';
 import { GonderiPaylasSheet } from '../../src/moduller/durum/paylasim/bilesenler/GonderiPaylasSheet';
 import { DogrulanmisTik } from '../../src/moduller/kullanici-profili/bilesenler/DogrulanmisTik';
+import { UserIdentityRow } from '../../src/moduller/unvanlar/bilesenler/UserIdentityRow';
+import { useUnvanKatalog } from '../../src/moduller/unvanlar/kancalar/useUnvanKatalog';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
@@ -128,6 +132,7 @@ function VideoTamIc({ uri }: { uri: string }) {
 
 export default function DurumDetayEkrani() {
   const { t } = useCeviri();
+  useUnvanKatalog();
   const params = useLocalSearchParams<{ id: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const insets = useSafeAreaInsets();
@@ -267,6 +272,19 @@ export default function DurumDetayEkrani() {
                     </View>
                   );
                 }
+                const ses = DurumSesPayloadAl(oge);
+                if (ses || oge.media_type === 'audio') {
+                  return (
+                    <View style={styles.kartWrap}>
+                      <DurumSesKarti
+                        oynaticiId={`durum-ses:${oge.id}`}
+                        uri={oge.media_url}
+                        durationMs={ses?.duration_ms}
+                        aktif
+                      />
+                    </View>
+                  );
+                }
                 if (metinGonderisi) {
                   return (
                     <View style={styles.metinGovde}>
@@ -312,6 +330,7 @@ export default function DurumDetayEkrani() {
             </View>
 
             {!metinGonderisi &&
+            oge.media_type !== 'audio' &&
             lightboxAcik &&
             DurumMedyaHttpsMi(oge.media_url) ? (
               <View
@@ -362,13 +381,13 @@ export default function DurumDetayEkrani() {
                 />
                 <View style={styles.kisiMetin}>
                   <View style={styles.isimSatir}>
-                    <Text
-                      style={[styles.isim, metinGonderisi && { color: RenkTokenlari.text }]}
-                      numberOfLines={1}
-                    >
-                      {oge.display_name}
-                    </Text>
-                    <DogrulanmisTik dogrulandi={oge.is_verified} size={14} />
+                    <UserIdentityRow
+                      displayName={oge.display_name}
+                      verified={!!oge.is_verified}
+                      titleId={oge.selected_title_id}
+                      size="COMPACT"
+                      nameStyle={[styles.isim, metinGonderisi && { color: RenkTokenlari.text }]}
+                    />
                   </View>
                   <Text
                     style={[

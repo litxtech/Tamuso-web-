@@ -6,8 +6,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useCeviri } from '../../src/i18n/useCeviri';
 import { ZeusEkrani } from '../../src/moduller/oyunlar/zeus/ekranlar/ZeusEkrani';
 import { registerZeus } from '../../src/moduller/oyunlar/zeus/ZeusKayit';
+import { warmZeusAssetsEarly } from '../../src/moduller/oyunlar/zeus/assets/preloadZeusAssets';
 import { isGameVisible } from '../../src/moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import {
@@ -18,11 +20,13 @@ import {
 type Durum = 'yukleniyor' | 'acik' | 'kapali';
 
 export default function ZeusOyunSayfasi() {
+  const { t } = useCeviri();
   const { user } = useAuth();
   const [durum, setDurum] = useState<Durum>('yukleniyor');
 
   useEffect(() => {
     registerZeus();
+    warmZeusAssetsEarly();
     koyuSahneKilidiGir();
     let alive = true;
     void (async () => {
@@ -56,12 +60,10 @@ export default function ZeusOyunSayfasi() {
   if (durum === 'kapali') {
     return (
       <View style={styles.merkez}>
-        <Text style={styles.baslik}>ZEUS</Text>
-        <Text style={styles.mesaj}>
-          Oyun şu an kapalı. Daha sonra tekrar dene.
-        </Text>
+        <Text style={styles.baslik}>{t('oyun.zeus')}</Text>
+        <Text style={styles.mesaj}>{t('oyun.acikOyunYokBody')}</Text>
         <Pressable style={styles.btn} onPress={kapat}>
-          <Text style={styles.btnText}>Geri dön</Text>
+          <Text style={styles.btnText}>{t('ortak.geriDon')}</Text>
         </Pressable>
       </View>
     );

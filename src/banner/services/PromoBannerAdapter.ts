@@ -6,7 +6,11 @@
 import { supabase } from '../../lib/supabase';
 import { OYUN_KART_KATALOGU } from '../../moduller/oyunlar/ortak/katalog/OyunKartKatalogu';
 import type { BannerCampaign } from '../core/BannerTypes';
-import { AUTO_ROOM_PROMO_PLACEMENTS } from '../core/BannerConstants';
+import {
+  AUTO_ROOM_PROMO_PLACEMENTS,
+  BANNER_ROOM_CARD_ASPECT,
+  BANNER_ROOM_CARD_TAG,
+} from '../core/BannerConstants';
 import { RenkTokenlari } from '../../tasarim-sistemi/RenkTokenlari';
 
 const PROMO_PLACEMENTS = [
@@ -90,12 +94,14 @@ async function enPopulerOdaBanner(): Promise<BannerCampaign | null> {
   return basePromo({
     id: `promo-oda-${data.id}`,
     name: 'auto_oda',
-    title: null,
+    title: data.title?.trim() || null,
     subtitle: null,
-    badge: null,
-    tags: [],
-    media_type: medya ? 'IMAGE' : 'GRADIENT',
+    badge: 'LIVE',
+    tags: [BANNER_ROOM_CARD_TAG, 'LIVE', 'PROMOTION'],
+    media_type: medya ? 'IMAGE_TEXT' : 'GRADIENT',
     media_url: medya,
+    size_type: 'CUSTOM',
+    aspect_ratio: BANNER_ROOM_CARD_ASPECT,
     gradient_json: { colors: ['#0F3A36', '#3DCFB0'] },
     priority: 55,
     carousel_auto_slide_ms: 3000,

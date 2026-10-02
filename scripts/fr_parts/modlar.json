@@ -1,0 +1,15 @@
+{
+  "modlar": {
+    "tumu": "Tous",
+    "parti": "Fête",
+    "karaoke": "Karaoke",
+    "oyun": "Jeu",
+    "flort": "Rencontres",
+    "ozel": "Privé",
+    "partiAlt": "Énergie · discussion",
+    "karaokeAlt": "Scène micro",
+    "oyunAlt": "Équipes · fun",
+    "flortAlt": "Rencontrer · connecter",
+    "tekli": "Solo"
+  }
+}

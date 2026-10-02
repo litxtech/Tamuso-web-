@@ -28,9 +28,10 @@ import { GorunumSecimKartlari } from '../../src/moduller/gorunum/bilesenler/Goru
 import { useTema } from '../../src/tasarim-sistemi/tema/TemaSaglayici';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
-import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari, HeaderTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useDil } from '../../src/i18n/DilSaglayici';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { BiyometriAyarSatiri } from '../../src/moduller/kimlik-dogrulama/biyometri/BiyometriAnahtari';
 
 /** Uygulama tercihleri — kısa hub; gizlilik ayrı ekranda */
 export default function AyarlarEkrani() {
@@ -46,6 +47,13 @@ export default function AyarlarEkrani() {
       void KullaniciAyarlariniGetir().then((a) => {
         setPush(a.pushEnabled);
       });
+      void import('../../src/moduller/bildirimler/tercihler/PushTercihleriniYonet')
+        .then(({ PushTercihleriniGetir }) => PushTercihleriniGetir())
+        .then((p) => {
+          setPush(p.all_enabled);
+          void PushBildirimAyariniKaydet(p.all_enabled);
+        })
+        .catch(() => undefined);
       if (Platform.OS === 'android') {
         void SesOdasiPipAcikMi().then(setPipAcik);
       }
@@ -60,6 +68,12 @@ export default function AyarlarEkrani() {
         '../../src/moduller/bildirimler/tercihler/PushTercihleriniYonet'
       );
       await PushTercihiniKaydet('all_enabled', v);
+      if (v) {
+        const { CihazPushTokeniniKaydet } = await import(
+          '../../src/moduller/bildirimler/kayit/CihazPushTokeniniKaydet'
+        );
+        void CihazPushTokeniniKaydet();
+      }
     } catch {
       /* migration yoksa yerel ayar yeterli */
     }
@@ -90,6 +104,13 @@ export default function AyarlarEkrani() {
             {t('ayarlar.gorunum')}
           </Text>
           <GorunumSecimKartlari />
+          <ListeSatiri
+            icon="color-palette-outline"
+            label={t('gorunum.tumunuGor')}
+            value={t('gorunum.tumunuGorAlt')}
+            onPress={() => router.push('/ayarlar/gorunum' as any)}
+            last
+          />
           <View style={{ height: BoslukTokenlari.lg }} />
 
           <ListeGrubu title={t('ayarlar.bildirimler')}>
@@ -118,6 +139,12 @@ export default function AyarlarEkrani() {
 
           <ListeGrubu title={t('ayarlar.uygulama')}>
             <ListeSatiri
+              icon="ribbon-outline"
+              label={t('unvanlar.unvanlarim')}
+              value={t('unvanlar.altKisa')}
+              onPress={() => router.push('/ayarlar/unvanlarim' as any)}
+            />
+            <ListeSatiri
               icon="language-outline"
               label={t('ayarlar.dil')}
               value={dilDegeri}
@@ -144,6 +171,7 @@ export default function AyarlarEkrani() {
           </ListeGrubu>
 
           <ListeGrubu title={t('ayarlar.gizlilikGuvenlik')}>
+            <BiyometriAyarSatiri />
             <ListeSatiri
               icon="eye-off-outline"
               label={t('ayarlar.gizlilikAyarlari')}
@@ -212,14 +240,16 @@ export default function AyarlarEkrani() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: BoslukTokenlari.xl,
+    paddingHorizontal: HeaderTokenlari.horizontal,
+    paddingTop: HeaderTokenlari.contentGap,
     paddingBottom: BoslukTokenlari.xxl,
   },
   sectionLabel: {
     ...TipografiTokenlari.micro,
     paddingHorizontal: BoslukTokenlari.sm,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    marginBottom: BoslukTokenlari.sm,
+    marginTop: BoslukTokenlari.sm,
     letterSpacing: 0.8,
   },
   switchRow: {

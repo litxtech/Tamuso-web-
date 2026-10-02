@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
 
 export type Gorev = {
@@ -38,7 +39,7 @@ export async function GorevIlerlemelerimiGetir(): Promise<GorevIlerleme[]> {
 
 export async function GorevIlerlet(missionCode: string, delta = 1) {
   if (!(await OzellikBayragiAktifMiSunucu('missions_enabled'))) {
-    return { ok: false as const, hata: 'missions_enabled kapalı.' };
+    return { ok: false as const, hata: i18n.t('platform.gorevKapaliBody') };
   }
   const { error } = await supabase.rpc('gorev_ilerlet', {
     p_mission_code: missionCode,
@@ -50,7 +51,7 @@ export async function GorevIlerlet(missionCode: string, delta = 1) {
 
 export async function GorevOdulAl(missionCode: string) {
   if (!(await OzellikBayragiAktifMiSunucu('missions_enabled'))) {
-    return { ok: false as const, hata: 'missions_enabled kapalı.' };
+    return { ok: false as const, hata: i18n.t('platform.gorevKapaliBody') };
   }
   const { error } = await supabase.rpc('gorev_odul_al', {
     p_mission_code: missionCode,

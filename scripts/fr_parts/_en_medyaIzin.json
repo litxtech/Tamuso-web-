@@ -1,0 +1,14 @@
+{
+  "medyaIzin": {
+    "mikrofonBaslik": "Microphone permission",
+    "mikrofonHataIos": "Microphone permission is required. Settings → {{app}} → Microphone.",
+    "mikrofonHataAndroid": "Microphone permission is required. Settings → Apps → Permissions → Microphone.",
+    "mikrofonDinleme": "Audio permission is needed to hear others in the room. You will not speak; your mic stays off. You can enable it in Settings.",
+    "mikrofonYayin": "A microphone is required to speak. You can enable it in Settings.",
+    "kameraBaslik": "Camera permission",
+    "kameraHataIos": "Camera permission is required. Settings → {{app}} → Camera.",
+    "kameraHataAndroid": "Camera permission is required. Settings → Apps → Permissions → Camera.",
+    "kameraMesaj": "A camera is required for video calls. You can enable it in Settings.",
+    "kontrolEdilemedi": "Could not check media permissions. Enable microphone/camera and try again."
+  }
+}

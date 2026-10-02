@@ -1,3 +1,6 @@
+import i18n from '../../i18n';
+import { AktifSayiLocale } from '../../i18n/diller';
+
 export type BelgeSatiri = {
   etiket: string;
   deger: string;
@@ -72,7 +75,7 @@ export function BelgeHtmlSablonOlustur(icerik: BelgeIcerik): string {
       <div style="font-size:11px;letter-spacing:2.2px;font-weight:800;opacity:0.92;">${marka}</div>
       <div style="font-size:24px;font-weight:800;margin-top:8px;">${escapeHtml(icerik.baslik)}</div>
       ${icerik.altBaslik ? `<div style="opacity:0.9;font-size:13px;margin-top:4px;">${escapeHtml(icerik.altBaslik)}</div>` : ''}
-      <div style="margin-top:12px;font-size:11px;opacity:0.85;">${escapeHtml(new Date().toLocaleString('tr-TR'))}</div>
+      <div style="margin-top:12px;font-size:11px;opacity:0.85;">${escapeHtml(new Date().toLocaleString(AktifSayiLocale(i18n.language)))}</div>
     </div>
     <div style="padding:22px 24px 26px;">
       ${icerik.ozet ? `<div style="background:#f7f2f8;border-radius:14px;padding:14px 16px;font-size:14px;margin-bottom:8px;border:1px solid #f0e6f4;">${escapeHtml(icerik.ozet)}</div>` : ''}
@@ -108,7 +111,7 @@ export function BelgeMetinOlustur(icerik: BelgeIcerik): string {
     bolumler,
     icerik.not ?? '',
     '',
-    `Tarih: ${new Date().toLocaleString('tr-TR')}`,
+    `${i18n.t('belge.tarih')}: ${new Date().toLocaleString(AktifSayiLocale(i18n.language))}`,
   ]
     .filter((x) => x.trim().length > 0)
     .join('\n');

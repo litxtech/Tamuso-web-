@@ -1,0 +1,11 @@
+{
+  "duyuru": {
+    "baslik": "Annonce",
+    "altBaslik": "Notifications de la plateforme",
+    "yok": "Aucune annonce",
+    "yokBody": "Les nouvelles annonces apparaîtront ici une fois publiées.",
+    "alertBaslik": "Annonce",
+    "okundu": "Lu",
+    "ozellikKapali": "Les annonces sont actuellement désactivées."
+  }
+}

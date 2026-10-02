@@ -38,6 +38,8 @@ type Props = {
   onCuzdanNoPaylas: () => void;
   onIdPaylas: () => void;
   onMetinPaylas: (metin: string) => void;
+  /** Ajans paket teklifi (Stripe) — ajans sohbetinde */
+  onPaketTeklif?: () => void;
 };
 
 /**
@@ -48,6 +50,7 @@ export function MesajHizliAksiyonSeridi({
   onCuzdanNoPaylas,
   onIdPaylas,
   onMetinPaylas,
+  onPaketTeklif,
 }: Props) {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
@@ -152,6 +155,12 @@ export function MesajHizliAksiyonSeridi({
             />
             <Text style={styles.cipYazi}>{t('mesajlar.idPaylas')}</Text>
           </Pressable>
+          {ajansMi && onPaketTeklif ? (
+            <Pressable style={[styles.cip, styles.cipTeklif]} onPress={onPaketTeklif}>
+              <Ionicons name="card-outline" size={15} color="#F5C462" />
+              <Text style={styles.cipYazi}>{t('cuzdanX.paketTeklifCip')}</Text>
+            </Pressable>
+          ) : null}
           {ozel.map((oge) => (
             <Pressable
               key={oge.id}
@@ -293,6 +302,10 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: RenkTokenlari.mint,
     backgroundColor: 'rgba(90,220,200,0.08)',
+  },
+  cipTeklif: {
+    borderColor: 'rgba(245, 196, 98, 0.45)',
+    backgroundColor: 'rgba(245, 196, 98, 0.1)',
   },
   cipYazi: {
     ...TipografiTokenlari.micro,

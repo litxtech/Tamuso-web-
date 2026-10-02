@@ -1,0 +1,20 @@
+{
+  "odalar": {
+    "baslik": "Salles",
+    "fisilti": "SALLES VOCALES",
+    "canliOdalar": "Salles en direct",
+    "slogan": "Rejoindre · écouter · discuter",
+    "olustur": "Créer une salle",
+    "odaKur": "Créer une salle",
+    "katil": "Rejoindre",
+    "ayril": "Quitter",
+    "canli": "En direct",
+    "bos": "Aucune salle ouverte",
+    "sahneBos": "La scène est vide",
+    "moddaYok": "Aucune salle dans ce mode",
+    "bosBody": "Les salles en direct apparaîtront ici lorsqu’elles ouvriront.",
+    "modBosBody": "Essayez un autre mode ou créez votre propre salle.",
+    "seciliSahne": "Scène sélectionnée",
+    "tumSahneler": "Afficher toutes les scènes"
+  }
+}

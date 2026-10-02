@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Modal,
   Platform,
@@ -6,18 +6,25 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
+  Image,
 } from 'react-native';
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
-  FadeIn,
-  FadeOut,
-  SlideInDown,
-  SlideOutDown,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { CanliHediyeSimgesi } from '../../cuzdan/bilesenler/CanliCoinSimgesi';
@@ -38,15 +45,6 @@ import type { CeviriAnahtari } from '../../../i18n/useCeviri';
 
 const ANDROID = Platform.OS === 'android';
 const SUTUN = 5;
-
-const SHEET_GIRIS = ANDROID
-  ? undefined
-  : SlideInDown.duration(260).easing(Easing.out(Easing.cubic));
-const SHEET_CIKIS = ANDROID
-  ? undefined
-  : SlideOutDown.duration(180).easing(Easing.in(Easing.cubic));
-const PERDE_GIRIS = ANDROID ? undefined : FadeIn.duration(180);
-const PERDE_CIKIS = ANDROID ? undefined : FadeOut.duration(140);
 
 const SEKME_IDS = [
   'populer',
@@ -75,6 +73,8 @@ type Props = {
   aliciAdi?: string | null;
   pkAlicilar?: HediyePkAlici[];
   seciliPkAliciId?: string | null;
+  /** Ses odası: birden fazla alıcı. Tekrar dokunuş seçimi kaldırır. */
+  seciliAliciIdler?: string[];
   onPkAliciSec?: (id: string) => void;
   onSend: (gift: Gift, quantity: number) => void;
   onClose: () => void;
@@ -117,7 +117,7 @@ const HediyeKart = React.memo(function HediyeKart({
         ucuz && styles.hediyeUcuz,
       ]}
     >
-      <CanliHediyeSimgesi emoji={item.emoji} size={30} secili={aktif} />
+      <CanliHediyeSimgesi emoji={item.emoji} size={30} secili={aktif} sakin />
       <Text style={styles.hediyeAd} numberOfLines={1}>
         {HediyeAdiCevir(item.code, item.name)}
       </Text>
@@ -138,6 +138,7 @@ export function HediyeMagazaPaneli({
   aliciAdi,
   pkAlicilar,
   seciliPkAliciId,
+  seciliAliciIdler,
   onPkAliciSec,
   onSend,
   onClose,
@@ -149,6 +150,7 @@ export function HediyeMagazaPaneli({
   gonderiyor = false,
 }: Props) {
   const { t } = useCeviri();
+  const { height: ekranYuk } = useWindowDimensions();
   const locale = DIL_LOCALE_MAP[AktifDil()];
   const insets = useSafeAreaInsets();
   const [sekme, setSekme] = useState<(typeof SEKME_IDS)[number]>('populer');
@@ -157,14 +159,70 @@ export function HediyeMagazaPaneli({
   /** Aynı Modal içinde coin paketleri — iOS ikinci Modal açmaz */
   const [coinModu, setCoinModu] = useState(false);
   const icindeCoin = coinPackages != null && !!onCoinBuy;
+  const odaAlici = !!pkAlicilar?.some((a) => a.rol);
+  const kapatRef = useRef(onClose);
+  kapatRef.current = onClose;
+  const translateY = useSharedValue(0);
+
+  const kapat = useCallback(() => {
+    kapatRef.current();
+  }, []);
+
+  const sayfayiKapat = useCallback(() => {
+    translateY.value = withTiming(
+      Math.max(ekranYuk, 480),
+      { duration: 200, easing: Easing.out(Easing.cubic) },
+      (bitti) => {
+        if (bitti) runOnJS(kapat)();
+      },
+    );
+  }, [ekranYuk, kapat, translateY]);
+
+  useEffect(() => {
+    if (!visible) return;
+    translateY.value = 0;
+  }, [translateY, visible]);
+
+  const asagiKaydir = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetY([-9999, 10])
+        .failOffsetX([-22, 22])
+        .onUpdate((e) => {
+          translateY.value = Math.max(0, e.translationY);
+        })
+        .onEnd((e) => {
+          if (translateY.value > 72 || e.velocityY > 900) {
+            translateY.value = withTiming(
+              Math.max(ekranYuk, 480),
+              { duration: 200, easing: Easing.out(Easing.cubic) },
+              (bitti) => {
+                if (bitti) runOnJS(kapat)();
+              },
+            );
+            return;
+          }
+          translateY.value = withTiming(0, {
+            duration: 160,
+            easing: Easing.out(Easing.cubic),
+          });
+        }),
+    [ekranYuk, kapat, translateY],
+  );
+
+  const sheetSuruk = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   /** Android nav / gesture çubuğu — kartı yukarı, Gönder tıklanabilir */
   const sheetLift = ANDROID
     ? Math.max(insets.bottom, 12) + 20
     : Math.max(insets.bottom, 8);
-  const sheetPadBottom = ANDROID
-    ? Math.max(insets.bottom, 10) + 14
-    : Math.max(insets.bottom, 8) + BoslukTokenlari.md;
+  const sheetPadBottom = odaAlici
+    ? BoslukTokenlari.md
+    : ANDROID
+      ? Math.max(insets.bottom, 10) + 14
+      : Math.max(insets.bottom, 8) + BoslukTokenlari.md;
 
   const sirali = useMemo(
     () => [...gifts].sort((a, b) => a.coin_cost - b.coin_cost),
@@ -204,7 +262,9 @@ export function HediyeMagazaPaneli({
     }
   }, [liste, secili]);
 
-  const toplam = secili != null ? secili.coin_cost * adet : 0;
+  const kisiSayisi = odaAlici ? (seciliAliciIdler?.length ?? 0) : 1;
+  const toplam =
+    secili != null && kisiSayisi > 0 ? secili.coin_cost * adet * kisiSayisi : 0;
   const yetmez = coins != null && toplam > coins;
 
   const coinAc = useCallback(() => {
@@ -267,19 +327,19 @@ export function HediyeMagazaPaneli({
     <Modal
       visible={visible}
       transparent
-      animationType={ANDROID ? 'fade' : 'none'}
+      animationType="none"
       onRequestClose={() => {
         if (coinModu) {
           setCoinModu(false);
           return;
         }
-        onClose();
+        sayfayiKapat();
       }}
       statusBarTranslucent
       hardwareAccelerated
       presentationStyle="overFullScreen"
     >
-      <View style={[styles.root, { paddingBottom: sheetLift }]}>
+      <GestureHandlerRootView style={[styles.root, { paddingBottom: sheetLift }]}>
         <Pressable
           style={styles.perde}
           onPress={() => {
@@ -287,24 +347,19 @@ export function HediyeMagazaPaneli({
               setCoinModu(false);
               return;
             }
-            onClose();
+            sayfayiKapat();
           }}
         >
-          {PERDE_GIRIS ? (
-            <Animated.View
-              entering={PERDE_GIRIS}
-              exiting={PERDE_CIKIS}
-              style={[StyleSheet.absoluteFill, styles.perdeRenk]}
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, styles.perdeRenk]} />
-          )}
+          <View style={[StyleSheet.absoluteFill, styles.perdeRenk]} />
         </Pressable>
 
         <Animated.View
-          entering={SHEET_GIRIS}
-          exiting={SHEET_CIKIS}
-          style={[styles.sheet, coinModu && styles.sheetCoin]}
+          style={[
+            styles.sheet,
+            sheetSuruk,
+            coinModu && styles.sheetCoin,
+            odaAlici && !coinModu && styles.sheetOda,
+          ]}
         >
           <CamArkaplan
             intensity={ANDROID ? 0 : 36}
@@ -313,46 +368,55 @@ export function HediyeMagazaPaneli({
             fallbackColor={RenkTokenlari.bgElevated}
             pointerEvents="none"
           />
-          <View style={[styles.sheetIc, { paddingBottom: sheetPadBottom }]}>
-            <View style={styles.handle} />
-
-            <View style={styles.ust}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.baslik}>
-                  {coinModu ? t('hediye.coinYukle') : t('hediye.gonderBaslik')}
-                </Text>
-                <Text style={styles.alt}>
-                  {coinModu
-                    ? t('hediye.coinYukleAlt')
-                    : aliciAdi
-                      ? t('hediye.alici', { ad: aliciAdi })
-                      : t('hediye.canliHediyeler')}
-                  {coinModu ? '' : ` · ${sirali.length}`}
-                </Text>
+          <View
+            style={[
+              styles.sheetIc,
+              odaAlici && !coinModu && styles.sheetIcOda,
+              { paddingBottom: sheetPadBottom },
+            ]}
+          >
+            <GestureDetector gesture={asagiKaydir}>
+              <View style={styles.tutamak}>
+                <View style={styles.handle} />
+                <View style={[styles.ust, styles.sabitSatir]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.baslik}>
+                      {coinModu ? t('hediye.coinYukle') : t('hediye.gonderBaslik')}
+                    </Text>
+                    <Text style={styles.alt}>
+                      {coinModu
+                        ? t('hediye.coinYukleAlt')
+                        : aliciAdi
+                          ? t('hediye.alici', { ad: aliciAdi })
+                          : t('hediye.canliHediyeler')}
+                      {coinModu ? '' : ` · ${sirali.length}`}
+                    </Text>
+                  </View>
+                  {coinModu ? (
+                    <Pressable
+                      onPress={() => setCoinModu(false)}
+                      style={styles.kapatBtn}
+                      hitSlop={8}
+                      accessibilityLabel={t('hediye.hediyeyeDon')}
+                    >
+                      <Ionicons
+                        name="arrow-back"
+                        size={20}
+                        color={RenkTokenlari.textMuted}
+                      />
+                    </Pressable>
+                  ) : (
+                    <Pressable onPress={onClose} style={styles.kapatBtn} hitSlop={8}>
+                      <Ionicons
+                        name="close"
+                        size={20}
+                        color={RenkTokenlari.textMuted}
+                      />
+                    </Pressable>
+                  )}
+                </View>
               </View>
-              {coinModu ? (
-                <Pressable
-                  onPress={() => setCoinModu(false)}
-                  style={styles.kapatBtn}
-                  hitSlop={8}
-                  accessibilityLabel={t('hediye.hediyeyeDon')}
-                >
-                  <Ionicons
-                    name="arrow-back"
-                    size={20}
-                    color={RenkTokenlari.textMuted}
-                  />
-                </Pressable>
-              ) : (
-                <Pressable onPress={onClose} style={styles.kapatBtn} hitSlop={8}>
-                  <Ionicons
-                    name="close"
-                    size={20}
-                    color={RenkTokenlari.textMuted}
-                  />
-                </Pressable>
-              )}
-            </View>
+            </GestureDetector>
 
             {coinModu && coinPackages && onCoinBuy ? (
               <ScrollView
@@ -371,10 +435,71 @@ export function HediyeMagazaPaneli({
               </ScrollView>
             ) : (
               <>
-                {pkAlicilar && pkAlicilar.length > 1 ? (
+                {odaAlici && pkAlicilar ? (
+                  <View style={styles.aliciBlok}>
+                    <Text style={styles.pkBaslik}>{t('hediye.kime')}</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.aliciSatir}
+                    >
+                      {pkAlicilar.map((a) => {
+                        const aktif = (seciliAliciIdler ?? []).includes(a.id);
+                        return (
+                          <Pressable
+                            key={a.id}
+                            onPress={() => onPkAliciSec?.(a.id)}
+                            style={[styles.aliciKart, aktif && styles.aliciKartAktif]}
+                          >
+                            {a.avatarUrl ? (
+                              <Image
+                                source={{ uri: a.avatarUrl }}
+                                style={styles.aliciAvatar}
+                              />
+                            ) : (
+                              <View style={styles.aliciAvatarBos}>
+                                <Ionicons
+                                  name="person"
+                                  size={12}
+                                  color={RenkTokenlari.textMuted}
+                                />
+                              </View>
+                            )}
+                            <View style={styles.aliciMetin}>
+                              <Text
+                                style={[
+                                  styles.aliciAd,
+                                  aktif && styles.aliciAdAktif,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {a.ad}
+                              </Text>
+                              {a.rol === 'sahip' ? (
+                                <View style={styles.sahipEtiket}>
+                                  <Text style={styles.sahipEtiketYazi}>
+                                    {t('sesOda.odaSahibi')}
+                                  </Text>
+                                </View>
+                              ) : null}
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                ) : pkAlicilar && pkAlicilar.length > 1 ? (
                   <View style={styles.pkAlicilar}>
-                    <Text style={styles.pkBaslik}>{t('hediye.pkKime')}</Text>
-                    <View style={styles.pkSatir}>
+                    <Text style={styles.pkBaslik}>
+                      {pkAlicilar.some((a) => a.side)
+                        ? t('hediye.pkKime')
+                        : t('hediye.kime')}
+                    </Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.pkSatir}
+                    >
                       {pkAlicilar.map((a) => {
                         const aktif = seciliPkAliciId === a.id;
                         return (
@@ -383,6 +508,27 @@ export function HediyeMagazaPaneli({
                             onPress={() => onPkAliciSec?.(a.id)}
                             style={[styles.pkChip, aktif && styles.pkChipAktif]}
                           >
+                            {a.rol === 'sahip' ? (
+                              <Ionicons
+                                name="star"
+                                size={12}
+                                color={
+                                  aktif
+                                    ? RenkTokenlari.text
+                                    : RenkTokenlari.accent
+                                }
+                              />
+                            ) : a.rol === 'konuk' ? (
+                              <Ionicons
+                                name="mic"
+                                size={12}
+                                color={
+                                  aktif
+                                    ? RenkTokenlari.text
+                                    : RenkTokenlari.textMuted
+                                }
+                              />
+                            ) : null}
                             <Text
                               style={[
                                 styles.pkChipYazi,
@@ -396,13 +542,14 @@ export function HediyeMagazaPaneli({
                           </Pressable>
                         );
                       })}
-                    </View>
+                    </ScrollView>
                   </View>
                 ) : null}
 
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
+                  style={styles.sabitSatir}
                   contentContainerStyle={styles.sekmeler}
                 >
                   {SEKME_IDS.map((id) => {
@@ -426,14 +573,17 @@ export function HediyeMagazaPaneli({
                   })}
                 </ScrollView>
 
-                <View style={styles.gridWrap}>
+                <View style={odaAlici ? styles.gridEsnek : styles.gridWrap}>
                   <FlashList
+                    style={styles.gridListe}
                     data={liste}
                     keyExtractor={keyExtractor}
                     renderItem={renderItem}
                     numColumns={SUTUN}
                     extraData={extraData}
                     showsVerticalScrollIndicator={false}
+                    bounces={false}
+                    overScrollMode="never"
                     drawDistance={ANDROID ? 180 : 250}
                     contentContainerStyle={styles.grid}
                   />
@@ -517,7 +667,7 @@ export function HediyeMagazaPaneli({
                           ? t('hediye.gonderiliyor')
                           : yetmez
                             ? t('hediye.coinYukle')
-                            : secili
+                            : secili && kisiSayisi > 0
                               ? t('hediye.gonderToplam', {
                                   toplam: toplam.toLocaleString(locale),
                                 })
@@ -530,7 +680,7 @@ export function HediyeMagazaPaneli({
             )}
           </View>
         </Animated.View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
@@ -540,7 +690,7 @@ const styles = StyleSheet.create({
   perde: { ...StyleSheet.absoluteFill },
   perdeRenk: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.28)',
   },
   sheet: {
     maxHeight: '72%',
@@ -557,6 +707,13 @@ const styles = StyleSheet.create({
   sheetCoin: {
     maxHeight: '88%',
     minHeight: '70%',
+  },
+  sheetOda: {
+    maxHeight: '68%',
+    minHeight: 0,
+  },
+  sheetIcOda: {
+    flex: 0,
   },
   coinScroll: {
     flex: 1,
@@ -578,8 +735,15 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.22)',
-    marginTop: 10,
-    marginBottom: 4,
+  },
+  tutamak: {
+    flexShrink: 0,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  sabitSatir: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
   ust: {
     flexDirection: 'row',
@@ -607,12 +771,13 @@ const styles = StyleSheet.create({
   },
   sekmeler: {
     paddingHorizontal: BoslukTokenlari.lg,
-    gap: 8,
-    paddingVertical: 4,
+    gap: 6,
+    paddingVertical: 0,
+    alignItems: 'center',
   },
   sekme: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: YaricapTokenlari.pill,
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
@@ -620,9 +785,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232,64,145,0.28)',
   },
   sekmeYazi: {
-    ...TipografiTokenlari.caption,
+    ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
     fontWeight: '600',
+    letterSpacing: 0,
   },
   sekmeYaziAktif: {
     color: RenkTokenlari.text,
@@ -632,6 +798,16 @@ const styles = StyleSheet.create({
     height: ANDROID ? 240 : 268,
     paddingHorizontal: BoslukTokenlari.xs,
   },
+  gridEsnek: {
+    height: 148,
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingHorizontal: BoslukTokenlari.xs,
+    overflow: 'hidden',
+  },
+  gridListe: {
+    flex: 1,
+  },
   grid: {
     paddingHorizontal: BoslukTokenlari.sm,
     paddingBottom: BoslukTokenlari.sm,
@@ -639,15 +815,16 @@ const styles = StyleSheet.create({
   hediye: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 2,
     borderRadius: 12,
     gap: 3,
     margin: 2,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   hediyeAktif: {
     backgroundColor: 'rgba(232,64,145,0.18)',
-    borderWidth: 1,
     borderColor: RenkTokenlari.borderAccent,
   },
   hediyeUcuz: { opacity: 0.45 },
@@ -661,16 +838,22 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.accent,
     fontWeight: '800',
   },
-  pkSatir: { flexDirection: 'row', gap: 8 },
+  pkSatir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: BoslukTokenlari.sm,
+  },
   pkChip: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: BoslukTokenlari.xs,
+    maxWidth: 168,
+    paddingVertical: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.md,
     borderRadius: YaricapTokenlari.pill,
     backgroundColor: RenkTokenlari.surface,
     borderWidth: 1,
     borderColor: RenkTokenlari.border,
-    alignItems: 'center',
   },
   pkChipAktif: {
     borderColor: '#F0B429',
@@ -680,8 +863,80 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.textMuted,
     fontWeight: '700',
+    flexShrink: 1,
   },
   pkChipYaziAktif: { color: RenkTokenlari.text },
+  aliciBlok: {
+    flexShrink: 0,
+    gap: 4,
+    paddingLeft: BoslukTokenlari.lg,
+  },
+  aliciSatir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: BoslukTokenlari.lg,
+  },
+  aliciKart: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 32,
+    maxWidth: 168,
+    paddingVertical: 2,
+    paddingLeft: 2,
+    paddingRight: 8,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: RenkTokenlari.surface,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  aliciKartAktif: {
+    borderColor: RenkTokenlari.accent,
+    backgroundColor: RenkTokenlari.pressFill,
+  },
+  aliciAvatar: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: RenkTokenlari.bg,
+  },
+  aliciAvatarBos: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: RenkTokenlari.bg,
+  },
+  aliciMetin: {
+    flexShrink: 1,
+    gap: 1,
+  },
+  aliciAd: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  aliciAdAktif: {
+    color: RenkTokenlari.text,
+  },
+  sahipEtiket: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 4,
+    paddingVertical: 0,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: RenkTokenlari.pressFill,
+  },
+  sahipEtiketYazi: {
+    ...TipografiTokenlari.micro,
+    fontSize: 9,
+    lineHeight: 12,
+    color: RenkTokenlari.accent,
+    fontWeight: '800',
+    letterSpacing: 0,
+  },
   hediyeAd: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
@@ -697,6 +952,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   adetBar: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: BoslukTokenlari.lg,
@@ -727,6 +983,7 @@ const styles = StyleSheet.create({
   },
   adetChipYaziAktif: { color: RenkTokenlari.accent },
   altBar: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: BoslukTokenlari.md,

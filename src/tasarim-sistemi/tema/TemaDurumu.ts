@@ -1,16 +1,10 @@
 import { Appearance, Platform } from 'react-native';
-import {
-  RenkTokenlariAcik,
-  RenkTokenlariKadife,
-  RenkTokenlariKoyu,
-  RenkTokenlariKozmik,
-  RenkTokenlariSampanya,
-  RenkTokenlariZumrut,
-} from './RenkPaletleri';
+import { RENK_PALET_HARITASI, temaAcikMi } from './RenkPaletleri';
 import type { RenkPaleti, TemaKodu } from './TemaTipleri';
 
 export type { RenkPaleti, TemaKodu };
 export { temaKoduMu, TEMA_KODLARI } from './TemaTipleri';
+export { temaAcikMi } from './RenkPaletleri';
 
 type Dinleyici = () => void;
 
@@ -27,30 +21,16 @@ type TemaGlobal = typeof globalThis & {
 
 const dinleyiciler = new Set<Dinleyici>();
 
-/** Soğuk açılış — AsyncStorage gelene kadar koyu */
+/** Soguk acilis — AsyncStorage gelene kadar koyu */
 try {
   Appearance.setColorScheme('dark');
 } catch {
   /* eski native */
 }
 
-/** Kod → palet. Yeni temalar buraya eklenir. */
+/** Kod → palet. Yeni temalar RENK_PALET_HARITASI'na eklenir. */
 export function paletiKoddanAl(kod: TemaKodu): RenkPaleti {
-  switch (kod) {
-    case 'acik':
-      return RenkTokenlariAcik;
-    case 'kadife':
-      return RenkTokenlariKadife;
-    case 'sampanya':
-      return RenkTokenlariSampanya;
-    case 'kozmik':
-      return RenkTokenlariKozmik;
-    case 'zumrut':
-      return RenkTokenlariZumrut;
-    case 'koyu':
-    default:
-      return RenkTokenlariKoyu;
-  }
+  return RENK_PALET_HARITASI[kod] ?? RENK_PALET_HARITASI.koyu;
 }
 
 function mutAl(): TemaMut {
@@ -89,7 +69,7 @@ export function temaAboneOl(fn: Dinleyici): () => void {
 }
 
 function sistemeUygula(kod: TemaKodu): void {
-  const acikMi = kod === 'acik';
+  const acikMi = temaAcikMi(kod);
   try {
     Appearance.setColorScheme(acikMi ? 'light' : 'dark');
   } catch {
@@ -129,7 +109,7 @@ export function temayiKur(kod: TemaKodu): void {
   dinleyiciler.forEach((fn) => fn());
 }
 
-/** Canlı oda / sahne — alt agac koyu palet okusun. */
+/** Canli oda / sahne — alt agac koyu palet okusun. */
 export function koyuSahneKilidiGir(): void {
   const d = mutAl();
   d.koyuSahneKilit = (d.koyuSahneKilit ?? 0) + 1;

@@ -32,8 +32,10 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 export function AdminMuzikPaneli() {
+  const { t } = useCeviri();
   const [liste, setListe] = useState<MusicTrackRow[]>([]);
   const [dash, setDash] = useState<Record<string, number> | null>(null);
   const [kategoriler, setKategoriler] = useState<
@@ -98,11 +100,14 @@ export function AdminMuzikPaneli() {
       setDash(d);
       setKategoriler((c ?? []).map((x) => ({ id: x.id, name: x.name })));
     } catch (e) {
-      Alert.alert('Müzik', e instanceof Error ? e.message : 'Yüklenemedi');
+      Alert.alert(
+        t('odaMuzik.alertMuzik'),
+        e instanceof Error ? e.message : t('odaMuzik.yuklenemedi'),
+      );
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void yukle();
@@ -121,11 +126,13 @@ export function AdminMuzikPaneli() {
         ext: r.fileExt,
       });
       if (!title.trim()) setTitle(r.suggestedTitle);
-      // Süre client’ta ölçülemiyorsa admin tahmini girer; publish öncesi zorunlu
       if (!durationMs) setDurationMs(180000);
     } catch (e) {
       if (e instanceof Error && e.message === 'IPTAL') return;
-      Alert.alert('Ses', e instanceof Error ? e.message : 'Yüklenemedi');
+      Alert.alert(
+        t('odaMuzik.alertSes'),
+        e instanceof Error ? e.message : t('odaMuzik.yuklenemedi'),
+      );
     } finally {
       setBusy(false);
       setProgress(null);
@@ -137,25 +144,28 @@ export function AdminMuzikPaneli() {
       const r = await MusicAdminCoverYukle();
       if (r) setCover({ url: r.coverUrl, path: r.storagePath });
     } catch (e) {
-      Alert.alert('Kapak', e instanceof Error ? e.message : 'Yüklenemedi');
+      Alert.alert(
+        t('odaMuzik.alertKapak'),
+        e instanceof Error ? e.message : t('odaMuzik.yuklenemedi'),
+      );
     }
   };
 
   const kaydetYayinla = async () => {
     if (!audio?.url) {
-      Alert.alert('Müzik', 'Önce ses dosyası yükle.');
+      Alert.alert(t('odaMuzik.alertMuzik'), t('odaMuzik.onceSesYukle'));
       return;
     }
     if (!title.trim()) {
-      Alert.alert('Müzik', 'Müzik adı zorunlu.');
+      Alert.alert(t('odaMuzik.alertMuzik'), t('odaMuzik.adZorunlu'));
       return;
     }
     if (!rightsAck) {
-      Alert.alert('Lisans', 'Yayın hakları onayını işaretle.');
+      Alert.alert(t('odaMuzik.alertLisans'), t('odaMuzik.haklariOnayla'));
       return;
     }
     if (!durationMs || durationMs <= 0) {
-      Alert.alert('Müzik', 'Süre (ms) gerekli.');
+      Alert.alert(t('odaMuzik.alertMuzik'), t('odaMuzik.sureGerekli'));
       return;
     }
     setBusy(true);
@@ -184,34 +194,37 @@ export function AdminMuzikPaneli() {
       setRightsAck(false);
       setDurationMs(null);
       await yukle();
-      Alert.alert('Müzik', 'Yayınlandı — kütüphaneye anında yansır.');
+      Alert.alert(t('odaMuzik.alertMuzik'), t('odaMuzik.yayinlandi'));
     } catch (e) {
-      Alert.alert('Müzik', e instanceof Error ? e.message : 'Kayıt başarısız');
+      Alert.alert(
+        t('odaMuzik.alertMuzik'),
+        e instanceof Error ? e.message : t('odaMuzik.kayitBasarisiz'),
+      );
     } finally {
       setBusy(false);
     }
   };
 
-  const filtreli = liste.filter((t) => {
+  const filtreli = liste.filter((tRow) => {
     const q = filtre.trim().toLowerCase();
     if (!q) return true;
     return (
-      t.title.toLowerCase().includes(q) ||
-      (t.artist_name ?? '').toLowerCase().includes(q) ||
-      t.id.toLowerCase().includes(q)
+      tRow.title.toLowerCase().includes(q) ||
+      (tRow.artist_name ?? '').toLowerCase().includes(q) ||
+      tRow.id.toLowerCase().includes(q)
     );
   });
 
   return (
     <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
-      <Text style={styles.h1}>Müzik Merkezi</Text>
+      <Text style={styles.h1}>{t('odaMuzik.adminMerkez')}</Text>
       {dash ? (
         <View style={styles.dash}>
           {[
-            ['Toplam', dash.toplam],
-            ['Aktif', dash.aktif],
-            ['Pasif', dash.pasif],
-            ['Arşiv', dash.arsiv],
+            [t('odaMuzik.dashToplam'), dash.toplam],
+            [t('odaMuzik.dashAktif'), dash.aktif],
+            [t('odaMuzik.dashPasif'), dash.pasif],
+            [t('odaMuzik.dashArsiv'), dash.arsiv],
           ].map(([l, v]) => (
             <View key={String(l)} style={styles.dashKart}>
               <Text style={styles.dashN}>{v ?? 0}</Text>
@@ -221,30 +234,30 @@ export function AdminMuzikPaneli() {
         </View>
       ) : null}
 
-      <Text style={styles.bolum}>+ Müzik Ekle</Text>
+      <Text style={styles.bolum}>{t('odaMuzik.muzikEkle')}</Text>
       <TextInput
         style={styles.input}
         value={title}
         onChangeText={setTitle}
-        placeholder="Müzik adı *"
+        placeholder={t('odaMuzik.phAd')}
         placeholderTextColor={RenkTokenlari.textDim}
       />
       <TextInput
         style={styles.input}
         value={artist}
         onChangeText={setArtist}
-        placeholder="Sanatçı / üretici"
+        placeholder={t('odaMuzik.phSanatci')}
         placeholderTextColor={RenkTokenlari.textDim}
       />
       <TextInput
         style={styles.input}
         value={durationMs != null ? String(Math.round(durationMs / 1000)) : ''}
-        onChangeText={(t) => {
-          const sn = Number(t);
+        onChangeText={(txt) => {
+          const sn = Number(txt);
           setDurationMs(Number.isFinite(sn) && sn > 0 ? Math.round(sn * 1000) : null);
         }}
         keyboardType="number-pad"
-        placeholder="Süre (saniye) *"
+        placeholder={t('odaMuzik.phSure')}
         placeholderTextColor={RenkTokenlari.textDim}
       />
 
@@ -265,14 +278,18 @@ export function AdminMuzikPaneli() {
       <Pressable style={styles.btn} onPress={() => void sesSec()} disabled={busy}>
         <Ionicons name="musical-notes" size={16} color={RenkTokenlari.textOnPrimary} />
         <Text style={styles.btnYazi}>
-          {progress != null ? `Yükleniyor %${progress}` : audio ? 'Ses değiştir' : 'Ses dosyası *'}
+          {progress != null
+            ? t('odaMuzik.yukleniyorPct', { n: progress })
+            : audio
+              ? t('odaMuzik.sesDegistir')
+              : t('odaMuzik.sesDosyasi')}
         </Text>
       </Pressable>
-      <Text style={styles.hint}>
-        mp3 · m4a · aac · wav · ogg · flac · webm · opus · aiff · caf (max ~100 MB)
-      </Text>
+      <Text style={styles.hint}>{t('odaMuzik.formatHint')}</Text>
       {audio ? (
-        <Text style={styles.hint}>Ses: {audio.ext} · {audio.path}</Text>
+        <Text style={styles.hint}>
+          {t('odaMuzik.sesBilgi', { ext: audio.ext, path: audio.path })}
+        </Text>
       ) : null}
       {audio?.url ? (
         <Pressable
@@ -297,28 +314,27 @@ export function AdminMuzikPaneli() {
               setPreviewCalıyor(true);
             } catch (e) {
               Alert.alert(
-                'Önizleme',
-                e instanceof Error ? e.message : 'Çalınamadı',
+                t('odaMuzik.alertOnizleme'),
+                e instanceof Error ? e.message : t('odaMuzik.calinamadi'),
               );
             }
           }}
         >
           <Text style={styles.btnGhostYazi}>
-            {previewCalıyor ? 'Önizlemeyi durdur' : 'Ses önizle'}
+            {previewCalıyor ? t('odaMuzik.onizlemeDurdur') : t('odaMuzik.sesOnizle')}
           </Text>
         </Pressable>
       ) : null}
 
       <Pressable style={styles.btnGhost} onPress={() => void kapakSec()} disabled={busy}>
-        <Text style={styles.btnGhostYazi}>{cover ? 'Kapak değiştir' : 'Kapak (opsiyonel)'}</Text>
+        <Text style={styles.btnGhostYazi}>
+          {cover ? t('odaMuzik.kapakDegistir') : t('odaMuzik.kapakOpsiyonel')}
+        </Text>
       </Pressable>
 
       <View style={styles.ackRow}>
         <Switch value={rightsAck} onValueChange={setRightsAck} />
-        <Text style={styles.ackYazi}>
-          Bu içeriğin Tamuso içinde yayınlanması için gerekli kullanım haklarının
-          bulunduğunu onaylıyorum.
-        </Text>
+        <Text style={styles.ackYazi}>{t('odaMuzik.hakOnay')}</Text>
       </View>
 
       <Pressable
@@ -326,57 +342,69 @@ export function AdminMuzikPaneli() {
         onPress={() => void kaydetYayinla()}
         disabled={busy}
       >
-        <Text style={styles.btnYazi}>{busy ? '…' : 'Kaydet ve Yayınla'}</Text>
+        <Text style={styles.btnYazi}>
+          {busy ? '…' : t('odaMuzik.kaydetYayinla')}
+        </Text>
       </Pressable>
 
-      <Text style={styles.bolum}>Kütüphane</Text>
+      <Text style={styles.bolum}>{t('odaMuzik.kutuphane')}</Text>
       <TextInput
         style={styles.input}
         value={filtre}
         onChangeText={setFiltre}
-        placeholder="Ara: ad / artist / id"
+        placeholder={t('odaMuzik.araAdminPh')}
         placeholderTextColor={RenkTokenlari.textDim}
       />
       {busy && liste.length === 0 ? (
         <ActivityIndicator color={RenkTokenlari.primarySoft} />
       ) : (
-        filtreli.map((t) => (
-          <View key={t.id} style={styles.kart}>
+        filtreli.map((track) => (
+          <View key={track.id} style={styles.kart}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.ad}>{t.title}</Text>
+              <Text style={styles.ad}>{track.title}</Text>
               <Text style={styles.alt}>
-                {t.artist_name || '—'} · {msMetni(t.duration_ms)} · {t.status}
+                {track.artist_name || '—'} · {msMetni(track.duration_ms)} · {track.status}
               </Text>
             </View>
             <Switch
-              value={t.is_active && t.status === 'READY'}
+              value={track.is_active && track.status === 'READY'}
               onValueChange={(v) => {
                 void (async () => {
                   try {
-                    if (t.status !== 'READY') {
-                      await MusicAdminUpdate(t.id, { duration_ms: t.duration_ms });
-                      await MusicAdminPublish(t.id, v);
+                    if (track.status !== 'READY') {
+                      await MusicAdminUpdate(track.id, {
+                        duration_ms: track.duration_ms,
+                      });
+                      await MusicAdminPublish(track.id, v);
                     } else {
-                      await MusicAdminSetActive(t.id, v);
+                      await MusicAdminSetActive(track.id, v);
                     }
                     await yukle();
                   } catch (e) {
-                    Alert.alert('Müzik', e instanceof Error ? e.message : 'Hata');
+                    Alert.alert(
+                      t('odaMuzik.alertMuzik'),
+                      e instanceof Error ? e.message : t('ortak.hata'),
+                    );
                   }
                 })();
               }}
             />
             <Pressable
               onPress={() => {
-                Alert.alert('Arşivle', t.title, [
-                  { text: 'Vazgeç', style: 'cancel' },
+                Alert.alert(t('odaMuzik.arsivle'), track.title, [
+                  { text: t('ortak.vazgec'), style: 'cancel' },
                   {
-                    text: 'Arşivle',
+                    text: t('odaMuzik.arsivle'),
                     style: 'destructive',
                     onPress: () => {
-                      void MusicAdminArchive(t.id).then(yukle).catch((e) =>
-                        Alert.alert('Müzik', e instanceof Error ? e.message : 'Hata'),
-                      );
+                      void MusicAdminArchive(track.id)
+                        .then(yukle)
+                        .catch((e) =>
+                          Alert.alert(
+                            t('odaMuzik.alertMuzik'),
+                            e instanceof Error ? e.message : t('ortak.hata'),
+                          ),
+                        );
                     },
                   },
                 ]);
@@ -389,7 +417,7 @@ export function AdminMuzikPaneli() {
         ))
       )}
       <Pressable style={styles.yenile} onPress={() => void yukle()}>
-        <Text style={styles.yenileYazi}>Yenile</Text>
+        <Text style={styles.yenileYazi}>{t('ortak.yenile')}</Text>
       </Pressable>
     </ScrollView>
   );

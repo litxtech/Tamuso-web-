@@ -16,6 +16,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { ulkeMetinNormalize } from '../../ulke-ligi/utils/UlkeListesi';
 
 type Secenek = { id: string; label: string; alt?: string };
 
@@ -43,13 +44,14 @@ export function ProfilSecimAlani({
   const [q, setQ] = useState('');
 
   const liste = useMemo(() => {
-    const qNorm = q.trim().toLocaleLowerCase('tr-TR');
+    const qNorm = ulkeMetinNormalize(q);
     if (!qNorm) return options;
-    return options.filter(
-      (o) =>
-        o.label.toLocaleLowerCase('tr-TR').includes(qNorm) ||
-        (o.alt ?? '').toLocaleLowerCase('tr-TR').includes(qNorm),
-    );
+    return options.filter((o) => {
+      const labelN = ulkeMetinNormalize(o.label);
+      const altN = ulkeMetinNormalize(o.alt ?? '');
+      const idN = ulkeMetinNormalize(o.id);
+      return labelN.includes(qNorm) || altN.includes(qNorm) || idN.includes(qNorm);
+    });
   }, [options, q]);
 
   return (

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
 
 export async function AjansUyeBasvurusuOlustur(input: {
@@ -6,7 +7,7 @@ export async function AjansUyeBasvurusuOlustur(input: {
   inviteCode?: string;
 }): Promise<{ ok: boolean; hata?: string }> {
   if (!(await OzellikBayragiAktifMiSunucu('agency_enabled'))) {
-    return { ok: false, hata: 'Ajans özelliği kapalı (agency_enabled).' };
+    return { ok: false, hata: i18n.t('ajans.ozellikKapali') };
   }
   const { error } = await supabase.rpc('ajans_uye_basvurusu_olustur', {
     p_agency_id: input.agencyId ?? null,

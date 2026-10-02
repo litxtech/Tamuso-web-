@@ -6,6 +6,7 @@ import { useCeviri } from '../../../i18n/useCeviri';
 import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { useMisafirIslemKapisi } from '../../misafir-hesabi/islemler/useMisafirIslemKapisi';
 import { CoinPaketiSatinAl } from '../../iap/islemler/CoinPaketiSatinAl';
+import { IapBaglantisiniIsit } from '../../iap/oturum/IapOturum';
 import { KillSwitchAktifMiSunucu } from '../../ozellik-bayraklari/okuma/KillSwitchAktifMiSunucu';
 import { CoinPaketleriniGetir } from '../okuma/CoinPaketleriniGetir';
 import { COIN_PAKET_FALLBACK } from '../katalog/CoinPaketFallback';
@@ -80,9 +81,10 @@ export function useCoinYuklePaneli() {
     void paketleriYenile(false);
   }, [paketleriYenile]);
 
-  // Panel açılınca mağaza fiyatı (native build)
+  // Panel açılınca mağaza fiyatı + IAP ısıt (native build)
   useEffect(() => {
     if (!acik) return;
+    IapBaglantisiniIsit();
     void paketleriYenile(true);
   }, [acik, paketleriYenile]);
 
@@ -169,14 +171,13 @@ export function useCoinYuklePaneli() {
                     await Linking.openURL(sonuc.url);
                     return;
                   }
-                  if (sonuc.coinsAdded != null && sonuc.coinsAdded > 0) {
-                    adjustWallet({ coins: sonuc.coinsAdded });
-                  }
-                  await new Promise((r) => setTimeout(r, 350));
+                  // Önce sunucu bakiyesini çek — optimistic + eski txn yanıltmasın
                   try {
                     await refreshWallet();
                   } catch {
-                    /* bakiye alert’te yine gösterilir */
+                    if (sonuc.coinsAdded != null && sonuc.coinsAdded > 0) {
+                      adjustWallet({ coins: sonuc.coinsAdded });
+                    }
                   }
                   Alert.alert(
                     t('ortak.basarili'),

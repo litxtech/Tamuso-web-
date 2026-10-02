@@ -16,6 +16,7 @@ import {
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 
 type Donem = '7' | '30' | '90';
 
@@ -30,6 +31,7 @@ function tarihAralik(donem: Donem): { from: string; to: string } {
 }
 
 export default function AjansAnalitikEkrani() {
+  const { t } = useCeviri();
   const id = useAjansRouteId();
   const [donem, setDonem] = useState<Donem>('30');
   const [data, setData] = useState<Record<string, unknown> | null>(null);
@@ -59,8 +61,8 @@ export default function AjansAnalitikEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Analitik"
-      subtitle={`${donem} günlük dönem`}
+      title={t('ajans.analitik')}
+      subtitle={t('ajans.analitikDonem', { n: donem })}
       aktif="analitik"
       yukleniyor={yukleniyor && !data}
       refreshing={yukleniyor && !!data}
@@ -74,51 +76,77 @@ export default function AjansAnalitikEkrani() {
             onPress={() => setDonem(d)}
           >
             <Text style={[styles.chipYazi, donem === d && styles.chipYaziAktif]}>
-              {d} gün
+              {t('ajans.gunChip', { n: d })}
             </Text>
           </Pressable>
         ))}
       </View>
       {!data ? (
-        <AjansHint>Henüz veri yok</AjansHint>
+        <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
       ) : (
         <>
           <View style={styles.kpiGrid}>
-            <AjansKpiHucre label="Üye" value={String(data.uye_sayisi ?? 0)} emphasize />
-            <AjansKpiHucre label="Aktif" value={String(data.aktif_uye ?? 0)} emphasize />
-            <AjansKpiHucre label="Yeni" value={String(data.yeni_uye ?? 0)} />
-            <AjansKpiHucre label="Başvuru" value={String(data.basvuru_sayisi ?? 0)} />
+            <AjansKpiHucre
+              label={t('ajans.kpiUyeKisa')}
+              value={String(data.uye_sayisi ?? 0)}
+              emphasize
+            />
+            <AjansKpiHucre
+              label={t('ajans.kpiAktifKisa')}
+              value={String(data.aktif_uye ?? 0)}
+              emphasize
+            />
+            <AjansKpiHucre
+              label={t('ajans.kpiYeniKisa')}
+              value={String(data.yeni_uye ?? 0)}
+            />
+            <AjansKpiHucre
+              label={t('ajans.kpiBasvuruKisa')}
+              value={String(data.basvuru_sayisi ?? 0)}
+            />
           </View>
-          <AjansBolumBaslik>Aktivite</AjansBolumBaslik>
+          <AjansBolumBaslik>{t('ajans.aktiviteBolum')}</AjansBolumBaslik>
           <AjansKart>
             <Text style={styles.satir}>
-              Yayın: {saniyeSaatMetni(Number(data.yayin_saniye) || 0)}
+              {t('ajans.yayinSatir', {
+                sure: saniyeSaatMetni(Number(data.yayin_saniye) || 0),
+              })}
             </Text>
             <Text style={styles.satir}>
-              Ses odası: {saniyeSaatMetni(Number(data.ses_saniye) || 0)}
+              {t('ajans.sesOdasiSatir', {
+                sure: saniyeSaatMetni(Number(data.ses_saniye) || 0),
+              })}
             </Text>
-            <Text style={styles.satir}>Etkinlik: {String(data.etkinlik_sayisi ?? 0)}</Text>
             <Text style={styles.satir}>
-              Görev tamamlanan: {String(data.gorev_tamamlanan ?? 0)}
+              {t('ajans.etkinlikSayisi', {
+                count: String(data.etkinlik_sayisi ?? 0),
+              })}
+            </Text>
+            <Text style={styles.satir}>
+              {t('ajans.gorevTamamlanan', {
+                count: String(data.gorev_tamamlanan ?? 0),
+              })}
             </Text>
           </AjansKart>
-          <AjansBolumBaslik>Dönem karşılaştırma</AjansBolumBaslik>
+          <AjansBolumBaslik>{t('ajans.donemKarsilastirma')}</AjansBolumBaslik>
           <AjansKart accent>
             <View style={styles.kpiGrid}>
               <AjansKpiHucre
-                label="Yayın Δ"
+                label={t('ajans.yayinDelta')}
                 value={`%${String(k.yayin_degisim_pct ?? 0)}`}
                 emphasize
               />
               <AjansKpiHucre
-                label="Ses Δ"
+                label={t('ajans.sesDelta')}
                 value={`%${String(k.ses_degisim_pct ?? 0)}`}
                 emphasize
               />
             </View>
             <Text style={styles.alt}>
-              Önceki yayın: {saniyeSaatMetni(Number(k.onceki_yayin_saniye) || 0)} · Önceki
-              ses: {saniyeSaatMetni(Number(k.onceki_ses_saniye) || 0)}
+              {t('ajans.oncekiYayinSes', {
+                yayin: saniyeSaatMetni(Number(k.onceki_yayin_saniye) || 0),
+                ses: saniyeSaatMetni(Number(k.onceki_ses_saniye) || 0),
+              })}
             </Text>
           </AjansKart>
         </>

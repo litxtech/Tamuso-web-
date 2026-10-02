@@ -27,6 +27,7 @@ export function useAjansYonetim() {
           invite_code: a.invite_code,
           host_count: a.host_count,
           level_code: a.level_code,
+          my_role: 'OWNER',
         }));
       }
       setAjanslar(liste);
@@ -43,6 +44,7 @@ export function useAjansYonetim() {
             invite_code: a.invite_code,
             host_count: a.host_count,
             level_code: a.level_code,
+            my_role: 'OWNER',
           })),
         );
       } catch {

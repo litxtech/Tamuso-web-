@@ -23,8 +23,10 @@ import {
   DurumDetayGetir,
   DurumGuncelle,
   DurumMedyaHttpsMi,
+  DurumSesPayloadAl,
   type DurumOggesi,
 } from '../../src/moduller/durum/islemler/DurumIslemleri';
+import { DurumSesKarti } from '../../src/moduller/durum/bilesenler/DurumSesKarti';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
@@ -32,6 +34,7 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { MesajComposerLinkOnizleme } from '../../src/moduller/mesajlasma/bilesenler/MesajComposerLinkOnizleme';
 
 export default function DurumDuzenleEkrani() {
   const { t } = useCeviri();
@@ -120,6 +123,14 @@ export default function DurumDuzenleEkrani() {
               showsVerticalScrollIndicator={false}
               onScrollBeginDrag={Keyboard.dismiss}
             >
+              {oge.media_type === 'audio' ? (
+                <DurumSesKarti
+                  oynaticiId={`durum-ses:${oge.id}`}
+                  uri={oge.media_url}
+                  durationMs={DurumSesPayloadAl(oge)?.duration_ms}
+                  aktif
+                />
+              ) : (
               <Pressable
                 style={[styles.onizleme, klavyeAcik && styles.onizlemeKucuk]}
                 onPress={Keyboard.dismiss}
@@ -159,6 +170,7 @@ export default function DurumDuzenleEkrani() {
                   </View>
                 ) : null}
               </Pressable>
+              )}
 
               <View
                 onLayout={(e) => {
@@ -179,6 +191,7 @@ export default function DurumDuzenleEkrani() {
                   maxLength={oge?.media_type === 'text' ? undefined : 500}
                   onFocus={metneKaydir}
                 />
+                <MesajComposerLinkOnizleme metin={caption} />
               </View>
               {oge?.media_type === 'text' ? null : (
                 <Text style={styles.sayac}>{caption.length}/500</Text>

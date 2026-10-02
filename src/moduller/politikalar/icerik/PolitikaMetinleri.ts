@@ -1,7 +1,10 @@
 /**
  * Yerel yasal metinler — kayıt / lobi / okuma ekranı.
  * DB policy_versions ile senkron (migration 039 + 072).
+ * baslik / kisa / onayEtiketi (kabulMetni) → i18n; uzun gövdeler TR sabit.
  */
+
+import i18n from '../../../i18n';
 
 export type PolitikaKodu = 'tos' | 'privacy' | 'child_safety' | 'community_rules';
 
@@ -14,13 +17,7 @@ export type PolitikaTanimi = {
   govde: string;
 };
 
-export const POLITIKA_METINLERI: Record<PolitikaKodu, PolitikaTanimi> = {
-  tos: {
-    kod: 'tos',
-    baslik: 'Kullanım Şartları',
-    kisa: 'Platform kuralları ve sorumluluklar',
-    onayEtiketi: 'Kullanım Şartları’nı okudum ve kabul ediyorum',
-    govde: `TAMUSO KULLANIM ŞARTLARI
+const GOVDE_TOS = `TAMUSO KULLANIM ŞARTLARI
 
 Son güncelleme: 15 Eylül 2026
 Sürüm: 3.0
@@ -139,15 +136,9 @@ Bu belge, Tamuso mobil uygulaması, web arayüzleri, API’ler, canlı ses odala
 13.3. Bu Şartlar, Gizlilik Politikası ve Çocuk Koruma Politikası birlikte okunmalıdır.
 
 Platformu kullanarak yukarıdaki tüm maddeleri kabul etmiş sayılırsınız.
-`,
-  },
+`;
 
-  privacy: {
-    kod: 'privacy',
-    baslik: 'Gizlilik Politikası',
-    kisa: 'Kişisel verilerin işlenmesi',
-    onayEtiketi: 'Gizlilik Politikası’nı okudum ve kabul ediyorum',
-    govde: `TAMUSO GİZLİLİK POLİTİKASI
+const GOVDE_PRIVACY = `TAMUSO GİZLİLİK POLİTİKASI
 
 Son güncelleme: 15 Eylül 2026
 Sürüm: 3.0
@@ -284,15 +275,9 @@ Gizlilik talepleri: uygulama içi Canlı Destek / Politikalar bölümü.
 Acil güvenlik ve çocuk koruma: Çocuk Koruma Politikası’ndaki kanallar.
 
 Platformu kullanarak bu Gizlilik Politikası’nı kabul etmiş sayılırsınız.
-`,
-  },
+`;
 
-  child_safety: {
-    kod: 'child_safety',
-    baslik: 'Çocuk Koruma Politikası',
-    kisa: '18+ · sıfır tolerans · af yok',
-    onayEtiketi: 'Çocuk Koruma Politikası’nı okudum ve kabul ediyorum',
-    govde: `TAMUSO ÇOCUK KORUMA POLİTİKASI / CHILD PROTECTION POLICY
+const GOVDE_CHILD_SAFETY = `TAMUSO ÇOCUK KORUMA POLİTİKASI / CHILD PROTECTION POLICY
 
 Son güncelleme / Last updated: 22 Eylül 2026
 Sürüm / Version: 4.0
@@ -555,70 +540,136 @@ SUMMARY (BINDING)
 • NO AMNESTY.
 • ACCOUNTS ARE CLOSED; evasion accounts are closed too.
 • Authorities are notified when required.
-`,
-  },
+`;
 
+type PolitikaSabit = {
+  kod: PolitikaKodu;
+  baslikKey: string;
+  kisaKey: string;
+  kabulKey: string;
+  govdeKey?: string;
+  govde?: string;
+};
+
+const POLITIKA_SABITLERI: Record<PolitikaKodu, PolitikaSabit> = {
+  tos: {
+    kod: 'tos',
+    baslikKey: 'politikalar.tosBaslik',
+    kisaKey: 'politikalar.tosKisa',
+    kabulKey: 'politikalar.tosKabulMetni',
+    govde: GOVDE_TOS,
+  },
+  privacy: {
+    kod: 'privacy',
+    baslikKey: 'politikalar.privacyBaslik',
+    kisaKey: 'politikalar.privacyKisa',
+    kabulKey: 'politikalar.privacyKabulMetni',
+    govde: GOVDE_PRIVACY,
+  },
+  child_safety: {
+    kod: 'child_safety',
+    baslikKey: 'politikalar.childSafetyBaslik',
+    kisaKey: 'politikalar.childSafetyKisa',
+    kabulKey: 'politikalar.childSafetyKabulMetni',
+    govde: GOVDE_CHILD_SAFETY,
+  },
   community_rules: {
     kod: 'community_rules',
-    baslik: 'Topluluk Kuralları',
-    kisa: 'UGC sıfır tolerans · bildir · engelle',
-    onayEtiketi:
-      'Topluluk Kuralları’nı okudum ve uygunsuz içerik / tacize sıfır toleransı kabul ediyorum',
-    govde: `TAMUSO TOPLULUK KURALLARI
-
-Son güncelleme: 22 Eylül 2026
-Sürüm: 1.0
-
-Tamuso, kullanıcıların ürettiği içeriğe (durum, yorum, mesaj, ses odası, canlı yayın) açıktır.
-Uygunsuz içerik ve kötüye kullanıma SIFIR TOLERANS uygulanır.
-
-────────────────────────────────
-1. YAŞ
-────────────────────────────────
-Platform yalnızca 18 yaş ve üzeri içindir. Reşit olmayan içerik veya katılım yasaktır.
-
-────────────────────────────────
-2. YASAK İÇERİK VE DAVRANIŞ
-────────────────────────────────
-Kesinlikle yasaktır:
-• Taciz, tehdit, stalking, zorbalık
-• Nefret söylemi ve ayrımcılık
-• Pornografik / cinsel sömürü içeriği
-• İzinsiz cinsel içerik
-• Çocukların cinsel istismarıyla ilgili her türlü içerik (CSAM) — af yoktur
-• Şiddet tehdidi veya gerçek hayata yönelik zarar
-• Dolandırıcılık, phishing, spam
-• Başkasını taklit (impersonation)
-• İzinsiz kişisel bilgi paylaşımı (doxxing)
-• Telif hakkı ihlali
-• Hukuka aykırı içerik
-• Platformu kötüye kullanma, bot, exploit
-
-────────────────────────────────
-3. MODERASYON VE 24 SAAT
-────────────────────────────────
-• Kullanıcılar Bildir / Engelle araçlarını kullanabilir.
-• Raporlar moderasyon kuyruğuna düşer; hedefimiz 24 saat içinde incelemektir.
-• İhlalde içerik kaldırılır; tekrarlayan veya ağır ihlalde hesap uyarılır, askıya alınır veya kapatılır.
-
-────────────────────────────────
-4. İLETİŞİM
-────────────────────────────────
-Uygulama içi: Güvenlik → Bize Ulaşın
-E-posta: support@litxtech.com
-Canlı Destek: Ayarlar / Güvenlik
-
-Bu kurallar Kullanım Şartları ve Çocuk Koruma Politikası ile birlikte geçerlidir.
-`,
+    baslikKey: 'politikalar.communityBaslik',
+    kisaKey: 'politikalar.communityKisa',
+    kabulKey: 'politikalar.communityKabulMetni',
+    govdeKey: 'politikalar.communityGovde',
   },
 };
 
-export const POLITIKA_LISTESI: PolitikaTanimi[] = [
-  POLITIKA_METINLERI.tos,
-  POLITIKA_METINLERI.privacy,
-  POLITIKA_METINLERI.community_rules,
-  POLITIKA_METINLERI.child_safety,
-];
+function politikaCevir(s: PolitikaSabit): PolitikaTanimi {
+  return {
+    kod: s.kod,
+    baslik: i18n.t(s.baslikKey) as string,
+    kisa: i18n.t(s.kisaKey) as string,
+    onayEtiketi: i18n.t(s.kabulKey) as string,
+    govde: s.govdeKey
+      ? (i18n.t(s.govdeKey) as string)
+      : (s.govde ?? ''),
+  };
+}
+
+/** Canlı dilde politika metinleri */
+export function PolitikaMetinleriAl(): Record<PolitikaKodu, PolitikaTanimi> {
+  return {
+    tos: politikaCevir(POLITIKA_SABITLERI.tos),
+    privacy: politikaCevir(POLITIKA_SABITLERI.privacy),
+    child_safety: politikaCevir(POLITIKA_SABITLERI.child_safety),
+    community_rules: politikaCevir(POLITIKA_SABITLERI.community_rules),
+  };
+}
+
+/** Geriye dönük — her okumada canlı dil */
+export const POLITIKA_METINLERI: Record<PolitikaKodu, PolitikaTanimi> = new Proxy(
+  {} as Record<PolitikaKodu, PolitikaTanimi>,
+  {
+    get(_t, prop, receiver) {
+      if (prop === Symbol.toStringTag) return 'Object';
+      if (prop === 'then') return undefined;
+      const live = PolitikaMetinleriAl();
+      const v = Reflect.get(live, prop, receiver);
+      return typeof v === 'function' ? v.bind(live) : v;
+    },
+    ownKeys() {
+      return Reflect.ownKeys(PolitikaMetinleriAl());
+    },
+    getOwnPropertyDescriptor(_t, prop) {
+      const live = PolitikaMetinleriAl();
+      const desc = Reflect.getOwnPropertyDescriptor(live, prop);
+      if (desc) desc.configurable = true;
+      return desc;
+    },
+    has(_t, prop) {
+      return prop in PolitikaMetinleriAl();
+    },
+  },
+);
+
+export const POLITIKA_LISTESI: PolitikaTanimi[] = new Proxy(
+  [] as PolitikaTanimi[],
+  {
+    get(_t, prop, receiver) {
+      const live = [
+        POLITIKA_METINLERI.tos,
+        POLITIKA_METINLERI.privacy,
+        POLITIKA_METINLERI.community_rules,
+        POLITIKA_METINLERI.child_safety,
+      ];
+      if (prop === 'length') return live.length;
+      if (prop === Symbol.iterator) return live[Symbol.iterator].bind(live);
+      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        return live[Number(prop)];
+      }
+      const v = Reflect.get(live, prop, receiver);
+      return typeof v === 'function' ? v.bind(live) : v;
+    },
+    ownKeys() {
+      const live = [
+        POLITIKA_METINLERI.tos,
+        POLITIKA_METINLERI.privacy,
+        POLITIKA_METINLERI.community_rules,
+        POLITIKA_METINLERI.child_safety,
+      ];
+      return Reflect.ownKeys(live);
+    },
+    getOwnPropertyDescriptor(_t, prop) {
+      const live = [
+        POLITIKA_METINLERI.tos,
+        POLITIKA_METINLERI.privacy,
+        POLITIKA_METINLERI.community_rules,
+        POLITIKA_METINLERI.child_safety,
+      ];
+      const desc = Reflect.getOwnPropertyDescriptor(live, prop);
+      if (desc) desc.configurable = true;
+      return desc;
+    },
+  },
+);
 
 export function PolitikaKodundanGetir(kod: string): PolitikaTanimi | null {
   if (
@@ -627,15 +678,17 @@ export function PolitikaKodundanGetir(kod: string): PolitikaTanimi | null {
     kod === 'child_safety' ||
     kod === 'community_rules'
   ) {
-    return POLITIKA_METINLERI[kod];
+    return politikaCevir(POLITIKA_SABITLERI[kod]);
   }
-  if (kod === 'terms' || kod === 'kullanim') return POLITIKA_METINLERI.tos;
-  if (kod === 'gizlilik') return POLITIKA_METINLERI.privacy;
+  if (kod === 'terms' || kod === 'kullanim') {
+    return politikaCevir(POLITIKA_SABITLERI.tos);
+  }
+  if (kod === 'gizlilik') return politikaCevir(POLITIKA_SABITLERI.privacy);
   if (kod === 'topluluk' || kod === 'community' || kod === 'eula') {
-    return POLITIKA_METINLERI.community_rules;
+    return politikaCevir(POLITIKA_SABITLERI.community_rules);
   }
   if (kod === 'cocuk' || kod === 'child' || kod === 'child-safety') {
-    return POLITIKA_METINLERI.child_safety;
+    return politikaCevir(POLITIKA_SABITLERI.child_safety);
   }
   return null;
 }

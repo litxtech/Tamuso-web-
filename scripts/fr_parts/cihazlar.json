@@ -1,0 +1,16 @@
+{
+  "cihazlar": {
+    "altBaslik": "Déconnectez-vous d’un appareil ou de tous",
+    "oturumlar": "Sessions",
+    "migrationHint": "Assurez-vous que la migration 003 a été exécutée.",
+    "kapatilamadi": "Fermeture impossible",
+    "digerCikisYapildi": "Déconnecté des autres appareils.",
+    "islemBasarisiz": "Échec de l’opération",
+    "kayitliCihazYok": "Aucun appareil pour le moment",
+    "kayitliCihazYokBody": "Les appareils sur lesquels vous vous connectez sont listés ici.",
+    "tumCihazlardanCikis": "Se déconnecter de tous les autres appareils",
+    "cihaz": "Appareil",
+    "buCihaz": "Cet appareil",
+    "cikis": "Se déconnecter"
+  }
+}

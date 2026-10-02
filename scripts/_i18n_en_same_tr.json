@@ -1,0 +1,286 @@
+[
+  {
+    "k": "ortak.video",
+    "v": "Video"
+  },
+  {
+    "k": "gorunum.kategoriVip",
+    "v": "VIP"
+  },
+  {
+    "k": "gorunum.kategoriNeon",
+    "v": "Neon"
+  },
+  {
+    "k": "gorunum.indigo",
+    "v": "Indigo"
+  },
+  {
+    "k": "profilDuzenle.telefonPlaceholder",
+    "v": "05xx xxx xx xx"
+  },
+  {
+    "k": "guvenlik.risk",
+    "v": "Risk"
+  },
+  {
+    "k": "ajans.form",
+    "v": "Form"
+  },
+  {
+    "k": "ajans.phIban",
+    "v": "IBAN"
+  },
+  {
+    "k": "ajans.seviyeMax",
+    "v": " · Max"
+  },
+  {
+    "k": "ajans.onboarding",
+    "v": "Onboarding: {{stage}}"
+  },
+  {
+    "k": "ajans.alertCrm",
+    "v": "CRM"
+  },
+  {
+    "k": "ajans.programSatir",
+    "v": "{{kind}} · {{zaman}}"
+  },
+  {
+    "k": "ajans.etkinlikSatir",
+    "v": "{{status}} · {{kind}} · {{zaman}}"
+  },
+  {
+    "k": "ajans.hedefSatir",
+    "v": "{{cur}}/{{target}} · %{{pct}}"
+  },
+  {
+    "k": "ajans.programListeSatir",
+    "v": "{{kind}} · {{status}} · {{zaman}} · {{host}}"
+  },
+  {
+    "k": "ajans.odemeIban",
+    "v": "IBAN: {{iban}}"
+  },
+  {
+    "k": "ajans.auditLog",
+    "v": "Audit log"
+  },
+  {
+    "k": "aiMuzik.chipTempo",
+    "v": "Tempo"
+  },
+  {
+    "k": "aiMuzik.bonus",
+    "v": "+{{sure}} bonus"
+  },
+  {
+    "k": "aiMuzik.etiketModel",
+    "v": "Model"
+  },
+  {
+    "k": "aiMuzik.etiketPromptHash",
+    "v": "Prompt hash"
+  },
+  {
+    "k": "aiMuzik.etiketMasterSha",
+    "v": "Master SHA-256"
+  },
+  {
+    "k": "aiMuzik.populer",
+    "v": "Popular"
+  },
+  {
+    "k": "odaMuzik.formatHint",
+    "v": "mp3 · m4a · aac · wav · ogg · flac · webm · opus · aiff · caf (max ~100 MB)"
+  },
+  {
+    "k": "fikirler.limit",
+    "v": "Limit"
+  },
+  {
+    "k": "fikirler.sayacMin",
+    "v": "{{cur}}/{{max}} · min {{min}}"
+  },
+  {
+    "k": "host.baslik",
+    "v": "Host"
+  },
+  {
+    "k": "host.phDavet",
+    "v": "ABCD1234"
+  },
+  {
+    "k": "siralamalar.boardVip",
+    "v": "VIP"
+  },
+  {
+    "k": "sertifikasyon.normal",
+    "v": "Normal"
+  },
+  {
+    "k": "platform.baslik",
+    "v": "Platform"
+  },
+  {
+    "k": "platform.heroTitle",
+    "v": "Platform hub"
+  },
+  {
+    "k": "anaSayfa.menuAdminPanel",
+    "v": "Admin panel"
+  },
+  {
+    "k": "anaSayfa.gezilenA11y",
+    "v": "{{baslik}}, {{tur}}"
+  },
+  {
+    "k": "cuzdanX.bonus",
+    "v": "bonus"
+  },
+  {
+    "k": "cuzdanX.kanalStripe",
+    "v": "Stripe"
+  },
+  {
+    "k": "cuzdanX.bonusPill",
+    "v": "+{{adet}} bonus"
+  },
+  {
+    "k": "cuzdanX.bonusSatir",
+    "v": "\n{{taban}} + {{bonus}} bonus"
+  },
+  {
+    "k": "cuzdanX.uiHesapOzetiSubtitle",
+    "v": "PDF / Excel"
+  },
+  {
+    "k": "cuzdanX.stripeNetworkHata",
+    "v": "Stripe network error"
+  },
+  {
+    "k": "profilTab.combo",
+    "v": "Combo"
+  },
+  {
+    "k": "olusturTab.rozetStory",
+    "v": "STORY"
+  },
+  {
+    "k": "mesajV2.video",
+    "v": "Video"
+  },
+  {
+    "k": "mesajV2.pushVideo",
+    "v": "🎥 Video"
+  },
+  {
+    "k": "hediyeAd.meteor",
+    "v": "Meteor"
+  },
+  {
+    "k": "canliYayin.katPk",
+    "v": "PK Arena"
+  },
+  {
+    "k": "sesOda.demo",
+    "v": "Demo"
+  },
+  {
+    "k": "sesOda.seviyeHandle",
+    "v": "{{kisalt}} · {{handle}}"
+  },
+  {
+    "k": "cuzdanXExtra.pdfExcel",
+    "v": "PDF / Excel"
+  },
+  {
+    "k": "belge.excelCsv",
+    "v": "Excel (CSV)"
+  },
+  {
+    "k": "belge.dugmeVarsayilan",
+    "v": "PDF / WhatsApp"
+  },
+  {
+    "k": "belge.coinBirim",
+    "v": "coin"
+  },
+  {
+    "k": "belge.admin.ciroAlt",
+    "v": "{{donem}} · Tamuso"
+  },
+  {
+    "k": "belge.admin.coin",
+    "v": "Coin"
+  },
+  {
+    "k": "belge.admin.kimdenSatir",
+    "v": "{{try}} · {{coins}} coin · {{adet}}×"
+  },
+  {
+    "k": "belge.admin.islemSatir",
+    "v": "{{try}} · {{coins}} coin"
+  },
+  {
+    "k": "belge.admin.host",
+    "v": "Host"
+  },
+  {
+    "k": "banner.promoCoinSkor",
+    "v": "{{skor}} coin"
+  },
+  {
+    "k": "banner.promoTrend",
+    "v": "TREND"
+  },
+  {
+    "k": "banner.screen.FEED",
+    "v": "Feed"
+  },
+  {
+    "k": "odaKapasite.mini",
+    "v": "Mini"
+  },
+  {
+    "k": "odaDuzen.kategoriModern",
+    "v": "Modern"
+  },
+  {
+    "k": "odaDuzen.kategoriPlatform",
+    "v": "Platform"
+  },
+  {
+    "k": "odaDuzen.greenroom_bar",
+    "v": "Greenroom bar"
+  },
+  {
+    "k": "odaTema.kategoriNeon",
+    "v": "Neon"
+  },
+  {
+    "k": "odaTema.kategoriVip",
+    "v": "VIP"
+  },
+  {
+    "k": "odaTema.kategoriMetal",
+    "v": "Metal"
+  },
+  {
+    "k": "odaTema.kategoriPlatform",
+    "v": "Platform"
+  },
+  {
+    "k": "odaTema.neon_aurora",
+    "v": "Neon aurora"
+  },
+  {
+    "k": "odaTema.hologram_teal",
+    "v": "Hologram teal"
+  },
+  {
+    "k": "odaTema.synthwave_dusk",
+    "v": "Synthwave"
+  }
+]

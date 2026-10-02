@@ -14,7 +14,7 @@ export type KullaniciAyarlari = {
   pushEnabled: boolean;
   dil: UygulamaDili;
   dilModu: DilModu;
-  /** Kullanıcı MANUAL dil seçti mi — true ise cihaz dili override etmez */
+  /** Kullanıcı MANUAL dil seçti mi — true ise cihaz/ülke override etmez */
   dilKayitli: boolean;
 };
 
@@ -45,7 +45,7 @@ export async function PushBildirimAyariniKaydet(enabled: boolean): Promise<void>
   await AsyncStorage.setItem(KEY_PUSH, enabled ? '1' : '0');
 }
 
-/** Manuel dil seçimi — kalıcı kilit; cihaz dili bir daha override etmez */
+/** Manuel dil seçimi — kalıcı kilit; cihaz/ülke dili bir daha override etmez */
 export async function DilAyariniKaydet(dil: string): Promise<void> {
   const kod = DilNormalizeEt(dil);
   await AsyncStorage.multiSet([
@@ -54,7 +54,7 @@ export async function DilAyariniKaydet(dil: string): Promise<void> {
   ]);
 }
 
-/** Sistem diline dön — MANUAL kilidi kaldır */
+/** Sistem / ülke diline dön — MANUAL kilidi kaldır */
 export async function DilModunuSistemYap(): Promise<void> {
   await AsyncStorage.setItem(KEY_LANG_MODE, 'SYSTEM');
 }

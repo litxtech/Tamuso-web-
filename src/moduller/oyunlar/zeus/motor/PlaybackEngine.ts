@@ -5,10 +5,10 @@
 import {
   ANTICIPATION_MS,
   DESTROY_MS,
-  GRID_ROWS,
   MATCH_GLOW_MS,
   MULTIPLIER_COLLECT_MS,
   SCATTER_SILENCE_MS,
+  ROUND_END_HOLD_MS,
   winCelebrationMs,
 } from '../config/ZeusSabitleri';
 import {
@@ -38,9 +38,22 @@ type Signal = {
   wake?: () => void;
 };
 
-const SKIP_FACTOR = 0.15;
-/** Patlama görünür olsun; gravity hemen başlasın (boş sütun bekletme). */
-const DESTROY_THEN_DROP_MS = Math.round(DESTROY_MS * 0.42);
+const SKIP_FACTOR = 0.12;
+/** Patlama kısa; düşüş hemen */
+const DESTROY_THEN_DROP_MS = Math.round(DESTROY_MS * 0.28);
+/** Giriş: 1 hücre — slot anında görünür */
+const MAX_ENTRY_DROP_CELLS = 1;
+
+function capDropDistances(
+  dropping: Record<string, number>,
+  maxCells = MAX_ENTRY_DROP_CELLS,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [id, d] of Object.entries(dropping)) {
+    out[id] = Math.min(Math.max(0, d), maxCells);
+  }
+  return out;
+}
 
 function delay(ms: number, signal: Signal): Promise<void> {
   return new Promise((resolve) => {
@@ -87,19 +100,18 @@ export function createPlaybackController(opts: {
       signal.skipped = false;
 
       setPhase('SPINNING', { roundId: result.roundId });
-      await delay(120 * factor, signal);
+      await delay(48 * factor, signal);
       if (signal.cancelled) return;
 
-      const initialDrop = dropDistancesFromAbove(
-        result.initialGrid,
-        isEmptyInstanceId,
+      const initialDrop = capDropDistances(
+        dropDistancesFromAbove(result.initialGrid, isEmptyInstanceId),
       );
       setPhase('LANDING', {
         grid: result.initialGrid,
         dropping: initialDrop,
       });
       await delay(
-        dusmeToplamMs(maxDusmeMesafesi(initialDrop) || GRID_ROWS, factor),
+        dusmeToplamMs(maxDusmeMesafesi(initialDrop) || MAX_ENTRY_DROP_CELLS, factor),
         signal,
       );
       if (signal.cancelled) return;
@@ -125,10 +137,8 @@ export function createPlaybackController(opts: {
         await delay(DESTROY_THEN_DROP_MS * factor, signal);
         if (signal.cancelled) return;
 
-        const dropping = dropDistancesBetween(
-          prevGrid,
-          step.gridAfter,
-          isEmptyInstanceId,
+        const dropping = capDropDistances(
+          dropDistancesBetween(prevGrid, step.gridAfter, isEmptyInstanceId),
         );
         setPhase('CASCADE', {
           grid: step.gridAfter,
@@ -137,7 +147,7 @@ export function createPlaybackController(opts: {
           dropping,
         });
         await delay(
-          dusmeToplamMs(maxDusmeMesafesi(dropping), factor),
+          dusmeToplamMs(maxDusmeMesafesi(dropping) || 1, factor),
           signal,
         );
         if (signal.cancelled) return;
@@ -156,7 +166,7 @@ export function createPlaybackController(opts: {
       }
 
       setPhase('SCATTER_CHECK', { scatterCount: result.scatterCount });
-      await delay(180 * factor, signal);
+      await delay(90 * factor, signal);
       if (signal.cancelled) return;
 
       if (result.bonusTriggered && result.bonus) {
@@ -170,7 +180,7 @@ export function createPlaybackController(opts: {
 
       if (result.retriggered) {
         setPhase('RETRIGGER', { extra: result.retriggerSpins });
-        await delay(900 * factor, signal);
+        await delay(520 * factor, signal);
         if (signal.cancelled) return;
       }
 
@@ -194,7 +204,7 @@ export function createPlaybackController(opts: {
       }
 
       setPhase('ROUND_END', { result });
-      await delay(200 * factor, signal);
+      await delay(ROUND_END_HOLD_MS * factor, signal);
       if (signal.cancelled) return;
       setPhase('READY');
     },

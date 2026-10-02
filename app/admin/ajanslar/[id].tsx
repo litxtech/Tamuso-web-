@@ -26,6 +26,12 @@ import {
   type AjansPanelDetay,
 } from '../../../src/moduller/ajanslar/islemler/AjansPanelIslemleri';
 import {
+  AdminAjansKomisyonGuncelle,
+  AdminAjansKomisyonListele,
+} from '../../../src/moduller/admin/platform/AdminPlatformIslemleri';
+import { KomisyonPayCubugu } from '../../../src/moduller/admin/bilesenler/KomisyonPayCubugu';
+import { AdminAjansOperasyonPaneli } from '../../../src/moduller/admin/ajans/AdminAjansOperasyonPaneli';
+import {
   AjansProfilGetir,
   type AjansProfil,
 } from '../../../src/moduller/ajanslar/okuma/AjansProfilGetir';
@@ -132,14 +138,18 @@ export default function AdminAjansDetayEkrani() {
   const [monthly, setMonthly] = useState('');
   const [perUser, setPerUser] = useState('');
   const [unlimited, setUnlimited] = useState(false);
+  const [komisyonAjansPct, setKomisyonAjansPct] = useState('20');
+  const [komisyonPlatformPct, setKomisyonPlatformPct] = useState('10');
+  const [komisyonHostPct, setKomisyonHostPct] = useState('70');
 
   const yukle = useCallback(async () => {
     if (!id) return;
     setYukleniyor(true);
     try {
-      const [d, p] = await Promise.all([
+      const [d, p, kom] = await Promise.all([
         AjansPanelDetayGetir(id),
         AjansProfilGetir(id).catch(() => null),
+        AdminAjansKomisyonListele().catch(() => null),
       ]);
       setDetay(d);
       setProfil(p);
@@ -149,6 +159,14 @@ export default function AdminAjansDetayEkrani() {
         setMonthly(String(d.limits.monthly_limit));
         setPerUser(String(d.limits.per_user_limit));
         setUnlimited(Boolean(d.limits.unlimited));
+      }
+      const row = kom?.items?.find((x) => x.agency_id === id);
+      if (row) {
+        setKomisyonAjansPct(String(Math.round(row.agency_share * 1000) / 10));
+        setKomisyonPlatformPct(
+          String(Math.round(row.platform_share * 1000) / 10),
+        );
+        setKomisyonHostPct(String(Math.round(row.host_share * 1000) / 10));
       }
     } catch (e) {
       Alert.alert(
@@ -271,6 +289,49 @@ export default function AdminAjansDetayEkrani() {
     setVal(String(next));
   };
 
+  const komisyonKaydet = () => {
+    if (!id) return;
+    const agencyShare =
+      Number(String(komisyonAjansPct).replace(',', '.')) / 100;
+    const platformShare =
+      Number(String(komisyonPlatformPct).replace(',', '.')) / 100;
+    if (
+      ![agencyShare, platformShare].every(
+        (n) => Number.isFinite(n) && n >= 0,
+      ) ||
+      agencyShare + platformShare > 1
+    ) {
+      Alert.alert('Komisyon', 'Ajans + platform %100’ü geçemez.');
+      return;
+    }
+    void (async () => {
+      setBusy(true);
+      try {
+        const r = await AdminAjansKomisyonGuncelle({
+          agencyId: id,
+          agencyShare,
+          platformShare,
+        });
+        setKomisyonHostPct(String(Math.round(r.host_share * 1000) / 10));
+        setKomisyonAjansPct(String(Math.round(r.agency_share * 1000) / 10));
+        setKomisyonPlatformPct(
+          String(Math.round(r.platform_share * 1000) / 10),
+        );
+        Alert.alert(
+          'Komisyon',
+          `Host %${Math.round(r.host_share * 1000) / 10} kaydedildi.`,
+        );
+      } catch (e) {
+        Alert.alert(
+          'Komisyon',
+          e instanceof Error ? e.message : 'Kaydedilemedi',
+        );
+      } finally {
+        setBusy(false);
+      }
+    })();
+  };
+
   const distributorToggle = () => {
     if (!id || !detay) return;
     const next = !detay.agency.is_coin_distributor;
@@ -313,7 +374,7 @@ export default function AdminAjansDetayEkrani() {
     <Screen edges={['top']}>
       <EkranBasligi
         title={detay?.agency.name ?? 'Ajans'}
-        subtitle="Profil · coin · limit"
+        subtitle="Operasyon · yaptırım · coin · limit"
         fallbackHref={"/admin/ajanslar" as any}
       />
       {yukleniyor && !detay ? (
@@ -453,6 +514,90 @@ export default function AdminAjansDetayEkrani() {
                 </Text>
               </View>
             ) : null}
+          </View>
+
+          <AdminAjansOperasyonPaneli agencyId={id} />
+
+          <Text style={AdminStil.sectionLabel}>Komisyon oranları</Text>
+          <View style={AdminStil.kart}>
+            <Text style={AdminStil.kartAlt}>
+              Bu ajansa bağlı yayıncı hediye aldığında elmas böyle bölünür.
+              Yayıncı payı otomatik hesaplanır (100 − ajans − platform).
+            </Text>
+            <KomisyonPayCubugu
+              host={Number(String(komisyonHostPct).replace(',', '.')) || 0}
+              ajans={Number(String(komisyonAjansPct).replace(',', '.')) || 0}
+              platform={
+                Number(String(komisyonPlatformPct).replace(',', '.')) || 0
+              }
+            />
+            <Text style={[AdminStil.kartAlt, { fontWeight: '700', color: RenkTokenlari.text }]}>
+              Ajans payı (%)
+            </Text>
+            <TextInput
+              style={AdminStil.input}
+              value={komisyonAjansPct}
+              onChangeText={(t) => {
+                setKomisyonAjansPct(t);
+                const a = Number(String(t).replace(',', '.')) || 0;
+                const p =
+                  Number(String(komisyonPlatformPct).replace(',', '.')) || 0;
+                setKomisyonHostPct(
+                  String(Math.max(0, Math.round((100 - a - p) * 10) / 10)),
+                );
+              }}
+              keyboardType="decimal-pad"
+              placeholder="20"
+              placeholderTextColor={RenkTokenlari.textDim}
+            />
+            <Text style={[AdminStil.kartAlt, { fontWeight: '700', color: RenkTokenlari.text }]}>
+              Platform payı (%)
+            </Text>
+            <TextInput
+              style={AdminStil.input}
+              value={komisyonPlatformPct}
+              onChangeText={(t) => {
+                setKomisyonPlatformPct(t);
+                const p = Number(String(t).replace(',', '.')) || 0;
+                const a =
+                  Number(String(komisyonAjansPct).replace(',', '.')) || 0;
+                setKomisyonHostPct(
+                  String(Math.max(0, Math.round((100 - a - p) * 10) / 10)),
+                );
+              }}
+              keyboardType="decimal-pad"
+              placeholder="10"
+              placeholderTextColor={RenkTokenlari.textDim}
+            />
+            <Text style={AdminStil.kartBaslik}>
+              Yayıncı (host) %{komisyonHostPct} — otomatik
+            </Text>
+            <Pressable
+              style={[
+                AdminStil.aksiyon,
+                {
+                  backgroundColor: RenkTokenlari.primarySoft,
+                  borderColor: RenkTokenlari.primarySoft,
+                },
+              ]}
+              disabled={busy}
+              onPress={komisyonKaydet}
+            >
+              <Text
+                style={[
+                  AdminStil.aksiyonYazi,
+                  { color: RenkTokenlari.bg, fontWeight: '800' },
+                ]}
+              >
+                {busy ? '…' : 'Komisyonu kaydet'}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={AdminStil.aksiyon}
+              onPress={() => router.push('/admin/komisyonlar')}
+            >
+              <Text style={AdminStil.aksiyonYazi}>Tüm ajans komisyonları →</Text>
+            </Pressable>
           </View>
 
           <Text style={AdminStil.sectionLabel}>

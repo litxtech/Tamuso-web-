@@ -21,6 +21,9 @@ export type HediyePkAlici = {
   ad: string;
   liveSessionId?: string | null;
   side?: 'a' | 'b';
+  /** Ses odası: sahip tahtı, konuk mikrofon koltuğu */
+  rol?: 'sahip' | 'konuk';
+  avatarUrl?: string | null;
 };
 
 /** HediyeMagazaBaglamasi props — hook döngüsünü önlemek için ayrı tip dosyası */

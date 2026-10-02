@@ -112,6 +112,16 @@ export { registerZeus } from './zeus/ZeusKayit';
 export { ZeusEkrani } from './zeus/ekranlar/ZeusEkrani';
 export { registerNoxReels } from './slot/SlotKayit';
 export { SlotOyunEkrani } from './slot/ekranlar/SlotOyunEkrani';
+export { registerFairSpin } from './fair-spin/FairSpinKayit';
+export { registerFruitWheel } from './fruit-wheel/FruitWheelKayit';
+export { FairSpinEkrani } from './fair-spin/ekranlar/FairSpinEkrani';
+export { registerAstralFalls } from './astral-falls/AstralFallsKayit';
+export { AstralFallsEkrani } from './astral-falls/ekranlar/AstralFallsEkrani';
+export {
+  GAME_CODE as ASTRAL_FALLS_GAME_CODE,
+  GAME_VERSION as ASTRAL_FALLS_GAME_VERSION,
+  GAME_DISPLAY_NAME as ASTRAL_FALLS_DISPLAY_NAME,
+} from './astral-falls/sabitler/AstralFallsSabitleri';
 export {
   GAME_CODE as ZEUS_GAME_CODE,
   GAME_VERSION as ZEUS_GAME_VERSION,
@@ -128,6 +138,12 @@ export {
   GAME_DISPLAY_NAME as NOX_DISPLAY_NAME,
   DEFAULT_MATH_CONFIG as NOX_DEFAULT_MATH_CONFIG,
 } from './slot/sabitler/SlotAyarlari';
+export {
+  GAME_CODE as FAIR_SPIN_GAME_CODE,
+  GAME_VERSION as FAIR_SPIN_GAME_VERSION,
+  GAME_DISPLAY_NAME as FAIR_SPIN_DISPLAY_NAME,
+  DEFAULT_MATH_CONFIG as FAIR_SPIN_DEFAULT_MATH_CONFIG,
+} from './fair-spin/sabitler/FairSpinSabitleri';
 export { simulateSpin, runBatchSimulation } from './kaskad/motor/SpinSimulator';
 export { DEFAULT_MATH_CONFIG } from './kaskad/sabitler/KaskadSabitleri';
 export {

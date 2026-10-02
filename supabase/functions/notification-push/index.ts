@@ -37,6 +37,30 @@ type PushOpts = {
 
 let cachedFcmToken: { token: string; exp: number } | null = null;
 
+/** Outbox satırları — FCM/APNs'i bombalamadan sınırlı paralellik */
+const OUTBOX_CONCURRENCY = 8;
+
+async function mapPool<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const runners = Array.from(
+    { length: Math.min(concurrency, Math.max(items.length, 1)) },
+    async () => {
+      while (true) {
+        const i = next++;
+        if (i >= items.length) return;
+        results[i] = await worker(items[i]!, i);
+      }
+    },
+  );
+  await Promise.all(runners);
+  return results;
+}
+
 function dataStringMap(
   deepLink: string | null,
   outboxId: string,
@@ -155,13 +179,60 @@ async function fcmGonder(
   return { ok: true };
 }
 
+type ExpoTicket = {
+  status?: string;
+  id?: string;
+  message?: string;
+  details?: { error?: string };
+};
+
+type ExpoReceipt = {
+  status?: string;
+  message?: string;
+  details?: {
+    error?: string;
+    apns?: { reason?: string; statusCode?: number };
+  };
+};
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Ticket ok ≠ teslim; APNs hatası receipt'te çıkar (InvalidProviderToken vb.). */
+async function expoReceiptsAl(
+  ticketIds: string[],
+): Promise<Record<string, ExpoReceipt>> {
+  if (ticketIds.length === 0) return {};
+  // Expo receipt'ler genelde 1–few sn içinde hazır
+  await sleep(4000);
+  const res = await fetch('https://exp.host/--/api/v2/push/getReceipts', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ids: ticketIds }),
+  });
+  if (!res.ok) return {};
+  const json = (await res.json().catch(() => null)) as {
+    data?: Record<string, ExpoReceipt>;
+  } | null;
+  return json?.data ?? {};
+}
+
 async function expoGonder(
   tokens: string[],
   title: string,
   body: string | null,
   data: Record<string, string>,
   opts?: PushOpts,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{
+  ok: boolean;
+  error?: string;
+  invalidTokens?: string[];
+  ticketIds?: string[];
+}> {
   const sound = opts?.sound ?? 'default';
   const channelId = opts?.channelId ?? 'genel';
   const badge =
@@ -191,7 +262,104 @@ async function expoGonder(
   if (!pushRes.ok) {
     return { ok: false, error: (await pushRes.text()).slice(0, 500) };
   }
-  return { ok: true };
+
+  const json = (await pushRes.json().catch(() => null)) as {
+    data?: ExpoTicket[];
+  } | null;
+
+  const invalidTokens: string[] = [];
+  const ticketIds: string[] = [];
+  const ticketByToken = new Map<string, string>();
+  const errors: string[] = [];
+  const rows = json?.data ?? [];
+
+  if (rows.length === 0) {
+    return { ok: false, error: 'expo_empty_tickets', invalidTokens, ticketIds };
+  }
+
+  for (let i = 0; i < tokens.length; i++) {
+    const ticket = rows[i];
+    if (!ticket) continue;
+    if (ticket.status === 'ok' && ticket.id) {
+      ticketIds.push(ticket.id);
+      ticketByToken.set(ticket.id, tokens[i]);
+      continue;
+    }
+    const errCode = ticket.details?.error ?? ticket.message ?? 'expo_error';
+    errors.push(String(errCode));
+    if (
+      /DeviceNotRegistered|InvalidExpoToken/i.test(String(errCode))
+    ) {
+      invalidTokens.push(tokens[i]);
+    }
+  }
+
+  // Asıl teslim doğrulaması — ticket ok iken APNs InvalidProviderToken olabilir
+  const receipts = await expoReceiptsAl(ticketIds);
+  let delivered = 0;
+  for (const tid of ticketIds) {
+    const receipt = receipts[tid];
+    if (!receipt) {
+      // Receipt henüz yok — ticket kabul edilmiş say; APNs gecikebilir
+      delivered += 1;
+      continue;
+    }
+    if (receipt.status === 'ok') {
+      delivered += 1;
+      continue;
+    }
+    const err =
+      receipt.details?.error ??
+      receipt.details?.apns?.reason ??
+      receipt.message ??
+      'expo_receipt_error';
+    errors.push(String(err));
+    // Token ölü → deaktif. InvalidCredentials proje APNs anahtarı; token'ı silme.
+    if (/DeviceNotRegistered|InvalidExpoToken/i.test(String(err))) {
+      const tok = ticketByToken.get(tid);
+      if (tok) invalidTokens.push(tok);
+    }
+  }
+
+  if (delivered > 0 && !errors.some((e) => /InvalidCredentials|InvalidProviderToken/i.test(e))) {
+    return { ok: true, invalidTokens, ticketIds };
+  }
+
+  if (errors.some((e) => /InvalidCredentials|InvalidProviderToken/i.test(e))) {
+    return {
+      ok: false,
+      error:
+        'InvalidCredentials: Apple Push (APNs) anahtarı geçersiz — EAS iOS Push Notifications kur.',
+      invalidTokens,
+      ticketIds,
+    };
+  }
+
+  if (delivered > 0) {
+    return { ok: true, invalidTokens, ticketIds };
+  }
+
+  return {
+    ok: false,
+    error: errors.join(' | ').slice(0, 400) || 'expo_all_failed',
+    invalidTokens,
+    ticketIds,
+  };
+}
+
+async function gecersizExpoTokenlariDeaktif(
+  admin: ReturnType<typeof createClient>,
+  tokens: string[],
+): Promise<void> {
+  if (tokens.length === 0) return;
+  await admin
+    .from('device_push_tokens')
+    .update({
+      active: false,
+      notification_enabled: false,
+      push_token: null,
+    })
+    .in('push_token', tokens);
 }
 
 function mesajBildirimiMi(
@@ -260,8 +428,7 @@ function loadFirebaseSa(): FirebaseSa | null {
 /**
  * notification_outbox → Android FCM (Firebase) + Expo Push.
  * iOS ikon rozeti: aps.badge / Expo badge = okunmamış user_notifications.
- * Secret: FIREBASE_SERVICE_ACCOUNT_JSON (FCM V1 service account JSON string)
- * Opsiyonel: PUSH_WORKER_SECRET
+ * Auth: PUSH_WORKER_SECRET | push_worker_config.cron_secret | service_role | user JWT
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -278,19 +445,47 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Auth: worker secret VEYA giris yapmis kullanici (arama aninda hizli kick)
-    const workerSecret = Deno.env.get('PUSH_WORKER_SECRET');
+    const admin = createClient(supabaseUrl, serviceKey);
+    const workerSecretEnv = Deno.env.get('PUSH_WORKER_SECRET');
     const gotSecret = req.headers.get('x-worker-secret');
     const authHeader = req.headers.get('Authorization');
-    let authorized = !!(workerSecret && gotSecret === workerSecret);
+
+    let authorized = false;
+
+    // 1) Env worker secret
+    if (workerSecretEnv && gotSecret === workerSecretEnv) {
+      authorized = true;
+    }
+
+    // 2) DB cron_secret (pg_cron / outbox trigger)
+    if (!authorized && gotSecret) {
+      const { data: cfg } = await admin
+        .from('push_worker_config')
+        .select('value')
+        .eq('key', 'cron_secret')
+        .maybeSingle();
+      if (cfg?.value && cfg.value === gotSecret) {
+        authorized = true;
+      }
+    }
+
+    // 3) Service role bearer
+    if (!authorized && authHeader === `Bearer ${serviceKey}`) {
+      authorized = true;
+    }
+
+    // 4) Giriş yapmış kullanıcı (mesaj/arama client kick)
     if (!authorized && authHeader?.startsWith('Bearer ')) {
-      const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? serviceKey, {
-        global: { headers: { Authorization: authHeader } },
-      });
+      const userClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY') ?? serviceKey,
+        { global: { headers: { Authorization: authHeader } } },
+      );
       const { data: userData } = await userClient.auth.getUser();
       authorized = !!userData.user;
     }
-    if (!authorized && workerSecret) {
+
+    if (!authorized) {
       return Response.json(
         { error: 'Forbidden' },
         { status: 403, headers: corsHeaders },
@@ -298,7 +493,6 @@ Deno.serve(async (req) => {
     }
 
     const firebaseSa = loadFirebaseSa();
-    const admin = createClient(supabaseUrl, serviceKey);
     const body = req.method === 'POST'
       ? ((await req.json().catch(() => ({}))) as { limit?: number })
       : {};
@@ -366,90 +560,99 @@ Deno.serve(async (req) => {
     let fcmSent = 0;
     let expoSent = 0;
 
-    for (const row of rows) {
-      const uid = row.user_id;
-      const fcmTargets = uid ? fcmByUser.get(uid) ?? [] : [];
-      const expoTargets = uid ? expoByUser.get(uid) ?? [] : [];
-      const badge = uid ? unreadByUser.get(uid) ?? 1 : 1;
-      const data = dataStringMap(row.deep_link, row.id, row.payload, badge);
+    type RowSonuc = { sent: boolean; fcm: number; expo: number };
 
-      if (fcmTargets.length === 0 && expoTargets.length === 0) {
-        await admin
-          .from('notification_outbox')
-          .update({
-            status: 'failed',
-            processed_at: new Date().toISOString(),
-            payload: {
-              ...(row.payload ?? {}),
-              worker_error: 'no_push_token',
-            },
-          })
-          .eq('id', row.id);
-        failed += 1;
-        continue;
-      }
+    const rowSonuclari = await mapPool(
+      rows,
+      OUTBOX_CONCURRENCY,
+      async (row): Promise<RowSonuc> => {
+        const uid = row.user_id;
+        const fcmTargets = uid ? fcmByUser.get(uid) ?? [] : [];
+        const expoTargets = uid ? expoByUser.get(uid) ?? [] : [];
+        const badge = uid ? unreadByUser.get(uid) ?? 1 : 1;
+        const data = dataStringMap(row.deep_link, row.id, row.payload, badge);
 
-      const errors: string[] = [];
-      let anyOk = false;
-      const isMesaj = mesajBildirimiMi(row.deep_link, row.payload);
-      const pushOpts: PushOpts = {
-        ...(isMesaj
-          ? { channelId: MESAJ_KANAL, sound: MESAJ_SESI }
-          : { channelId: 'genel', sound: 'default' }),
-        badge,
-      };
+        if (fcmTargets.length === 0 && expoTargets.length === 0) {
+          await admin
+            .from('notification_outbox')
+            .update({
+              status: 'failed',
+              processed_at: new Date().toISOString(),
+              payload: {
+                ...(row.payload ?? {}),
+                worker_error: 'no_push_token',
+              },
+            })
+            .eq('id', row.id);
+          return { sent: false, fcm: 0, expo: 0 };
+        }
 
-      // Android Firebase FCM (öncelik)
-      if (fcmTargets.length > 0) {
-        if (!firebaseSa) {
-          errors.push('fcm_no_service_account');
-        } else {
-          for (const tok of fcmTargets) {
-            const r = await fcmGonder(
-              firebaseSa,
-              tok,
-              row.title,
-              row.body,
-              data,
-              pushOpts,
-            );
-            if (r.ok) {
-              anyOk = true;
-              fcmSent += 1;
-            } else if (r.error) {
-              errors.push(r.error);
+        const errors: string[] = [];
+        let anyOk = false;
+        let rowFcm = 0;
+        let rowExpo = 0;
+        const isMesaj = mesajBildirimiMi(row.deep_link, row.payload);
+        const pushOpts: PushOpts = {
+          ...(isMesaj
+            ? { channelId: MESAJ_KANAL, sound: MESAJ_SESI }
+            : { channelId: 'genel', sound: 'default' }),
+          badge,
+        };
+
+        if (fcmTargets.length > 0) {
+          if (!firebaseSa) {
+            errors.push('fcm_no_service_account');
+          } else {
+            // Token'lar kullanıcı başına sınırlı — sıralı yeterli
+            for (const tok of fcmTargets) {
+              const r = await fcmGonder(
+                firebaseSa,
+                tok,
+                row.title,
+                row.body,
+                data,
+                pushOpts,
+              );
+              if (r.ok) {
+                anyOk = true;
+                rowFcm += 1;
+              } else if (r.error) {
+                errors.push(r.error);
+              }
             }
           }
         }
-      }
 
-      // Expo (iOS veya FCM yedek)
-      if (expoTargets.length > 0) {
-        const r = await expoGonder(
-          expoTargets,
-          row.title,
-          row.body,
-          data,
-          pushOpts,
-        );
-        if (r.ok) {
-          anyOk = true;
-          expoSent += 1;
-        } else if (r.error) {
-          errors.push(r.error);
+        if (expoTargets.length > 0) {
+          const r = await expoGonder(
+            expoTargets,
+            row.title,
+            row.body,
+            data,
+            pushOpts,
+          );
+          if (r.invalidTokens?.length) {
+            await gecersizExpoTokenlariDeaktif(admin, r.invalidTokens);
+          }
+          if (r.ok) {
+            anyOk = true;
+            rowExpo += 1;
+          } else if (r.error) {
+            errors.push(r.error);
+          }
         }
-      }
 
-      if (anyOk) {
-        await admin
-          .from('notification_outbox')
-          .update({
-            status: 'sent',
-            processed_at: new Date().toISOString(),
-          })
-          .eq('id', row.id);
-        sent += 1;
-      } else {
+        if (anyOk) {
+          await admin
+            .from('notification_outbox')
+            .update({
+              status: 'sent',
+              processed_at: new Date().toISOString(),
+            })
+            .eq('id', row.id);
+          return { sent: true, fcm: rowFcm, expo: rowExpo };
+        }
+
         await admin
           .from('notification_outbox')
           .update({
@@ -461,8 +664,15 @@ Deno.serve(async (req) => {
             },
           })
           .eq('id', row.id);
-        failed += 1;
-      }
+        return { sent: false, fcm: rowFcm, expo: rowExpo };
+      },
+    );
+
+    for (const r of rowSonuclari) {
+      if (r.sent) sent += 1;
+      else failed += 1;
+      fcmSent += r.fcm;
+      expoSent += r.expo;
     }
 
     return Response.json(
@@ -473,6 +683,7 @@ Deno.serve(async (req) => {
         fcm_sent: fcmSent,
         expo_sent: expoSent,
         fcm_configured: !!firebaseSa,
+        concurrency: OUTBOX_CONCURRENCY,
       },
       { headers: corsHeaders },
     );

@@ -1,0 +1,302 @@
+[
+  {
+    "key": "cuzdanX.elmasSatir",
+    "en": "{{adet}} diamonds · {{yontem}}",
+    "tr": "{{adet}} elmas · {{yontem}}"
+  },
+  {
+    "key": "cuzdan.ledgerPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerStripe",
+    "en": "Card top-up",
+    "tr": "Kart ile yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAgencyDistribution",
+    "en": "Agency coin top-up",
+    "tr": "Ajans coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminTopup",
+    "en": "Admin coin top-up",
+    "tr": "Yönetim coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminDeduct",
+    "en": "Admin coin deduction",
+    "tr": "Yönetim coin eksiltme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminPenalty",
+    "en": "Admin coin penalty",
+    "tr": "Yönetim coin cezası"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadBet",
+    "en": "Cosmic Cascade — entry",
+    "tr": "Kozmik Kaskad — katılım"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadWin",
+    "en": "Cosmic Cascade — reward",
+    "tr": "Kozmik Kaskad — ödül"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadRefund",
+    "en": "Cosmic Cascade — refund",
+    "tr": "Kozmik Kaskad — iade"
+  },
+  {
+    "key": "cuzdan.refCoinPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.refKaskadRound",
+    "en": "Cosmic Cascade round",
+    "tr": "Kozmik Kaskad turu"
+  },
+  {
+    "key": "banner.auto.live_coins",
+    "en": "Live coin threshold",
+    "tr": "Canlı coin eşiği"
+  },
+  {
+    "key": "odaTema.party_neonAlt",
+    "en": "Live party · pink neon",
+    "tr": "Canlı parti · pembe neon"
+  },
+  {
+    "key": "odaDuzen.premium_tilesAlt",
+    "en": "VIP tile grid",
+    "tr": "VIP karo ızgara"
+  },
+  {
+    "key": "odaDuzen.planet_orbitAlt",
+    "en": "Orbital mic ring",
+    "tr": "Orbital mikrofon halkası"
+  },
+  {
+    "key": "odaDuzen.mini_clusterAlt",
+    "en": "Compact cluster grid",
+    "tr": "Kompakt küme ızgara"
+  },
+  {
+    "key": "odaDuzen.dropin_tiles",
+    "en": "Drop-in tiles",
+    "tr": "Drop-in karolar"
+  },
+  {
+    "key": "gorunum.sampanyaAlt",
+    "en": "VIP gold noir",
+    "tr": "VIP altın noir"
+  },
+  {
+    "key": "gorunum.neon_sehirAlt",
+    "en": "Cyber pink · mint",
+    "tr": "Siber pembe · mint"
+  },
+  {
+    "key": "sesOda.demoCanliOda",
+    "en": "Demo live room",
+    "tr": "Demo canlı oda"
+  },
+  {
+    "key": "odaMuzik.aiStudio",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "odaMuzik.sesBilgi",
+    "en": "Audio: {{ext}} · {{path}}",
+    "tr": "Ses: {{ext}} · {{path}}"
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoPaylasMetin",
+    "en": "MUTA PAY wallet no: {{no}}",
+    "tr": "MUTA PAY cüzdan no: {{no}}"
+  },
+  {
+    "key": "mesajSohbet.idPaylasMetin",
+    "en": "User ID: {{id}}",
+    "tr": "Kullanıcı ID: {{id}}"
+  },
+  {
+    "key": "hediye.coinYukleAlt",
+    "en": "1 coin = ₺0.10 · instant top-up",
+    "tr": "1 coin = 0,10 ₺ · anında yükle"
+  },
+  {
+    "key": "canliYayin.a11yCanliYayin",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "auth.appleGirisi",
+    "en": "Apple sign-in",
+    "tr": "Apple girişi"
+  },
+  {
+    "key": "auth.spotifyGirisi",
+    "en": "Spotify sign-in",
+    "tr": "Spotify girişi"
+  },
+  {
+    "key": "auth.twitchGirisi",
+    "en": "Twitch sign-in",
+    "tr": "Twitch girişi"
+  },
+  {
+    "key": "auth.xGirisi",
+    "en": "X sign-in",
+    "tr": "X girişi"
+  },
+  {
+    "key": "auth.googleGirisi",
+    "en": "Google sign-in",
+    "tr": "Google girişi"
+  },
+  {
+    "key": "auth.misafirGirisi",
+    "en": "Guest sign-in",
+    "tr": "Misafir girişi"
+  },
+  {
+    "key": "auth.destek",
+    "en": "Support: support@litxtech.com",
+    "tr": "Destek: support@litxtech.com"
+  },
+  {
+    "key": "auth.spotifyKaydi",
+    "en": "Spotify sign-up",
+    "tr": "Spotify kaydı"
+  },
+  {
+    "key": "auth.twitchKaydi",
+    "en": "Twitch sign-up",
+    "tr": "Twitch kaydı"
+  },
+  {
+    "key": "auth.xKaydi",
+    "en": "X sign-up",
+    "tr": "X kaydı"
+  },
+  {
+    "key": "auth.googleKaydi",
+    "en": "Google sign-up",
+    "tr": "Google kaydı"
+  },
+  {
+    "key": "auth.epostaPlaceholder",
+    "en": "you@mail.com",
+    "tr": "sen@mail.com"
+  },
+  {
+    "key": "auth.kodHanesi",
+    "en": "Verification code, digit {{n}}",
+    "tr": "Doğrulama kodu, hane {{n}}"
+  },
+  {
+    "key": "anaSayfa.menuAiMuzik",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "anaSayfa.bolumCountryLeague",
+    "en": "World Country League",
+    "tr": "Dünya Ülke Ligi"
+  },
+  {
+    "key": "anaSayfa.canliA11y",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "anaSayfa.sesA11y",
+    "en": "{{baslik}}, voice room",
+    "tr": "{{baslik}}, ses odası"
+  },
+  {
+    "key": "anaSayfa.sesOdasiA11y",
+    "en": "Voice room {{baslik}}",
+    "tr": "Ses odası {{baslik}}"
+  },
+  {
+    "key": "anaSayfa.mailKonu",
+    "en": "Tamuso support / report",
+    "tr": "Tamuso şikayet / destek"
+  },
+  {
+    "key": "ajans.phEposta",
+    "en": "agency@example.com",
+    "tr": "ajans@ornek.com"
+  },
+  {
+    "key": "ajans.hostBasvuruFormu",
+    "en": "Host application form",
+    "tr": "Host Başvuru Formu"
+  },
+  {
+    "key": "ajans.coinYukleme",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "ajans.basvuruSatir",
+    "en": "@{{user}} · {{zaman}}\\nStatus: {{status}}",
+    "tr": "@{{user}} · {{zaman}}\nDurum: {{status}}"
+  },
+  {
+    "key": "ajans.davetlerAlt",
+    "en": "Code · QR · analytics",
+    "tr": "Kod · QR · analitika"
+  },
+  {
+    "key": "aiMuzik.ornekPrompt2",
+    "en": "Energetic Black Sea, kemençe + electronic",
+    "tr": "Enerjik Karadeniz, kemençe + elektronik"
+  },
+  {
+    "key": "aiMuzik.kanalAndroid",
+    "en": "Google Play / card",
+    "tr": "Google Play / kart"
+  },
+  {
+    "key": "profil.ayarlarAlt",
+    "en": "Account · privacy · app",
+    "tr": "Hesap · gizlilik · uygulama"
+  },
+  {
+    "key": "profilTab.galibiyetOrani",
+    "en": "Win rate {{oran}}%",
+    "tr": "Galibiyet oranı %{{oran}}"
+  },
+  {
+    "key": "sehir.gucDestekci",
+    "en": "Power {{guc}} · {{count}} supporters",
+    "tr": "Güç {{guc}} · {{count}} destekçi"
+  },
+  {
+    "key": "ayarlar.pip",
+    "en": "Picture-in-picture (PiP)",
+    "tr": "Küçük ekran (PiP)"
+  },
+  {
+    "key": "sertifikasyon.altBaslik",
+    "en": "Store / pre-release control hub",
+    "tr": "Mağaza / yayın öncesi kontrol merkezi"
+  },
+  {
+    "key": "sertifikasyon.hediyeStresAlt",
+    "en": "40-gift queue · drop rate",
+    "tr": "40 hediye kuyruğu · düşürme oranı"
+  },
+  {
+    "key": "takas.qrCuzdanOzet",
+    "en": "Wallet: {{no}}\n{{maskeli}}",
+    "tr": "Cüzdan: {{no}}\n{{maskeli}}"
+  }
+]

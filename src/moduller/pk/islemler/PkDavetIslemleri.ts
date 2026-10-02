@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type PkDavet = {
   id: string;
@@ -69,7 +70,7 @@ export async function PkDavetYanitla(input: {
       inviteId: row.invite_id ?? input.inviteId,
     };
   }
-  if (!row?.ok) return { ok: false, hata: 'Davet yanıtlanamadı' };
+  if (!row?.ok) return { ok: false, hata: i18n.t('pk.davetYanitlanamadi') };
   return {
     ok: true,
     status: (row.status as 'accepted' | 'rejected') ?? 'rejected',

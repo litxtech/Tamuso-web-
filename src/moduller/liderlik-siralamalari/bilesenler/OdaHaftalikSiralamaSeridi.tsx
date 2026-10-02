@@ -23,8 +23,11 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { SesOdasinaGit } from '../../ses-odalari/navigasyon/SesOdasinaGit';
 
 export function OdaHaftalikSiralamaSeridi() {
+  const { t } = useCeviri();
   const [rows, setRows] = useState<SiralamaSatiri[]>([]);
 
   const yukle = useCallback(async () => {
@@ -61,16 +64,16 @@ export function OdaHaftalikSiralamaSeridi() {
       <View style={styles.baslikSatir}>
         <View style={styles.baslikSol}>
           <Ionicons name="trophy" size={14} color={RenkTokenlari.accent} />
-          <Text style={styles.baslik}>Bu haftanın odaları</Text>
+          <Text style={styles.baslik}>{t('siralamalar.podiumOdalar')}</Text>
         </View>
         <Pressable
           onPress={() => router.push('/siralamalar?board=room' as any)}
           hitSlop={8}
         >
-          <Text style={styles.link}>Tümü</Text>
+          <Text style={styles.link}>{t('ortak.tumunuGor')}</Text>
         </Pressable>
       </View>
-      <Text style={styles.alt}>Hediye + oyun · Pazartesi sıfırlanır</Text>
+      <Text style={styles.alt}>{t('siralamalar.altOda')}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -85,10 +88,11 @@ export function OdaHaftalikSiralamaSeridi() {
 }
 
 function OdaMiniKart({ item }: { item: SiralamaSatiri }) {
+  const { t } = useCeviri();
   const ad =
     item.room_title?.trim() ||
     item.display_name?.trim() ||
-    'Oda';
+    t('siralamalar.boardOda');
   const kapak = MedyaUriGuvenli(item.room_cover_url || item.avatar_url);
   const odaId = item.room_id;
 
@@ -98,7 +102,7 @@ function OdaMiniKart({ item }: { item: SiralamaSatiri }) {
       disabled={!odaId}
       onPress={() => {
         if (!odaId) return;
-        router.push(`/lobi/${odaId}` as any);
+        void SesOdasinaGit({ roomId: odaId });
       }}
     >
       <View style={styles.kapakWrap}>
@@ -119,7 +123,9 @@ function OdaMiniKart({ item }: { item: SiralamaSatiri }) {
       <Text style={styles.ad} numberOfLines={1}>
         {ad}
       </Text>
-      <Text style={styles.skor}>{CoinSkoruFormatla(item.score)} coin</Text>
+      <Text style={styles.skor}>
+        {CoinSkoruFormatla(item.score)} {t('cuzdan.coin')}
+      </Text>
     </Pressable>
   );
 }

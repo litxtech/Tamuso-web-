@@ -1,0 +1,31 @@
+{
+  "hediye": {
+    "baslik": "Gift",
+    "gonderBaslik": "Send gift",
+    "coinYukle": "Buy coins",
+    "coinYukleAlt": "1 coin = ₺0.10 · instant top-up",
+    "alici": "To: {{ad}}",
+    "canliHediyeler": "Live gifts",
+    "hediyeyeDon": "Back to gifts",
+    "pkKime": "PK — who?",
+    "adet": "Qty",
+    "gonderiliyor": "Sending…",
+    "gonderToplam": "Send · {{toplam}}",
+    "sekmePopuler": "Popular",
+    "sekmeTumu": "All",
+    "sekmeKlasik": "Classic",
+    "sekmeNadir": "Rare",
+    "sekmeLuks": "Luxury",
+    "sekmeEfsane": "Legendary",
+    "aliciBulunamadi": "Recipient not found.",
+    "kendineGonderemezsin": "You cannot send a gift to yourself.",
+    "katalogYukleniyor": "Catalog loading — try again shortly.",
+    "yetersizCoin": "Not enough coins",
+    "yetersizCoinBody": "Top up coins to continue.",
+    "gonderilemedi": "Gift could not be sent",
+    "gonderimKapali": "Gift sending is temporarily disabled.",
+    "ozellikKapali": "Gifts are disabled.",
+    "birisi": "Someone",
+    "varsayilanAd": "Gift"
+  }
+}

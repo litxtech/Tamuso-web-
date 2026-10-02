@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OdaTemasiniCoz } from '../../oda-olusturma/katalog/OdaTemaKatalogu';
@@ -10,13 +10,23 @@ type Props = {
   themeCode?: string | null;
 };
 
+function hexAlpha(hex: string, alpha: number): string {
+  const a = Math.round(Math.min(1, Math.max(0, alpha)) * 255)
+    .toString(16)
+    .padStart(2, '0');
+  const h = hex.replace('#', '');
+  if (h.length === 6) return `#${h}${a}`;
+  if (h.length === 8) return `#${h.slice(0, 6)}${a}`;
+  return hex;
+}
+
 /**
  * Ses odası tam ekran arka plan.
- * Öncelik: özel resim → seçilen tema gradienti.
+ * Tek gradient — üst üste binen atmosfer katmanları GPU'yu sürekli boyuyordu.
  */
 export function OdaSahneArkaPlan({ url, themeCode }: Props) {
   const uri = url?.trim() || null;
-  const tema = OdaTemasiniCoz(themeCode);
+  const tema = useMemo(() => OdaTemasiniCoz(themeCode), [themeCode]);
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill} collapsable={false}>
@@ -26,10 +36,8 @@ export function OdaSahneArkaPlan({ url, themeCode }: Props) {
         end={{ x: 0.85, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      {/* Vurgu leke — temaya derinlik */}
       <LinearGradient
-        colors={[`${tema.vurgu}33`, 'transparent', `${tema.vurgu}18`]}
-        locations={[0, 0.45, 1]}
+        colors={[hexAlpha(tema.vurgu, 0.16), 'transparent']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -42,7 +50,6 @@ export function OdaSahneArkaPlan({ url, themeCode }: Props) {
           accessibilityIgnoresInvertColors
         />
       ) : null}
-      {/* Okunabilirlik: kontroller / yazılar net kalsın */}
       <LinearGradient
         colors={
           uri

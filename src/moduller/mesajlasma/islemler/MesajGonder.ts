@@ -49,6 +49,37 @@ export async function MesajGonder(
   return { ok: true, mesaj: data as DirektMesaj };
 }
 
+export async function MesajDosyaGonder(input: {
+  threadId: string;
+  mediaUrl: string;
+  body?: string;
+  fileName?: string;
+  mime?: string;
+  clientId?: string;
+  mediaMeta?: MesajMediaMeta | null;
+}): Promise<
+  | { ok: true; mesaj: DirektMesaj }
+  | { ok: false; hata: string }
+> {
+  if (!(await OzellikBayragiAktifMiSunucu('messages_enabled'))) {
+    return { ok: false, hata: i18n.t('durumX.mesajlasmaKapali') };
+  }
+  const clientId =
+    input.clientId && UUID_RE.test(input.clientId) ? input.clientId : null;
+  const { data, error } = await supabase.rpc('mesaj_dosya_gonder', {
+    p_thread_id: input.threadId,
+    p_media_url: input.mediaUrl,
+    p_body: input.body ?? '',
+    p_file_name: input.fileName ?? 'dosya.pdf',
+    p_mime: input.mime ?? 'application/pdf',
+    p_client_id: clientId,
+    p_media_meta: input.mediaMeta ?? {},
+  });
+  if (error) return { ok: false, hata: error.message };
+  PushWorkerTetikle(30);
+  return { ok: true, mesaj: data as DirektMesaj };
+}
+
 export async function OzelSohbetAcVeyaGetir(
   otherUserId: string,
 ): Promise<{ ok: true; threadId: string } | { ok: false; hata: string }> {

@@ -309,9 +309,7 @@ export default function KycEkrani() {
           value={country}
           onChangeText={setCountry}
         />
-        <Text style={styles.alanIpucu}>
-          Şu an ikamet ettiğin ülke (örn. Türkiye)
-        </Text>
+        <Text style={styles.alanIpucu}>{t('kyc.ipucuIkamet')}</Text>
         <TextInput
           style={styles.input}
           placeholder={t('kyc.placeholderUyruk')}
@@ -319,9 +317,7 @@ export default function KycEkrani() {
           value={nationality}
           onChangeText={setNationality}
         />
-        <Text style={styles.alanIpucu}>
-          Pasaport/kimlikte yazan vatandaşlık (örn. Türkiye)
-        </Text>
+        <Text style={styles.alanIpucu}>{t('kyc.ipucuUyruk')}</Text>
 
         <Text style={styles.bolum}>{t('kyc.belgeFotograflari')}</Text>
         <Pressable style={styles.btnIkincil} onPress={() => void fotoSec('front')}>

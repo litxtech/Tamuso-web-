@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import i18n from '../../i18n';
 
 type ImagePickerModul = typeof import('expo-image-picker');
 
@@ -40,7 +41,7 @@ export async function ImagePickerModuluYukle(): Promise<
   if (!ImagePickerNativeHazirMi()) {
     return {
       ok: false,
-      hata: 'Medya seçici bu build’de yok. Yeni development build kur.',
+      hata: i18n.t('auth.medyaSeciciYok'),
     };
   }
 
@@ -53,7 +54,7 @@ export async function ImagePickerModuluYukle(): Promise<
       yuklemeSoz = null;
       return {
         ok: false as const,
-        hata: 'expo-image-picker yüklenemedi. Development build yenile.',
+        hata: i18n.t('auth.medyaSeciciYok'),
       };
     }
   })();
@@ -67,8 +68,10 @@ export async function ImagePickerModuluYukle(): Promise<
  * Varsayılan: izin dialog’u açmaz (izinIste: false).
  */
 export function ImagePickerOnIsit(opts?: { izinIste?: boolean }): void {
+  // Dinamik import’u hemen kick et (promise cache); izin ayrı await
+  const yukleme = ImagePickerModuluYukle();
   void (async () => {
-    const mod = await ImagePickerModuluYukle();
+    const mod = await yukleme;
     if (!mod.ok) return;
     if (galeriIzni === true) return;
     try {
@@ -130,6 +133,13 @@ export type GaleriSecimSonucu =
   | { ok: true; asset: GaleriAsset }
   | { ok: false; hata: string; iptal?: boolean };
 
+export type GaleriCokluSecimSonucu =
+  | { ok: true; assets: GaleriAsset[] }
+  | { ok: false; hata: string; iptal?: boolean };
+
+/** DM / galeri çoklu seçim üst sınırı */
+export const GALERI_COKLU_LIMIT = 10;
+
 function assetDonustur(a: {
   uri: string;
   mimeType?: string | null;
@@ -182,20 +192,24 @@ export async function KameraAc(opts: {
   const { ImagePicker } = mod;
   const izinVar = await ImagePickerKameraIzniAl(ImagePicker);
   if (!izinVar) {
-    return { ok: false, hata: 'Kamera izni gerekli.' };
+    return { ok: false, hata: i18n.t('auth.kameraIzni') };
   }
 
   const videoVar = opts.mediaTypes.includes('videos');
   try {
+    const cameraType =
+      ImagePicker.CameraType?.back ??
+      ImagePicker.CameraType?.Back ??
+      undefined;
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: opts.mediaTypes,
       allowsEditing: false,
       quality: opts.quality ?? 1,
       videoMaxDuration: opts.videoMaxDuration ?? (videoVar ? 120 : undefined),
-      cameraType: ImagePicker.CameraType.back,
+      ...(cameraType != null ? { cameraType } : {}),
     });
     if (result.canceled || !result.assets?.[0]) {
-      return { ok: false, hata: 'İptal', iptal: true };
+      return { ok: false, hata: i18n.t('auth.iptalEdildi'), iptal: true };
     }
     return { ok: true, asset: assetDonustur(result.assets[0]) };
   } catch (e) {
@@ -203,10 +217,10 @@ export async function KameraAc(opts: {
     if (msg.includes('ExponentImagePicker') || msg.includes('native module')) {
       return {
         ok: false,
-        hata: 'Kamera bu build’de yok. Yeni development build kur.',
+        hata: i18n.t('auth.kameraYok'),
       };
     }
-    return { ok: false, hata: msg };
+    return { ok: false, hata: i18n.t('auth.medyaYuklenemedi') };
   }
 }
 
@@ -217,44 +231,81 @@ export async function KameraAc(opts: {
  * - Video: önce açmayı dene; yalnızca native hata verirse izin iste (dialog
  *   picker’dan önce gelmesin). Isıtma (ImagePickerOnIsit) izin cache’ler.
  * - quality:1 + allowsEditing:false → iOS fast-path (decode/re-encode yok).
+ * - selectionLimit > 1 → çoklu seçim (PHPicker / Android Photo Picker).
  */
-export async function GaleriAc(opts: {
+export async function GaleriCokluAc(opts: {
   mediaTypes: GaleriMedyaTipi[];
   quality?: number;
   videoMaxDuration?: number;
-}): Promise<GaleriSecimSonucu> {
+  /** 1 = tekil; >1 çoklu. Varsayılan GALERI_COKLU_LIMIT */
+  selectionLimit?: number;
+  /**
+   * true → JPEG uyumlu (profil/kapak). false/undefined → Current (HEIC, hızlı DM).
+   * quality < 1 ile birlikte kullan; aksi halde 5MB storage limitini aşabilir.
+   */
+  uyumluFormat?: boolean;
+  /** Profil/kapak: crop UI — yeniden encode tetikler, dosyayı küçültür */
+  allowsEditing?: boolean;
+  aspect?: [number, number];
+}): Promise<GaleriCokluSecimSonucu> {
   const mod = await ImagePickerModuluYukle();
   if (!mod.ok) return { ok: false, hata: mod.hata };
 
   const { ImagePicker } = mod;
   const videoVar = opts.mediaTypes.includes('videos');
+  const limit = Math.max(
+    1,
+    Math.min(opts.selectionLimit ?? GALERI_COKLU_LIMIT, GALERI_COKLU_LIMIT),
+  );
 
   // Yalnız cache’te true ise atla; aksi halde get/request ile picker’ı geciktirme
   if (videoVar && galeriIzni === true) {
     /* izin hazır — launch’a geç */
   } else if (videoVar && Platform.OS === 'ios' && galeriIzni === false) {
-    return { ok: false, hata: 'Galeri izni gerekli.' };
+    return { ok: false, hata: i18n.t('auth.galeriIzni') };
   }
 
-  const launchOpts = {
+  const launchOpts: Record<string, unknown> = {
     mediaTypes: opts.mediaTypes,
-    allowsEditing: false as const,
+    allowsEditing: opts.allowsEditing === true,
     // <1 iOS’ta re-encode tetikler; fast-path için 1 şart
     quality: opts.quality ?? 1,
-    selectionLimit: 1,
-    preferredAssetRepresentationMode:
-      ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
+    selectionLimit: limit,
+    allowsMultipleSelection: limit > 1,
+    ...(opts.aspect ? { aspect: opts.aspect } : {}),
     ...(opts.videoMaxDuration != null
       ? { videoMaxDuration: opts.videoMaxDuration }
       : {}),
   };
 
-  const birKezAc = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync(launchOpts);
-    if (result.canceled || !result.assets?.[0]) {
-      return { ok: false as const, hata: 'İptal', iptal: true as const };
+  // Enum expo sürümünde yoksa ekleme — undefined.Current crash olmasın
+  const modes = ImagePicker.UIImagePickerPreferredAssetRepresentationMode;
+  const prefMode = opts.uyumluFormat
+    ? (modes?.Compatible ?? modes?.Automatic)
+    : (modes?.Current ?? modes?.Automatic);
+  if (prefMode != null) {
+    launchOpts.preferredAssetRepresentationMode = prefMode;
+  }
+
+  const birKezAc = async (): Promise<GaleriCokluSecimSonucu> => {
+    if (typeof ImagePicker.launchImageLibraryAsync !== 'function') {
+      return {
+        ok: false,
+        hata: i18n.t('auth.medyaSeciciYok'),
+      };
     }
-    return { ok: true as const, asset: assetDonustur(result.assets[0]) };
+    const result = await ImagePicker.launchImageLibraryAsync(launchOpts);
+    if (result.canceled || !result.assets?.length) {
+      return {
+        ok: false as const,
+        hata: i18n.t('auth.iptalEdildi'),
+        iptal: true as const,
+      };
+    }
+    return {
+      ok: true as const,
+      assets: result.assets.slice(0, limit).map(assetDonustur),
+    };
   };
 
   try {
@@ -264,22 +315,39 @@ export async function GaleriAc(opts: {
     if (msg.includes('ExponentImagePicker') || msg.includes('native module')) {
       return {
         ok: false,
-        hata: 'Medya seçici native modülü yok. Yeni development build kur.',
+        hata: i18n.t('auth.medyaSeciciYok'),
       };
     }
 
     // İzin / limited library: bir kez isteyip tekrar aç (foto + video)
     const izinVar = await ImagePickerGaleriIzniAl(ImagePicker);
     if (!izinVar) {
-      return { ok: false, hata: videoVar ? 'Galeri izni gerekli.' : msg };
+      return { ok: false, hata: i18n.t('auth.galeriIzni') };
     }
     try {
       return await birKezAc();
-    } catch (e2) {
+    } catch {
       return {
         ok: false,
-        hata: e2 instanceof Error ? e2.message : String(e2),
+        hata: i18n.t('auth.medyaYuklenemedi'),
       };
     }
   }
+}
+
+export async function GaleriAc(opts: {
+  mediaTypes: GaleriMedyaTipi[];
+  quality?: number;
+  videoMaxDuration?: number;
+  uyumluFormat?: boolean;
+  allowsEditing?: boolean;
+  aspect?: [number, number];
+}): Promise<GaleriSecimSonucu> {
+  const sonuc = await GaleriCokluAc({ ...opts, selectionLimit: 1 });
+  if (!sonuc.ok) return sonuc;
+  const asset = sonuc.assets[0];
+  if (!asset) {
+    return { ok: false, hata: i18n.t('auth.iptalEdildi'), iptal: true };
+  }
+  return { ok: true, asset };
 }

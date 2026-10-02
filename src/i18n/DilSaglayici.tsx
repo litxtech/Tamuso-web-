@@ -8,7 +8,9 @@ import React, {
 } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { I18nDiliniAyarla } from './index';
+import { dilBootstrapSoz } from './dilBootstrap';
 import {
+  CihazDiliniAl,
   DilCozumle,
   DilNormalizeEt,
   DIL_ETIKETLERI,
@@ -18,12 +20,11 @@ import {
   type DilModu,
   type UygulamaDili,
 } from './diller';
-import { RtlUygula } from './RtlUygula';
+import { RtlUygula, RtlYenidenBaslat } from './RtlUygula';
 import { isRtlAktif, isRtlDil } from './rtl';
 import {
   DilAyariniKaydet,
   DilModunuSistemYap,
-  KullaniciAyarlariniGetir,
 } from '../moduller/ayarlar/islemler/KullaniciAyarlariniYonet';
 import { ProfilDiliniKaydet } from '../moduller/ayarlar/islemler/ProfilDiliniKaydet';
 import { RenkTokenlari } from '../tasarim-sistemi/RenkTokenlari';
@@ -38,9 +39,9 @@ type DilBaglam = {
   /** Native layout şu an RTL mi */
   rtlAktif: boolean;
   desteklenen: readonly UygulamaDili[];
-  /** Manuel dil — kalıcı; cihaz dili değiştirmez */
+  /** Manuel dil — kalıcı; cihaz/ülke dili değiştirmez */
   dilDegistir: (yeni: UygulamaDili) => Promise<{ reloadGerekli: boolean }>;
-  /** Sistem diline dön */
+  /** Sistem / ülke diline dön */
   sistemDiliniKullan: () => Promise<{ reloadGerekli: boolean }>;
   hazir: boolean;
 };
@@ -61,45 +62,49 @@ const DilContext = createContext<DilBaglam>({
 type Props = {
   children: React.ReactNode;
   profilDili?: string | null;
+  profilUlke?: string | null;
 };
 
-function diliUygula(kod: UygulamaDili): boolean {
-  I18nDiliniAyarla(kod);
-  return RtlUygula(kod).yenidenBaslatGerekli;
+function diliUygula(kod: UygulamaDili): Promise<boolean> {
+  return I18nDiliniAyarla(kod).then(() => RtlUygula(kod).yenidenBaslatGerekli);
 }
 
-export function DilSaglayici({ children, profilDili: _profilDili }: Props) {
-  const [dil, setDil] = useState<UygulamaDili>(VARSAYILAN_DIL);
+export function DilSaglayici({
+  children,
+  profilDili: _profilDili,
+  profilUlke,
+}: Props) {
+  const [dil, setDil] = useState<UygulamaDili>(() => CihazDiliniAl());
   const [dilModu, setDilModu] = useState<DilModu>('SYSTEM');
   const [hazir, setHazir] = useState(false);
 
   useEffect(() => {
     let iptal = false;
     void (async () => {
+      let bekleyenReload = false;
       try {
-        const ayar = await KullaniciAyarlariniGetir();
-        // MANUAL kilit: kayıtlı dil asla cihazla ezilmez
-        const secilen =
-          ayar.dilModu === 'MANUAL' && ayar.dilKayitli
-            ? DilNormalizeEt(ayar.dil)
-            : DilCozumle({
-                mod: ayar.dilModu,
-                manuelDil: ayar.dil,
-              });
-        if (!iptal) {
-          diliUygula(secilen);
-          setDil(secilen);
-          setDilModu(ayar.dilModu);
+        const sonuc = await dilBootstrapSoz;
+        if (iptal) return;
+        setDil(sonuc.dil);
+        setDilModu(sonuc.dilModu);
+        if (sonuc.reloadGerekli) {
+          bekleyenReload = true;
+          void RtlYenidenBaslat();
         }
       } catch {
         if (!iptal) {
           const fallback = DilCozumle({ mod: 'SYSTEM' });
-          diliUygula(fallback);
+          const reloadGerekli = await diliUygula(fallback);
+          if (iptal) return;
           setDil(fallback);
           setDilModu('SYSTEM');
+          if (reloadGerekli) {
+            bekleyenReload = true;
+            void RtlYenidenBaslat();
+          }
         }
       } finally {
-        if (!iptal) setHazir(true);
+        if (!iptal && !bekleyenReload) setHazir(true);
       }
     })();
     return () => {
@@ -109,7 +114,7 @@ export function DilSaglayici({ children, profilDili: _profilDili }: Props) {
 
   const dilDegistir = useCallback(async (yeni: UygulamaDili) => {
     const kod = DilNormalizeEt(yeni);
-    const reloadGerekli = diliUygula(kod);
+    const reloadGerekli = await diliUygula(kod);
     setDil(kod);
     setDilModu('MANUAL');
     await DilAyariniKaydet(kod);
@@ -119,13 +124,13 @@ export function DilSaglayici({ children, profilDili: _profilDili }: Props) {
 
   const sistemDiliniKullan = useCallback(async () => {
     await DilModunuSistemYap();
-    const kod = DilCozumle({ mod: 'SYSTEM' });
-    const reloadGerekli = diliUygula(kod);
+    const kod = DilCozumle({ mod: 'SYSTEM', profilUlke });
+    const reloadGerekli = await diliUygula(kod);
     setDil(kod);
     setDilModu('SYSTEM');
     void ProfilDiliniKaydet(kod);
     return { reloadGerekli };
-  }, []);
+  }, [profilUlke]);
 
   const value = useMemo<DilBaglam>(
     () => ({

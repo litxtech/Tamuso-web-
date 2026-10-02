@@ -14,6 +14,7 @@ import { IcerikGuvenlikDugmesi } from '../moduller/moderasyon/bilesenler/IcerikG
 import { useAuth } from '../contexts/AuthContext';
 import { useCeviri, type CeviriAnahtari } from '../i18n/useCeviri';
 import type { Room } from '../types/models';
+import { OdaTemasiniCoz } from '../moduller/oda-olusturma/katalog/OdaTemaKatalogu';
 
 const MODE_KEY: Record<Room['mode'], CeviriAnahtari> = {
   party: 'modlar.parti',
@@ -45,6 +46,7 @@ function AvatarKart({ room, onPress }: { room: Room; onPress: () => void }) {
   const kapak = MedyaUriGuvenli(room.cover_url ?? room.host?.avatar_url);
   const modEtiket = t(MODE_KEY[room.mode]);
   const evSahibi = room.host?.display_name ?? t('kesfet.evSahibi');
+  const tema = OdaTemasiniCoz(room.theme_code);
 
   return (
     <Pressable
@@ -62,7 +64,7 @@ function AvatarKart({ room, onPress }: { room: Room; onPress: () => void }) {
           />
         ) : (
           <LinearGradient
-            colors={[...RenkTokenlari.gradientPrimary]}
+            colors={[...tema.renkler]}
             style={styles.avatarImg}
           >
             <Ionicons name="mic" size={22} color={RenkTokenlari.textOnPrimary} />
@@ -107,6 +109,7 @@ function KapakKart({ room, onPress }: { room: Room; onPress: () => void }) {
   const kapak = MedyaUriGuvenli(room.cover_url ?? room.host?.avatar_url);
   const modEtiket = t(MODE_KEY[room.mode]);
   const evSahibi = room.host?.display_name ?? t('kesfet.evSahibi');
+  const tema = OdaTemasiniCoz(room.theme_code);
 
   return (
     <Pressable onPress={onPress} style={styles.press}>
@@ -115,7 +118,7 @@ function KapakKart({ room, onPress }: { room: Room; onPress: () => void }) {
           <Image source={{ uri: kapak }} style={styles.kapak} />
         ) : (
           <LinearGradient
-            colors={[...RenkTokenlari.gradientPlaceholder]}
+            colors={[...tema.renkler]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.kapak}

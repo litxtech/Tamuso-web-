@@ -103,6 +103,7 @@ export default function CanliIzleyiciEkrani() {
           like_count?: number | null;
           gift_count?: number | null;
           total_coins_earned?: number | null;
+          started_at?: string | null;
           livekit_room_name: string | null;
           host?:
             | {
@@ -134,6 +135,7 @@ export default function CanliIzleyiciEkrani() {
           total_coins_earned: Number(row.total_coins_earned ?? 0),
           hostAd,
           hostAvatar: host?.avatar_url ?? null,
+          started_at: row.started_at ?? null,
         });
 
         void SonGezileneKaydet({

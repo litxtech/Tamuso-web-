@@ -1,0 +1,11 @@
+{
+  "misafirHesap": {
+    "baslik": "Complete your account",
+    "alt": "Messaging, gifts, and the mic require an email-verified account. Your identity is protected.",
+    "adSoyadGerekli": "First and last name are required.",
+    "tamamlamaBasarisiz": "Completion failed",
+    "epostaPlaceholder": "name@gmail.com",
+    "hesabiOlustur": "Create account",
+    "simdiDegil": "Not now"
+  }
+}

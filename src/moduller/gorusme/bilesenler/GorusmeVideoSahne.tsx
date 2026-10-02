@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import type { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
+import { AktifRtcSaglayici } from '../../livekit/MedyaBaglantisi';
 import { LiveKitVideoViewAl } from '../../livekit/bilesenler/LiveKitVideoViewAl';
+import { AgoraVideoYuzeyi } from '../../rtc/AgoraVideoYuzeyi';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -53,6 +55,17 @@ export function GorusmeVideoSahne({
   const localHazir = nativeOk && cameraOn && !!localVideo && !!VideoViewComp;
   // Ön: ayna; arka: düz — sağ/sol ters olmasın
   const mirrorLocal = kameraFacing === 'user';
+
+  if (!mock && video && AktifRtcSaglayici() === 'agora') {
+    return (
+      <View style={styles.root}>
+        <AgoraVideoYuzeyi />
+        <View style={styles.pip}>
+          <AgoraVideoYuzeyi yerel />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root}>

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { ODA_KOLTUK_MAX, ODA_KOLTUK_MIN } from './OdaKoltukSinirlari';
 
 export type OdaKoltukSayisiSonuc =
@@ -30,15 +31,15 @@ export async function OdaKoltukSayisiniAyarla(
   if (error) {
     const msg = error.message ?? '';
     if (/not host|Not host/i.test(msg)) {
-      return { ok: false, hata: 'Sadece oda sahibi koltuk sayısını değiştirebilir' };
+      return { ok: false, hata: i18n.t('sesOda.sadeceHostKoltuk') };
     }
     if (/not authenticated|Not authenticated/i.test(msg)) {
-      return { ok: false, hata: 'Oturum gerekli' };
+      return { ok: false, hata: i18n.t('lobi.oturumGerekli') };
     }
     if (/Room not found/i.test(msg)) {
-      return { ok: false, hata: 'Oda bulunamadı' };
+      return { ok: false, hata: i18n.t('sesOda.odaBulunamadi') };
     }
-    return { ok: false, hata: msg || 'Koltuk sayısı güncellenemedi' };
+    return { ok: false, hata: msg || i18n.t('sesOda.koltukGuncellenemedi') };
   }
 
   const row = (data ?? {}) as {

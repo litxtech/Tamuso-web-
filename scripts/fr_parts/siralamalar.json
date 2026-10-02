@@ -1,0 +1,29 @@
+{
+  "siralamalar": {
+    "baslik": "Classements",
+    "boardYukleme": "Recharge",
+    "boardHediye": "Cadeaux",
+    "boardCekicilik": "Charme",
+    "boardVip": "VIP",
+    "boardHost": "Hôtes",
+    "boardOda": "Salles",
+    "periodHaftalik": "Hebdomadaire",
+    "periodGunluk": "Quotidien",
+    "periodTumu": "Tout le temps",
+    "altYuklemeHaftalik": "Meilleures recharges de pièces cette semaine",
+    "altYuklemeGunluk": "Meilleures recharges aujourd’hui",
+    "altYuklemeTumu": "Meilleures recharges de tous les temps",
+    "altHediye": "Expéditeurs de cadeaux",
+    "altOda": "Cadeaux + pièces de jeu dépensées dans les salles cette semaine · reset le lundi",
+    "altHost": "Hôtes ayant reçu des cadeaux",
+    "podiumOdalar": "Salles de cette semaine",
+    "podiumYukleme": "Top de cette semaine",
+    "podiumZirve": "Top",
+    "bosBaslik": "Classement vide",
+    "bosYukleme": "Aucune recharge de pièces sur cette période. Vous pouvez masquer les classements dans Profil → Réglages.",
+    "bosOda": "Aucune dépense de cadeaux ou de pièces de jeu dans les salles cette semaine. Le classement se réinitialise le lundi.",
+    "bosGenel": "Aucun enregistrement pour cette période.",
+    "hostOdasi": "Salle de {{host}}",
+    "odaHarcamasi": "Dépense en salle"
+  }
+}

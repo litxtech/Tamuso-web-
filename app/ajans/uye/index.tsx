@@ -26,6 +26,7 @@ import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 import {
   BoslukTokenlari,
+  screenPaddingHorizontal,
   YaricapTokenlari,
 } from '../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { MedyaUriGuvenli } from '../../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
@@ -240,7 +241,7 @@ function Stat({ etiket, deger }: { etiket: string; deger: string }) {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: BoslukTokenlari.xl,
+    paddingHorizontal: screenPaddingHorizontal,
     paddingBottom: BoslukTokenlari.xxxl,
     gap: BoslukTokenlari.md,
   },

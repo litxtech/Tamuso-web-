@@ -1,0 +1,14 @@
+{
+  "sekmeler": {
+    "ana": "Home",
+    "durum": "Status",
+    "olustur": "Create",
+    "mesaj": "Chat",
+    "profil": "Profile",
+    "anaSayfa": "Home",
+    "mesajlar": "Messages",
+    "odalar": "Rooms",
+    "cuzdan": "Wallet",
+    "cihazlar": "Devices"
+  }
+}

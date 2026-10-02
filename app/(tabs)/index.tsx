@@ -20,10 +20,16 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVarMi';
 import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
+import { useOzellikBayraklari } from '../../src/moduller/ozellik-bayraklari/OzellikBayrakSaglayici';
+import { HamburgerMenuyuKur } from '../../src/moduller/ana-sayfa/menu/HamburgerMenuyuKur';
+import { useDuyuruRozet } from '../../src/moduller/duyurular/islemler/useDuyuruRozet';
 import {
-  ANA_SAYFA_BOLUM_CEVIR,
-  AnaSayfaBolumleriniGetir,
-} from '../../src/moduller/ana-sayfa/okuma/AnaSayfaBolumleriniGetir';
+  HamburgerMenuCacheAbone,
+  HamburgerMenuCacheDisktenYukle,
+  HamburgerMenuCacheSurum,
+  HamburgerMenuyuYukle,
+  HamburgerMenuRealtimeKur,
+} from '../../src/moduller/ana-sayfa/menu/HamburgerMenuCache';
 import {
   CanliFeedGetir,
   type FeedOggesi,
@@ -53,6 +59,7 @@ import {
   type SonGezilenGorunum,
   type SonGezilenKayit,
 } from '../../src/moduller/ana-sayfa/depolama/SonGezilenDepolama';
+import { SesOdasinaHrefIleGit } from '../../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
 import {
   AnaSayfaCekmeceMenu,
   AnaSayfaProfilMenuDugmesi,
@@ -98,33 +105,6 @@ function feedAramaFiltrele(feed: FeedOggesi[], q: string): FeedOggesi[] {
   });
 }
 
-const BOLUM_IKON: Record<string, keyof typeof Ionicons.glyphMap> = {
-  official_city_rooms: 'business-outline',
-  city_league: 'trophy-outline',
-  events: 'calendar-outline',
-  pk_now: 'flash-outline',
-  popular_agencies: 'people-outline',
-  creators_for_you: 'star-outline',
-};
-
-const BOLUM_TINT: Record<string, string> = {
-  official_city_rooms: RenkTokenlari.primarySoft,
-  city_league: RenkTokenlari.accent,
-  events: RenkTokenlari.magenta,
-  pk_now: RenkTokenlari.accent,
-  popular_agencies: RenkTokenlari.violet,
-  creators_for_you: RenkTokenlari.mint,
-};
-
-function bolumHedef(kod: string): string {
-  if (kod === 'city_league') return '/sehir/lig';
-  if (kod === 'official_city_rooms') return '/sehir';
-  if (kod === 'events') return '/platform';
-  if (kod === 'pk_now') return '/pk';
-  if (kod === 'popular_agencies') return '/ajans';
-  return '/kesfet';
-}
-
 /** Sessiz yenile — daha seyrek (ısınma / titreme) */
 const YENILE_MS = 45_000;
 const REALTIME_DEBOUNCE_MS = 6_000;
@@ -166,7 +146,12 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const isAdmin = AdminYetkisiVarMi(profile);
   const { okunmamis, yenile: bildirimYenile } = useBildirimler();
-  const { yonetimHref } = useAjansYonetim();
+  const { yonetimHref, ajanslar } = useAjansYonetim();
+  const ajansHedef =
+    ajanslar.find((a) => a.my_role === 'OWNER' || a.my_role === 'MANAGER')?.id ??
+    null;
+  const { surum: bayrakSurum } = useOzellikBayraklari();
+  const [menuSurum, setMenuSurum] = useState(HamburgerMenuCacheSurum);
   const [feed, setFeed] = useState<FeedOggesi[]>([]);
   const [sonGezilen, setSonGezilen] = useState<SonGezilenKayit[]>([]);
   /** İlk açılış iskeleti — odak dönüşünde tekrar açılmaz */
@@ -181,22 +166,51 @@ export default function HomeScreen() {
   const ilkYuklemeBitti = useRef(false);
   const loadNesil = useRef(0);
   const listeRef = useRef<FlatList<FeedIzgaraOgesi>>(null);
-  const bolumler = useMemo(() => AnaSayfaBolumleriniGetir().filter((b) => b.aktif), []);
+
+  useEffect(() => {
+    let iptal = false;
+    void (async () => {
+      await HamburgerMenuCacheDisktenYukle();
+      if (!iptal) setMenuSurum(HamburgerMenuCacheSurum());
+      await HamburgerMenuyuYukle();
+      if (!iptal) setMenuSurum(HamburgerMenuCacheSurum());
+    })();
+    const unsub = HamburgerMenuCacheAbone(() => {
+      setMenuSurum(HamburgerMenuCacheSurum());
+    });
+    const stopRt = HamburgerMenuRealtimeKur();
+    return () => {
+      iptal = true;
+      unsub();
+      stopRt();
+    };
+  }, []);
 
   const load = useCallback(async (mod: 'ilk' | 'sessiz' | 'pull' = 'sessiz') => {
     if (mod === 'sessiz' && kaydiriyor.current) return;
     const nesil = ++loadNesil.current;
     try {
-      if (mod === 'ilk') setLoading(true);
+      const onbellek =
+        mod === 'ilk'
+          ? CanliFeedCache.al(40, profile?.id, false)
+          : undefined;
+      if (mod === 'ilk') {
+        if (onbellek && onbellek.length > 0) {
+          setFeed(onbellek);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
       if (mod === 'pull') setRefreshing(true);
 
       const [data, gezilenHam] = await Promise.all([
         Promise.race([
           CanliFeedGetir(40, profile?.id, {
-            // Sessiz yenilemede ekstra avatar sorgusu atla (ısınma)
-            uyeAvatar: mod !== 'sessiz',
-            // Pull / ilk: cache bypass
-            force: mod === 'pull' || mod === 'ilk',
+            // İlk boyama ve sessiz yenileme avatar sorgusunu beklemez
+            uyeAvatar: mod === 'pull',
+            // Pull taze çeker; ilk açılış eldeki önbelleği hemen gösterir
+            force: mod === 'pull',
           }),
           new Promise<FeedOggesi[]>((_, reject) => {
             setTimeout(() => reject(new Error('feed-timeout')), 12_000);
@@ -462,141 +476,16 @@ export default function HomeScreen() {
     };
   }, []);
 
+  const duyuruRozet = useDuyuruRozet();
   const menuOgeleri = useMemo<AnaSayfaMenuOgesi[]>(() => {
-    const dunyalar = bolumler
-      .filter(
-        (b) =>
-          !['live_now', 'voice_rooms', 'trending', 'popular_agencies', 'pk_now'].includes(
-            b.kod,
-          ),
-      )
-      .map((b) => {
-        const cevir = ANA_SAYFA_BOLUM_CEVIR[b.kod];
-        return {
-          key: b.kod,
-          baslik: t(cevir.baslik),
-          alt: t(cevir.alt),
-          icon: BOLUM_IKON[b.kod] ?? 'compass-outline',
-          tint: BOLUM_TINT[b.kod] ?? RenkTokenlari.primary,
-          href: bolumHedef(b.kod),
-        };
-      });
-
-    /** Tab / ortadaki + ile çakışanlar yok: create, rooms, kesfet */
-    const ekstra: AnaSayfaMenuOgesi[] = [
-      {
-        key: 'live',
-        baslik: t('anaSayfa.menuCanliYayin'),
-        alt: t('anaSayfa.menuCanliYayinAlt'),
-        icon: 'videocam-outline',
-        tint: RenkTokenlari.live,
-        href: '/canli',
-      },
-      {
-        key: 'agency_manage',
-        baslik: t('ajans.ajansim'),
-        alt: t('anaSayfa.menuAjansimAlt'),
-        icon: 'briefcase-outline',
-        tint: RenkTokenlari.magenta,
-        href: yonetimHref,
-      },
-      {
-        key: 'host',
-        baslik: t('anaSayfa.menuHostOl'),
-        alt: t('anaSayfa.menuHostOlAlt'),
-        icon: 'mic-outline',
-        tint: RenkTokenlari.mint,
-        href: '/host',
-      },
-      {
-        key: 'pk',
-        baslik: t('pk.baslik'),
-        alt: t('anaSayfa.menuPkAlt'),
-        icon: 'flash-outline',
-        tint: RenkTokenlari.accent,
-        href: '/pk',
-      },
-      {
-        key: 'ranks',
-        baslik: t('anaSayfa.menuSiralama'),
-        alt: t('anaSayfa.menuSiralamaAlt'),
-        icon: 'trophy-outline',
-        tint: RenkTokenlari.violet,
-        href: '/siralamalar',
-      },
-      {
-        key: 'fikir',
-        baslik: t('anaSayfa.menuFikir'),
-        alt: t('anaSayfa.menuFikirAlt'),
-        icon: 'bulb-outline',
-        tint: RenkTokenlari.accent,
-        href: '/fikirler',
-      },
-      ...(OzellikBayragiAktifMi('ai_music_enabled')
-        ? [
-            {
-              key: 'ai_muzik',
-              baslik: t('anaSayfa.menuAiMuzik'),
-              alt: t('anaSayfa.menuAiMuzikAlt'),
-              icon: 'sparkles-outline' as const,
-              tint: RenkTokenlari.primarySoft,
-              href: '/ai-muzik',
-            },
-          ]
-        : []),
-      ...(OzellikBayragiAktifMi('people_discovery_enabled')
-        ? [
-            {
-              key: 'kisiler',
-              baslik: t('kisiler.baslik'),
-              alt: t('anaSayfa.menuKisilerAlt'),
-              icon: 'people-outline' as const,
-              tint: RenkTokenlari.magenta,
-              href: '/kisiler',
-            },
-          ]
-        : []),
-      {
-        key: 'destek',
-        baslik: t('ayarlar.canliDestek'),
-        alt: t('anaSayfa.menuDestekAlt'),
-        icon: 'headset-outline',
-        tint: RenkTokenlari.primarySoft,
-        href: '/destek',
-      },
-      {
-        key: 'bildir',
-        baslik: t('bildir.baslik'),
-        alt: t('anaSayfa.menuBildirAlt'),
-        icon: 'flag-outline',
-        tint: RenkTokenlari.danger,
-        href: '/bildir',
-      },
-      ...(isAdmin
-        ? [
-            {
-              key: 'admin_oyun_test',
-              baslik: t('anaSayfa.menuOyunTesti'),
-              alt: t('anaSayfa.menuOyunTestiAlt'),
-              icon: 'flask-outline' as const,
-              tint: RenkTokenlari.violet,
-              href: '/admin/oyun-test',
-            },
-            {
-              key: 'admin_panel',
-              baslik: t('anaSayfa.menuAdminPanel'),
-              alt: t('anaSayfa.menuAdminPanelAlt'),
-              icon: 'shield-checkmark-outline' as const,
-              tint: RenkTokenlari.accent,
-              href: '/admin',
-            },
-          ]
-        : []),
-    ];
-
-    const keys = new Set<string>(dunyalar.map((d) => d.key));
-    return [...dunyalar, ...ekstra.filter((e) => !keys.has(e.key))];
-  }, [bolumler, yonetimHref, isAdmin, t]);
+    return HamburgerMenuyuKur({
+      t,
+      isAdmin,
+      yonetimHref,
+    }).map((oge) =>
+      oge.key === 'announcements' ? { ...oge, rozet: duyuruRozet } : oge,
+    );
+  }, [yonetimHref, isAdmin, t, bayrakSurum, menuSurum, duyuruRozet]);
 
   const yayinSayisi = useMemo(() => feed.filter((o) => o.tur === 'canli').length, [feed]);
   const sesSayisi = useMemo(() => feed.filter((o) => o.tur === 'oda').length, [feed]);
@@ -665,10 +554,18 @@ export default function HomeScreen() {
   }, []);
 
   const feedOgeAc = useCallback((oge: FeedOggesi) => {
+    if (oge.tur === 'oda' || /\/(?:lobi|room)\//.test(oge.href)) {
+      void SesOdasinaHrefIleGit(oge.href);
+      return;
+    }
     router.push(oge.href as any);
   }, []);
 
   const sonGezilenAc = useCallback((oge: SonGezilenGorunum) => {
+    if (oge.tur === 'oda' || /\/(?:lobi|room)\//.test(oge.href)) {
+      void SesOdasinaHrefIleGit(oge.href);
+      return;
+    }
     router.push(oge.href as any);
   }, []);
 
@@ -698,17 +595,133 @@ export default function HomeScreen() {
             };
 
   const listHeader = useMemo(() => {
-    if (filtre !== 'tumu') {
-      if (sonGezilenGorunum.length === 0) return null;
-      return (
-        <AnaSayfaSonGezilenSeridi
-          ogeler={sonGezilenGorunum}
-          onPress={sonGezilenAc}
+    const ustChrome = (
+      <View style={[styles.ustChrome, { paddingTop: insets.top + BoslukTokenlari.sm }]}>
+        <View style={styles.ustAksiyon}>
+          <AnaSayfaProfilMenuDugmesi
+            onPress={() => setMenuAcik(true)}
+            avatarUrl={profile?.avatar_url}
+            harf={
+              profile?.display_name?.trim()?.[0] ||
+              profile?.username?.trim()?.[0] ||
+              '?'
+            }
+          />
+          <View style={styles.aramaEsnek}>
+            <AnaSayfaAramaCubugu
+              gomulu
+              deger={arama}
+              onDegisti={setArama}
+              placeholder={t('anaSayfa.aramaPlaceholder')}
+              onSubmit={() => {
+                if (arama.trim()) router.push('/kesfet' as any);
+              }}
+            />
+          </View>
+          <BildirimZiliDugmesi
+            sayi={okunmamis}
+            onPress={() => router.push('/bildirimler' as any)}
+          />
+        </View>
+
+        <AnaSayfaAramaOnerileri
+          sorgu={arama}
+          haricUserId={profile?.id}
+          onKullaniciSec={(k) => {
+            setArama('');
+            router.push(`/kullanici/${k.id}` as any);
+          }}
+          onAjansSec={(a) => {
+            setArama('');
+            router.push(`/ajans/profil/${a.id}` as any);
+          }}
+          onOdaSec={(o) => {
+            setArama('');
+            void SesOdasinaHrefIleGit(`/lobi/${o.id}`);
+          }}
+          onCanliSec={(c) => {
+            setArama('');
+            router.push(`/canli/${c.id}` as any);
+          }}
         />
+
+        <View style={styles.filtreSatir}>
+          {OzellikBayragiAktifMi('people_discovery_enabled') ? (
+            <Pressable
+              onPress={() => router.push('/kisiler' as any)}
+              style={styles.kisilerCip}
+              accessibilityRole="button"
+              accessibilityLabel={t('kisiler.baslik')}
+            >
+              <LinearGradient
+                colors={[RenkTokenlari.magenta, RenkTokenlari.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.kisilerCipIc}
+              >
+                <Ionicons name="people" size={13} color="#fff" />
+                <Text style={styles.kisilerCipYazi}>{t('kisiler.baslik')}</Text>
+              </LinearGradient>
+            </Pressable>
+          ) : null}
+          <View style={{ flex: 1, marginLeft: -BoslukTokenlari.lg + 4 }}>
+            <AnaSayfaFiltreCipleri ogeler={filtreler} secili={filtre} onSec={setFiltre} />
+          </View>
+        </View>
+
+        {ajansHedef ? (
+          <View style={styles.ajansCipSatir}>
+            {(
+              [
+                { path: 'cuzdan', ikon: 'wallet-outline' as const, etiket: t('ajans.feedCuzdan') },
+                { path: 'satis-linkleri', ikon: 'link-outline' as const, etiket: t('ajans.feedSatis') },
+                { path: 'paketler', ikon: 'pricetags-outline' as const, etiket: t('ajans.feedPaket') },
+              ] as const
+            ).map((oge) => (
+              <Pressable
+                key={oge.path}
+                onPress={() => router.push(`/ajans/${ajansHedef}/${oge.path}` as any)}
+                style={styles.ajansCip}
+                accessibilityRole="button"
+                accessibilityLabel={oge.etiket}
+              >
+                <Ionicons name={oge.ikon} size={14} color={RenkTokenlari.text} />
+                <Text style={styles.ajansCipYazi}>{oge.etiket}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        <TamusoBanner placement="HOME_TOP" screen="HOME" compact />
+      </View>
+    );
+
+    if (loading && feed.length === 0) {
+      return (
+        <View>
+          {ustChrome}
+          <AnaSayfaIskelet satir={3} />
+        </View>
       );
     }
+
+    if (filtre !== 'tumu') {
+      return (
+        <View>
+          {ustChrome}
+          {sonGezilenGorunum.length > 0 ? (
+            <AnaSayfaSonGezilenSeridi
+              ogeler={sonGezilenGorunum}
+              onPress={sonGezilenAc}
+            />
+          ) : null}
+        </View>
+      );
+    }
+
     return (
       <View>
+        {ustChrome}
         {sonGezilenGorunum.length > 0 ? (
           <AnaSayfaSonGezilenSeridi
             ogeler={sonGezilenGorunum}
@@ -731,14 +744,24 @@ export default function HomeScreen() {
       </View>
     );
   }, [
+    insets.top,
+    profile?.avatar_url,
+    profile?.display_name,
+    profile?.username,
+    profile?.id,
+    okunmamis,
+    arama,
+    t,
+    filtreler,
     filtre,
+    loading,
+    feed.length,
     sonGezilenGorunum,
     sonGezilenAc,
     canliOgeler,
     sesOgeler,
     feedOgeAc,
     izgara.length,
-    t,
   ]);
 
   return (
@@ -781,83 +804,9 @@ export default function HomeScreen() {
           <View style={styles.root}>
             <AnaSayfaAtmosfer />
 
-            <View
-              style={[
-                styles.ustAksiyon,
-                { paddingTop: insets.top + BoslukTokenlari.sm },
-              ]}
-            >
-              <AnaSayfaProfilMenuDugmesi
-                onPress={() => setMenuAcik(true)}
-                avatarUrl={profile?.avatar_url}
-                harf={
-                  profile?.display_name?.trim()?.[0] ||
-                  profile?.username?.trim()?.[0] ||
-                  '?'
-                }
-              />
-              <View style={styles.aramaEsnek}>
-                <AnaSayfaAramaCubugu
-                  gomulu
-                  deger={arama}
-                  onDegisti={setArama}
-                  placeholder={t('anaSayfa.aramaPlaceholder')}
-                  onSubmit={() => {
-                    if (arama.trim()) router.push('/kesfet' as any);
-                  }}
-                />
-              </View>
-              <BildirimZiliDugmesi
-                sayi={okunmamis}
-                onPress={() => router.push('/bildirimler' as any)}
-              />
-            </View>
-
-            <AnaSayfaAramaOnerileri
-              sorgu={arama}
-              haricUserId={profile?.id}
-              onKullaniciSec={(k) => {
-                setArama('');
-                router.push(`/kullanici/${k.id}` as any);
-              }}
-              onAjansSec={(a) => {
-                setArama('');
-                router.push(`/ajans/profil/${a.id}` as any);
-              }}
-            />
-
-            <View style={styles.filtreSatir}>
-              {OzellikBayragiAktifMi('people_discovery_enabled') ? (
-                <Pressable
-                  onPress={() => router.push('/kisiler' as any)}
-                  style={styles.kisilerCip}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('kisiler.baslik')}
-                >
-                  <LinearGradient
-                    colors={[RenkTokenlari.magenta, RenkTokenlari.primary]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.kisilerCipIc}
-                  >
-                    <Ionicons name="people" size={13} color="#fff" />
-                    <Text style={styles.kisilerCipYazi}>{t('kisiler.baslik')}</Text>
-                  </LinearGradient>
-                </Pressable>
-              ) : null}
-              <View style={{ flex: 1, marginLeft: -BoslukTokenlari.lg + 4 }}>
-                <AnaSayfaFiltreCipleri ogeler={filtreler} secili={filtre} onSec={setFiltre} />
-              </View>
-            </View>
-
-            <TamusoBanner placement="HOME_TOP" screen="HOME" compact />
-
-            {loading && feed.length === 0 ? (
-              <AnaSayfaIskelet satir={3} />
-            ) : (
-              <FlatList
+            <FlatList
                 ref={listeRef}
-                data={feedRows}
+                data={loading && feed.length === 0 ? [] : feedRows}
                 keyExtractor={(item) => item.key}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.list}
@@ -884,6 +833,7 @@ export default function HomeScreen() {
                     refreshing={refreshing}
                     onRefresh={() => void load('pull')}
                     tintColor={RenkTokenlari.primary}
+                    progressViewOffset={insets.top}
                   />
                 }
                 ListHeaderComponent={listHeader}
@@ -898,7 +848,7 @@ export default function HomeScreen() {
                   </View>
                 }
                 ListEmptyComponent={
-                  filtre === 'tumu' && !arama.trim() ? (
+                  loading && feed.length === 0 ? null : filtre === 'tumu' && !arama.trim() ? (
                     <View style={{ height: 8 }} />
                   ) : (
                   <View>
@@ -982,7 +932,6 @@ export default function HomeScreen() {
                   );
                 }}
               />
-            )}
           </View>
         </AnaSayfaCekmeceMenu>
       </ModulHataSiniri>
@@ -991,11 +940,18 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
+  /** Tam genişlik — dolgu yok; sayfa zemini header arkasından devam eder */
+  ustChrome: {
+    marginHorizontal: -BoslukTokenlari.lg,
+    backgroundColor: 'transparent',
+  },
   ustAksiyon: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: BoslukTokenlari.sm,
     gap: 4,
+    backgroundColor: 'transparent',
   },
   aramaEsnek: {
     flex: 1,
@@ -1023,7 +979,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-  root: { flex: 1 },
+  ajansCipSatir: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: BoslukTokenlari.lg,
+    paddingTop: 8,
+  },
+  ajansCip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: RenkTokenlari.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: RenkTokenlari.border,
+  },
+  ajansCipYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
+  },
   list: {
     paddingHorizontal: BoslukTokenlari.lg,
     paddingBottom: YUZEN_TAB_ICERIK_BOSLUGU,

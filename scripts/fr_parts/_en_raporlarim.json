@@ -1,0 +1,24 @@
+{
+  "raporlarim": {
+    "baslik": "My reports",
+    "altBaslik": "Your reports · status tracking",
+    "yeniBildir": "New report",
+    "bos": "No reports yet",
+    "bosBody": "When you report someone, you can track the status here.",
+    "durumAlindi": "Received",
+    "durumInceleniyor": "Under review",
+    "durumSonuclandi": "Resolved",
+    "durumKapatildi": "Closed",
+    "detayBaslik": "Report details",
+    "detayAlt": "Your report · team note",
+    "sebep": "Reason",
+    "seninAciklama": "Your description",
+    "ekipNotu": "Team note / status",
+    "notInceleniyor": "The moderation team is reviewing this; action will be taken within 24 hours.",
+    "notSonuclandi": "Action completed.",
+    "notKapatildi": "Report closed.",
+    "guncelleme": "Updated: {{tarih}}",
+    "yuklenemedi": "Could not load",
+    "profiliGor": "View profile"
+  }
+}

@@ -1,0 +1,5122 @@
+[
+  {
+    "key": "ortak.hata",
+    "en": "Error",
+    "tr": "Hata"
+  },
+  {
+    "key": "ortak.kullanici",
+    "en": "User",
+    "tr": "Kullanıcı"
+  },
+  {
+    "key": "ortak.misafir",
+    "en": "Guest",
+    "tr": "Misafir"
+  },
+  {
+    "key": "ortak.medya",
+    "en": "Media",
+    "tr": "Medya"
+  },
+  {
+    "key": "ortak.eposta",
+    "en": "Email",
+    "tr": "E-posta"
+  },
+  {
+    "key": "sekmeler.ana",
+    "en": "Home",
+    "tr": "Ana"
+  },
+  {
+    "key": "sekmeler.durum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "sekmeler.mesaj",
+    "en": "Chat",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "sekmeler.profil",
+    "en": "Profile",
+    "tr": "Profil"
+  },
+  {
+    "key": "sekmeler.anaSayfa",
+    "en": "Home",
+    "tr": "Ana Sayfa"
+  },
+  {
+    "key": "sekmeler.cuzdan",
+    "en": "Wallet",
+    "tr": "Cüzdan"
+  },
+  {
+    "key": "gorunum.sampanya",
+    "en": "Champagne",
+    "tr": "Şampanya"
+  },
+  {
+    "key": "gorunum.sampanyaAlt",
+    "en": "VIP gold noir",
+    "tr": "VIP altın noir"
+  },
+  {
+    "key": "gorunum.zumrutAlt",
+    "en": "Forest VIP lounge",
+    "tr": "Orman VIP lounge"
+  },
+  {
+    "key": "gorunum.obsidyen",
+    "en": "Obsidian",
+    "tr": "Obsidyen"
+  },
+  {
+    "key": "gorunum.obsidyenAlt",
+    "en": "Matte black luxury",
+    "tr": "Mat siyah lüks"
+  },
+  {
+    "key": "gorunum.ametistAlt",
+    "en": "Purple gem",
+    "tr": "Mor mücevher"
+  },
+  {
+    "key": "gorunum.yakutAlt",
+    "en": "Red VIP",
+    "tr": "Kırmızı VIP"
+  },
+  {
+    "key": "gorunum.grafit",
+    "en": "Graphite",
+    "tr": "Grafit"
+  },
+  {
+    "key": "gorunum.neon_sehirAlt",
+    "en": "Cyber pink · mint",
+    "tr": "Siber pembe · mint"
+  },
+  {
+    "key": "gorunum.lavanta",
+    "en": "Lavender",
+    "tr": "Lavanta"
+  },
+  {
+    "key": "gorunum.bordo",
+    "en": "Bordeaux",
+    "tr": "Bordo"
+  },
+  {
+    "key": "gorunum.bordoAlt",
+    "en": "Wine red",
+    "tr": "Şarap kırmızısı"
+  },
+  {
+    "key": "gorunum.buzul",
+    "en": "Glacier",
+    "tr": "Buzul"
+  },
+  {
+    "key": "gorunum.buzulAlt",
+    "en": "Ice blue",
+    "tr": "Buz mavisi"
+  },
+  {
+    "key": "gorunum.titanyum",
+    "en": "Titanium",
+    "tr": "Titanyum"
+  },
+  {
+    "key": "gorunum.gunbatimiAlt",
+    "en": "Orange noir",
+    "tr": "Turuncu noir"
+  },
+  {
+    "key": "gorunum.plasma",
+    "en": "Plasma",
+    "tr": "Plazma"
+  },
+  {
+    "key": "gorunum.gece_mavisi",
+    "en": "Midnight blue",
+    "tr": "Gece mavisi"
+  },
+  {
+    "key": "gorunum.gece_mavisiAlt",
+    "en": "Electric navy",
+    "tr": "Navy elektrik"
+  },
+  {
+    "key": "gorunum.mercana",
+    "en": "Coral",
+    "tr": "Mercan"
+  },
+  {
+    "key": "gorunum.krom",
+    "en": "Chrome",
+    "tr": "Krom"
+  },
+  {
+    "key": "gorunum.inciAlt",
+    "en": "Light rose pearl",
+    "tr": "Açık rose inci"
+  },
+  {
+    "key": "gorunum.krem",
+    "en": "Cream",
+    "tr": "Krem"
+  },
+  {
+    "key": "gorunum.mint_sabahAlt",
+    "en": "Light emerald dawn",
+    "tr": "Açık zümrüt sabah"
+  },
+  {
+    "key": "gorunum.gumusAlt",
+    "en": "Minimal silver",
+    "tr": "Minimal gümüş"
+  },
+  {
+    "key": "gorunum.seker",
+    "en": "Candy",
+    "tr": "Şeker"
+  },
+  {
+    "key": "ayarlar.pushHint",
+    "en": "Master switch",
+    "tr": "Ana anahtar"
+  },
+  {
+    "key": "ayarlar.uygulama",
+    "en": "App",
+    "tr": "Uygulama"
+  },
+  {
+    "key": "ayarlar.pip",
+    "en": "Picture-in-picture (PiP)",
+    "tr": "Küçük ekran (PiP)"
+  },
+  {
+    "key": "ayarlar.guvenlikMerkezi",
+    "en": "Security center",
+    "tr": "Güvenlik merkezi"
+  },
+  {
+    "key": "ayarlar.canliDestek",
+    "en": "Live support",
+    "tr": "Canlı destek"
+  },
+  {
+    "key": "ayarlar.destekKonu",
+    "en": "Tamuso support",
+    "tr": "Tamuso destek"
+  },
+  {
+    "key": "ayarlar.iletisim",
+    "en": "Contact",
+    "tr": "İletişim"
+  },
+  {
+    "key": "auth.eposta",
+    "en": "Email",
+    "tr": "E-posta"
+  },
+  {
+    "key": "auth.sifre",
+    "en": "Password",
+    "tr": "Şifre"
+  },
+  {
+    "key": "auth.kullaniciAdi",
+    "en": "Username",
+    "tr": "Kullanıcı adı"
+  },
+  {
+    "key": "auth.girisBaslik",
+    "en": "Welcome back",
+    "tr": "Tekrar hoş geldin"
+  },
+  {
+    "key": "auth.dogrulamaKodu",
+    "en": "Verification code",
+    "tr": "Doğrulama kodu"
+  },
+  {
+    "key": "auth.appleGirisi",
+    "en": "Apple sign-in",
+    "tr": "Apple girişi"
+  },
+  {
+    "key": "auth.spotifyGirisi",
+    "en": "Spotify sign-in",
+    "tr": "Spotify girişi"
+  },
+  {
+    "key": "auth.twitchGirisi",
+    "en": "Twitch sign-in",
+    "tr": "Twitch girişi"
+  },
+  {
+    "key": "auth.xGirisi",
+    "en": "X sign-in",
+    "tr": "X girişi"
+  },
+  {
+    "key": "auth.googleGirisi",
+    "en": "Google sign-in",
+    "tr": "Google girişi"
+  },
+  {
+    "key": "auth.misafirGirisi",
+    "en": "Guest sign-in",
+    "tr": "Misafir girişi"
+  },
+  {
+    "key": "auth.destek",
+    "en": "Support: support@litxtech.com",
+    "tr": "Destek: support@litxtech.com"
+  },
+  {
+    "key": "auth.spotifyKaydi",
+    "en": "Spotify sign-up",
+    "tr": "Spotify kaydı"
+  },
+  {
+    "key": "auth.twitchKaydi",
+    "en": "Twitch sign-up",
+    "tr": "Twitch kaydı"
+  },
+  {
+    "key": "auth.xKaydi",
+    "en": "X sign-up",
+    "tr": "X kaydı"
+  },
+  {
+    "key": "auth.googleKaydi",
+    "en": "Google sign-up",
+    "tr": "Google kaydı"
+  },
+  {
+    "key": "auth.gorunenAd",
+    "en": "Display name",
+    "tr": "Görünen ad"
+  },
+  {
+    "key": "auth.epostaPlaceholder",
+    "en": "you@mail.com",
+    "tr": "sen@mail.com"
+  },
+  {
+    "key": "auth.sifreKodu",
+    "en": "Password code",
+    "tr": "Şifre kodu"
+  },
+  {
+    "key": "auth.hesap",
+    "en": "Account",
+    "tr": "Hesap"
+  },
+  {
+    "key": "auth.politikaBaglanti",
+    "en": "link",
+    "tr": "bağlantı"
+  },
+  {
+    "key": "auth.misafirAd",
+    "en": "Guest",
+    "tr": "Misafir"
+  },
+  {
+    "key": "auth.kodHanesi",
+    "en": "Verification code, digit {{n}}",
+    "tr": "Doğrulama kodu, hane {{n}}"
+  },
+  {
+    "key": "profil.baslik",
+    "en": "Profile",
+    "tr": "Profil"
+  },
+  {
+    "key": "profil.ayarlarAlt",
+    "en": "Account · privacy · app",
+    "tr": "Hesap · gizlilik · uygulama"
+  },
+  {
+    "key": "profil.seviye",
+    "en": "Level",
+    "tr": "Seviye"
+  },
+  {
+    "key": "profil.hesap",
+    "en": "Account",
+    "tr": "Hesap"
+  },
+  {
+    "key": "profil.gizlilikBolum",
+    "en": "Privacy",
+    "tr": "Gizlilik"
+  },
+  {
+    "key": "profil.uygulamaBolum",
+    "en": "App",
+    "tr": "Uygulama"
+  },
+  {
+    "key": "profil.kullanimSuresi",
+    "en": "Screen time",
+    "tr": "Kullanım süresi"
+  },
+  {
+    "key": "profil.yonetim",
+    "en": "Admin",
+    "tr": "Yönetim"
+  },
+  {
+    "key": "profil.adminPaneli",
+    "en": "Admin panel",
+    "tr": "Admin paneli"
+  },
+  {
+    "key": "profil.misafirRozet",
+    "en": "GUEST",
+    "tr": "MİSAFİR"
+  },
+  {
+    "key": "profil.profilFotografi",
+    "en": "Profile photo",
+    "tr": "Profil fotoğrafı"
+  },
+  {
+    "key": "profil.kapakFotografi",
+    "en": "Cover photo",
+    "tr": "Kapak fotoğrafı"
+  },
+  {
+    "key": "profil.dogrulanmisHesap",
+    "en": "Verified account",
+    "tr": "Doğrulanmış hesap"
+  },
+  {
+    "key": "profilDuzenle.kullaniciAdiPlaceholder",
+    "en": "username",
+    "tr": "kullanici_adi"
+  },
+  {
+    "key": "profilDuzenle.plaka",
+    "en": "Plate {{kod}}",
+    "tr": "Plaka {{kod}}"
+  },
+  {
+    "key": "profilDuzenle.epostaAdresi",
+    "en": "Email address",
+    "tr": "E-posta adresi"
+  },
+  {
+    "key": "profilDuzenle.hesapSahibi",
+    "en": "Account holder",
+    "tr": "Hesap sahibi"
+  },
+  {
+    "key": "profilDuzenle.ulkeTurkiye",
+    "en": "Turkey",
+    "tr": "Türkiye"
+  },
+  {
+    "key": "misafirHesap.epostaPlaceholder",
+    "en": "name@gmail.com",
+    "tr": "isim@gmail.com"
+  },
+  {
+    "key": "mesajlar.medyaFisilti",
+    "en": "MEDIA",
+    "tr": "MEDYA"
+  },
+  {
+    "key": "mesajlar.kamera",
+    "en": "Camera",
+    "tr": "Kamera"
+  },
+  {
+    "key": "mesajlar.galeri",
+    "en": "Gallery",
+    "tr": "Galeri"
+  },
+  {
+    "key": "mesajlar.galeriVideo",
+    "en": "Gallery video",
+    "tr": "Galeri video"
+  },
+  {
+    "key": "mesajlar.ajansDaveti",
+    "en": "Agency invite",
+    "tr": "Ajans daveti"
+  },
+  {
+    "key": "mesajlar.kodEtiket",
+    "en": "Code: {{kod}}",
+    "tr": "Kod: {{kod}}"
+  },
+  {
+    "key": "mesajlar.taslak",
+    "en": "Draft",
+    "tr": "Taslak"
+  },
+  {
+    "key": "odalar.fisilti",
+    "en": "VOICE ROOMS",
+    "tr": "SES ODALARI"
+  },
+  {
+    "key": "odalar.canli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "cuzdan.baslik",
+    "en": "Wallet",
+    "tr": "Cüzdan"
+  },
+  {
+    "key": "cuzdan.ledgerPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerIap",
+    "en": "Store purchase",
+    "tr": "Mağaza yüklemesi"
+  },
+  {
+    "key": "cuzdan.ledgerStripe",
+    "en": "Card top-up",
+    "tr": "Kart ile yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerWithdraw",
+    "en": "Diamond withdrawal",
+    "tr": "Elmas çekimi"
+  },
+  {
+    "key": "cuzdan.ledgerWithdrawalHold",
+    "en": "Withdrawal hold",
+    "tr": "Çekim blokesi"
+  },
+  {
+    "key": "cuzdan.ledgerWithdrawalRefund",
+    "en": "Withdrawal refund",
+    "tr": "Çekim iadesi"
+  },
+  {
+    "key": "cuzdan.ledgerAgencyCommission",
+    "en": "Agency commission",
+    "tr": "Ajans komisyonu"
+  },
+  {
+    "key": "cuzdan.ledgerAgencyDistribution",
+    "en": "Agency coin top-up",
+    "tr": "Ajans coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerHostEarning",
+    "en": "Host reward",
+    "tr": "Ev sahibi ödülü"
+  },
+  {
+    "key": "cuzdan.ledgerRefund",
+    "en": "Refund",
+    "tr": "İade"
+  },
+  {
+    "key": "cuzdan.ledgerAdminAdjust",
+    "en": "Admin adjustment",
+    "tr": "Yönetim düzeltmesi"
+  },
+  {
+    "key": "cuzdan.ledgerAdminTopup",
+    "en": "Admin coin top-up",
+    "tr": "Yönetim coin yükleme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminDeduct",
+    "en": "Admin coin deduction",
+    "tr": "Yönetim coin eksiltme"
+  },
+  {
+    "key": "cuzdan.ledgerAdminPenalty",
+    "en": "Admin coin penalty",
+    "tr": "Yönetim coin cezası"
+  },
+  {
+    "key": "cuzdan.ledgerGameEntry",
+    "en": "Game entry",
+    "tr": "Oyun katılımı"
+  },
+  {
+    "key": "cuzdan.ledgerGameReward",
+    "en": "Game reward",
+    "tr": "Oyun ödülü"
+  },
+  {
+    "key": "cuzdan.ledgerGameRefund",
+    "en": "Game refund",
+    "tr": "Oyun iadesi"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadBet",
+    "en": "Cosmic Cascade — entry",
+    "tr": "Kozmik Kaskad — katılım"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadWin",
+    "en": "Cosmic Cascade — reward",
+    "tr": "Kozmik Kaskad — ödül"
+  },
+  {
+    "key": "cuzdan.ledgerKaskadRefund",
+    "en": "Cosmic Cascade — refund",
+    "tr": "Kozmik Kaskad — iade"
+  },
+  {
+    "key": "cuzdan.ledgerZeusBet",
+    "en": "ZEUS — entry",
+    "tr": "ZEUS — katılım"
+  },
+  {
+    "key": "cuzdan.ledgerZeusWin",
+    "en": "ZEUS — reward",
+    "tr": "ZEUS — ödül"
+  },
+  {
+    "key": "cuzdan.ledgerLiveGift",
+    "en": "Live stream gift",
+    "tr": "Canlı yayın hediyesi"
+  },
+  {
+    "key": "cuzdan.ledgerStatusGift",
+    "en": "Status gift",
+    "tr": "Durum hediyesi"
+  },
+  {
+    "key": "cuzdan.refGift",
+    "en": "Gift transaction",
+    "tr": "Hediye işlemi"
+  },
+  {
+    "key": "cuzdan.refPurchase",
+    "en": "Top-up",
+    "tr": "Yükleme"
+  },
+  {
+    "key": "cuzdan.refCoinPurchase",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "cuzdan.refIap",
+    "en": "App store",
+    "tr": "Uygulama mağazası"
+  },
+  {
+    "key": "cuzdan.refStripe",
+    "en": "Card payment",
+    "tr": "Kart ödemesi"
+  },
+  {
+    "key": "cuzdan.refWithdrawal",
+    "en": "Withdrawal request",
+    "tr": "Çekim talebi"
+  },
+  {
+    "key": "cuzdan.refGameSession",
+    "en": "Game session",
+    "tr": "Oyun oturumu"
+  },
+  {
+    "key": "cuzdan.refKaskadRound",
+    "en": "Cosmic Cascade round",
+    "tr": "Kozmik Kaskad turu"
+  },
+  {
+    "key": "cuzdan.refAdmin",
+    "en": "Admin",
+    "tr": "Yönetim"
+  },
+  {
+    "key": "cuzdan.refAgency",
+    "en": "Agency",
+    "tr": "Ajans"
+  },
+  {
+    "key": "cuzdan.refAgencyTransfer",
+    "en": "Agency transfer",
+    "tr": "Ajans transferi"
+  },
+  {
+    "key": "cuzdan.refHost",
+    "en": "Host",
+    "tr": "Ev sahibi"
+  },
+  {
+    "key": "cuzdan.refLive",
+    "en": "Live stream",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "cuzdan.refRoom",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "cuzdan.qrKoduA11y",
+    "en": "Wallet QR code",
+    "tr": "Cüzdan QR kodu"
+  },
+  {
+    "key": "cuzdan.ajansPaketBaslangic",
+    "en": "Starter",
+    "tr": "Başlangıç"
+  },
+  {
+    "key": "cuzdan.ajansPaketStandart",
+    "en": "Standard",
+    "tr": "Standart"
+  },
+  {
+    "key": "cuzdan.ajansPaketPrestij",
+    "en": "Prestige",
+    "tr": "Prestij"
+  },
+  {
+    "key": "durum.baslik",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "durum.gonderi",
+    "en": "Post",
+    "tr": "Gönderi"
+  },
+  {
+    "key": "durum.moodEnerjik",
+    "en": "Energetic",
+    "tr": "Enerjik"
+  },
+  {
+    "key": "bildirimler.kategoriCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "bildirimler.kategoriOda",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "bildirimler.kategoriCuzdan",
+    "en": "Wallet",
+    "tr": "Cüzdan"
+  },
+  {
+    "key": "bildirimAyar.cuzdan",
+    "en": "Wallet",
+    "tr": "Cüzdan"
+  },
+  {
+    "key": "destek.canliBaslik",
+    "en": "Live support",
+    "tr": "Canlı destek"
+  },
+  {
+    "key": "aiAsistan.baslik",
+    "en": "Tamuso Assistant",
+    "tr": "Tamuso Asistan"
+  },
+  {
+    "key": "aiAsistan.botAd",
+    "en": "Assistant",
+    "tr": "Asistan"
+  },
+  {
+    "key": "aiCeviri.gorusmeSohbetKisa",
+    "en": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "guvenlik.merkez",
+    "en": "Security center",
+    "tr": "Güvenlik merkezi"
+  },
+  {
+    "key": "guvenlik.heroEyebrow",
+    "en": "18+ · zero tolerance",
+    "tr": "18+ · sıfır tolerans"
+  },
+  {
+    "key": "guvenlik.olayAcilDurdurma",
+    "en": "Emergency stop",
+    "tr": "Acil durdurma"
+  },
+  {
+    "key": "guvenlik.adminKuyruk",
+    "en": "Admin moderation queue",
+    "tr": "Admin moderasyon kuyruğu"
+  },
+  {
+    "key": "guvenlik.epostaSatir",
+    "en": "Email: {{email}}",
+    "tr": "E-posta: {{email}}"
+  },
+  {
+    "key": "takip.ortak",
+    "en": "Mutual",
+    "tr": "Ortak"
+  },
+  {
+    "key": "ajans.baslik",
+    "en": "Agency",
+    "tr": "Ajans"
+  },
+  {
+    "key": "ajans.labelEposta",
+    "en": "Email *",
+    "tr": "E-posta *"
+  },
+  {
+    "key": "ajans.phEposta",
+    "en": "agency@example.com",
+    "tr": "ajans@ornek.com"
+  },
+  {
+    "key": "ajans.komutaMerkezi",
+    "en": "Command center",
+    "tr": "Komuta merkezi"
+  },
+  {
+    "key": "ajans.hata",
+    "en": "Error",
+    "tr": "Hata"
+  },
+  {
+    "key": "ajans.phSlogan",
+    "en": "Tagline",
+    "tr": "Slogan"
+  },
+  {
+    "key": "ajans.alertMedya",
+    "en": "Media",
+    "tr": "Medya"
+  },
+  {
+    "key": "ajans.alertProfil",
+    "en": "Profile",
+    "tr": "Profil"
+  },
+  {
+    "key": "ajans.alertKanal",
+    "en": "Channel",
+    "tr": "Kanal"
+  },
+  {
+    "key": "ajans.akademiBolum",
+    "en": "Academy",
+    "tr": "Akademi"
+  },
+  {
+    "key": "ajans.alertAkademi",
+    "en": "Academy",
+    "tr": "Akademi"
+  },
+  {
+    "key": "ajans.basvuruFormuBolum",
+    "en": "Application form",
+    "tr": "Başvuru formu"
+  },
+  {
+    "key": "ajans.hostBasvuruFormu",
+    "en": "Host application form",
+    "tr": "Host Başvuru Formu"
+  },
+  {
+    "key": "ajans.formSecSohbet",
+    "en": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "ajans.ibanBolum",
+    "en": "IBAN template",
+    "tr": "IBAN şablonu"
+  },
+  {
+    "key": "ajans.phHesapSahibi",
+    "en": "Account holder",
+    "tr": "Hesap sahibi"
+  },
+  {
+    "key": "ajans.tehlikeliAlan",
+    "en": "Danger zone",
+    "tr": "Tehlikeli alan"
+  },
+  {
+    "key": "ajans.alertAjans",
+    "en": "Agency",
+    "tr": "Ajans"
+  },
+  {
+    "key": "ajans.kpiCevrimici",
+    "en": "Online",
+    "tr": "Çevrimiçi"
+  },
+  {
+    "key": "ajans.kpiCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "ajans.kpiSesOdasi",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "ajans.hizliCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "ajans.alertDurum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "ajans.ajansNo",
+    "en": "Agency no",
+    "tr": "Ajans no"
+  },
+  {
+    "key": "ajans.coinYukleme",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "ajans.alertYukleme",
+    "en": "Top-up",
+    "tr": "Yükleme"
+  },
+  {
+    "key": "ajans.alertOda",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "ajans.canliYayinBolum",
+    "en": "Live stream",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "ajans.basvuruSatir",
+    "en": "@{{user}} · {{zaman}}\\nStatus: {{status}}",
+    "tr": "@{{user}} · {{zaman}}\nDurum: {{status}}"
+  },
+  {
+    "key": "ajans.analitik",
+    "en": "Analytics",
+    "tr": "Analitik"
+  },
+  {
+    "key": "ajans.yayinSatir",
+    "en": "Live: {{sure}}",
+    "tr": "Yayın: {{sure}}"
+  },
+  {
+    "key": "ajans.dkKisa",
+    "en": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "ajans.davetlerAlt",
+    "en": "Code · QR · analytics",
+    "tr": "Kod · QR · analitika"
+  },
+  {
+    "key": "ajans.alertKod",
+    "en": "Code",
+    "tr": "Kod"
+  },
+  {
+    "key": "ajans.onayli",
+    "en": "acked",
+    "tr": "onaylı"
+  },
+  {
+    "key": "sehir.kpiSezon",
+    "en": "Season",
+    "tr": "Sezon"
+  },
+  {
+    "key": "sehir.gucDestekci",
+    "en": "Power {{guc}} · {{count}} supporters",
+    "tr": "Güç {{guc}} · {{count}} destekçi"
+  },
+  {
+    "key": "sehir.plaka",
+    "en": "Plate {{kod}}",
+    "tr": "Plaka {{kod}}"
+  },
+  {
+    "key": "sehir.durumCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "sehir.yardimci",
+    "en": "Deputy",
+    "tr": "Yardımcı"
+  },
+  {
+    "key": "sehir.durumAdaylik",
+    "en": "Nominating",
+    "tr": "Adaylık"
+  },
+  {
+    "key": "sehir.sabit",
+    "en": "PINNED",
+    "tr": "SABİT"
+  },
+  {
+    "key": "sehir.durumCanliBuyuk",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "sehir.alertOda",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "oyun.kaskad",
+    "en": "Cascade",
+    "tr": "Kaskad"
+  },
+  {
+    "key": "aiMuzik.baslik",
+    "en": "AI Music",
+    "tr": "AI Müzik"
+  },
+  {
+    "key": "aiMuzik.gibi",
+    "en": "Like {{ad}}",
+    "tr": "{{ad}} gibi"
+  },
+  {
+    "key": "aiMuzik.ruhA11y",
+    "en": "Mood: {{m}}",
+    "tr": "Ruh: {{m}}"
+  },
+  {
+    "key": "aiMuzik.chipTur",
+    "en": "Genre",
+    "tr": "Tür"
+  },
+  {
+    "key": "aiMuzik.chipRuh",
+    "en": "Mood",
+    "tr": "Ruh hali"
+  },
+  {
+    "key": "aiMuzik.chipVokal",
+    "en": "Vocals",
+    "tr": "Vokal"
+  },
+  {
+    "key": "aiMuzik.chipSozler",
+    "en": "Lyrics",
+    "tr": "Sözler"
+  },
+  {
+    "key": "aiMuzik.chipSozlerOk",
+    "en": "Lyrics ✓",
+    "tr": "Sözler ✓"
+  },
+  {
+    "key": "aiMuzik.chipGelismis",
+    "en": "Advanced",
+    "tr": "Gelişmiş"
+  },
+  {
+    "key": "aiMuzik.dk",
+    "en": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.moodEnerjik",
+    "en": "Energetic",
+    "tr": "Enerjik"
+  },
+  {
+    "key": "aiMuzik.moodRahat",
+    "en": "Chill",
+    "tr": "Rahat"
+  },
+  {
+    "key": "aiMuzik.moodEpik",
+    "en": "Epic",
+    "tr": "Epik"
+  },
+  {
+    "key": "aiMuzik.vokalEnstr",
+    "en": "Instrumental",
+    "tr": "Enstrümantal"
+  },
+  {
+    "key": "aiMuzik.dilTr",
+    "en": "Turkish",
+    "tr": "Türkçe"
+  },
+  {
+    "key": "aiMuzik.ornekPrompt2",
+    "en": "Energetic Black Sea, kemençe + electronic",
+    "tr": "Enerjik Karadeniz, kemençe + elektronik"
+  },
+  {
+    "key": "aiMuzik.ornekTur4",
+    "en": "Acoustic",
+    "tr": "Akustik"
+  },
+  {
+    "key": "aiMuzik.ornekTur5",
+    "en": "Electronic",
+    "tr": "Elektronik"
+  },
+  {
+    "key": "aiMuzik.ledgerRelease",
+    "en": "Reserve release",
+    "tr": "Rezerv iade"
+  },
+  {
+    "key": "aiMuzik.ledgerAdmin",
+    "en": "Admin adjustment",
+    "tr": "Admin düzeltme"
+  },
+  {
+    "key": "aiMuzik.yenidenUretiliyor",
+    "en": "Regenerating…",
+    "tr": "Yeniden üretiliyor…"
+  },
+  {
+    "key": "aiMuzik.paketKart",
+    "en": "{{ad}} · card",
+    "tr": "{{ad}} · kart"
+  },
+  {
+    "key": "aiMuzik.dkKisa",
+    "en": "min",
+    "tr": "dk"
+  },
+  {
+    "key": "aiMuzik.kanalAndroid",
+    "en": "Google Play / card",
+    "tr": "Google Play / kart"
+  },
+  {
+    "key": "aiMuzik.kanalWeb",
+    "en": "Card (Stripe)",
+    "tr": "Kart (Stripe)"
+  },
+  {
+    "key": "aiMuzik.sozModu",
+    "en": "Lyrics mode",
+    "tr": "Söz modu"
+  },
+  {
+    "key": "aiMuzik.sozAi",
+    "en": "AI lyrics",
+    "tr": "AI söz"
+  },
+  {
+    "key": "aiMuzik.enstrZorla",
+    "en": "Force instrumental",
+    "tr": "Enstrümantal zorla"
+  },
+  {
+    "key": "aiMuzik.ses",
+    "en": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "aiMuzik.dinle",
+    "en": "Play reference",
+    "tr": "Referansı dinle"
+  },
+  {
+    "key": "aiMuzik.sesDosya",
+    "en": "Audio / file",
+    "tr": "Ses / dosya"
+  },
+  {
+    "key": "aiMuzik.alertDurum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "aiMuzik.etiketSozHash",
+    "en": "Lyrics hash",
+    "tr": "Söz hash"
+  },
+  {
+    "key": "odaMuzik.aiStudio",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "odaMuzik.alertSes",
+    "en": "Audio",
+    "tr": "Ses"
+  },
+  {
+    "key": "odaMuzik.adminMerkez",
+    "en": "Music Center",
+    "tr": "Müzik Merkezi"
+  },
+  {
+    "key": "odaMuzik.sesDosyasi",
+    "en": "Audio file *",
+    "tr": "Ses dosyası *"
+  },
+  {
+    "key": "odaMuzik.sesBilgi",
+    "en": "Audio: {{ext}} · {{path}}",
+    "tr": "Ses: {{ext}} · {{path}}"
+  },
+  {
+    "key": "fikirler.galeri",
+    "en": "Gallery",
+    "tr": "Galeri"
+  },
+  {
+    "key": "kyc.belgeKimlik",
+    "en": "ID card",
+    "tr": "Kimlik"
+  },
+  {
+    "key": "kyc.ulkeVarsayilan",
+    "en": "Turkey",
+    "tr": "Türkiye"
+  },
+  {
+    "key": "kyc.kamera",
+    "en": "Camera",
+    "tr": "Kamera"
+  },
+  {
+    "key": "kyc.placeholderEposta",
+    "en": "Email",
+    "tr": "E-posta"
+  },
+  {
+    "key": "kyc.canlilikKontrolu",
+    "en": "Liveness check",
+    "tr": "Canlılık kontrolü"
+  },
+  {
+    "key": "canli.baslik",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "canli.sesOdasiFisilti",
+    "en": "VOICE ROOM",
+    "tr": "SES ODASI"
+  },
+  {
+    "key": "host.profilDurum",
+    "en": "Profile: {{durum}}",
+    "tr": "Profil: {{durum}}"
+  },
+  {
+    "key": "host.yolBagimsiz",
+    "en": "Independent",
+    "tr": "Bağımsız"
+  },
+  {
+    "key": "siralamalar.boardYukleme",
+    "en": "Top-up",
+    "tr": "Yükleme"
+  },
+  {
+    "key": "siralamalar.altYuklemeTumu",
+    "en": "All-time top-ups",
+    "tr": "Tüm zamanlar yükleme"
+  },
+  {
+    "key": "kesfet.filtreTrend",
+    "en": "Trending",
+    "tr": "Trend"
+  },
+  {
+    "key": "kesfet.canliRozet",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "kesfet.evSahibi",
+    "en": "Host",
+    "tr": "Ev sahibi"
+  },
+  {
+    "key": "modlar.parti",
+    "en": "Party",
+    "tr": "Parti"
+  },
+  {
+    "key": "hesapSil.hesapEtiket",
+    "en": "Account",
+    "tr": "Hesap"
+  },
+  {
+    "key": "islemHacmi.gorunurlukBaslik",
+    "en": "Visibility",
+    "tr": "Görünürlük"
+  },
+  {
+    "key": "ulkeLigi.baslik",
+    "en": "World Country League",
+    "tr": "Dünya Ülke Ligi"
+  },
+  {
+    "key": "ulkeLigi.adminUlkeKodu",
+    "en": "Country code (ISO)",
+    "tr": "Ülke kodu (ISO)"
+  },
+  {
+    "key": "ulkeLigi.puanEtiket",
+    "en": "pts",
+    "tr": "puan"
+  },
+  {
+    "key": "gizlilik.kisaBaslik",
+    "en": "Privacy",
+    "tr": "Gizlilik"
+  },
+  {
+    "key": "satinAlma.kanalKart",
+    "en": "Card (Stripe)",
+    "tr": "Kart (Stripe)"
+  },
+  {
+    "key": "satinAlma.durum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "pk.yayinci",
+    "en": "Host",
+    "tr": "Yayıncı"
+  },
+  {
+    "key": "pk.canli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "sertifikasyon.katAg",
+    "en": "Network",
+    "tr": "Ağ"
+  },
+  {
+    "key": "sertifikasyon.katMedya",
+    "en": "Media",
+    "tr": "Medya"
+  },
+  {
+    "key": "sertifikasyon.agMobil",
+    "en": "Cellular",
+    "tr": "Mobil veri"
+  },
+  {
+    "key": "sertifikasyon.altBaslik",
+    "en": "Store / pre-release control hub",
+    "tr": "Mağaza / yayın öncesi kontrol merkezi"
+  },
+  {
+    "key": "sertifikasyon.heroTitle",
+    "en": "Control panel",
+    "tr": "Kontrol paneli"
+  },
+  {
+    "key": "sertifikasyon.hubKapali",
+    "en": "Hub off",
+    "tr": "Hub kapalı"
+  },
+  {
+    "key": "sertifikasyon.internet",
+    "en": "Internet",
+    "tr": "İnternet"
+  },
+  {
+    "key": "sertifikasyon.cihaz",
+    "en": "Device",
+    "tr": "Cihaz"
+  },
+  {
+    "key": "sertifikasyon.dusukUc",
+    "en": "Low-end",
+    "tr": "Düşük uç"
+  },
+  {
+    "key": "sertifikasyon.yumusakDusus",
+    "en": "Graceful degrade",
+    "tr": "Yumuşak düşüş"
+  },
+  {
+    "key": "sertifikasyon.kontrolListesi",
+    "en": "Checklist",
+    "tr": "Kontrol listesi"
+  },
+  {
+    "key": "sertifikasyon.hediyeStresAlt",
+    "en": "40-gift queue · drop rate",
+    "tr": "40 hediye kuyruğu · düşürme oranı"
+  },
+  {
+    "key": "platform.bildirimlerAlt",
+    "en": "Push queue",
+    "tr": "Push kuyruğu"
+  },
+  {
+    "key": "platform.sertifikasyonAlt",
+    "en": "Checklist",
+    "tr": "Kontrol listesi"
+  },
+  {
+    "key": "platform.durumCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "platform.ilerlet",
+    "en": "Advance (+1)",
+    "tr": "İlerlet (+1)"
+  },
+  {
+    "key": "takas.qrCuzdanOzet",
+    "en": "Wallet: {{no}}\n{{maskeli}}",
+    "tr": "Cüzdan: {{no}}\n{{maskeli}}"
+  },
+  {
+    "key": "takas.peerAjans",
+    "en": "Agency",
+    "tr": "Ajans"
+  },
+  {
+    "key": "takas.peerKullanici",
+    "en": "User",
+    "tr": "Kullanıcı"
+  },
+  {
+    "key": "anaSayfa.menuCanliYayin",
+    "en": "Live stream",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "anaSayfa.menuAiMuzik",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "anaSayfa.menuAdminPanelAlt",
+    "en": "Control center",
+    "tr": "Kontrol merkezi"
+  },
+  {
+    "key": "anaSayfa.bolumVoiceRoomsAlt",
+    "en": "Mic chat",
+    "tr": "Mikrofonlu sohbet"
+  },
+  {
+    "key": "anaSayfa.bolumTrending",
+    "en": "Trending",
+    "tr": "Trend"
+  },
+  {
+    "key": "anaSayfa.bolumCountryLeague",
+    "en": "World Country League",
+    "tr": "Dünya Ülke Ligi"
+  },
+  {
+    "key": "anaSayfa.filtreSes",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "anaSayfa.bosCanliEyebrow",
+    "en": "LIVE",
+    "tr": "CANLI YAYIN"
+  },
+  {
+    "key": "anaSayfa.yayinci",
+    "en": "Streamer",
+    "tr": "Yayıncı"
+  },
+  {
+    "key": "anaSayfa.canliA11y",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "anaSayfa.menu",
+    "en": "Menu",
+    "tr": "Menü"
+  },
+  {
+    "key": "anaSayfa.fisiltiSabah",
+    "en": "Morning flow",
+    "tr": "Sabah akışı"
+  },
+  {
+    "key": "anaSayfa.fisiltiGunduz",
+    "en": "Daytime flow",
+    "tr": "Gündüz akışı"
+  },
+  {
+    "key": "anaSayfa.fisiltiGeceVardiya",
+    "en": "Night shift",
+    "tr": "Gece vardiyası"
+  },
+  {
+    "key": "anaSayfa.oyunRozet",
+    "en": "GAME",
+    "tr": "OYUN"
+  },
+  {
+    "key": "anaSayfa.evSahibi",
+    "en": "Host",
+    "tr": "Ev sahibi"
+  },
+  {
+    "key": "anaSayfa.sesA11y",
+    "en": "{{baslik}}, voice room",
+    "tr": "{{baslik}}, ses odası"
+  },
+  {
+    "key": "anaSayfa.yayin",
+    "en": "Stream",
+    "tr": "Yayın"
+  },
+  {
+    "key": "anaSayfa.sesOdasiKisa",
+    "en": "voice room",
+    "tr": "ses odası"
+  },
+  {
+    "key": "anaSayfa.sesOdasiEtiket",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "anaSayfa.sesOdasiA11y",
+    "en": "Voice room {{baslik}}",
+    "tr": "Ses odası {{baslik}}"
+  },
+  {
+    "key": "anaSayfa.grupYayin",
+    "en": "LIVE",
+    "tr": "YAYIN"
+  },
+  {
+    "key": "anaSayfa.grupHesap",
+    "en": "ACCOUNT",
+    "tr": "HESAP"
+  },
+  {
+    "key": "anaSayfa.mailKonu",
+    "en": "Tamuso support / report",
+    "tr": "Tamuso şikayet / destek"
+  },
+  {
+    "key": "anaSayfa.eposta",
+    "en": "Email",
+    "tr": "E-posta"
+  },
+  {
+    "key": "anaSayfa.yayinRozet",
+    "en": "LIVE",
+    "tr": "YAYIN"
+  },
+  {
+    "key": "anaSayfa.canliRozet",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "anaSayfa.canliSayac",
+    "en": "{{adet}} LIVE",
+    "tr": "{{adet}} CANLI"
+  },
+  {
+    "key": "anaSayfa.filtreCanli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "cuzdanX.durumOdendi",
+    "en": "Paid",
+    "tr": "Ödendi"
+  },
+  {
+    "key": "cuzdanX.durumDonduruldu",
+    "en": "Frozen",
+    "tr": "Donduruldu"
+  },
+  {
+    "key": "cuzdanX.satinAlmaDurduruldu",
+    "en": "Coin purchases are temporarily paused.",
+    "tr": "Coin satın alma geçici olarak durduruldu."
+  },
+  {
+    "key": "cuzdanX.coinYukle",
+    "en": "Top up coins",
+    "tr": "Coin yükle"
+  },
+  {
+    "key": "cuzdanX.toplamCoin",
+    "en": "Total {{toplam}} coins",
+    "tr": "Toplam {{toplam}} coin"
+  },
+  {
+    "key": "cuzdanX.odemeKanali",
+    "en": "Payment: {{kanal}}",
+    "tr": "Ödeme: {{kanal}}"
+  },
+  {
+    "key": "cuzdanX.odemeTamam",
+    "en": "Payment complete",
+    "tr": "Ödeme tamam"
+  },
+  {
+    "key": "cuzdanX.coinEklendi",
+    "en": "+{{adet}} coins",
+    "tr": "+{{adet}} coin"
+  },
+  {
+    "key": "cuzdanX.beklenmeyenHata",
+    "en": "Unexpected error",
+    "tr": "Beklenmeyen hata"
+  },
+  {
+    "key": "cuzdanX.tutar",
+    "en": "Amount",
+    "tr": "Tutar"
+  },
+  {
+    "key": "cuzdanX.gecerliElmasGir",
+    "en": "Enter a valid diamond amount.",
+    "tr": "Geçerli bir elmas miktarı gir."
+  },
+  {
+    "key": "cuzdanX.yetersiz",
+    "en": "Insufficient",
+    "tr": "Yetersiz"
+  },
+  {
+    "key": "cuzdanX.elmasYetersiz",
+    "en": "Your diamond balance is insufficient.",
+    "tr": "Elmas bakiyesi yetersiz."
+  },
+  {
+    "key": "cuzdanX.bankaBilgisi",
+    "en": "Bank details",
+    "tr": "Banka bilgisi"
+  },
+  {
+    "key": "cuzdanX.ibanKaydet",
+    "en": "Save your IBAN and bank name first.",
+    "tr": "Önce IBAN ve banka adını kaydet."
+  },
+  {
+    "key": "cuzdanX.cekimTalebi",
+    "en": "Withdrawal request",
+    "tr": "Çekim talebi"
+  },
+  {
+    "key": "cuzdanX.talepEt",
+    "en": "Request",
+    "tr": "Talep et"
+  },
+  {
+    "key": "cuzdanX.talepAlindi",
+    "en": "Request received",
+    "tr": "Talep alındı"
+  },
+  {
+    "key": "cuzdanX.kimlikOnayli",
+    "en": "Identity verified",
+    "tr": "Kimlik onaylı"
+  },
+  {
+    "key": "cuzdanX.kycBekliyor",
+    "en": "KYC pending",
+    "tr": "KYC bekliyor"
+  },
+  {
+    "key": "cuzdanX.numaraHazirDegil",
+    "en": "Your wallet number is not ready yet.",
+    "tr": "Numara henüz hazır değil."
+  },
+  {
+    "key": "cuzdanX.satinAlmaKapali",
+    "en": "Purchases temporarily closed",
+    "tr": "Satın alma geçici olarak kapalı"
+  },
+  {
+    "key": "cuzdanX.hesapHareketleri",
+    "en": "Account activity",
+    "tr": "Hesap hareketleri"
+  },
+  {
+    "key": "cuzdanX.hareketAlt",
+    "en": "Top-ups · gifts · games · withdrawals — tap for details",
+    "tr": "Yükleme · hediye · oyun · çekim — detay için dokun"
+  },
+  {
+    "key": "cuzdanX.hazirlaniyor",
+    "en": "Preparing…",
+    "tr": "Hazırlanıyor…"
+  },
+  {
+    "key": "cuzdanX.oyunOzet",
+    "en": "Games: {{oyun}} · Wins (1st): {{kazanc}} · Rate {{oran}}% · {{lig}}",
+    "tr": "Oyun: {{oyun}} · Kazanç (1.): {{kazanc}} · Oran %{{oran}} · {{lig}}"
+  },
+  {
+    "key": "cuzdanX.hareketYok",
+    "en": "No activity yet",
+    "tr": "Henüz hareket yok"
+  },
+  {
+    "key": "cuzdanX.cikis",
+    "en": "Out",
+    "tr": "Çıkış"
+  },
+  {
+    "key": "cuzdanX.hediyeGecmisi",
+    "en": "Gift history",
+    "tr": "Hediye geçmişi"
+  },
+  {
+    "key": "cuzdanX.hediyeAlt",
+    "en": "Received gifts · diamonds · TRY value · tap for details",
+    "tr": "Alınan hediye · elmas · TL karşılığı · detay için dokun"
+  },
+  {
+    "key": "cuzdanX.hediyeYok",
+    "en": "No gifts yet",
+    "tr": "Henüz hediye yok"
+  },
+  {
+    "key": "cuzdanX.kazanc",
+    "en": "Earned: {{deger}}",
+    "tr": "Kazanç: {{deger}}"
+  },
+  {
+    "key": "cuzdanX.deger",
+    "en": "Value: {{deger}}",
+    "tr": "Değer: {{deger}}"
+  },
+  {
+    "key": "cuzdanX.elmasCekimi",
+    "en": "Diamond withdrawal",
+    "tr": "Elmas çekimi"
+  },
+  {
+    "key": "cuzdanX.kayitliHesap",
+    "en": "Saved account",
+    "tr": "Kayıtlı hesap"
+  },
+  {
+    "key": "cuzdanX.ibanYok",
+    "en": "No IBAN saved — add it from profile editing",
+    "tr": "IBAN kayıtlı değil — profil düzenlemeden ekle"
+  },
+  {
+    "key": "cuzdanX.miktarElmas",
+    "en": "Amount (diamonds)",
+    "tr": "Miktar (elmas)"
+  },
+  {
+    "key": "cuzdanX.cekimTalebiOlustur",
+    "en": "Create withdrawal request",
+    "tr": "Çekim talebi oluştur"
+  },
+  {
+    "key": "cuzdanX.cekimTalebiYok",
+    "en": "No withdrawal requests",
+    "tr": "Çekim talebi yok"
+  },
+  {
+    "key": "cuzdanX.elmasSatir",
+    "en": "{{adet}} diamonds · {{yontem}}",
+    "tr": "{{adet}} elmas · {{yontem}}"
+  },
+  {
+    "key": "cuzdanX.kartiPaylasBaslik",
+    "en": "Share wallet card",
+    "tr": "Cüzdan kartını paylaş"
+  },
+  {
+    "key": "cuzdanX.kartiPaylasAlt",
+    "en": "Pick a user — wallet number and QR are sent via in-app message.",
+    "tr": "Kullanıcı seç — cüzdan no ve QR uygulama içi mesajla gider."
+  },
+  {
+    "key": "cuzdanX.kartiPaylas",
+    "en": "Share card",
+    "tr": "Kartı paylaş"
+  },
+  {
+    "key": "cuzdanX.kartiPaylasSoru",
+    "en": "Send the wallet card message to {{ad}}?",
+    "tr": "{{ad}} kullanıcısına cüzdan kartı mesajı gönderilsin mi?"
+  },
+  {
+    "key": "cuzdanX.kartIletildi",
+    "en": "The wallet card was sent as a message.",
+    "tr": "Cüzdan kartı mesaj olarak iletildi."
+  },
+  {
+    "key": "cuzdanX.sohbeteGit",
+    "en": "Go to chat",
+    "tr": "Sohbete git"
+  },
+  {
+    "key": "cuzdanX.coinPaketleri",
+    "en": "Coin packages",
+    "tr": "Coin paketleri"
+  },
+  {
+    "key": "cuzdanX.paketSecOde",
+    "en": "Pick a pack · pay with {{kanal}} · added to your balance instantly",
+    "tr": "Paketi seç · {{kanal}} ile öde · bakiyene anında eklenir"
+  },
+  {
+    "key": "cuzdanX.paketSecGuvenli",
+    "en": "Pick a pack · pay securely · added to your balance instantly",
+    "tr": "Paketi seç · güvenli öde · bakiyene anında eklenir"
+  },
+  {
+    "key": "cuzdanX.anindaYukleme",
+    "en": "Instant top-up",
+    "tr": "Anında yükleme"
+  },
+  {
+    "key": "cuzdanX.guvenliOdeme",
+    "en": "Secure payment",
+    "tr": "Güvenli ödeme"
+  },
+  {
+    "key": "cuzdanX.kanalMagaza",
+    "en": "Store",
+    "tr": "Mağaza"
+  },
+  {
+    "key": "cuzdanX.satinAlA11y",
+    "en": "{{baslik}}, {{adet}} coins, buy for {{fiyat}}",
+    "tr": "{{baslik}}, {{adet}} coin, {{fiyat}} satın al"
+  },
+  {
+    "key": "cuzdanX.taban",
+    "en": "{{adet}} base",
+    "tr": "{{adet}} taban"
+  },
+  {
+    "key": "cuzdanX.coinBilgi",
+    "en": "Coins are used for gifts, games, and in-app features; they cannot be cashed out.",
+    "tr": "Coinler hediye, oyun ve uygulama içi özelliklerde kullanılır; gerçek paraya çevrilemez."
+  },
+  {
+    "key": "cuzdanX.bakiyeNokta",
+    "en": "Balance · {{adet}}",
+    "tr": "Bakiye · {{adet}}"
+  },
+  {
+    "key": "cuzdanX.dijitalCuzdan",
+    "en": "Digital wallet",
+    "tr": "Dijital cüzdan"
+  },
+  {
+    "key": "cuzdanX.a11yKartPaylas",
+    "en": "Share wallet card in the app",
+    "tr": "Cüzdan kartını uygulama içi paylaş"
+  },
+  {
+    "key": "cuzdanX.a11yWaQr",
+    "en": "Share QR via WhatsApp",
+    "tr": "WhatsApp ile QR paylaş"
+  },
+  {
+    "key": "cuzdanX.hesapSahibi",
+    "en": "Account holder",
+    "tr": "Hesap sahibi"
+  },
+  {
+    "key": "cuzdanX.yuklemeHarcama",
+    "en": "Top-up / spend",
+    "tr": "Yükleme / harcama"
+  },
+  {
+    "key": "cuzdanX.cuzdanNo",
+    "en": "Wallet number",
+    "tr": "Cüzdan no"
+  },
+  {
+    "key": "cuzdanX.satinAlOnay",
+    "en": "{{baslik}}{{bonus}}\nTotal {{toplam}} coins\n{{fiyat}}\nPayment: {{kanal}}",
+    "tr": "{{baslik}}{{bonus}}\nToplam {{toplam}} coin\n{{fiyat}}\nÖdeme: {{kanal}}"
+  },
+  {
+    "key": "cuzdanX.cekimOdemeBilgisi",
+    "en": "After approval, funds are sent to your registered bank account within {{gun}} business days.",
+    "tr": "Talep onaylandıktan sonra {{gun}} iş günü içinde kayıtlı banka hesabına aktarılır."
+  },
+  {
+    "key": "cuzdanX.uiEyebrow",
+    "en": "MY ACCOUNT",
+    "tr": "HESABIM"
+  },
+  {
+    "key": "cuzdanX.uiKartTipi",
+    "en": "Digital wallet",
+    "tr": "Dijital cüzdan"
+  },
+  {
+    "key": "cuzdanX.uiBrandTagline",
+    "en": "Summary of voice room, posts, messages, live activity, and platform rewards.",
+    "tr": "Ses odası, gönderi, mesaj ve canlı yayın aktiviteleri ile platform ödüllerinin özeti."
+  },
+  {
+    "key": "cuzdanX.uiKatalogLabel",
+    "en": "Catalog value",
+    "tr": "Katalog değeri"
+  },
+  {
+    "key": "cuzdanX.uiPlatformLabel",
+    "en": "Platform service share",
+    "tr": "Platform hizmet payı"
+  },
+  {
+    "key": "cuzdanX.uiSellerNetLabel",
+    "en": "Estimated account summary",
+    "tr": "Tahmini hesap özeti"
+  },
+  {
+    "key": "cuzdanX.uiPaymentNote",
+    "en": "Account activity is processed in the 01–15 and 15–31 periods of each month.",
+    "tr": "Hesap hareketleri ayın 01–15 ve 15–31 dönemlerinde işlenir."
+  },
+  {
+    "key": "cuzdanX.uiLanguageNote",
+    "en": "Amounts shown are an in-app virtual item catalog summary; not a real-money payout.",
+    "tr": "Gösterilen tutarlar uygulama içi sanal öğe katalog özetidir; gerçek para ödemesi değildir."
+  },
+  {
+    "key": "cuzdanX.uiTakasTitle",
+    "en": "Coin exchange",
+    "tr": "Coin takas"
+  },
+  {
+    "key": "cuzdanX.uiTakasSubtitle",
+    "en": "Transfer between accounts",
+    "tr": "Hesaplar arası transfer"
+  },
+  {
+    "key": "cuzdanX.uiHesapOzetiTitle",
+    "en": "Account statement",
+    "tr": "Hesap özeti"
+  },
+  {
+    "key": "cuzdanX.uiCoinInfo",
+    "en": "Coins are virtual items used within Tamuso; they are not a real-money payout outside the app.",
+    "tr": "Coinler Tamuso içinde kullanılan sanal öğelerdir; uygulama dışı gerçek para ödemesi değildir."
+  },
+  {
+    "key": "cuzdanX.uiPurchaseLocked",
+    "en": "Purchases are temporarily unavailable.",
+    "tr": "Satın alma geçici olarak kapalı."
+  },
+  {
+    "key": "cuzdanX.uiHeroNote",
+    "en": "Your wallet balance helps manage content, gifts, and platform activity.",
+    "tr": "Cüzdan bakiyen; içerik, hediye ve platform aktivitelerini yönetmek içindir."
+  },
+  {
+    "key": "cuzdanX.oturumGerekli",
+    "en": "Sign-in required",
+    "tr": "Oturum gerekli"
+  },
+  {
+    "key": "cuzdanX.paketSecilmedi",
+    "en": "No package selected",
+    "tr": "Paket seçilmedi"
+  },
+  {
+    "key": "cuzdanX.stripeInitBasarisiz",
+    "en": "Stripe init failed",
+    "tr": "Stripe init başarısız"
+  },
+  {
+    "key": "cuzdanX.publishableKeyEksik",
+    "en": "Publishable key missing (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).",
+    "tr": "Publishable key eksik (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY)."
+  },
+  {
+    "key": "cuzdanX.iapEdgeHatasi",
+    "en": "IAP edge error",
+    "tr": "IAP edge hatası"
+  },
+  {
+    "key": "cuzdanX.paymentSheetYalnizMobil",
+    "en": "PaymentSheet is mobile-only.",
+    "tr": "PaymentSheet yalnız mobil."
+  },
+  {
+    "key": "cuzdanX.stripeNativeSonrakiBuild",
+    "en": "Stripe native will be enabled in the next build.",
+    "tr": "Stripe native bir sonraki build ile aktif olacak."
+  },
+  {
+    "key": "profilTab.misafirUsername",
+    "en": "guest",
+    "tr": "misafir"
+  },
+  {
+    "key": "profilTab.misafirBio",
+    "en": "Guest account — complete your account for a full profile.",
+    "tr": "Misafir hesabın — tam profil için hesabını tamamla."
+  },
+  {
+    "key": "profilTab.varsayilanBio",
+    "en": "Voice, gifts, and live streams on Tamuso.",
+    "tr": "Tamuso’da ses, hediye ve canlı yayın."
+  },
+  {
+    "key": "profilTab.cuzdanAlt",
+    "en": "Your coin and diamond balance",
+    "tr": "Coin ve elmas bakiyen"
+  },
+  {
+    "key": "profilTab.oyunAlt",
+    "en": "{{lig}} · your profile card",
+    "tr": "{{lig}} · profil kartın"
+  },
+  {
+    "key": "profilTab.kupa",
+    "en": "Trophies",
+    "tr": "Kupa"
+  },
+  {
+    "key": "profilTab.oyunProfili",
+    "en": "Game profile",
+    "tr": "Oyun profili"
+  },
+  {
+    "key": "profilTab.oyunXp",
+    "en": "Game XP",
+    "tr": "Oyun XP"
+  },
+  {
+    "key": "profilTab.mac",
+    "en": "Matches",
+    "tr": "Maç"
+  },
+  {
+    "key": "profilTab.enYuksek",
+    "en": "Highest",
+    "tr": "En yüksek"
+  },
+  {
+    "key": "profilTab.galibiyetOrani",
+    "en": "Win rate {{oran}}%",
+    "tr": "Galibiyet oranı %{{oran}}"
+  },
+  {
+    "key": "profilTab.oyunIpucu",
+    "en": "Play games in voice rooms — earn XP and trophies.",
+    "tr": "Ses odasında oyun oyna — XP ve kupa kazan."
+  },
+  {
+    "key": "profilTab.misafirPaylasimBos",
+    "en": "Complete your account to post.",
+    "tr": "Paylaşım için hesabını tamamla."
+  },
+  {
+    "key": "profilTab.paylasimBos",
+    "en": "No posts yet — add your first status.",
+    "tr": "Henüz paylaşımın yok — ilk durumunu ekle."
+  },
+  {
+    "key": "olusturTab.sesOdasi",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "olusturTab.sesOdasiAlt",
+    "en": "Mic seats · chat · gifts",
+    "tr": "Mikrofon koltukları · sohbet · hediye"
+  },
+  {
+    "key": "olusturTab.rozetSes",
+    "en": "VOICE",
+    "tr": "SES"
+  },
+  {
+    "key": "olusturTab.canliYayin",
+    "en": "Live stream",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "olusturTab.canliYayinAlt",
+    "en": "Take the stage on camera · audience",
+    "tr": "Kamera ile sahneye çık · izleyici kitlesi"
+  },
+  {
+    "key": "olusturTab.rozetCanli",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "olusturTab.durumAlt",
+    "en": "Short moment · share a photo or text",
+    "tr": "Kısa an · foto veya metin paylaş"
+  },
+  {
+    "key": "olusturTab.odaOnerisi",
+    "en": "{{ad}}'s room",
+    "tr": "{{ad}}'ın odası"
+  },
+  {
+    "key": "olusturTab.girisGerekli",
+    "en": "Sign-in required",
+    "tr": "Giriş gerekli"
+  },
+  {
+    "key": "olusturTab.baslikGerekli",
+    "en": "Title required",
+    "tr": "Başlık gerekli"
+  },
+  {
+    "key": "olusturTab.baslikGerekliBody",
+    "en": "Write a short title for the room.",
+    "tr": "Oda için kısa bir başlık yaz."
+  },
+  {
+    "key": "olusturTab.odaAcilamaz",
+    "en": "Cannot open room",
+    "tr": "Oda açılamaz"
+  },
+  {
+    "key": "olusturTab.odaYasakBody",
+    "en": "You are banned from opening voice rooms. Try again when the ban expires or is lifted.",
+    "tr": "Ses odası açma yasağın var. Süre dolunca veya yönetim kaldırınca tekrar deneyebilirsin."
+  },
+  {
+    "key": "olusturTab.odanizVar",
+    "en": "You have a voice room",
+    "tr": "Ses odanız var"
+  },
+  {
+    "key": "olusturTab.odanizVarBody",
+    "en": "\"{{baslik}}\" is still open.\n\nIf you continue, the previous room closes and a new voice room opens.",
+    "tr": "\"{{baslik}}\" hâlâ açık.\n\nDevam ederseniz önceki oda kapanacak ve yeni ses odası açılacak."
+  },
+  {
+    "key": "olusturTab.odanizVarBodyKisa",
+    "en": "If you continue, the previous room closes and a new voice room opens.",
+    "tr": "Devam ederseniz önceki oda kapanacak ve yeni ses odası açılacak."
+  },
+  {
+    "key": "olusturTab.odamaGit",
+    "en": "Go to my room",
+    "tr": "Odama git"
+  },
+  {
+    "key": "olusturTab.oda",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "olusturTab.odaKapatilamadi",
+    "en": "Could not close the previous room",
+    "tr": "Önceki oda kapatılamadı"
+  },
+  {
+    "key": "olusturTab.odaAcilamadi",
+    "en": "Could not open room",
+    "tr": "Oda açılamadı"
+  },
+  {
+    "key": "olusturTab.odaAcilamadiYasak",
+    "en": "You may be banned from opening voice rooms, lack permission, or already have an open room.",
+    "tr": "Ses odası açma yasağın olabilir, yetkin yok veya zaten açık bir odan var."
+  },
+  {
+    "key": "olusturTab.migrationHint",
+    "en": "Make sure the Supabase migration has been run.",
+    "tr": "Supabase migration çalıştırıldığından emin ol."
+  },
+  {
+    "key": "olusturTab.kapakEkle",
+    "en": "Add a cover photo",
+    "tr": "Kapak fotoğrafı ekle"
+  },
+  {
+    "key": "olusturTab.kapakYoksa",
+    "en": "Otherwise the {{tema}} theme is used",
+    "tr": "Yoksa {{tema}} teması kullanılır"
+  },
+  {
+    "key": "olusturTab.sec",
+    "en": "Choose",
+    "tr": "Seç"
+  },
+  {
+    "key": "olusturTab.odaKapakResmi",
+    "en": "Room cover image",
+    "tr": "Oda kapak resmi"
+  },
+  {
+    "key": "olusturTab.baslikPlaceholder",
+    "en": "Night chat...",
+    "tr": "Gece sohbeti..."
+  },
+  {
+    "key": "olusturTab.arkaPlanTemasi",
+    "en": "Background theme",
+    "tr": "Arka plan teması"
+  },
+  {
+    "key": "olusturTab.temaYedek",
+    "en": "Photo set — theme as fallback ({{tema}})",
+    "tr": "Foto yüklü — tema yedek ({{tema}})"
+  },
+  {
+    "key": "olusturTab.temaSahne",
+    "en": "{{tema}} · full-screen stage in the room",
+    "tr": "{{tema}} · odada tam ekran sahne"
+  },
+  {
+    "key": "olusturTab.boyut",
+    "en": "Size",
+    "tr": "Boyut"
+  },
+  {
+    "key": "olusturTab.boyutAlt",
+    "en": "Seat and listener capacity",
+    "tr": "Koltuk ve dinleyici kapasitesi"
+  },
+  {
+    "key": "olusturTab.koltuk",
+    "en": "{{adet}} seats",
+    "tr": "{{adet}} koltuk"
+  },
+  {
+    "key": "olusturTab.dinleyici",
+    "en": "{{adet}} listeners",
+    "tr": "{{adet}} dinleyici"
+  },
+  {
+    "key": "olusturTab.dinleyiciBin",
+    "en": "{{adet}}k listeners",
+    "tr": "{{adet}}k dinleyici"
+  },
+  {
+    "key": "olusturTab.mod",
+    "en": "Mode",
+    "tr": "Mod"
+  },
+  {
+    "key": "olusturTab.tema",
+    "en": "Theme",
+    "tr": "Tema"
+  },
+  {
+    "key": "olusturTab.sahneOzeti",
+    "en": "STAGE SUMMARY",
+    "tr": "SAHNE ÖZETİ"
+  },
+  {
+    "key": "cihazlar.altBaslik",
+    "en": "Sign out of one device or all of them",
+    "tr": "Tek cihaz veya tüm cihazlardan çıkış"
+  },
+  {
+    "key": "cihazlar.oturumlar",
+    "en": "Sessions",
+    "tr": "Oturumlar"
+  },
+  {
+    "key": "cihazlar.migrationHint",
+    "en": "Make sure migration 003 has been run.",
+    "tr": "003 migration calistirildigindan emin ol."
+  },
+  {
+    "key": "cihazlar.kapatilamadi",
+    "en": "Could not close",
+    "tr": "Kapatılamadı"
+  },
+  {
+    "key": "cihazlar.digerCikisYapildi",
+    "en": "Signed out of other devices.",
+    "tr": "Diğer cihazlardan çıkış yapıldı."
+  },
+  {
+    "key": "cihazlar.islemBasarisiz",
+    "en": "Operation failed",
+    "tr": "İşlem başarısız"
+  },
+  {
+    "key": "cihazlar.kayitliCihazYok",
+    "en": "No devices yet",
+    "tr": "Kayıtlı cihaz yok"
+  },
+  {
+    "key": "cihazlar.kayitliCihazYokBody",
+    "en": "Devices you sign in on are listed here.",
+    "tr": "Oturum açtığın cihazlar burada listelenir."
+  },
+  {
+    "key": "cihazlar.tumCihazlardanCikis",
+    "en": "Sign out of all other devices",
+    "tr": "Diğer tüm cihazlardan çıkış"
+  },
+  {
+    "key": "cihazlar.cihaz",
+    "en": "Device",
+    "tr": "Cihaz"
+  },
+  {
+    "key": "cihazlar.buCihaz",
+    "en": "This device",
+    "tr": "Bu cihaz"
+  },
+  {
+    "key": "mesajV2.voice",
+    "en": "Voice message",
+    "tr": "Sesli mesaj"
+  },
+  {
+    "key": "mesajV2.pushVoice",
+    "en": "🎤 Voice message",
+    "tr": "🎤 Sesli mesaj"
+  },
+  {
+    "key": "hediye.gonderBaslik",
+    "en": "Send gift",
+    "tr": "Hediye gönder"
+  },
+  {
+    "key": "hediye.coinYukle",
+    "en": "Buy coins",
+    "tr": "Coin yükle"
+  },
+  {
+    "key": "hediye.coinYukleAlt",
+    "en": "1 coin = ₺0.10 · instant top-up",
+    "tr": "1 coin = 0,10 ₺ · anında yükle"
+  },
+  {
+    "key": "hediye.canliHediyeler",
+    "en": "Live gifts",
+    "tr": "Canlı hediyeler"
+  },
+  {
+    "key": "hediye.hediyeyeDon",
+    "en": "Back to gifts",
+    "tr": "Hediyeye dön"
+  },
+  {
+    "key": "hediye.pkKime",
+    "en": "PK — who?",
+    "tr": "PK — kime?"
+  },
+  {
+    "key": "hediye.adet",
+    "en": "Qty",
+    "tr": "Adet"
+  },
+  {
+    "key": "hediye.gonderToplam",
+    "en": "Send · {{toplam}}",
+    "tr": "Gönder · {{toplam}}"
+  },
+  {
+    "key": "hediye.sekmeKlasik",
+    "en": "Classic",
+    "tr": "Klasik"
+  },
+  {
+    "key": "hediye.sekmeNadir",
+    "en": "Rare",
+    "tr": "Nadir"
+  },
+  {
+    "key": "hediye.sekmeLuks",
+    "en": "Luxury",
+    "tr": "Lüks"
+  },
+  {
+    "key": "hediye.sekmeEfsane",
+    "en": "Legendary",
+    "tr": "Efsane"
+  },
+  {
+    "key": "hediye.aliciBulunamadi",
+    "en": "Recipient not found.",
+    "tr": "Alıcı bulunamadı."
+  },
+  {
+    "key": "hediye.kendineGonderemezsin",
+    "en": "You cannot send a gift to yourself.",
+    "tr": "Kendine hediye gönderemezsin."
+  },
+  {
+    "key": "hediye.katalogYukleniyor",
+    "en": "Catalog loading — try again shortly.",
+    "tr": "Katalog yükleniyor — biraz sonra dene."
+  },
+  {
+    "key": "hediye.yetersizCoin",
+    "en": "Not enough coins",
+    "tr": "Yetersiz coin"
+  },
+  {
+    "key": "hediye.yetersizCoinBody",
+    "en": "Top up coins to continue.",
+    "tr": "Coin yükle ile bakiye ekle."
+  },
+  {
+    "key": "hediye.gonderilemedi",
+    "en": "Gift could not be sent",
+    "tr": "Hediye gönderilemedi"
+  },
+  {
+    "key": "hediye.gonderimKapali",
+    "en": "Gift sending is temporarily disabled.",
+    "tr": "Hediye gönderimi geçici olarak kapalı."
+  },
+  {
+    "key": "hediye.ozellikKapali",
+    "en": "Gifts are disabled.",
+    "tr": "Hediye özelliği kapalı."
+  },
+  {
+    "key": "hediye.birisi",
+    "en": "Someone",
+    "tr": "Birisi"
+  },
+  {
+    "key": "hediyeAd.rose",
+    "en": "Rose",
+    "tr": "Gül"
+  },
+  {
+    "key": "hediyeAd.spark",
+    "en": "Spark",
+    "tr": "Kıvılcım"
+  },
+  {
+    "key": "hediyeAd.heart",
+    "en": "Heart",
+    "tr": "Kalp"
+  },
+  {
+    "key": "hediyeAd.kiss",
+    "en": "Kiss",
+    "tr": "Öpücük"
+  },
+  {
+    "key": "hediyeAd.star",
+    "en": "Star",
+    "tr": "Yıldız"
+  },
+  {
+    "key": "hediyeAd.fire",
+    "en": "Fire",
+    "tr": "Ateş"
+  },
+  {
+    "key": "hediyeAd.balloon",
+    "en": "Balloon",
+    "tr": "Balon"
+  },
+  {
+    "key": "hediyeAd.candy",
+    "en": "Candy",
+    "tr": "Şeker"
+  },
+  {
+    "key": "hediyeAd.clap",
+    "en": "Clap",
+    "tr": "Alkış"
+  },
+  {
+    "key": "hediyeAd.flower",
+    "en": "Flower",
+    "tr": "Çiçek"
+  },
+  {
+    "key": "hediyeAd.coffee",
+    "en": "Coffee",
+    "tr": "Kahve"
+  },
+  {
+    "key": "hediyeAd.ice",
+    "en": "Ice cream",
+    "tr": "Dondurma"
+  },
+  {
+    "key": "hediyeAd.perfume",
+    "en": "Perfume",
+    "tr": "Parfüm"
+  },
+  {
+    "key": "hediyeAd.ring",
+    "en": "Ring",
+    "tr": "Yüzük"
+  },
+  {
+    "key": "hediyeAd.teddy",
+    "en": "Teddy",
+    "tr": "Ayıcık"
+  },
+  {
+    "key": "hediyeAd.bouquet",
+    "en": "Bouquet",
+    "tr": "Buket"
+  },
+  {
+    "key": "hediyeAd.champagne",
+    "en": "Champagne",
+    "tr": "Şampanya"
+  },
+  {
+    "key": "hediyeAd.watch",
+    "en": "Watch",
+    "tr": "Saat"
+  },
+  {
+    "key": "hediyeAd.glasses",
+    "en": "Glasses",
+    "tr": "Gözlük"
+  },
+  {
+    "key": "hediyeAd.mic",
+    "en": "Mic",
+    "tr": "Mikrofon"
+  },
+  {
+    "key": "hediyeAd.guitar",
+    "en": "Guitar",
+    "tr": "Gitar"
+  },
+  {
+    "key": "hediyeAd.camera",
+    "en": "Camera",
+    "tr": "Kamera"
+  },
+  {
+    "key": "hediyeAd.diamond",
+    "en": "Diamond",
+    "tr": "Elmas"
+  },
+  {
+    "key": "hediyeAd.sports_car",
+    "en": "Sports car",
+    "tr": "Spor Araba"
+  },
+  {
+    "key": "hediyeAd.motorcycle",
+    "en": "Motorcycle",
+    "tr": "Motor"
+  },
+  {
+    "key": "hediyeAd.yacht",
+    "en": "Yacht",
+    "tr": "Yat"
+  },
+  {
+    "key": "hediyeAd.helicopter",
+    "en": "Helicopter",
+    "tr": "Helikopter"
+  },
+  {
+    "key": "hediyeAd.castle",
+    "en": "Castle",
+    "tr": "Kale"
+  },
+  {
+    "key": "hediyeAd.crown",
+    "en": "Crown",
+    "tr": "Taç"
+  },
+  {
+    "key": "hediyeAd.lion",
+    "en": "Lion",
+    "tr": "Aslan"
+  },
+  {
+    "key": "hediyeAd.dragon",
+    "en": "Dragon",
+    "tr": "Ejder"
+  },
+  {
+    "key": "hediyeAd.phoenix",
+    "en": "Phoenix",
+    "tr": "Anka"
+  },
+  {
+    "key": "hediyeAd.rocket",
+    "en": "Rocket",
+    "tr": "Roket"
+  },
+  {
+    "key": "hediyeAd.universe",
+    "en": "Universe",
+    "tr": "Evren"
+  },
+  {
+    "key": "hediyeAd.galaxy",
+    "en": "Galaxy",
+    "tr": "Galaksi"
+  },
+  {
+    "key": "hediyeAd.rainbow",
+    "en": "Rainbow",
+    "tr": "Gökkuşağı"
+  },
+  {
+    "key": "hediyeAd.golden_mic",
+    "en": "Golden mic",
+    "tr": "Altın Mik"
+  },
+  {
+    "key": "hediyeAd.trophy",
+    "en": "Trophy",
+    "tr": "Kupa"
+  },
+  {
+    "key": "hediyeAd.firework",
+    "en": "Firework",
+    "tr": "Havai Fişek"
+  },
+  {
+    "key": "hediyeAd.neon_heart",
+    "en": "Neon heart",
+    "tr": "Neon Kalp"
+  },
+  {
+    "key": "hediyeAd.diamond_rain",
+    "en": "Diamond rain",
+    "tr": "Elmas Yağmur"
+  },
+  {
+    "key": "hediyeAd.super_car",
+    "en": "Super car",
+    "tr": "Süper Araba"
+  },
+  {
+    "key": "hediyeAd.palace",
+    "en": "Palace",
+    "tr": "Saray"
+  },
+  {
+    "key": "hediyeAd.spaceship",
+    "en": "Spaceship",
+    "tr": "Uzay Gemisi"
+  },
+  {
+    "key": "hediyeAd.world",
+    "en": "World",
+    "tr": "Dünya"
+  },
+  {
+    "key": "hediyeAd.infinity",
+    "en": "Infinity",
+    "tr": "Sonsuzluk"
+  },
+  {
+    "key": "canliYayin.canli",
+    "en": "Live",
+    "tr": "Canlı"
+  },
+  {
+    "key": "canliYayin.mockYayin",
+    "en": "Mock stream",
+    "tr": "Mock yayın"
+  },
+  {
+    "key": "canliYayin.yayinci",
+    "en": "Host",
+    "tr": "Yayıncı"
+  },
+  {
+    "key": "canliYayin.yayinciA",
+    "en": "Host A",
+    "tr": "Yayıncı A"
+  },
+  {
+    "key": "canliYayin.yayinciB",
+    "en": "Host B",
+    "tr": "Yayıncı B"
+  },
+  {
+    "key": "canliYayin.yayin",
+    "en": "Stream",
+    "tr": "Yayın"
+  },
+  {
+    "key": "canliYayin.rozetYayin",
+    "en": "LIVE",
+    "tr": "YAYIN"
+  },
+  {
+    "key": "canliYayin.rozetCanli",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "canliYayin.a11yCanliYayin",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "canliYayin.canliSohbet",
+    "en": "Live chat",
+    "tr": "Canlı sohbet"
+  },
+  {
+    "key": "canliYayin.demoYayin",
+    "en": "Demo stream",
+    "tr": "Demo yayın"
+  },
+  {
+    "key": "canliYayin.canliOnizleme",
+    "en": "LIVE PREVIEW",
+    "tr": "CANLI ÖNİZLEME"
+  },
+  {
+    "key": "canliYayin.canliNokta",
+    "en": "● LIVE",
+    "tr": "● CANLI"
+  },
+  {
+    "key": "canliYayin.katSohbet",
+    "en": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "mesajSohbet.engelliComposer",
+    "en": "Communication with this user is blocked. Messages, calls, and gifts are closed.",
+    "tr": "Bu kullanıcıyla iletişim engellenmiş. Mesaj, arama ve hediye kapalı."
+  },
+  {
+    "key": "mesajSohbet.engellenenleriYonet",
+    "en": "Manage blocked users",
+    "tr": "Engellenenleri yönet"
+  },
+  {
+    "key": "mesajSohbet.misafirArama",
+    "en": "Complete your account to place calls.",
+    "tr": "Arama için hesabını tamamla."
+  },
+  {
+    "key": "mesajSohbet.misafirMedya",
+    "en": "Complete your account to send media.",
+    "tr": "Medya için hesabını tamamla."
+  },
+  {
+    "key": "mesajSohbet.arama",
+    "en": "Call",
+    "tr": "Arama"
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoYok",
+    "en": "Wallet number not found.",
+    "tr": "Cüzdan no bulunamadı."
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoPaylasMetin",
+    "en": "MUTA PAY wallet no: {{no}}",
+    "tr": "MUTA PAY cüzdan no: {{no}}"
+  },
+  {
+    "key": "mesajSohbet.idYok",
+    "en": "User ID is not ready yet.",
+    "tr": "Kullanıcı ID henüz yok."
+  },
+  {
+    "key": "mesajSohbet.idPaylasMetin",
+    "en": "User ID: {{id}}",
+    "tr": "Kullanıcı ID: {{id}}"
+  },
+  {
+    "key": "mesajSohbet.bendenSil",
+    "en": "Delete for me",
+    "tr": "Benden sil"
+  },
+  {
+    "key": "mesajSohbet.herkestenSil",
+    "en": "Delete for everyone",
+    "tr": "Herkesten sil"
+  },
+  {
+    "key": "mesajSohbet.paylasilanGonderi",
+    "en": "Shared a post",
+    "tr": "Bir gönderi paylaştı"
+  },
+  {
+    "key": "mesajSohbet.platformHesaplari",
+    "en": "Platform accounts (blue check)",
+    "tr": "Platform hesapları (mavi tik)"
+  },
+  {
+    "key": "mesajSohbet.karaIslem",
+    "en": "Blacklist action",
+    "tr": "Kara işlem"
+  },
+  {
+    "key": "mesajSohbet.karaAcSoru",
+    "en": "Blacklist will open for {{ad}}.\\nThe account may be suspended / closed. Confirm?",
+    "tr": "{{ad}} için kara açılacak.\\nHesap askıya alınır / kapatma yolu başlar. Onaylıyor musun?"
+  },
+  {
+    "key": "mesajSohbet.karaAc",
+    "en": "Open blacklist",
+    "tr": "Kara aç"
+  },
+  {
+    "key": "mesajSohbet.karaAcildi",
+    "en": "Blacklist opened",
+    "tr": "Kara açıldı"
+  },
+  {
+    "key": "mesajSohbet.karaAcildiBody",
+    "en": "The decision was posted to the court group.",
+    "tr": "Karar mahkeme grubuna bildirildi."
+  },
+  {
+    "key": "mesajSohbet.karaSebep",
+    "en": "Court decision: misconduct / fraud / no response",
+    "tr": "Mahkeme kararı: usulsüzlük / dolandırıcılık / cevap vermeme"
+  },
+  {
+    "key": "mesajSohbet.mahkemeyiKapat",
+    "en": "Close court",
+    "tr": "Mahkemeyi kapat"
+  },
+  {
+    "key": "mesajSohbet.mahkemeyiKapatSoru",
+    "en": "The group will close; no new messages. Confirm?",
+    "tr": "Grup kapanır; yeni mesaj yazılamaz. Onaylıyor musun?"
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapatNot",
+    "en": "Court closed by the platform.",
+    "tr": "Mahkeme platform tarafından kapatıldı."
+  },
+  {
+    "key": "mesajSohbet.mahkeme",
+    "en": "Court",
+    "tr": "Mahkeme"
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapali",
+    "en": "This court is closed.",
+    "tr": "Bu mahkeme kapalı."
+  },
+  {
+    "key": "mesajSohbet.yargicPanel",
+    "en": "Judge panel · defenses in this group",
+    "tr": "Yargıç paneli · savunmalar bu grupta"
+  },
+  {
+    "key": "mesajSohbet.sohbet",
+    "en": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "mesajSohbet.hediyeGonder",
+    "en": "Send gift",
+    "tr": "Hediye gönder"
+  },
+  {
+    "key": "mesajSohbet.hediyeGonderdi",
+    "en": "{{emoji}} {{ad}}{{adet}} sent a gift",
+    "tr": "{{emoji}} {{ad}}{{adet}} hediye gönderdi"
+  },
+  {
+    "key": "mesajSohbet.arsivlendi",
+    "en": "Archived",
+    "tr": "Arşivlendi"
+  },
+  {
+    "key": "mesajSohbet.arsivlendiBody",
+    "en": "Chat moved to archive.",
+    "tr": "Sohbet arşive taşındı."
+  },
+  {
+    "key": "mesajSohbet.sohbetiSilBody",
+    "en": "This chat is removed for you. History clears; the other person is unaffected.",
+    "tr": "Bu sohbet senden tamamen silinir. Geçmiş temizlenir; karşı taraf etkilenmez."
+  },
+  {
+    "key": "mesajSohbet.engelleBildir",
+    "en": "Block / Report",
+    "tr": "Engelle / Bildir"
+  },
+  {
+    "key": "mesajSohbet.sohbetAcilamadi",
+    "en": "Could not open chat",
+    "tr": "Sohbet açılamadı"
+  },
+  {
+    "key": "mesajSohbet.yeniSohbetFisilti",
+    "en": "NEW CHAT",
+    "tr": "YENİ SOHBET"
+  },
+  {
+    "key": "mesajSohbet.kullaniciAra",
+    "en": "Search users",
+    "tr": "Kullanıcı ara"
+  },
+  {
+    "key": "mesajSohbet.sohbetBulunamadi",
+    "en": "Chat not found",
+    "tr": "Sohbet bulunamadı"
+  },
+  {
+    "key": "mesajSohbet.sohbetBulunamadiAlt",
+    "en": "Go back and try again",
+    "tr": "Geri dönüp tekrar dene"
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapaliFisilti",
+    "en": "court closed · judge",
+    "tr": "mahkeme kapalı · yargıç"
+  },
+  {
+    "key": "mesajSohbet.yargicFisilti",
+    "en": "judge · blue check · tap",
+    "tr": "yargıç · mavi tik · dokun"
+  },
+  {
+    "key": "mesajSohbet.ajansFisilti",
+    "en": "agency · tap for profile",
+    "tr": "ajans · dokunarak profil"
+  },
+  {
+    "key": "mesajSohbet.cevrimiciFisilti",
+    "en": "online · tap for menu",
+    "tr": "çevrimiçi · dokunarak menü"
+  },
+  {
+    "key": "mesajSohbet.bosChatAlt",
+    "en": "Send text, photo, or video — it arrives instantly.",
+    "tr": "Metin, fotoğraf veya video gönder — anında ulaşır."
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapaliComposer",
+    "en": "This court is closed. No new messages.",
+    "tr": "Bu mahkeme kapalı. Yeni mesaj yazılamaz."
+  },
+  {
+    "key": "mesajSohbet.yazPlaceholder",
+    "en": "Write a message…",
+    "tr": "Mesaj yaz…"
+  },
+  {
+    "key": "mesajSohbet.medyaGonderA11y",
+    "en": "Send photo or video",
+    "tr": "Fotoğraf veya video gönder"
+  },
+  {
+    "key": "mesajSohbet.hediyeA11y",
+    "en": "Send gift",
+    "tr": "Hediye gönder"
+  },
+  {
+    "key": "mesajSohbet.karaTaraf",
+    "en": "Blacklist · {{ad}}",
+    "tr": "Kara · {{ad}}"
+  },
+  {
+    "key": "mesajSohbet.taraf",
+    "en": "party",
+    "tr": "taraf"
+  },
+  {
+    "key": "gorusme.kucultA11y",
+    "en": "Minimize call",
+    "tr": "Görüşmeyi küçült"
+  },
+  {
+    "key": "gorusme.goruntulu",
+    "en": "Video",
+    "tr": "Görüntülü"
+  },
+  {
+    "key": "gorusme.araniyorEk",
+    "en": " · Calling",
+    "tr": " · Aranıyor"
+  },
+  {
+    "key": "gorusme.konusmaSuresi",
+    "en": "Call duration",
+    "tr": "Konuşma süresi"
+  },
+  {
+    "key": "gorusme.sesliGorusme",
+    "en": "Voice call",
+    "tr": "Sesli görüşme"
+  },
+  {
+    "key": "gorusme.karsiBekleniyor",
+    "en": "Waiting for the other person…",
+    "tr": "Karşı taraf bekleniyor…"
+  },
+  {
+    "key": "gorusme.sessiz",
+    "en": "Muted",
+    "tr": "Sessiz"
+  },
+  {
+    "key": "gorusme.mikrofon",
+    "en": "Mic",
+    "tr": "Mikrofon"
+  },
+  {
+    "key": "gorusme.hoparlor",
+    "en": "Speaker",
+    "tr": "Hoparlör"
+  },
+  {
+    "key": "gorusme.kulaklik",
+    "en": "Earpiece",
+    "tr": "Kulaklık"
+  },
+  {
+    "key": "gorusme.kamera",
+    "en": "Camera",
+    "tr": "Kamera"
+  },
+  {
+    "key": "gorusme.cevir",
+    "en": "Flip",
+    "tr": "Çevir"
+  },
+  {
+    "key": "gorusme.bitirA11y",
+    "en": "End call",
+    "tr": "Görüşmeyi bitir"
+  },
+  {
+    "key": "gorusme.goruntuluArama",
+    "en": "Video call",
+    "tr": "Görüntülü arama"
+  },
+  {
+    "key": "gorusme.sesliArama",
+    "en": "Voice call",
+    "tr": "Sesli arama"
+  },
+  {
+    "key": "gorusme.ariyor",
+    "en": "Calling…",
+    "tr": "Arıyor…"
+  },
+  {
+    "key": "gorusme.bugunSaat",
+    "en": "Today · {{saat}}",
+    "tr": "Bugün · {{saat}}"
+  },
+  {
+    "key": "gorusme.araniyor",
+    "en": "Calling…",
+    "tr": "Aranıyor…"
+  },
+  {
+    "key": "gorusme.cevapsiz",
+    "en": "Missed",
+    "tr": "Cevapsız"
+  },
+  {
+    "key": "gorusme.gorusmeyiSil",
+    "en": "Delete call",
+    "tr": "Görüşmeyi sil"
+  },
+  {
+    "key": "gorusme.gorusmeyiSilBody",
+    "en": "This record is removed only for you. Their history is unaffected.",
+    "tr": "Bu kayıt yalnızca senden silinir. Karşı tarafın geçmişi etkilenmez."
+  },
+  {
+    "key": "gorusme.gorusmeYok",
+    "en": "No calls yet",
+    "tr": "Henüz görüşme yok"
+  },
+  {
+    "key": "gorusme.gorusme",
+    "en": "Call",
+    "tr": "Görüşme"
+  },
+  {
+    "key": "gorusme.kameraBaglaniyor",
+    "en": "Connecting camera…",
+    "tr": "Kamera bağlanıyor…"
+  },
+  {
+    "key": "gorusme.demoGoruntu",
+    "en": "Demo video",
+    "tr": "Demo görüntü"
+  },
+  {
+    "key": "gorusme.coinAzaliyor",
+    "en": "Your coin balance is running low",
+    "tr": "Coin bakiyen azalıyor"
+  },
+  {
+    "key": "gorusme.baglandi",
+    "en": "Connected",
+    "tr": "Bağlandı"
+  },
+  {
+    "key": "gorusme.caliyor",
+    "en": "Ringing…",
+    "tr": "Çalıyor…"
+  },
+  {
+    "key": "gorusme.baglanilamadi",
+    "en": "Could not connect",
+    "tr": "Bağlanılamadı"
+  },
+  {
+    "key": "gorusme.demoSesYok",
+    "en": "Demo — no audio/video",
+    "tr": "Demo — ses/görüntü yok"
+  },
+  {
+    "key": "gorusme.sen",
+    "en": "You",
+    "tr": "Sen"
+  },
+  {
+    "key": "gorusme.devamEden",
+    "en": "Ongoing",
+    "tr": "Devam eden"
+  },
+  {
+    "key": "gorusme.devamEdiyor",
+    "en": "Ongoing",
+    "tr": "Devam ediyor"
+  },
+  {
+    "key": "gorusme.giden",
+    "en": "Outgoing",
+    "tr": "Giden"
+  },
+  {
+    "key": "gorusme.gecmisHesapGerekli",
+    "en": "Complete your account to see call history",
+    "tr": "Görüşme geçmişi için hesabını tamamla"
+  },
+  {
+    "key": "gorusme.arayan",
+    "en": "Caller",
+    "tr": "Arayan"
+  },
+  {
+    "key": "gorusme.gelen",
+    "en": "Incoming",
+    "tr": "Gelen"
+  },
+  {
+    "key": "gorusme.sonaErdi",
+    "en": "Call ended",
+    "tr": "Görüşme sona erdi"
+  },
+  {
+    "key": "gorusme.medyaBaglantisi",
+    "en": "Media connection",
+    "tr": "Medya bağlantısı"
+  },
+  {
+    "key": "gorusme.medya",
+    "en": "Media",
+    "tr": "Medya"
+  },
+  {
+    "key": "gorusme.demoNativeGerekli",
+    "en": "Live audio/video needs a native build with LiveKit. You are in demo mode.",
+    "tr": "Canlı ses/görüntü için LiveKit’li native build gerekir. Şu an demo moddasın."
+  },
+  {
+    "key": "sesOda.sesOdasi",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "sesOda.istegiReddet",
+    "en": "Decline {{ad}}’s request",
+    "tr": "{{ad}} isteğini reddet"
+  },
+  {
+    "key": "sesOda.istegiOnayla",
+    "en": "Approve {{ad}}’s request",
+    "tr": "{{ad}} isteğini onayla"
+  },
+  {
+    "key": "sesOda.temaA11y",
+    "en": "{{tema}} theme",
+    "tr": "{{tema}} teması"
+  },
+  {
+    "key": "sesOda.kurucu",
+    "en": "Host",
+    "tr": "Kurucu"
+  },
+  {
+    "key": "sesOda.dk",
+    "en": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "sesOda.saDk",
+    "en": "{{sa}} h {{dk}} min",
+    "tr": "{{sa}} sa {{dk}} dk"
+  },
+  {
+    "key": "sesOda.yardimci",
+    "en": "Co-host",
+    "tr": "Yardımcı"
+  },
+  {
+    "key": "sesOda.konusmaci",
+    "en": "Speaker",
+    "tr": "Konuşmacı"
+  },
+  {
+    "key": "sesOda.yonetici",
+    "en": "Admin",
+    "tr": "Yönetici"
+  },
+  {
+    "key": "sesOda.sesBaglantisi",
+    "en": "Audio connection",
+    "tr": "Ses bağlantısı"
+  },
+  {
+    "key": "sesOda.demoDinleyici",
+    "en": "Demo · listener",
+    "tr": "Demo · dinleyici"
+  },
+  {
+    "key": "sesOda.demoKonusmaci",
+    "en": "Demo · speaker",
+    "tr": "Demo · konuşmacı"
+  },
+  {
+    "key": "sesOda.demoCanliOda",
+    "en": "Demo live room",
+    "tr": "Demo canlı oda"
+  },
+  {
+    "key": "sesOda.girisEfsane",
+    "en": "LEGENDARY ENTRY",
+    "tr": "EFSANE GİRİŞ"
+  },
+  {
+    "key": "sesOda.girisAltin",
+    "en": "GOLD ENTRY",
+    "tr": "ALTIN GİRİŞ"
+  },
+  {
+    "key": "sesOda.girisGumus",
+    "en": "SILVER ENTRY",
+    "tr": "GÜMÜŞ GİRİŞ"
+  },
+  {
+    "key": "sesOda.girisOzel",
+    "en": "SPECIAL ENTRY",
+    "tr": "ÖZEL GİRİŞ"
+  },
+  {
+    "key": "sesOda.arkaPlan",
+    "en": "Background",
+    "tr": "Arka plan"
+  },
+  {
+    "key": "sesOda.seviyeN",
+    "en": "Level {{n}}",
+    "tr": "Seviye {{n}}"
+  },
+  {
+    "key": "sesOda.evSahibi",
+    "en": "Host",
+    "tr": "Ev sahibi"
+  },
+  {
+    "key": "kisilerX.cagriIdYok",
+    "en": "Call id missing",
+    "tr": "Çağrı kimliği alınamadı"
+  },
+  {
+    "key": "kisilerX.baslatilamadi",
+    "en": "Could not start",
+    "tr": "Başlatılamadı"
+  },
+  {
+    "key": "kisilerX.cevrimici",
+    "en": "Online",
+    "tr": "Çevrimiçi"
+  },
+  {
+    "key": "kisilerX.ulkeAra",
+    "en": "Search country...",
+    "tr": "Ülke ara..."
+  },
+  {
+    "key": "kisilerX.goruntuluArama",
+    "en": "Video call",
+    "tr": "Görüntülü Arama"
+  },
+  {
+    "key": "kisilerX.tahminiSure",
+    "en": "Estimated time",
+    "tr": "Tahmini süre"
+  },
+  {
+    "key": "kisilerX.goruntuluAra",
+    "en": "Video call",
+    "tr": "Görüntülü ara"
+  },
+  {
+    "key": "kisilerX.sesliAra",
+    "en": "Voice call",
+    "tr": "Sesli ara"
+  },
+  {
+    "key": "kisilerX.arama",
+    "en": "Call",
+    "tr": "Arama"
+  },
+  {
+    "key": "kisilerX.sesliArama",
+    "en": "Voice call",
+    "tr": "Sesli Arama"
+  },
+  {
+    "key": "kisilerX.coinDk",
+    "en": "{{n}} coin / min",
+    "tr": "{{n}} coin / dakika"
+  },
+  {
+    "key": "kisilerX.ucretsizArama",
+    "en": "Free call",
+    "tr": "Ücretsiz arama"
+  },
+  {
+    "key": "kisilerX.profilA11y",
+    "en": "{{isim}} profile",
+    "tr": "{{isim}} profili"
+  },
+  {
+    "key": "kisilerX.filtreleriTemizle",
+    "en": "Clear filters",
+    "tr": "Filtreleri Temizle"
+  },
+  {
+    "key": "kisilerX.tumUlkeler",
+    "en": "All countries",
+    "tr": "Tüm Ülkeler"
+  },
+  {
+    "key": "durumX.devaminiGor",
+    "en": "See more",
+    "tr": "Devamını gör"
+  },
+  {
+    "key": "durumX.begeniyiKaldir",
+    "en": "Unlike",
+    "tr": "Beğeniyi kaldır"
+  },
+  {
+    "key": "durumX.hediyeGonder",
+    "en": "Send gift",
+    "tr": "Hediye gönder"
+  },
+  {
+    "key": "durumX.goruntulenme",
+    "en": "{{count}} views",
+    "tr": "{{count}} görüntülenme"
+  },
+  {
+    "key": "durumX.gonderiDetayi",
+    "en": "Post detail",
+    "tr": "Gönderi detayı"
+  },
+  {
+    "key": "durumX.digerSecenekler",
+    "en": "More options",
+    "tr": "Diğer seçenekler"
+  },
+  {
+    "key": "durumX.onizlemedeCal",
+    "en": "Play in preview",
+    "tr": "Önizlemede çal"
+  },
+  {
+    "key": "durumX.muzikDetayi",
+    "en": "Music detail",
+    "tr": "Müzik detayı"
+  },
+  {
+    "key": "durumX.onizlemedeDinle",
+    "en": "Listen in preview",
+    "tr": "Önizlemede dinle"
+  },
+  {
+    "key": "durumX.paylasimYok",
+    "en": "No posts yet",
+    "tr": "Henüz paylaşım yok"
+  },
+  {
+    "key": "durumX.durumGonderisi",
+    "en": "Status post",
+    "tr": "Durum gönderisi"
+  },
+  {
+    "key": "durumX.sonuclar",
+    "en": "Results",
+    "tr": "Sonuçlar"
+  },
+  {
+    "key": "durumX.metinGonderisi",
+    "en": "Text post",
+    "tr": "Metin gönderisi"
+  },
+  {
+    "key": "durumX.gecersizGonderi",
+    "en": "Invalid post.",
+    "tr": "Geçersiz gönderi."
+  },
+  {
+    "key": "durumX.aiMuzikRozet",
+    "en": "AI MUSIC",
+    "tr": "AI MÜZİK"
+  },
+  {
+    "key": "durumX.coinKazandi",
+    "en": "coins won",
+    "tr": "coin kazandı"
+  },
+  {
+    "key": "durumX.gonderiyeUlasilamiyor",
+    "en": "Post unavailable",
+    "tr": "Gönderiye ulaşılamıyor"
+  },
+  {
+    "key": "durumX.yanitla",
+    "en": "Reply",
+    "tr": "Yanıtla"
+  },
+  {
+    "key": "durumX.yanitlaniyor",
+    "en": "Replying to {{ad}}",
+    "tr": "{{ad}} yanıtlanıyor"
+  },
+  {
+    "key": "durumX.yorum",
+    "en": "Comment",
+    "tr": "Yorum"
+  },
+  {
+    "key": "durumX.yorumYap",
+    "en": "Comment",
+    "tr": "Yorum yap"
+  },
+  {
+    "key": "durumX.yorumYaz",
+    "en": "Write a comment…",
+    "tr": "Yorum yaz…"
+  },
+  {
+    "key": "durumX.yorumlar",
+    "en": "Comments",
+    "tr": "Yorumlar"
+  },
+  {
+    "key": "durumX.yorumuSil",
+    "en": "Delete comment",
+    "tr": "Yorumu sil"
+  },
+  {
+    "key": "cuzdanXExtra.dekontBaslik",
+    "en": "Wallet receipt",
+    "tr": "Cüzdan dekontu"
+  },
+  {
+    "key": "cuzdanXExtra.hediyeBelgesi",
+    "en": "Gift receipt",
+    "tr": "Hediye belgesi"
+  },
+  {
+    "key": "cuzdanXExtra.cekimTalebi",
+    "en": "Withdrawal request",
+    "tr": "Çekim talebi"
+  },
+  {
+    "key": "cuzdanXExtra.harcananCoin",
+    "en": "Coins spent",
+    "tr": "Harcanan coin"
+  },
+  {
+    "key": "cuzdanXExtra.kazanilanElmas",
+    "en": "Diamonds earned",
+    "tr": "Kazanılan elmas"
+  },
+  {
+    "key": "cuzdanXExtra.gonderildiOk",
+    "en": "Sent → {{kim}}",
+    "tr": "Gönderildi → {{kim}}"
+  },
+  {
+    "key": "belge.fisilti",
+    "en": "DOCUMENT",
+    "tr": "BELGE"
+  },
+  {
+    "key": "belge.pdfHazirBaslik",
+    "en": "PDF ready",
+    "tr": "PDF hazır"
+  },
+  {
+    "key": "belge.pdfHazirBody",
+    "en": "File created.",
+    "tr": "Dosya oluşturuldu."
+  },
+  {
+    "key": "belge.excelHazirBaslik",
+    "en": "Excel ready",
+    "tr": "Excel hazır"
+  },
+  {
+    "key": "belge.paylasAlt",
+    "en": "Share as PDF",
+    "tr": "PDF olarak paylaş"
+  },
+  {
+    "key": "belge.yazdir",
+    "en": "Print",
+    "tr": "Yazdır"
+  },
+  {
+    "key": "belge.whatsappGonder",
+    "en": "Send via WhatsApp",
+    "tr": "WhatsApp ile gönder"
+  },
+  {
+    "key": "belge.kullanici",
+    "en": "User",
+    "tr": "Kullanıcı"
+  },
+  {
+    "key": "belge.islem",
+    "en": "Transaction",
+    "tr": "İşlem"
+  },
+  {
+    "key": "belge.tutar",
+    "en": "Amount",
+    "tr": "Tutar"
+  },
+  {
+    "key": "belge.birim",
+    "en": "Unit",
+    "tr": "Birim"
+  },
+  {
+    "key": "belge.kaynak",
+    "en": "Source",
+    "tr": "Kaynak"
+  },
+  {
+    "key": "belge.tarih",
+    "en": "Date",
+    "tr": "Tarih"
+  },
+  {
+    "key": "belge.saat",
+    "en": "Time",
+    "tr": "Saat"
+  },
+  {
+    "key": "belge.islemNo",
+    "en": "Transaction ID",
+    "tr": "İşlem no"
+  },
+  {
+    "key": "belge.adet",
+    "en": "Quantity",
+    "tr": "Adet"
+  },
+  {
+    "key": "belge.yon",
+    "en": "Direction",
+    "tr": "Yön"
+  },
+  {
+    "key": "belge.alici",
+    "en": "Recipient",
+    "tr": "Alıcı"
+  },
+  {
+    "key": "belge.gonderen",
+    "en": "Sender",
+    "tr": "Gönderen"
+  },
+  {
+    "key": "belge.oda",
+    "en": "Room",
+    "tr": "Oda"
+  },
+  {
+    "key": "belge.miktar",
+    "en": "Amount",
+    "tr": "Miktar"
+  },
+  {
+    "key": "belge.elmas",
+    "en": "{{n}} diamonds",
+    "tr": "{{n}} elmas"
+  },
+  {
+    "key": "belge.yontem",
+    "en": "Method",
+    "tr": "Yöntem"
+  },
+  {
+    "key": "belge.durum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "belge.odemeSuresi",
+    "en": "Payout time",
+    "tr": "Ödeme süresi"
+  },
+  {
+    "key": "belge.talepNo",
+    "en": "Request ID",
+    "tr": "Talep no"
+  },
+  {
+    "key": "belge.hesapHareketleri",
+    "en": "Account activity",
+    "tr": "Hesap hareketleri"
+  },
+  {
+    "key": "belge.hesapSahibi",
+    "en": "Account holder",
+    "tr": "Hesap sahibi"
+  },
+  {
+    "key": "belge.guncelCoin",
+    "en": "Current coins",
+    "tr": "Güncel coin"
+  },
+  {
+    "key": "belge.guncelElmas",
+    "en": "Current diamonds",
+    "tr": "Güncel elmas"
+  },
+  {
+    "key": "belge.toplamKayit",
+    "en": "Total records",
+    "tr": "Toplam kayıt"
+  },
+  {
+    "key": "belge.satirSayisi",
+    "en": "{{n}} rows",
+    "tr": "{{n}} satır"
+  },
+  {
+    "key": "belge.raporZamani",
+    "en": "Report time",
+    "tr": "Rapor zamanı"
+  },
+  {
+    "key": "belge.oynananOyun",
+    "en": "Games played",
+    "tr": "Oynanan oyun"
+  },
+  {
+    "key": "belge.kazanmaOraniEtiket",
+    "en": "Win rate",
+    "tr": "Kazanma oranı"
+  },
+  {
+    "key": "belge.cuzdanHareketleri",
+    "en": "Wallet activity",
+    "tr": "Cüzdan hareketleri"
+  },
+  {
+    "key": "belge.hediyeEtkilesimleri",
+    "en": "Gift activity",
+    "tr": "Hediye etkileşimleri"
+  },
+  {
+    "key": "belge.oyunGecmisi",
+    "en": "Game history",
+    "tr": "Oyun geçmişi"
+  },
+  {
+    "key": "belge.cekimTalepOzet",
+    "en": "{{n}} requests",
+    "tr": "{{n}} talep"
+  },
+  {
+    "key": "belge.henuzHediyeYok",
+    "en": "No gifts yet",
+    "tr": "Henüz hediye yok"
+  },
+  {
+    "key": "belge.excelBaslikTarih",
+    "en": "Date",
+    "tr": "Tarih"
+  },
+  {
+    "key": "belge.excelBaslikSaat",
+    "en": "Time",
+    "tr": "Saat"
+  },
+  {
+    "key": "belge.excelBaslikIslem",
+    "en": "Transaction",
+    "tr": "İşlem"
+  },
+  {
+    "key": "belge.excelBaslikKarsi",
+    "en": "Counterparty",
+    "tr": "Karşı taraf"
+  },
+  {
+    "key": "belge.excelBaslikYer",
+    "en": "Room / Place",
+    "tr": "Oda / Yer"
+  },
+  {
+    "key": "belge.excelBaslikTutar",
+    "en": "Amount",
+    "tr": "Tutar"
+  },
+  {
+    "key": "belge.excelBaslikBirim",
+    "en": "Unit",
+    "tr": "Birim"
+  },
+  {
+    "key": "belge.excelBaslikBakiye",
+    "en": "Balance after",
+    "tr": "Bakiye sonrası"
+  },
+  {
+    "key": "belge.excelBaslikDurum",
+    "en": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "belge.excelBaslikNo",
+    "en": "Transaction ID",
+    "tr": "İşlem no"
+  },
+  {
+    "key": "belge.hesabaGiris",
+    "en": "Credit / earnings",
+    "tr": "Hesaba giriş / kazanç"
+  },
+  {
+    "key": "belge.hesaptanCikis",
+    "en": "Debit / spend",
+    "tr": "Hesaptan çıkış / harcama"
+  },
+  {
+    "key": "belge.kazancYukleme",
+    "en": "Earnings / top-up",
+    "tr": "Kazanç / yükleme"
+  },
+  {
+    "key": "belge.harcamaKayip",
+    "en": "Spend / loss",
+    "tr": "Harcama / kayıp"
+  },
+  {
+    "key": "belge.bankaYontem",
+    "en": "Bank / {{method}}",
+    "tr": "Banka / {{method}}"
+  },
+  {
+    "key": "belge.oyunIslem",
+    "en": "Game: {{ad}}",
+    "tr": "Oyun: {{ad}}"
+  },
+  {
+    "key": "belge.durumKazanc",
+    "en": "{{durum}} · win",
+    "tr": "{{durum}} · kazanç"
+  },
+  {
+    "key": "belge.admin.ciroBaslik",
+    "en": "Revenue report",
+    "tr": "Ciro raporu"
+  },
+  {
+    "key": "belge.admin.donemLabel",
+    "en": "Period",
+    "tr": "Dönem"
+  },
+  {
+    "key": "belge.admin.ciroTry",
+    "en": "Revenue (TRY)",
+    "tr": "Ciro (TRY)"
+  },
+  {
+    "key": "belge.admin.ozetKartlar",
+    "en": "Summary cards",
+    "tr": "Özet kartlar"
+  },
+  {
+    "key": "belge.admin.kimdenOzet",
+    "en": "{{n}} users",
+    "tr": "{{n}} kullanıcı"
+  },
+  {
+    "key": "belge.admin.yonetimOzeti",
+    "en": "Admin summary",
+    "tr": "Yönetim özeti"
+  },
+  {
+    "key": "belge.admin.canliPk",
+    "en": "Live PK",
+    "tr": "Canlı PK"
+  },
+  {
+    "key": "belge.admin.pushKuyruk",
+    "en": "Push queue",
+    "tr": "Push kuyruk"
+  },
+  {
+    "key": "belge.admin.banli",
+    "en": "Banned",
+    "tr": "Banlı"
+  },
+  {
+    "key": "belge.admin.son24sYeni",
+    "en": "New (24h)",
+    "tr": "Son 24s yeni"
+  },
+  {
+    "key": "belge.admin.son24sYukleme",
+    "en": "Top-ups (24h)",
+    "tr": "Son 24s yükleme"
+  },
+  {
+    "key": "belge.admin.bekleyenElmas",
+    "en": "Pending diamonds",
+    "tr": "Bekleyen elmas"
+  },
+  {
+    "key": "belge.admin.sosyalGuvenlik",
+    "en": "Social / safety",
+    "tr": "Sosyal / güvenlik"
+  },
+  {
+    "key": "belge.admin.aktifIhtar",
+    "en": "Active warnings",
+    "tr": "Aktif ihtar"
+  },
+  {
+    "key": "belge.admin.hediye24s",
+    "en": "Gifts 24h",
+    "tr": "Hediye 24s"
+  },
+  {
+    "key": "belge.admin.kapaliOzellik",
+    "en": "Disabled features",
+    "tr": "Kapalı özellik"
+  },
+  {
+    "key": "belge.elmasBirim",
+    "en": "diamond",
+    "tr": "elmas"
+  },
+  {
+    "key": "kesfetX.oneCikan",
+    "en": "featured",
+    "tr": "öne çıkan"
+  },
+  {
+    "key": "cocukKoruma.baslik",
+    "en": "Child Protection",
+    "tr": "Çocuk Koruma"
+  },
+  {
+    "key": "cocukKoruma.btnDegilim",
+    "en": "I am under 18",
+    "tr": "18 yaşından değilim"
+  },
+  {
+    "key": "genel.yakinda",
+    "en": "Coming soon",
+    "tr": "Yakında"
+  },
+  {
+    "key": "medyaIzin.kameraBaslik",
+    "en": "Camera permission",
+    "tr": "Kamera izni"
+  },
+  {
+    "key": "konumIzin.sehirSec",
+    "en": "Choose city",
+    "tr": "Şehir seç"
+  },
+  {
+    "key": "moderasyon.sebepHate",
+    "en": "Hate speech",
+    "tr": "Nefret söylemi"
+  },
+  {
+    "key": "moderasyon.sebepImpersonation",
+    "en": "Impersonation",
+    "tr": "Kimliğe bürünme"
+  },
+  {
+    "key": "moderasyon.sebepSec",
+    "en": "Choose a reason.",
+    "tr": "Bir sebep seç."
+  },
+  {
+    "key": "moderasyon.sesOdasi",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "moderasyon.canliYayin",
+    "en": "Live stream",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "webview.gecersizUrl",
+    "en": "Invalid URL",
+    "tr": "Geçersiz URL"
+  },
+  {
+    "key": "webview.baglantiAciliyor",
+    "en": "Opening link…",
+    "tr": "Bağlantı açılıyor…"
+  },
+  {
+    "key": "webview.sistemTarayici",
+    "en": "System browser",
+    "tr": "Sistem tarayıcısı"
+  },
+  {
+    "key": "webview.gecersizKarakter",
+    "en": "Invalid character",
+    "tr": "Geçersiz karakter"
+  },
+  {
+    "key": "banner.yukleniyorA11y",
+    "en": "Loading banner",
+    "tr": "Banner yükleniyor"
+  },
+  {
+    "key": "banner.tanitim",
+    "en": "Promotion",
+    "tr": "Tanıtım"
+  },
+  {
+    "key": "banner.tanitimBanner",
+    "en": "Promo banner",
+    "tr": "Tanıtım bannerı"
+  },
+  {
+    "key": "banner.kapatA11y",
+    "en": "Dismiss banner",
+    "tr": "Bannerı kapat"
+  },
+  {
+    "key": "banner.hedefEkranYok",
+    "en": "No target screen",
+    "tr": "Hedef ekran yok"
+  },
+  {
+    "key": "banner.derinBagYok",
+    "en": "No deep link",
+    "tr": "Deep link yok"
+  },
+  {
+    "key": "banner.bilinmeyenAction",
+    "en": "Unknown action",
+    "tr": "Bilinmeyen action"
+  },
+  {
+    "key": "banner.uygulamaBaslik",
+    "en": "App",
+    "tr": "Uygulama"
+  },
+  {
+    "key": "banner.eksikBaglantiBaslik",
+    "en": "Missing link",
+    "tr": "Eksik bağlantı"
+  },
+  {
+    "key": "banner.gecersizBaglantiBaslik",
+    "en": "Invalid link",
+    "tr": "Geçersiz bağlantı"
+  },
+  {
+    "key": "banner.promoSesOdasi",
+    "en": "Voice room",
+    "tr": "Ses odası"
+  },
+  {
+    "key": "banner.promoOyunSkor",
+    "en": "{{n}} games",
+    "tr": "{{n}} oyun"
+  },
+  {
+    "key": "banner.promoCanli",
+    "en": "LIVE",
+    "tr": "CANLI"
+  },
+  {
+    "key": "banner.promoOyunBadge",
+    "en": "GAME",
+    "tr": "OYUN"
+  },
+  {
+    "key": "banner.promoEnCokOyun",
+    "en": "Most games",
+    "tr": "En çok oyun"
+  },
+  {
+    "key": "banner.promoEnCokCoin",
+    "en": "Most coins",
+    "tr": "En çok coin"
+  },
+  {
+    "key": "banner.promoOdayaGir",
+    "en": "Join room",
+    "tr": "Odaya gir"
+  },
+  {
+    "key": "banner.screen.HOME",
+    "en": "Home",
+    "tr": "Ana Sayfa"
+  },
+  {
+    "key": "banner.screen.PROFILE",
+    "en": "Profile",
+    "tr": "Profil"
+  },
+  {
+    "key": "banner.screen.VOICE_ROOM",
+    "en": "Voice room",
+    "tr": "Ses Odası"
+  },
+  {
+    "key": "banner.screen.GAME_CENTER",
+    "en": "Game center",
+    "tr": "Oyun Merkezi"
+  },
+  {
+    "key": "banner.screen.MARKET",
+    "en": "Store",
+    "tr": "Market"
+  },
+  {
+    "key": "banner.screen.LIVE",
+    "en": "Live",
+    "tr": "Canlı yayın"
+  },
+  {
+    "key": "banner.placement.FEED_TOP",
+    "en": "Feed top",
+    "tr": "Feed üst"
+  },
+  {
+    "key": "banner.placement.FEED_INLINE",
+    "en": "Feed inline",
+    "tr": "Feed satır içi"
+  },
+  {
+    "key": "banner.placement.DISCOVER_TOP",
+    "en": "Discover top",
+    "tr": "Keşfet üst"
+  },
+  {
+    "key": "banner.placement.DISCOVER_MIDDLE",
+    "en": "Discover middle",
+    "tr": "Keşfet orta"
+  },
+  {
+    "key": "banner.placement.DISCOVER_BOTTOM",
+    "en": "Discover bottom",
+    "tr": "Keşfet alt"
+  },
+  {
+    "key": "banner.placement.MESSAGES_TOP",
+    "en": "Messages top",
+    "tr": "Mesajlar üst"
+  },
+  {
+    "key": "banner.placement.PROFILE_TOP",
+    "en": "Profile top",
+    "tr": "Profil üst"
+  },
+  {
+    "key": "banner.placement.PROFILE_MIDDLE",
+    "en": "Profile middle",
+    "tr": "Profil orta"
+  },
+  {
+    "key": "banner.placement.VOICE_ROOM_TOP",
+    "en": "Voice room top",
+    "tr": "Ses odası üst"
+  },
+  {
+    "key": "banner.placement.VOICE_ROOM_BOTTOM",
+    "en": "Voice room bottom",
+    "tr": "Ses odası alt"
+  },
+  {
+    "key": "banner.placement.GAME_CENTER_TOP",
+    "en": "Game center top",
+    "tr": "Oyun merkezi üst"
+  },
+  {
+    "key": "banner.placement.HOME_TOP",
+    "en": "Home top",
+    "tr": "Ana sayfa üst"
+  },
+  {
+    "key": "banner.placement.HOME_MIDDLE",
+    "en": "Home middle",
+    "tr": "Ana sayfa orta"
+  },
+  {
+    "key": "banner.placement.HOME_BOTTOM",
+    "en": "Home bottom (auto game)",
+    "tr": "Ana sayfa alt (otomatik oyun)"
+  },
+  {
+    "key": "banner.auto.live_coins",
+    "en": "Live coin threshold",
+    "tr": "Canlı coin eşiği"
+  },
+  {
+    "key": "banner.auto.seats_full",
+    "en": "Seats full",
+    "tr": "Koltuklar dolu"
+  },
+  {
+    "key": "banner.auto.gift_burst",
+    "en": "Gift burst",
+    "tr": "Hediye yağmuru"
+  },
+  {
+    "key": "banner.hedefIdYok",
+    "en": "Missing target id",
+    "tr": "Hedef id yok"
+  },
+  {
+    "key": "banner.gecersizDeepLink",
+    "en": "Invalid deep link",
+    "tr": "Geçersiz deep link"
+  },
+  {
+    "key": "banner.gorselA11y",
+    "en": "Banner image",
+    "tr": "Banner görseli"
+  },
+  {
+    "key": "odaKapasite.miniAlt",
+    "en": "Intimate room",
+    "tr": "Samimi oda"
+  },
+  {
+    "key": "odaKapasite.socialAlt",
+    "en": "Everyday chat",
+    "tr": "Günlük sohbet"
+  },
+  {
+    "key": "odaKapasite.community",
+    "en": "Community",
+    "tr": "Topluluk"
+  },
+  {
+    "key": "odaKapasite.communityAlt",
+    "en": "Community stage",
+    "tr": "Topluluk sahnesi"
+  },
+  {
+    "key": "odaKapasite.stage",
+    "en": "Stage",
+    "tr": "Sahne"
+  },
+  {
+    "key": "odaKapasite.stageAlt",
+    "en": "Large stage",
+    "tr": "Büyük sahne"
+  },
+  {
+    "key": "odaKapasite.eventAlt",
+    "en": "Event size",
+    "tr": "Etkinlik boyutu"
+  },
+  {
+    "key": "odaDuzen.kategoriIzgara",
+    "en": "Grid",
+    "tr": "Izgara"
+  },
+  {
+    "key": "odaDuzen.kategoriYoringe",
+    "en": "Orbit",
+    "tr": "Yörünge"
+  },
+  {
+    "key": "odaDuzen.kategoriSalon",
+    "en": "Lounge",
+    "tr": "Salon"
+  },
+  {
+    "key": "odaDuzen.kategoriKompakt",
+    "en": "Compact",
+    "tr": "Kompakt"
+  },
+  {
+    "key": "odaDuzen.yoringe",
+    "en": "Orbit",
+    "tr": "Yörünge"
+  },
+  {
+    "key": "odaDuzen.floating_glassAlt",
+    "en": "Glass grid · soft halo",
+    "tr": "Cam ızgara · soft halo"
+  },
+  {
+    "key": "odaDuzen.aurora_stage",
+    "en": "Aurora stage",
+    "tr": "Aurora sahne"
+  },
+  {
+    "key": "odaDuzen.orbit",
+    "en": "Orbit",
+    "tr": "Yörünge"
+  },
+  {
+    "key": "odaDuzen.orbitAlt",
+    "en": "Center podium · arc seats",
+    "tr": "Merkez taht · yay yerleşim"
+  },
+  {
+    "key": "odaDuzen.royal_lounge",
+    "en": "Royal lounge",
+    "tr": "Kraliyet salonu"
+  },
+  {
+    "key": "odaDuzen.minimal_stage",
+    "en": "Minimal stage",
+    "tr": "Minimal sahne"
+  },
+  {
+    "key": "odaDuzen.spotlight_pro",
+    "en": "Spotlight Pro",
+    "tr": "Spot Pro"
+  },
+  {
+    "key": "odaDuzen.theater_gold",
+    "en": "Gold theater",
+    "tr": "Altın tiyatro"
+  },
+  {
+    "key": "odaDuzen.podium_elite",
+    "en": "Elite podium",
+    "tr": "Elit podyum"
+  },
+  {
+    "key": "odaDuzen.podium_eliteAlt",
+    "en": "Premium podium stage",
+    "tr": "Premium podyum sahne"
+  },
+  {
+    "key": "odaDuzen.arena_crown",
+    "en": "Arena crown",
+    "tr": "Arena taç"
+  },
+  {
+    "key": "odaDuzen.grand_stage",
+    "en": "Grand stage",
+    "tr": "Büyük sahne"
+  },
+  {
+    "key": "odaDuzen.lattice_pro",
+    "en": "Lattice Pro",
+    "tr": "Kafes Pro"
+  },
+  {
+    "key": "odaDuzen.crystal_grid",
+    "en": "Crystal grid",
+    "tr": "Kristal ızgara"
+  },
+  {
+    "key": "odaDuzen.crystal_gridAlt",
+    "en": "Crystal glass layout",
+    "tr": "Cam kristal dizilim"
+  },
+  {
+    "key": "odaDuzen.neon_matrix",
+    "en": "Neon matrix",
+    "tr": "Neon matris"
+  },
+  {
+    "key": "odaDuzen.soft_mosaic",
+    "en": "Soft mosaic",
+    "tr": "Yumuşak mozaik"
+  },
+  {
+    "key": "odaDuzen.premium_tiles",
+    "en": "Premium tiles",
+    "tr": "Premium karo"
+  },
+  {
+    "key": "odaDuzen.premium_tilesAlt",
+    "en": "VIP tile grid",
+    "tr": "VIP karo ızgara"
+  },
+  {
+    "key": "odaDuzen.hex_pulse",
+    "en": "Hex pulse",
+    "tr": "Hex nabız"
+  },
+  {
+    "key": "odaDuzen.hex_pulseAlt",
+    "en": "5-column pulse layout",
+    "tr": "5 kolon nabız dizilim"
+  },
+  {
+    "key": "odaDuzen.galaxy_ring",
+    "en": "Galaxy ring",
+    "tr": "Galaksi halka"
+  },
+  {
+    "key": "odaDuzen.planet_orbit",
+    "en": "Planet orbit",
+    "tr": "Gezegen yörünge"
+  },
+  {
+    "key": "odaDuzen.planet_orbitAlt",
+    "en": "Orbital mic ring",
+    "tr": "Orbital mikrofon halkası"
+  },
+  {
+    "key": "odaDuzen.lunar_circle",
+    "en": "Lunar circle",
+    "tr": "Ay çemberi"
+  },
+  {
+    "key": "odaDuzen.lunar_circleAlt",
+    "en": "Moonlight circle",
+    "tr": "Ay ışığı daire"
+  },
+  {
+    "key": "odaDuzen.star_wheel",
+    "en": "Star wheel",
+    "tr": "Yıldız çarkı"
+  },
+  {
+    "key": "odaDuzen.star_wheelAlt",
+    "en": "Star wheel layout",
+    "tr": "Yıldız tekerlek düzeni"
+  },
+  {
+    "key": "odaDuzen.comet_arc",
+    "en": "Comet arc",
+    "tr": "Kuyruklu yay"
+  },
+  {
+    "key": "odaDuzen.comet_arcAlt",
+    "en": "Cascading comet arc",
+    "tr": "Kademeli kuyruk yayı"
+  },
+  {
+    "key": "odaDuzen.velvet_lounge",
+    "en": "Velvet lounge",
+    "tr": "Kadife salon"
+  },
+  {
+    "key": "odaDuzen.champagne_bar",
+    "en": "Champagne bar",
+    "tr": "Şampanya bar"
+  },
+  {
+    "key": "odaDuzen.champagne_barAlt",
+    "en": "Lounge bar layout",
+    "tr": "Lounge bar düzeni"
+  },
+  {
+    "key": "odaDuzen.nightclub_booth",
+    "en": "Nightclub booth",
+    "tr": "Kulüp booth"
+  },
+  {
+    "key": "odaDuzen.nightclub_boothAlt",
+    "en": "Club booth seats",
+    "tr": "Gece kulübü koltuk"
+  },
+  {
+    "key": "odaDuzen.sofa_circle",
+    "en": "Sofa circle",
+    "tr": "Kanepe çember"
+  },
+  {
+    "key": "odaDuzen.sofa_circleAlt",
+    "en": "Conversation circle",
+    "tr": "Sohbet çemberi"
+  },
+  {
+    "key": "odaDuzen.vip_rail",
+    "en": "VIP rail",
+    "tr": "VIP ray"
+  },
+  {
+    "key": "odaDuzen.vip_railAlt",
+    "en": "Horizontal VIP mic rail",
+    "tr": "Yatay VIP mikrofon rayı"
+  },
+  {
+    "key": "odaDuzen.ruby_salon",
+    "en": "Ruby salon",
+    "tr": "Yakut salon"
+  },
+  {
+    "key": "odaDuzen.glass_cascade",
+    "en": "Glass cascade",
+    "tr": "Cam kademe"
+  },
+  {
+    "key": "odaDuzen.glass_cascadeAlt",
+    "en": "Cascading glass rows",
+    "tr": "Kademeli cam dizilim"
+  },
+  {
+    "key": "odaDuzen.diamond_cut",
+    "en": "Diamond cut",
+    "tr": "Elmas kesim"
+  },
+  {
+    "key": "odaDuzen.diamond_cutAlt",
+    "en": "Diamond row layout",
+    "tr": "Elmas satır yerleşimi"
+  },
+  {
+    "key": "odaDuzen.asymmetric_wave",
+    "en": "Asymmetric wave",
+    "tr": "Asimetrik dalga"
+  },
+  {
+    "key": "odaDuzen.duo_spotlight",
+    "en": "Duo spotlight",
+    "tr": "İkili spot"
+  },
+  {
+    "key": "odaDuzen.prism_stack",
+    "en": "Prism stack",
+    "tr": "Prizma yığın"
+  },
+  {
+    "key": "odaDuzen.prism_stackAlt",
+    "en": "Prism diamond layers",
+    "tr": "Prizma elmas katman"
+  },
+  {
+    "key": "odaDuzen.halo_frame",
+    "en": "Halo frame",
+    "tr": "Halo çerçeve"
+  },
+  {
+    "key": "odaDuzen.halo_frameAlt",
+    "en": "Halo orbit frame",
+    "tr": "Halo halkalı yörünge"
+  },
+  {
+    "key": "odaDuzen.mini_cluster",
+    "en": "Mini cluster",
+    "tr": "Mini küme"
+  },
+  {
+    "key": "odaDuzen.mini_clusterAlt",
+    "en": "Compact cluster grid",
+    "tr": "Kompakt küme ızgara"
+  },
+  {
+    "key": "odaDuzen.intimate_duo",
+    "en": "Intimate duo",
+    "tr": "Samimi ikili"
+  },
+  {
+    "key": "odaDuzen.intimate_duoAlt",
+    "en": "Dating · close duo",
+    "tr": "Flört · yakın ikili"
+  },
+  {
+    "key": "odaDuzen.focus_pair",
+    "en": "Focus pair",
+    "tr": "Odak çifti"
+  },
+  {
+    "key": "odaDuzen.focus_pairAlt",
+    "en": "Two-person focus",
+    "tr": "İki kişilik odak"
+  },
+  {
+    "key": "odaDuzen.tight_hex",
+    "en": "Tight hex",
+    "tr": "Sıkı hex"
+  },
+  {
+    "key": "odaDuzen.tight_hexAlt",
+    "en": "Dense compact hex",
+    "tr": "Yoğun kompakt hex"
+  },
+  {
+    "key": "odaDuzen.whisper_circle",
+    "en": "Whisper circle",
+    "tr": "Fısıltı çember"
+  },
+  {
+    "key": "odaDuzen.club_stage",
+    "en": "Club stage",
+    "tr": "Kulüp sahne"
+  },
+  {
+    "key": "odaDuzen.presence_grid",
+    "en": "Presence grid",
+    "tr": "Varlık ızgarası"
+  },
+  {
+    "key": "odaDuzen.spaces_strip",
+    "en": "Spaces strip",
+    "tr": "Spaces şeridi"
+  },
+  {
+    "key": "odaDuzen.spaces_stripAlt",
+    "en": "Host + horizontal speaker strip",
+    "tr": "Host + yatay konuşmacı şeridi"
+  },
+  {
+    "key": "odaDuzen.party_wave",
+    "en": "Party wave",
+    "tr": "Parti dalgası"
+  },
+  {
+    "key": "odaDuzen.party_u",
+    "en": "U lounge",
+    "tr": "U salon"
+  },
+  {
+    "key": "odaDuzen.dropin_tiles",
+    "en": "Drop-in tiles",
+    "tr": "Drop-in karolar"
+  },
+  {
+    "key": "odaDuzen.greenroom_barAlt",
+    "en": "Host strip · compact audience",
+    "tr": "Host şeridi · kompakt dinleyici"
+  },
+  {
+    "key": "odaDuzen.salon_circle",
+    "en": "Salon circle",
+    "tr": "Salon çember"
+  },
+  {
+    "key": "odaTema.midnight_plum",
+    "en": "Midnight plum",
+    "tr": "Gece eriği"
+  },
+  {
+    "key": "odaTema.neon_auroraAlt",
+    "en": "Pink · magenta aurora",
+    "tr": "Pembe · magenta aurora"
+  },
+  {
+    "key": "odaTema.royal_gold",
+    "en": "Royal",
+    "tr": "Kraliyet"
+  },
+  {
+    "key": "odaTema.cosmic_void",
+    "en": "Cosmic",
+    "tr": "Kozmik"
+  },
+  {
+    "key": "odaTema.cosmic_voidAlt",
+    "en": "Deep indigo void",
+    "tr": "Derin indigo boşluk"
+  },
+  {
+    "key": "odaTema.arctic_mist",
+    "en": "Arctic",
+    "tr": "Arktik"
+  },
+  {
+    "key": "odaTema.arctic_mistAlt",
+    "en": "Ice-blue mist",
+    "tr": "Buz mavisi sis"
+  },
+  {
+    "key": "odaTema.cherry_noir",
+    "en": "Cherry noir",
+    "tr": "Kiraz noir"
+  },
+  {
+    "key": "odaTema.cherry_noirAlt",
+    "en": "Dark red scene",
+    "tr": "Koyu kırmızı sahne"
+  },
+  {
+    "key": "odaTema.emerald_haze",
+    "en": "Emerald",
+    "tr": "Zümrüt"
+  },
+  {
+    "key": "odaTema.emerald_hazeAlt",
+    "en": "Forest-green haze",
+    "tr": "Orman yeşili pus"
+  },
+  {
+    "key": "odaTema.sunset_pulse",
+    "en": "Sunset",
+    "tr": "Gün batımı"
+  },
+  {
+    "key": "odaTema.electric_lilac",
+    "en": "Electric",
+    "tr": "Elektrik"
+  },
+  {
+    "key": "odaTema.electric_lilacAlt",
+    "en": "Neon lilac glow",
+    "tr": "Neon leylak parıltı"
+  },
+  {
+    "key": "odaTema.ocean_depth",
+    "en": "Ocean",
+    "tr": "Okyanus"
+  },
+  {
+    "key": "odaTema.ocean_depthAlt",
+    "en": "Deep teal wave",
+    "tr": "Derin teal dalga"
+  },
+  {
+    "key": "odaTema.velvet_rose",
+    "en": "Velvet rose",
+    "tr": "Kadife gül"
+  },
+  {
+    "key": "odaTema.velvet_roseAlt",
+    "en": "Soft rose scene",
+    "tr": "Yumuşak rose sahne"
+  },
+  {
+    "key": "odaTema.cyber_mint",
+    "en": "Cyber mint",
+    "tr": "Siber mint"
+  },
+  {
+    "key": "odaTema.obsidian_noir",
+    "en": "Obsidian",
+    "tr": "Obsidyen"
+  },
+  {
+    "key": "odaTema.obsidian_noirAlt",
+    "en": "Matte black luxury",
+    "tr": "Mat siyah lüks"
+  },
+  {
+    "key": "odaTema.amethyst_dusk",
+    "en": "Amethyst dusk",
+    "tr": "Ametist alacakaranlık"
+  },
+  {
+    "key": "odaTema.amethyst_duskAlt",
+    "en": "Purple gem glow",
+    "tr": "Mor taş ışıltısı"
+  },
+  {
+    "key": "odaTema.noir_sapphire",
+    "en": "Noir sapphire",
+    "tr": "Noir safir"
+  },
+  {
+    "key": "odaTema.noir_sapphireAlt",
+    "en": "Deep blue jewel",
+    "tr": "Koyu mavi mücevher"
+  },
+  {
+    "key": "odaTema.graphite_smoke",
+    "en": "Graphite smoke",
+    "tr": "Grafit duman"
+  },
+  {
+    "key": "odaTema.graphite_smokeAlt",
+    "en": "Soft anthracite haze",
+    "tr": "Soft antrasit sis"
+  },
+  {
+    "key": "odaTema.indigo_velvet",
+    "en": "Indigo velvet",
+    "tr": "Indigo kadife"
+  },
+  {
+    "key": "odaTema.indigo_velvetAlt",
+    "en": "Deep indigo fabric",
+    "tr": "Derin indigo kumaş"
+  },
+  {
+    "key": "odaTema.plasma_pink",
+    "en": "Plasma pink",
+    "tr": "Plazma pembe"
+  },
+  {
+    "key": "odaTema.plasma_pinkAlt",
+    "en": "Neon plasma glow",
+    "tr": "Neon plazma parıltı"
+  },
+  {
+    "key": "odaTema.laser_violet",
+    "en": "Laser violet",
+    "tr": "Lazer mor"
+  },
+  {
+    "key": "odaTema.laser_violetAlt",
+    "en": "Sharp violet beam",
+    "tr": "Keskin violet ışın"
+  },
+  {
+    "key": "odaTema.hologram_tealAlt",
+    "en": "Futuristic glass teal",
+    "tr": "Futuristik cam yeşili"
+  },
+  {
+    "key": "odaTema.neon_citrus",
+    "en": "Neon citrus",
+    "tr": "Neon turunç"
+  },
+  {
+    "key": "odaTema.neon_citrusAlt",
+    "en": "Acid lemon accent",
+    "tr": "Asit limon vurgu"
+  },
+  {
+    "key": "odaTema.synthwave_duskAlt",
+    "en": "80s retro wave",
+    "tr": "80'ler retro dalga"
+  },
+  {
+    "key": "odaTema.volt_blue",
+    "en": "Volt blue",
+    "tr": "Volt mavi"
+  },
+  {
+    "key": "odaTema.volt_blueAlt",
+    "en": "Electric blue pulse",
+    "tr": "Elektrik mavi nabız"
+  },
+  {
+    "key": "odaTema.champagne_suite",
+    "en": "Champagne suite",
+    "tr": "Şampanya süit"
+  },
+  {
+    "key": "odaTema.champagne_suiteAlt",
+    "en": "VIP lounge gold",
+    "tr": "VIP lounge altın"
+  },
+  {
+    "key": "odaTema.black_diamond",
+    "en": "Black diamond",
+    "tr": "Siyah elmas"
+  },
+  {
+    "key": "odaTema.black_diamondAlt",
+    "en": "Crystal darkness",
+    "tr": "Kristallik karanlık"
+  },
+  {
+    "key": "odaTema.platinum_lounge",
+    "en": "Platinum lounge",
+    "tr": "Platin lounge"
+  },
+  {
+    "key": "odaTema.platinum_loungeAlt",
+    "en": "Cool metallic luxury",
+    "tr": "Soğuk metalik lüks"
+  },
+  {
+    "key": "odaTema.amber_throne",
+    "en": "Amber throne",
+    "tr": "Kehribar taht"
+  },
+  {
+    "key": "odaTema.amber_throneAlt",
+    "en": "Warm amber VIP",
+    "tr": "Sıcak amber VIP"
+  },
+  {
+    "key": "odaTema.ruby_vip",
+    "en": "Ruby VIP",
+    "tr": "Yakut VIP"
+  },
+  {
+    "key": "odaTema.ruby_vipAlt",
+    "en": "Red jewel stage",
+    "tr": "Kırmızı mücevher sahne"
+  },
+  {
+    "key": "odaTema.jade_palace",
+    "en": "Jade palace",
+    "tr": "Yeşim saray"
+  },
+  {
+    "key": "odaTema.jade_palaceAlt",
+    "en": "Elegant jade shimmer",
+    "tr": "Zarif yeşim ışıltı"
+  },
+  {
+    "key": "odaTema.forest_whisper",
+    "en": "Forest whisper",
+    "tr": "Orman fısıltısı"
+  },
+  {
+    "key": "odaTema.forest_whisperAlt",
+    "en": "Deep green calm",
+    "tr": "Derin yeşil huzur"
+  },
+  {
+    "key": "odaTema.lagoon_breeze",
+    "en": "Lagoon breeze",
+    "tr": "Lagün esintisi"
+  },
+  {
+    "key": "odaTema.lagoon_breezeAlt",
+    "en": "Turquoise water texture",
+    "tr": "Turkuaz su dokusu"
+  },
+  {
+    "key": "odaTema.moss_temple",
+    "en": "Moss temple",
+    "tr": "Yosun tapınak"
+  },
+  {
+    "key": "odaTema.moss_templeAlt",
+    "en": "Natural stone green",
+    "tr": "Doğal taş yeşili"
+  },
+  {
+    "key": "odaTema.glacier_peak",
+    "en": "Glacier peak",
+    "tr": "Buzul zirve"
+  },
+  {
+    "key": "odaTema.glacier_peakAlt",
+    "en": "Ice crystal blue",
+    "tr": "Buz kristali mavi"
+  },
+  {
+    "key": "odaTema.desert_mirage",
+    "en": "Desert mirage",
+    "tr": "Çöl serabı"
+  },
+  {
+    "key": "odaTema.desert_mirageAlt",
+    "en": "Warm sand gold",
+    "tr": "Sıcak kum altını"
+  },
+  {
+    "key": "odaTema.tropical_night",
+    "en": "Tropical night",
+    "tr": "Tropik gece"
+  },
+  {
+    "key": "odaTema.tropical_nightAlt",
+    "en": "Night ocean · coral",
+    "tr": "Gece okyanus · mercan"
+  },
+  {
+    "key": "odaTema.blush_satin",
+    "en": "Blush satin",
+    "tr": "Allık saten"
+  },
+  {
+    "key": "odaTema.blush_satinAlt",
+    "en": "Soft pink satin",
+    "tr": "Yumuşak pembe saten"
+  },
+  {
+    "key": "odaTema.crimson_silk",
+    "en": "Crimson silk",
+    "tr": "Kızıl ipek"
+  },
+  {
+    "key": "odaTema.crimson_silkAlt",
+    "en": "Velvet red silk",
+    "tr": "Kadife kırmızı ipek"
+  },
+  {
+    "key": "odaTema.peach_glow",
+    "en": "Peach glow",
+    "tr": "Şeftali ışıltı"
+  },
+  {
+    "key": "odaTema.peach_glowAlt",
+    "en": "Warm peach glow",
+    "tr": "Sıcak peach glow"
+  },
+  {
+    "key": "odaTema.lavender_dream",
+    "en": "Lavender dream",
+    "tr": "Lavanta rüya"
+  },
+  {
+    "key": "odaTema.lavender_dreamAlt",
+    "en": "Pastel lavender haze",
+    "tr": "Pastel lavanta pus"
+  },
+  {
+    "key": "odaTema.bordeaux_night",
+    "en": "Bordeaux night",
+    "tr": "Bordo gece"
+  },
+  {
+    "key": "odaTema.bordeaux_nightAlt",
+    "en": "Wine-red night",
+    "tr": "Şarap kırmızısı gece"
+  },
+  {
+    "key": "odaTema.nebula_rose",
+    "en": "Nebula rose",
+    "tr": "Nebula gül"
+  },
+  {
+    "key": "odaTema.nebula_roseAlt",
+    "en": "Pink cosmic cloud",
+    "tr": "Pembe kozmik bulut"
+  },
+  {
+    "key": "odaTema.starlight_indigo",
+    "en": "Starlight indigo",
+    "tr": "Yıldız indigo"
+  },
+  {
+    "key": "odaTema.starlight_indigoAlt",
+    "en": "Night-sky indigo",
+    "tr": "Gece gökyüzü indigo"
+  },
+  {
+    "key": "odaTema.galaxy_teal",
+    "en": "Galaxy teal",
+    "tr": "Galaksi teal"
+  },
+  {
+    "key": "odaTema.galaxy_tealAlt",
+    "en": "Space-green spiral",
+    "tr": "Uzay yeşili spiral"
+  },
+  {
+    "key": "odaTema.pulsar_purple",
+    "en": "Pulsar purple",
+    "tr": "Pulsar mor"
+  },
+  {
+    "key": "odaTema.pulsar_purpleAlt",
+    "en": "Pulsing purple star",
+    "tr": "Nabız eden mor yıldız"
+  },
+  {
+    "key": "odaTema.comet_trail",
+    "en": "Comet trail",
+    "tr": "Kuyruklu yıldız"
+  },
+  {
+    "key": "odaTema.comet_trailAlt",
+    "en": "Ice-blue trail",
+    "tr": "Buz mavisi iz"
+  },
+  {
+    "key": "odaTema.void_ember",
+    "en": "Void ember",
+    "tr": "Boşluk koru"
+  },
+  {
+    "key": "odaTema.void_emberAlt",
+    "en": "Dark space · ember",
+    "tr": "Koyu uzay · köz"
+  },
+  {
+    "key": "odaTema.chrome_frost",
+    "en": "Chrome frost",
+    "tr": "Krom buz"
+  },
+  {
+    "key": "odaTema.chrome_frostAlt",
+    "en": "Cold metal glass",
+    "tr": "Soğuk metal cam"
+  },
+  {
+    "key": "odaTema.copper_wire",
+    "en": "Copper wire",
+    "tr": "Bakır tel"
+  },
+  {
+    "key": "odaTema.copper_wireAlt",
+    "en": "Warm copper shimmer",
+    "tr": "Sıcak bakır ışıltı"
+  },
+  {
+    "key": "odaTema.titanium_edge",
+    "en": "Titanium edge",
+    "tr": "Titanyum kenar"
+  },
+  {
+    "key": "odaTema.titanium_edgeAlt",
+    "en": "Sharp grey metal",
+    "tr": "Keskin gri metal"
+  },
+  {
+    "key": "odaTema.bronze_mirror",
+    "en": "Bronze mirror",
+    "tr": "Bronz ayna"
+  },
+  {
+    "key": "odaTema.bronze_mirrorAlt",
+    "en": "Mirrored bronze surface",
+    "tr": "Aynalı bronz yüzey"
+  },
+  {
+    "key": "odaTema.mercury_glass",
+    "en": "Mercury glass",
+    "tr": "Cıva cam"
+  },
+  {
+    "key": "odaTema.mercury_glassAlt",
+    "en": "Liquid metal glass",
+    "tr": "Sıvı metal cam"
+  },
+  {
+    "key": "odaTema.steel_neon",
+    "en": "Steel neon",
+    "tr": "Çelik neon"
+  },
+  {
+    "key": "odaTema.steel_neonAlt",
+    "en": "Metal + blue neon",
+    "tr": "Metal + mavi neon"
+  },
+  {
+    "key": "odaTema.club_cream",
+    "en": "Club cream",
+    "tr": "Kulüp krem"
+  },
+  {
+    "key": "odaTema.blurple_night",
+    "en": "Blurple night",
+    "tr": "Blurple gece"
+  },
+  {
+    "key": "odaTema.spaces_sky",
+    "en": "Spaces sky",
+    "tr": "Spaces gökyüzü"
+  },
+  {
+    "key": "odaTema.spaces_skyAlt",
+    "en": "Night sky · blue accent",
+    "tr": "Gece gökyüzü · mavi vurgu"
+  },
+  {
+    "key": "odaTema.party_neon",
+    "en": "Party neon",
+    "tr": "Parti neon"
+  },
+  {
+    "key": "odaTema.party_neonAlt",
+    "en": "Live party · pink neon",
+    "tr": "Canlı parti · pembe neon"
+  },
+  {
+    "key": "odaTema.greenroom_dark",
+    "en": "Greenroom dark",
+    "tr": "Greenroom koyu"
+  },
+  {
+    "key": "odaTema.greenroom_darkAlt",
+    "en": "Black stage · green accent",
+    "tr": "Siyah sahne · yeşil vurgu"
+  },
+  {
+    "key": "odaTema.salon_warm",
+    "en": "Warm salon",
+    "tr": "Sıcak salon"
+  },
+  {
+    "key": "odaTema.salon_warmAlt",
+    "en": "Open cream · orange accent",
+    "tr": "Açık krem · turuncu vurgu"
+  },
+  {
+    "key": "zeusX.bilgi",
+    "en": "Paytable",
+    "tr": "Ödeme tablosu"
+  },
+  {
+    "key": "lobi.ambientCafeIkili",
+    "en": "Café chat",
+    "tr": "Kafe sohbeti"
+  },
+  {
+    "key": "lobi.ambientCafeSohbet",
+    "en": "Friends chatting",
+    "tr": "Arkadaş sohbeti"
+  },
+  {
+    "key": "lobi.ambientCafeGulme",
+    "en": "Lively scene",
+    "tr": "Canlı ortam"
+  },
+  {
+    "key": "lobi.platformPolitikalari",
+    "en": "Platform policies",
+    "tr": "Platform politikaları"
+  },
+  {
+    "key": "kullanimSuresiFmt.gunSaatKisa",
+    "en": "{{gun}}d {{saat}}h",
+    "tr": "{{gun}}g {{saat}}s"
+  },
+  {
+    "key": "kullanimSuresiFmt.saatDkKisa",
+    "en": "{{saat}}h {{dk}}m",
+    "tr": "{{saat}}s {{dk}}dk"
+  }
+]

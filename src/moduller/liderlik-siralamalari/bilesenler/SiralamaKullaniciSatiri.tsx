@@ -11,6 +11,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 const MEDAL: Record<number, string[]> = {
   1: ['#F6D365', '#FDA085'],
@@ -25,11 +26,12 @@ export function SiralamaKullaniciSatiri({
   item: SiralamaSatiri;
   birim?: string;
 }) {
+  const { t } = useCeviri();
   const rank = item.rank ?? 0;
   const ad =
     item.display_name?.trim() ||
     item.username?.trim() ||
-    'Kullanıcı';
+    t('ortak.kullanici');
   const harf = ad.charAt(0).toLocaleUpperCase('tr-TR');
   const medal = MEDAL[rank];
   const profilId = item.user_id;

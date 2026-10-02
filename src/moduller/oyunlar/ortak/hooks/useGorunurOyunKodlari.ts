@@ -11,9 +11,9 @@ import type { GameCode } from '../tipler/OyunTipleri';
 
 export function useGorunurOyunKodlari(params?: { enabled?: boolean }) {
   const enabled = params?.enabled !== false;
-  /** İlk boyamada boş liste gösterme — sunucu gelene kadar varsayılan üç oyun */
+  /** İlk boyamada boş liste gösterme — sunucu gelene kadar varsayılan oyunlar */
   const [codes, setCodes] = useState<GameCode[]>(
-    enabled ? ['nox_reels', 'zeus', 'kozmik_kaskad'] : [],
+    enabled ? ['fruit_wheel', 'fair_spin', 'astral_falls', 'zeus', 'nox_reels', 'kozmik_kaskad'] : [],
   );
   const [platformAcik, setPlatformAcik] = useState(true);
   const [loading, setLoading] = useState(enabled);

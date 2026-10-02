@@ -18,6 +18,11 @@ export type AnaSayfaMenuOgesi = {
   icon: keyof typeof Ionicons.glyphMap;
   tint: string;
   href: string;
+  /** Okunmamış resmi duyuru sayısı */
+  rozet?: number;
+  /** Remote hamburger group — varsa menuGruplarinaBol bunu kullanır */
+  groupId?: string;
+  sortOrder?: number;
 };
 
 export type MenuGrubu = {
@@ -69,13 +74,20 @@ export function HamburgerMenuGrubu({ grup, onOgeSec }: GrupProps) {
             </View>
           );
           const yazi = (
-            <Text
-              style={[styles.baslik, metinRtl]}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {oge.baslik}
-            </Text>
+            <View style={styles.yaziSatir}>
+              <Text
+                style={[styles.baslik, metinRtl, styles.baslikEsnek]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {oge.baslik}
+              </Text>
+              {oge.rozet && oge.rozet > 0 ? (
+                <View style={styles.rozet}>
+                  <Text style={styles.rozetYazi}>{oge.rozet > 99 ? '99+' : String(oge.rozet)}</Text>
+                </View>
+              ) : null}
+            </View>
           );
           return (
             <Pressable
@@ -183,7 +195,7 @@ export function HamburgerPremiumCta({ onPress }: CtaProps) {
 }
 
 /** Menü öğelerini yardım / yayın / hesap / keşif gruplarına ayır.
- * Destek·Bildir·Fikir üstte — uzun keşif listesinin altında kaybolmasın. */
+ * Remote `groupId` + `sortOrder` varsa onları kullanır; yoksa key fallback. */
 export function menuGruplarinaBol(
   ogeler: AnaSayfaMenuOgesi[],
   etiketler: {
@@ -194,16 +206,54 @@ export function menuGruplarinaBol(
     yonetim: string;
   },
 ): MenuGrubu[] {
-  const yardimKeys = new Set(['destek', 'bildir', 'fikir']);
+  const etiketMap: Record<string, string> = {
+    yardim: etiketler.yardim,
+    yayin: etiketler.yayin,
+    hesap: etiketler.hesap,
+    kesfet: etiketler.kesfet,
+    yonetim: etiketler.yonetim,
+  };
+
+  const remoteIle = ogeler.some((o) => !!o.groupId);
+  if (remoteIle) {
+    const siraliGruplar = ['yardim', 'yayin', 'hesap', 'kesfet', 'yonetim'];
+    const buckets = new Map<string, AnaSayfaMenuOgesi[]>();
+    for (const id of siraliGruplar) buckets.set(id, []);
+    for (const o of ogeler) {
+      const gid = o.groupId && etiketMap[o.groupId] ? o.groupId : 'kesfet';
+      if (!buckets.has(gid)) buckets.set(gid, []);
+      buckets.get(gid)!.push(o);
+    }
+    for (const list of buckets.values()) {
+      list.sort(
+        (a, b) =>
+          (a.sortOrder ?? 999) - (b.sortOrder ?? 999) ||
+          a.key.localeCompare(b.key),
+      );
+    }
+    return siraliGruplar
+      .map((id) => ({
+        id,
+        baslik: etiketMap[id] ?? id,
+        ogeler: buckets.get(id) ?? [],
+      }))
+      .filter((g) => g.ogeler.length > 0);
+  }
+
+  const yardimKeys = new Set(['asistan', 'destek', 'bildir', 'fikir']);
   const odaKeys = new Set(['live', 'pk']);
   const hesapKeys = new Set(['agency_manage', 'host']);
   const kesfetKeys = new Set([
     'official_city_rooms',
     'city_league',
+    'country_league',
+    'ulke_ligi',
     'events',
     'creators_for_you',
     'kesfet',
     'ranks',
+    'ai_muzik',
+    'kisiler',
   ]);
   const adminKeys = new Set(['admin_oyun_test', 'admin_panel']);
 
@@ -221,28 +271,13 @@ export function menuGruplarinaBol(
   ]);
   const diger = ogeler.filter((o) => !kullanilan.has(o.key));
 
-  const gruplar: MenuGrubu[] = [
+  return [
     { id: 'yardim', baslik: etiketler.yardim, ogeler: al(yardimKeys) },
     { id: 'yayin', baslik: etiketler.yayin, ogeler: al(odaKeys) },
     { id: 'hesap', baslik: etiketler.hesap, ogeler: al(hesapKeys) },
     { id: 'kesfet', baslik: etiketler.kesfet, ogeler: [...al(kesfetKeys), ...diger] },
     { id: 'yonetim', baslik: etiketler.yonetim, ogeler: al(adminKeys) },
   ].filter((g) => g.ogeler.length > 0);
-
-  if (__DEV__) {
-    const seen = new Set<string>();
-    for (const g of gruplar) {
-      for (const o of g.ogeler) {
-        const composite = `${g.id}:${o.key}`;
-        if (seen.has(o.key)) {
-          console.warn('[menuGruplarinaBol] item id reused across sections:', composite);
-        }
-        seen.add(o.key);
-      }
-    }
-  }
-
-  return gruplar;
 }
 
 const styles = StyleSheet.create({
@@ -300,6 +335,34 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontWeight: '700',
     color: RenkTokenlari.text,
+  },
+  yaziSatir: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  baslikEsnek: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+  },
+  rozet: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: RenkTokenlari.accent,
+  },
+  rozetYazi: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
   },
   ctaDis: {
     borderRadius: 12,

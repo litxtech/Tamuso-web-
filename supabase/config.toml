@@ -15,6 +15,9 @@ verify_jwt = true
 [functions.zeus-spin]
 verify_jwt = true
 
+[functions.fair-spin-spin]
+verify_jwt = true
+
 [functions.iap-receipt-verify]
 verify_jwt = true
 
@@ -26,4 +29,39 @@ verify_jwt = false
 
 [functions.misafir-cihaz-oturum]
 verify_jwt = false
+
+[functions.ai-music-create]
+verify_jwt = true
+
+[functions.ai-music-iap-verify]
+verify_jwt = true
+
+[functions.ai-music-job-status]
+verify_jwt = true
+
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-payment-sheet]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+# WhatsApp / tarayıcıdan açılan kamu paylaşım yönlendirmesi — JWT yok
+[functions.share-redirect]
+verify_jwt = false
+
+# Ajans satış ödeme sayfası (Tamuso markalı HTML + Stripe Checkout)
+[functions.ajans-pay]
+verify_jwt = false
+
+[functions.ajans-dekont-pdf]
+verify_jwt = true
+
+[functions.creator-studio-v2]
+verify_jwt = true
+
+[functions.creator-studio-play]
+verify_jwt = true
 

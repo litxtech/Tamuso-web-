@@ -12,7 +12,8 @@ import type { MusicRuntimeConfig, RoomMusicSession } from '../islemler/OdaMuzikA
 
 const PLAYER_OPTS = {
   keepAudioSessionActive: true,
-  updateInterval: 500,
+  /** Konum okuması anlık; sık status olayına gerek yok — 500ms cihazı ısıtıyordu */
+  updateInterval: 8000,
 } as const;
 
 function livekitSesToparla() {
@@ -56,7 +57,56 @@ let targetVolume = DEFAULT_CFG.default_normal_volume;
 let localGain = 1;
 let duckGain = 1;
 let fadeTimer: ReturnType<typeof setInterval> | null = null;
+let bitisTimer: ReturnType<typeof setTimeout> | null = null;
+let bitisDinleyici: (() => void) | null = null;
+let bitisYakildi = false;
+let bitisGen = -1;
+let bitisDeneme = 0;
 let cfg: MusicRuntimeConfig = { ...DEFAULT_CFG };
+
+/** Parça doğal bitince bir kez — sıradaki veya kapatma oda ekranında. */
+export function OdaMuzikBitisDinle(fn: () => void) {
+  bitisDinleyici = fn;
+  return () => {
+    if (bitisDinleyici === fn) bitisDinleyici = null;
+  };
+}
+
+function bitisIptal() {
+  if (bitisTimer) clearTimeout(bitisTimer);
+  bitisTimer = null;
+}
+
+/** Süre dolunca tek uyanış. Sürekli yoklama yok. */
+function bitisPlanla(gen: number) {
+  bitisIptal();
+  if (gen !== generation) return;
+  if (gen !== bitisGen) {
+    bitisGen = gen;
+    bitisYakildi = false;
+    bitisDeneme = 0;
+  }
+  const p = player;
+  if (!p) return;
+  const sure = Number(p.duration ?? 0);
+  const konum = Number(p.currentTime ?? 0);
+  if (sure < 1) {
+    bitisDeneme += 1;
+    if (bitisDeneme > 8) return;
+    bitisTimer = setTimeout(() => bitisPlanla(gen), 2000);
+    return;
+  }
+  bitisDeneme = 0;
+  if (konum >= sure - 0.45) {
+    if (!bitisYakildi) {
+      bitisYakildi = true;
+      bitisDinleyici?.();
+    }
+    return;
+  }
+  const kalan = Math.max(700, (sure - konum - 0.2) * 1000);
+  bitisTimer = setTimeout(() => bitisPlanla(gen), kalan);
+}
 
 export function OdaMuzikConfigAyarla(next: Partial<MusicRuntimeConfig> | null) {
   cfg = { ...DEFAULT_CFG, ...(next ?? {}) };
@@ -158,6 +208,7 @@ export async function OdaMuzikSessionUygula(session: RoomMusicSession | null) {
     }
     // LiveKit voice oturumunu koru (müzik play session'ı çalmasın)
     livekitSesToparla();
+    if (session.repeat_mode !== 'one') bitisPlanla(gen);
     if (Platform.OS === 'ios') {
       setTimeout(() => {
         if (gen !== generation || !player) return;
@@ -170,7 +221,8 @@ export async function OdaMuzikSessionUygula(session: RoomMusicSession | null) {
         livekitSesToparla();
       }, 400);
     }
-  } else if (session.state === 'PAUSED') {
+  } else if (session.state === 'PAUSED' || session.state === 'STOPPED') {
+    bitisIptal();
     try {
       player.pause?.();
     } catch {
@@ -181,6 +233,7 @@ export async function OdaMuzikSessionUygula(session: RoomMusicSession | null) {
 
 export async function OdaMuzikDurdur(bumpGen = true) {
   if (bumpGen) generation += 1;
+  bitisIptal();
   if (fadeTimer) {
     clearInterval(fadeTimer);
     fadeTimer = null;

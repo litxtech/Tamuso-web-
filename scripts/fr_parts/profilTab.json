@@ -1,0 +1,21 @@
+{
+  "profilTab": {
+    "misafirUsername": "guest",
+    "misafirBio": "Compte invité — finalisez votre compte pour un profil complet.",
+    "varsayilanBio": "Voix, cadeaux et lives sur Tamuso.",
+    "cuzdanAlt": "Votre solde de pièces et de diamants",
+    "oyun": "Jeu",
+    "oyunAlt": "{{lig}} · votre carte de profil",
+    "kupa": "Trophées",
+    "oyunProfili": "Profil de jeu",
+    "oyunXp": "XP de jeu",
+    "mac": "Matchs",
+    "enYuksek": "Record",
+    "combo": "Combo",
+    "galibiyetOrani": "Taux de victoire {{oran}} %",
+    "oyunIpucu": "Jouez dans les salles vocales — gagnez de l’XP et des trophées.",
+    "hesapGuncellendi": "Votre compte a été mis à jour.",
+    "misafirPaylasimBos": "Finalisez votre compte pour publier.",
+    "paylasimBos": "Aucune publication pour le moment — ajoutez votre premier statut."
+  }
+}

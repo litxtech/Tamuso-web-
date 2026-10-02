@@ -133,7 +133,9 @@ async function profilMisafirBayraginiDusur(input: {
 
   return {
     ok: false,
-    hata: `Hesap bağlandı ama profil güncellenemedi: ${minimalErr?.message || sonHata}`,
+    hata: i18n.t('auth.hesapBaglandiProfilHata', {
+      hata: minimalErr?.message || sonHata,
+    }),
   };
 }
 
@@ -169,7 +171,9 @@ export async function MisafirHesabiTamamla(input: {
   if (userErr || !userData.user) {
     return {
       ok: false,
-      hata: authHatasiTurkce(userErr?.message ?? 'Oturum yok'),
+      hata: userErr?.message
+        ? authHatasiTurkce(userErr.message)
+        : i18n.t('ortak.oturumYok'),
     };
   }
 

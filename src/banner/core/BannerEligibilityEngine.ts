@@ -227,10 +227,10 @@ export function isBannerEligible(
   }
 
   if (placementKey) {
-    const ok = (banner.placements ?? []).some(
-      (p) => p.placement_key === placementKey,
-    );
-    if (!ok && (banner.placements?.length ?? 0) > 0) {
+    const placements = banner.placements ?? [];
+    // Boş placement artık “her yer” değil — eşleşme zorunlu
+    const ok = placements.some((p) => p.placement_key === placementKey);
+    if (!ok) {
       reasons.push('placement_mismatch');
     }
   }

@@ -13,18 +13,20 @@ import {
 import { Link, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextField } from '../../src/components/TextField';
 import { GradientButton } from '../../src/components/GradientButton';
 import { KlavyeKapatan } from '../../src/components/KlavyeKapatan';
 import { KlavyeGuvenliAlan } from '../../src/bilesenler/klavye/KlavyeGuvenliAlan';
 import { GirisLobiArkaPlan } from '../../src/moduller/giris-lobisi/bilesenler/GirisLobiArkaPlan';
+import { GirisLobiDilSecici } from '../../src/moduller/giris-lobisi/bilesenler/GirisLobiDilSecici';
 import { GirisLobisiPublicGet } from '../../src/moduller/giris-lobisi/islemler/GirisLobisiPublicGet';
 import {
   GirisLobisiOnbellekDisktenYukle,
   GirisLobisiOnbellektenAl,
 } from '../../src/moduller/giris-lobisi/onbellek/GirisLobisiOnbellek';
+import { useGirisLobisiCanli } from '../../src/moduller/giris-lobisi/kancalar/useGirisLobisiCanli';
 import {
   VARSAYILAN_GIRIS_LOBISI_AYAR,
   type GirisLobisiAyar,
@@ -46,8 +48,15 @@ import { env } from '../../src/lib/env';
 import { PolitikaOkumaPaneli } from '../../src/moduller/politikalar/bilesenler/PolitikaOkumaPaneli';
 import { PolitikalariListele } from '../../src/moduller/politikalar/islemler/PolitikaIslemleri';
 import type { PolitikaGorunum } from '../../src/moduller/politikalar/tipler/PolitikaTipleri';
+import { SPOTIFY_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/SpotifyGirisAktif';
+import { TWITCH_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/TwitchGirisAktif';
+import { X_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/XGirisAktif';
+import { GOOGLE_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/GoogleGirisAktif';
 
 const SPOTIFY_GREEN = '#1DB954';
+const TWITCH_PURPLE = '#9146FF';
+const X_BLACK = '#000000';
+const GOOGLE_WHITE = '#FFFFFF';
 
 /**
  * Giriş lobisi — metin/logo/medya admin panelinden gelir.
@@ -61,6 +70,9 @@ export default function LoginScreen() {
     signIn,
     signInWithApple,
     signInWithSpotify,
+    signInWithTwitch,
+    signInWithX,
+    signInWithGoogle,
     continueAsGuest,
     signInFromHistory,
   } = useAuth();
@@ -70,6 +82,9 @@ export default function LoginScreen() {
   const [guestLoading, setGuestLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [spotifyLoading, setSpotifyLoading] = useState(false);
+  const [twitchLoading, setTwitchLoading] = useState(false);
+  const [xLoading, setXLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [gecmisBusyId, setGecmisBusyId] = useState<string | null>(null);
   const onbellekBaslangic = GirisLobisiOnbellektenAl();
   const [ayar, setAyar] = useState<GirisLobisiAyar>(
@@ -117,6 +132,19 @@ export default function LoginScreen() {
     }, []),
   );
 
+  const lobiyiUygula = useCallback(
+    (d: { ayar: GirisLobisiAyar; medya: GirisLobisiMedya[] }) => {
+      setAyar(d.ayar);
+      setMedya(d.medya);
+    },
+    [],
+  );
+  useGirisLobisiCanli(lobiyiUygula, lobiOdakli);
+
+  const tumButonlarGizli = Boolean(ayar.tum_butonlar_gizle);
+  const sosyalGizli =
+    tumButonlarGizli || Boolean(ayar.sosyal_medya_gizle);
+
   const onSubmit = async () => {
     if (!kimlik.trim() || !password) {
       Alert.alert(t('auth.eksikBilgi'), t('auth.eksikBilgiMesaj'));
@@ -151,6 +179,42 @@ export default function LoginScreen() {
     if (cancelled) return;
     if (error) {
       Alert.alert(t('auth.spotifyGirisi'), error);
+      return;
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onTwitch = async () => {
+    setTwitchLoading(true);
+    const { error, cancelled } = await signInWithTwitch();
+    setTwitchLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.twitchGirisi'), error);
+      return;
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onX = async () => {
+    setXLoading(true);
+    const { error, cancelled } = await signInWithX();
+    setXLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.xGirisi'), error);
+      return;
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onGoogle = async () => {
+    setGoogleLoading(true);
+    const { error, cancelled } = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.googleGirisi'), error);
       return;
     }
     router.replace('/(tabs)');
@@ -212,6 +276,10 @@ export default function LoginScreen() {
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.scroll}
               >
+                <View style={styles.dilSatir}>
+                  <GirisLobiDilSecici />
+                </View>
+
                 {heroVar ? (
                   <View style={styles.hero}>
                     {ayar.logo_goster ? (
@@ -257,115 +325,187 @@ export default function LoginScreen() {
                   <View style={styles.heroBos} />
                 )}
 
-                <GirisLobiOturumGecmisi
-                  onSec={onGecmisSec}
-                  busyUserId={gecmisBusyId}
-                />
+                {!tumButonlarGizli ? (
+                  <GirisLobiOturumGecmisi
+                    onSec={onGecmisSec}
+                    busyUserId={gecmisBusyId}
+                  />
+                ) : null}
 
-                <View style={styles.formKart}>
-                  <Text style={styles.formBaslik}>
-                    {!ayar.form_baslik.trim() || ayar.form_baslik.trim() === 'Giriş'
-                      ? t('auth.giris')
-                      : ayar.form_baslik}
-                  </Text>
-                  {ayar.form_alt ? (
-                    <Text style={styles.formAlt}>{ayar.form_alt}</Text>
-                  ) : null}
-
-                  <TextField
-                    label={t('auth.mailVeyaKullaniciAdi')}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="default"
-                    textContentType="username"
-                    value={kimlik}
-                    onChangeText={setKimlik}
-                    returnKeyType="next"
-                    style={styles.inputCam}
-                  />
-                  <TextField
-                    label={t('auth.sifre')}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    returnKeyType="done"
-                    blurOnSubmit
-                    onSubmitEditing={() => void onSubmit()}
-                    style={styles.inputCam}
-                  />
-                  <Link href="/(auth)/forgot-password" asChild>
-                    <Pressable>
-                      <Text style={styles.forgot}>{t('auth.sifremiUnuttum')}</Text>
-                    </Pressable>
-                  </Link>
-                  <GradientButton
-                    title={t('auth.giris')}
-                    onPress={onSubmit}
-                    loading={loading}
-                  />
-                  <Pressable
-                    onPress={() => void onSpotify()}
-                    disabled={spotifyLoading}
-                    style={[
-                      styles.spotifyBtn,
-                      spotifyLoading && styles.spotifyDisabled,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('auth.spotifyIleGiris')}
-                  >
-                    <Ionicons name="musical-notes" size={20} color="#121212" />
-                    <Text style={styles.spotifyText}>
-                      {spotifyLoading
-                        ? t('auth.spotifyBaglaniyor')
-                        : t('auth.spotifyIleDevam')}
+                {!tumButonlarGizli ? (
+                  <View style={styles.formKart}>
+                    <Text style={styles.formBaslik}>
+                      {!ayar.form_baslik.trim() ||
+                      ayar.form_baslik.trim() === 'Giri\u015f' ||
+                      ayar.form_baslik.trim() === t('auth.giris')
+                        ? t('auth.giris')
+                        : ayar.form_baslik}
                     </Text>
-                  </Pressable>
-                  {Platform.OS === 'ios' ? (
-                    <View style={styles.appleWrap}>
-                      <AppleAuthentication.AppleAuthenticationButton
-                        buttonType={
-                          AppleAuthentication.AppleAuthenticationButtonType
-                            .SIGN_IN
-                        }
-                        buttonStyle={
-                          palet.statusBar === 'dark'
-                            ? AppleAuthentication.AppleAuthenticationButtonStyle
-                                .BLACK
-                            : AppleAuthentication.AppleAuthenticationButtonStyle
-                                .WHITE
-                        }
-                        cornerRadius={14}
-                        style={styles.appleBtn}
-                        onPress={onApple}
-                      />
-                      {appleLoading ? (
-                        <Text style={styles.appleHint}>
-                          {t('auth.appleBaglaniyor')}
-                        </Text>
-                      ) : null}
-                    </View>
-                  ) : null}
-                  {/* Apple 1.2: production’da misafir = anonim UGC riski — kapalı */}
-                  {env.appEnv !== 'production' ? (
-                    <GradientButton
-                      title={t('auth.misafirDevam')}
-                      variant="ghost"
-                      onPress={onGuest}
-                      loading={guestLoading}
+                    {ayar.form_alt ? (
+                      <Text style={styles.formAlt}>{ayar.form_alt}</Text>
+                    ) : null}
+
+                    <TextField
+                      label={t('auth.mailVeyaKullaniciAdi')}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="default"
+                      textContentType="username"
+                      value={kimlik}
+                      onChangeText={setKimlik}
+                      returnKeyType="next"
+                      style={styles.inputCam}
                     />
-                  ) : null}
-                  <Link href="/(auth)/register" asChild>
-                    <Pressable
-                      style={styles.switchRow}
-                      onPress={() => setLobiOdakli(false)}
-                    >
-                      <Text style={styles.switchText}>
-                        {t('auth.hesabinYokMu')}{' '}
-                      </Text>
-                      <Text style={styles.switchLink}>{t('auth.kayit')}</Text>
-                    </Pressable>
-                  </Link>
-                </View>
+                    <TextField
+                      label={t('auth.sifre')}
+                      secureTextEntry
+                      value={password}
+                      onChangeText={setPassword}
+                      returnKeyType="done"
+                      blurOnSubmit
+                      onSubmitEditing={() => void onSubmit()}
+                      style={styles.inputCam}
+                    />
+                    <Link href="/(auth)/forgot-password" asChild>
+                      <Pressable>
+                        <Text style={styles.forgot}>
+                          {t('auth.sifremiUnuttum')}
+                        </Text>
+                      </Pressable>
+                    </Link>
+                    <GradientButton
+                      title={t('auth.giris')}
+                      onPress={onSubmit}
+                      loading={loading}
+                    />
+                    {!sosyalGizli && SPOTIFY_GIRIS_AKTIF ? (
+                      <Pressable
+                        onPress={() => void onSpotify()}
+                        disabled={spotifyLoading}
+                        style={[
+                          styles.spotifyBtn,
+                          spotifyLoading && styles.spotifyDisabled,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('auth.spotifyIleGiris')}
+                      >
+                        <Ionicons
+                          name="musical-notes"
+                          size={20}
+                          color="#121212"
+                        />
+                        <Text style={styles.spotifyText}>
+                          {spotifyLoading
+                            ? t('auth.spotifyBaglaniyor')
+                            : t('auth.spotifyIleDevam')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {!sosyalGizli && TWITCH_GIRIS_AKTIF ? (
+                      <Pressable
+                        onPress={() => void onTwitch()}
+                        disabled={twitchLoading}
+                        style={[
+                          styles.twitchBtn,
+                          twitchLoading && styles.twitchDisabled,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('auth.twitchIleGiris')}
+                      >
+                        <Ionicons name="logo-twitch" size={20} color="#fff" />
+                        <Text style={styles.twitchText}>
+                          {twitchLoading
+                            ? t('auth.twitchBaglaniyor')
+                            : t('auth.twitchIleDevam')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {!sosyalGizli && X_GIRIS_AKTIF ? (
+                      <Pressable
+                        onPress={() => void onX()}
+                        disabled={xLoading}
+                        style={[styles.xBtn, xLoading && styles.xDisabled]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('auth.xIleGiris')}
+                      >
+                        <Text style={styles.xLogo}>𝕏</Text>
+                        <Text style={styles.xText}>
+                          {xLoading
+                            ? t('auth.xBaglaniyor')
+                            : t('auth.xIleDevam')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {!sosyalGizli && GOOGLE_GIRIS_AKTIF ? (
+                      <Pressable
+                        onPress={() => void onGoogle()}
+                        disabled={googleLoading}
+                        style={[
+                          styles.googleBtn,
+                          googleLoading && styles.googleDisabled,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('auth.googleIleGiris')}
+                      >
+                        <MaterialCommunityIcons
+                          name="google"
+                          size={20}
+                          color="#4285F4"
+                        />
+                        <Text style={styles.googleText}>
+                          {googleLoading
+                            ? t('auth.googleBaglaniyor')
+                            : t('auth.googleIleDevam')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {!sosyalGizli && Platform.OS === 'ios' ? (
+                      <View style={styles.appleWrap}>
+                        <AppleAuthentication.AppleAuthenticationButton
+                          buttonType={
+                            AppleAuthentication.AppleAuthenticationButtonType
+                              .SIGN_IN
+                          }
+                          buttonStyle={
+                            palet.statusBar === 'dark'
+                              ? AppleAuthentication
+                                  .AppleAuthenticationButtonStyle.BLACK
+                              : AppleAuthentication
+                                  .AppleAuthenticationButtonStyle.WHITE
+                          }
+                          cornerRadius={14}
+                          style={styles.appleBtn}
+                          onPress={onApple}
+                        />
+                        {appleLoading ? (
+                          <Text style={styles.appleHint}>
+                            {t('auth.appleBaglaniyor')}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ) : null}
+                    {/* Apple 1.2: production’da misafir = anonim UGC riski — kapalı */}
+                    {env.appEnv !== 'production' ? (
+                      <GradientButton
+                        title={t('auth.misafirDevam')}
+                        variant="ghost"
+                        onPress={onGuest}
+                        loading={guestLoading}
+                      />
+                    ) : null}
+                    <Link href="/(auth)/register" asChild>
+                      <Pressable
+                        style={styles.switchRow}
+                        onPress={() => setLobiOdakli(false)}
+                      >
+                        <Text style={styles.switchText}>
+                          {t('auth.hesabinYokMu')}{' '}
+                        </Text>
+                        <Text style={styles.switchLink}>{t('auth.kayit')}</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                ) : null}
 
                 <View style={styles.politikaAlt}>
                   {girisPolitikalari.map((p, i) => (
@@ -426,6 +566,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: BoslukTokenlari.xl,
     paddingBottom: BoslukTokenlari.lg,
+  },
+  dilSatir: {
+    alignItems: 'flex-end',
+    marginBottom: -BoslukTokenlari.sm,
   },
   hero: {
     alignItems: 'center',
@@ -515,6 +659,64 @@ const styles = StyleSheet.create({
   spotifyText: {
     ...TipografiTokenlari.body,
     color: '#121212',
+    fontWeight: '700',
+  },
+  twitchBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: TWITCH_PURPLE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+  },
+  twitchDisabled: { opacity: 0.7 },
+  twitchText: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  xBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: X_BLACK,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  xDisabled: { opacity: 0.7 },
+  xLogo: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 22,
+  },
+  xText: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  googleBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: GOOGLE_WHITE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  googleDisabled: { opacity: 0.7 },
+  googleText: {
+    ...TipografiTokenlari.body,
+    color: '#3C4043',
     fontWeight: '700',
   },
   appleWrap: { gap: BoslukTokenlari.sm },

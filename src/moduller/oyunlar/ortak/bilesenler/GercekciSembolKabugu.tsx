@@ -1,6 +1,7 @@
 /**
  * GercekciSembolKabugu — sembol PNG'sini opak bir karo üstünde gösterir.
  * Arka plan karodan sızmaz; simgeler hayali / saydam görünmez.
+ * vivid: Zeus vb. için yüksek kontrast, silik/cam hissi yok.
  */
 
 import React, { memo } from 'react';
@@ -14,6 +15,8 @@ type Props = {
   tint: string;
   performance?: Performans;
   special?: boolean;
+  /** Yüksek kontrast — silik cam efekti yok */
+  vivid?: boolean;
   children: React.ReactNode;
 };
 
@@ -36,15 +39,87 @@ function GercekciSembolKabuguInner({
   tint,
   performance = 'HIGH',
   special = false,
+  vivid = false,
   children,
 }: Props) {
-  const radius = Math.round(size * 0.18);
+  const radius = Math.round(size * (vivid ? 0.14 : 0.18));
   const low = performance === 'LOW';
   const high = performance === 'HIGH';
 
+  if (vivid) {
+    return (
+      <View style={{ width: size, height: size }}>
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              borderRadius: radius,
+              backgroundColor: special ? '#241808' : '#12101A',
+              borderWidth: 2,
+              borderColor: special
+                ? 'rgba(255, 214, 100, 0.85)'
+                : hexAlpha(tint, 0.55),
+            },
+          ]}
+        />
+        <LinearGradient
+          pointerEvents="none"
+          colors={[
+            hexAlpha(tint, special ? 0.55 : 0.38),
+            '#1A1628',
+            '#0A0812',
+          ]}
+          locations={[0, 0.45, 1]}
+          start={{ x: 0.2, y: 0 }}
+          end={{ x: 0.8, y: 1 }}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              borderRadius: radius,
+              margin: 2,
+            },
+          ]}
+        />
+        {!low ? (
+          <LinearGradient
+            pointerEvents="none"
+            colors={['rgba(255,255,255,0.22)', 'transparent']}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={{
+              position: 'absolute',
+              top: 2,
+              left: 2,
+              right: 2,
+              height: size * 0.28,
+              borderTopLeftRadius: radius,
+              borderTopRightRadius: radius,
+            }}
+          />
+        ) : null}
+        <View style={styles.merkez}>{children}</View>
+        {!low ? (
+          <View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                borderRadius: radius,
+                margin: 2,
+                borderBottomWidth: 2,
+                borderRightWidth: 1.5,
+                borderColor: 'rgba(0,0,0,0.45)',
+              },
+            ]}
+          />
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <View style={{ width: size, height: size }}>
-      {/* Opak zemin — arka planı tamamen keser */}
       <View
         pointerEvents="none"
         style={[
@@ -114,11 +189,11 @@ function GercekciSembolKabuguInner({
           style={[
             styles.zeminGolge,
             {
-              width: size * 0.5,
-              height: size * 0.07,
+              width: size * 0.42,
+              height: size * 0.045,
               borderRadius: size,
-              bottom: size * 0.06,
-              left: size * 0.25,
+              bottom: size * 0.05,
+              left: size * 0.29,
             },
           ]}
         />
@@ -147,7 +222,6 @@ function GercekciSembolKabuguInner({
         />
       ) : null}
 
-      {/* Sembol — net, karo üstünde */}
       <View style={styles.merkez}>{children}</View>
 
       {!low ? (
@@ -193,8 +267,8 @@ const styles = StyleSheet.create({
   },
   zeminGolge: {
     position: 'absolute',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    transform: [{ scaleX: 1.08 }],
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    transform: [{ scaleX: 1.02 }],
   },
   sheen: {
     position: 'absolute',
@@ -208,8 +282,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.28)',
   },
   rimGolge: {
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 1,
     borderRightWidth: 1,
-    borderColor: 'rgba(0,0,0,0.55)',
+    borderColor: 'rgba(0,0,0,0.35)',
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -8,13 +8,14 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Screen } from '../../../components/Screen';
-import { EkranBasligi } from '../../../components/EkranBasligi';
+import { EkranBasligi, guvenliGeriDon } from '../../../components/EkranBasligi';
 import { ModulHataSiniri } from '../../../ortak/hata-sinirlari/ModulHataSiniri';
-import { AjansBolumRayi } from './AjansBolumRayi';
 import { AjansAtmosfer } from './AjansAtmosfer';
+import { AjansBolumRayi } from './AjansBolumRayi';
+import { AjansCekmeceMenu, AjansMenuDugmesi } from './AjansCekmeceMenu';
 import { ajansHref } from '../kancalar/useAjansRouteId';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
-import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari, HeaderTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 
 export {
@@ -32,6 +33,7 @@ export {
 
 export function AjansAltEkranKabuk({
   agencyId,
+  agencyName,
   title,
   subtitle,
   aktif,
@@ -39,9 +41,9 @@ export function AjansAltEkranKabuk({
   refreshing,
   children,
   onRefresh,
-  hideRail,
 }: {
   agencyId: string;
+  agencyName?: string | null;
   title: string;
   subtitle?: string;
   aktif: string;
@@ -49,9 +51,9 @@ export function AjansAltEkranKabuk({
   refreshing?: boolean;
   children: React.ReactNode;
   onRefresh?: () => void;
-  hideRail?: boolean;
 }) {
   useTemayaAboneOl();
+  const [menuAcik, setMenuAcik] = useState(false);
 
   return (
     <Screen edges={['top']}>
@@ -65,8 +67,11 @@ export function AjansAltEkranKabuk({
           <EkranBasligi
             title={title}
             subtitle={subtitle}
-            fallbackHref={ajansHref(agencyId) as any}
+            border
+            onBack={() => guvenliGeriDon(ajansHref(agencyId) as any)}
+            right={<AjansMenuDugmesi onPress={() => setMenuAcik(true)} />}
           />
+          <AjansBolumRayi agencyId={agencyId} aktif={aktif} />
           {yukleniyor ? (
             <ActivityIndicator
               color={RenkTokenlari.primarySoft}
@@ -86,12 +91,18 @@ export function AjansAltEkranKabuk({
                 ) : undefined
               }
             >
-              {!hideRail ? (
-                <AjansBolumRayi agencyId={agencyId} aktif={aktif} />
-              ) : null}
               {children}
             </ScrollView>
           )}
+
+          <AjansCekmeceMenu
+            acik={menuAcik}
+            onKapat={() => setMenuAcik(false)}
+            agencyId={agencyId}
+            agencyName={agencyName}
+            aktif={aktif}
+            onOgeSec={(href) => router.push(href as any)}
+          />
         </View>
       </ModulHataSiniri>
     </Screen>
@@ -105,7 +116,8 @@ export function gitMesaj(threadId: string) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
-    paddingHorizontal: BoslukTokenlari.lg,
+    paddingHorizontal: HeaderTokenlari.horizontal,
+    paddingTop: HeaderTokenlari.contentGap,
     paddingBottom: BoslukTokenlari.xxxl,
     gap: BoslukTokenlari.md,
   },

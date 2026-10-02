@@ -35,29 +35,33 @@ import {
   YaricapTokenlari,
 } from '../../../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useTemayaAboneOl } from '../../../../src/tasarim-sistemi/tema/useTemayaAboneOl';
+import { useCeviri } from '../../../../src/i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../../src/i18n/diller';
 
 const COVER_H = 160;
 const AVATAR = 88;
 
-function kisa(n: number) {
+function kisa(n: number, locale: string) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return new Intl.NumberFormat('tr-TR').format(n);
+  return new Intl.NumberFormat(locale).format(n);
 }
 
 function seviyeEtiket(code: string | null | undefined) {
   return (code ?? '').toUpperCase();
 }
 
-function katilimMetni(iso: string | null | undefined) {
+function katilimMetni(iso: string | null | undefined, locale: string) {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
 export default function AjansProfilEkrani() {
   useTemayaAboneOl();
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { isGuest, refreshProfile, refreshWallet } = useAuth();
@@ -116,7 +120,7 @@ export default function AjansProfilEkrani() {
   const logo = a ? MedyaUriGuvenli(a.logo_url) : null;
   const overlayTop = insets.top + 8;
   const uyeSayisi = istat?.uye_sayisi ?? a?.host_count ?? 0;
-  const katilim = katilimMetni(a?.created_at);
+  const katilim = katilimMetni(a?.created_at, locale);
   const onizleme = (profil?.yayincilar ?? []).slice(0, 5);
 
   const uyelerHref = `/ajans/profil/${id}/uyeler`;
@@ -125,28 +129,31 @@ export default function AjansProfilEkrani() {
     if (!id) return;
     islemiDene('ajans_olustur', () => {
       Alert.alert(
-        'Ajansa başvur',
-        'Bu ajansa katılım başvurusu gönderilsin mi? Onaylanınca üye panelin açılır.',
+        t('ajans.ajansaBasvur'),
+        t('ajans.ajansaBasvurSoru'),
         [
-          { text: 'Vazgeç', style: 'cancel' },
+          { text: t('ortak.vazgec'), style: 'cancel' },
           {
-            text: 'Başvur',
+            text: t('ajans.basvur'),
             onPress: () => {
               void (async () => {
                 setBasvuruBusy(true);
                 const r = await AjansUyeBasvurusuOlustur({ agencyId: id });
                 setBasvuruBusy(false);
                 if (!r.ok) {
-                  Alert.alert('Başvuru', r.hata ?? 'Gönderilemedi.');
+                  Alert.alert(
+                    t('ajans.alertBasvuru'),
+                    r.hata ?? t('mesajlar.basvuruGonderilemedi'),
+                  );
                   return;
                 }
                 await uyelikYenile();
                 Alert.alert(
-                  'Başvuru gönderildi',
-                  'Ajans onaylayınca profilinde görünür ve üye panelin açılır.',
+                  t('ajans.basvuruGonderildiBaslik'),
+                  t('ajans.basvuruGonderildiBody'),
                   [
                     {
-                      text: 'Panele git',
+                      text: t('ajans.paneleGit'),
                       onPress: () => router.push('/ajans/uye' as any),
                     },
                   ],
@@ -167,7 +174,7 @@ export default function AjansProfilEkrani() {
           style={styles.ctaPrimary}
           onPress={() => router.push(`/ajans/${a.id}` as any)}
         >
-          <Text style={styles.ctaPrimaryYazi}>Yönet</Text>
+          <Text style={styles.ctaPrimaryYazi}>{t('ajans.yonet')}</Text>
         </Pressable>
       );
     }
@@ -177,14 +184,14 @@ export default function AjansProfilEkrani() {
           style={styles.ctaPrimary}
           onPress={() => router.push('/ajans/uye' as any)}
         >
-          <Text style={styles.ctaPrimaryYazi}>Panelim</Text>
+          <Text style={styles.ctaPrimaryYazi}>{t('ajans.panelim')}</Text>
         </Pressable>
       );
     }
     if (buAjansBeklemede) {
       return (
         <View style={styles.ctaPending}>
-          <Text style={styles.ctaPendingYazi}>İnceleniyor</Text>
+          <Text style={styles.ctaPendingYazi}>{t('ajans.durumInceleniyor')}</Text>
         </View>
       );
     }
@@ -192,7 +199,7 @@ export default function AjansProfilEkrani() {
       return (
         <View style={styles.ctaGhost}>
           <Text style={styles.ctaGhostYazi}>
-            {beklemedeMi ? 'Başvurun var' : 'Başka ajans'}
+            {beklemedeMi ? t('ajans.basvurunVar') : t('ajans.baskaAjans')}
           </Text>
         </View>
       );
@@ -204,12 +211,12 @@ export default function AjansProfilEkrani() {
         onPress={ajansaBasvur}
         disabled={basvuruBusy}
         accessibilityRole="button"
-        accessibilityLabel="Ajansa başvur"
+        accessibilityLabel={t('ajans.ajansaBasvur')}
       >
         {basvuruBusy ? (
           <ActivityIndicator color={RenkTokenlari.textOnPrimary} size="small" />
         ) : (
-          <Text style={styles.ctaPrimaryYazi}>Başvur</Text>
+          <Text style={styles.ctaPrimaryYazi}>{t('ajans.basvur')}</Text>
         )}
       </Pressable>
     );
@@ -234,7 +241,7 @@ export default function AjansProfilEkrani() {
             <Pressable style={styles.overlayBtn} onPress={ajansGeri}>
               <Ionicons name="chevron-back" size={22} color={RenkTokenlari.text} />
             </Pressable>
-            <Text style={styles.bos}>Ajans bulunamadı</Text>
+            <Text style={styles.bos}>{t('ajans.ajansBulunamadi')}</Text>
           </View>
         ) : (
           <ScrollView
@@ -269,7 +276,7 @@ export default function AjansProfilEkrani() {
                 style={[styles.overlayBtn, { top: overlayTop, left: BoslukTokenlari.lg }]}
                 onPress={ajansGeri}
                 hitSlop={8}
-                accessibilityLabel="Geri"
+                accessibilityLabel={t('ortak.geri')}
               >
                 <Ionicons name="chevron-back" size={22} color={RenkTokenlari.text} />
               </Pressable>
@@ -297,7 +304,7 @@ export default function AjansProfilEkrani() {
                   onPress={() => router.push(uyelerHref as any)}
                 >
                   <Ionicons name="people-outline" size={16} color={RenkTokenlari.text} />
-                  <Text style={styles.ctaOutlineYazi}>Üyeler</Text>
+                  <Text style={styles.ctaOutlineYazi}>{t('ajans.uyeler')}</Text>
                 </Pressable>
                 {birincilAksiyon()}
               </View>
@@ -335,7 +342,9 @@ export default function AjansProfilEkrani() {
                 {katilim ? (
                   <View style={styles.metaChip}>
                     <Ionicons name="calendar-outline" size={13} color={RenkTokenlari.textDim} />
-                    <Text style={styles.metaText}>{katilim} katıldı</Text>
+                    <Text style={styles.metaText}>
+                      {t('ajans.katildiSuffix', { tarih: katilim })}
+                    </Text>
                   </View>
                 ) : null}
                 {a.website_url ? (
@@ -362,9 +371,9 @@ export default function AjansProfilEkrani() {
                         try {
                           const Clipboard = await import('expo-clipboard');
                           await Clipboard.setStringAsync(a.agency_public_id);
-                          Alert.alert('Kopyalandı', a.agency_public_id);
+                          Alert.alert(t('ortak.kopyalandi'), a.agency_public_id);
                         } catch {
-                          Alert.alert('Ajans no', a.agency_public_id);
+                          Alert.alert(t('ajans.ajansNo'), a.agency_public_id);
                         }
                       })();
                     }}
@@ -382,25 +391,25 @@ export default function AjansProfilEkrani() {
                 style={styles.followItem}
                 onPress={() => router.push(uyelerHref as any)}
               >
-                <Text style={styles.followN}>{kisa(uyeSayisi)}</Text>
-                <Text style={styles.followL}>Üye</Text>
+                <Text style={styles.followN}>{kisa(uyeSayisi, locale)}</Text>
+                <Text style={styles.followL}>{t('ajans.statUye')}</Text>
               </Pressable>
               <View style={styles.followDivider} />
               <View style={styles.followItem}>
-                <Text style={styles.followN}>{kisa(istat?.haftalik_coin ?? 0)}</Text>
-                <Text style={styles.followL}>Haftalık</Text>
+                <Text style={styles.followN}>{kisa(istat?.haftalik_coin ?? 0, locale)}</Text>
+                <Text style={styles.followL}>{t('ajans.statHaftalik')}</Text>
               </View>
               <View style={styles.followDivider} />
               <View style={styles.followItem}>
-                <Text style={styles.followN}>{kisa(istat?.toplam_coin ?? 0)}</Text>
-                <Text style={styles.followL}>Coin</Text>
+                <Text style={styles.followN}>{kisa(istat?.toplam_coin ?? 0, locale)}</Text>
+                <Text style={styles.followL}>{t('ajans.statCoin')}</Text>
               </View>
               <View style={styles.followDivider} />
               <View style={styles.followItem}>
                 <Text style={styles.followN}>
-                  {kisa(Math.floor((istat?.yayin_dakika_toplam ?? 0) / 60))}
+                  {kisa(Math.floor((istat?.yayin_dakika_toplam ?? 0) / 60), locale)}
                 </Text>
-                <Text style={styles.followL}>Yayın sa</Text>
+                <Text style={styles.followL}>{t('ajans.statYayinSa')}</Text>
               </View>
             </View>
 
@@ -410,7 +419,7 @@ export default function AjansProfilEkrani() {
                 onPress={ajansaBasvur}
                 disabled={basvuruBusy}
                 accessibilityRole="button"
-                accessibilityLabel="Bu ajansa başvur"
+                accessibilityLabel={t('ajans.buAjansaBasvur')}
               >
                 {basvuruBusy ? (
                   <ActivityIndicator color={RenkTokenlari.textOnPrimary} />
@@ -421,7 +430,7 @@ export default function AjansProfilEkrani() {
                       size={18}
                       color={RenkTokenlari.textOnPrimary}
                     />
-                    <Text style={styles.basvurBannerYazi}>Bu ajansa başvur</Text>
+                    <Text style={styles.basvurBannerYazi}>{t('ajans.buAjansaBasvur')}</Text>
                   </>
                 )}
               </Pressable>
@@ -437,9 +446,9 @@ export default function AjansProfilEkrani() {
                   <Ionicons name="people" size={18} color={RenkTokenlari.primarySoft} />
                 </View>
                 <View>
-                  <Text style={styles.uyelerBaslik}>Üyeler</Text>
+                  <Text style={styles.uyelerBaslik}>{t('ajans.uyeler')}</Text>
                   <Text style={styles.uyelerAlt}>
-                    {uyeSayisi} yayıncı · listeyi gör
+                    {t('ajans.uyelerAltListe', { count: uyeSayisi })}
                   </Text>
                 </View>
               </View>
@@ -448,13 +457,13 @@ export default function AjansProfilEkrani() {
 
             {/* Öne çıkan üyeler */}
             <View style={styles.bolumBas}>
-              <Text style={styles.bolumTitle}>Öne çıkanlar</Text>
+              <Text style={styles.bolumTitle}>{t('ajans.oneCikanlar')}</Text>
               <Pressable onPress={() => router.push(uyelerHref as any)}>
-                <Text style={styles.bolumLink}>Tümü</Text>
+                <Text style={styles.bolumLink}>{t('ajans.tumu')}</Text>
               </Pressable>
             </View>
             {onizleme.length === 0 ? (
-              <Text style={styles.bos}>Henüz üye yok</Text>
+              <Text style={styles.bos}>{t('ajans.henuzUyeYok')}</Text>
             ) : (
               onizleme.map((y) => {
                 const av = MedyaUriGuvenli(y.avatar_url);
@@ -473,13 +482,15 @@ export default function AjansProfilEkrani() {
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={styles.uyeAd} numberOfLines={1}>
-                        {y.display_name || y.username || 'Üye'}
+                        {y.display_name || y.username || t('ajans.uyeVarsayilan')}
                       </Text>
                       {y.username ? (
                         <Text style={styles.uyeAlt}>@{y.username}</Text>
                       ) : null}
                     </View>
-                    <Text style={styles.uyeMeta}>{kisa(y.haftalik_coin)} / hf</Text>
+                    <Text style={styles.uyeMeta}>
+                      {t('ajans.uyeHf', { n: kisa(y.haftalik_coin, locale) })}
+                    </Text>
                   </Pressable>
                 );
               })

@@ -8,7 +8,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
@@ -188,16 +187,7 @@ export default function OperasyonHubEkrani() {
             <RefreshControl refreshing={yukleniyor} onRefresh={() => void load()} />
           }
         >
-          <LinearGradient
-            colors={[...RenkTokenlari.gradientCard]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={AdminStil.hero}
-          >
-            <Text style={AdminStil.heroEyebrow}>{t('platform.heroEyebrow')}</Text>
-            <Text style={AdminStil.heroTitle}>{t('platform.heroTitle')}</Text>
-            <Text style={AdminStil.heroAlt}>{t('platform.heroAlt')}</Text>
-            <View style={styles.bayrakSatir}>
+          <View style={styles.bayrakSatir}>
               <View style={[styles.bayrak, eventsOn ? styles.bayrakAcik : styles.bayrakKapali]}>
                 <Text style={styles.bayrakYazi}>
                   {eventsOn ? t('platform.etkinlikAcik') : t('platform.etkinlikKapali')}
@@ -210,8 +200,7 @@ export default function OperasyonHubEkrani() {
                   {missionsOn ? t('platform.gorevAcik') : t('platform.gorevKapali')}
                 </Text>
               </View>
-            </View>
-          </LinearGradient>
+          </View>
 
           <TamusoBanner placement="GAME_CENTER_TOP" screen="GAME_CENTER" />
 

@@ -320,21 +320,6 @@ async function canliFeedGetirIc(
     ),
   ];
 
-  const hostMap = new Map<string, HostRow>();
-  if (hostIds.length > 0) {
-    const { data: hostlar, error: hostErr } = await supabase
-      .from('profiles')
-      .select('id, display_name, username, avatar_url, level')
-      .in('id', hostIds);
-    if (hostErr) {
-      console.warn('[FEED] live hosts', hostErr.message);
-    } else {
-      for (const h of (hostlar as HostRow[]) ?? []) {
-        hostMap.set(h.id, h);
-      }
-    }
-  }
-
   const odaRows = (odalarRes.data as unknown as Room[]) ?? [];
   const odaIds = [
     ...new Set(
@@ -344,34 +329,43 @@ async function canliFeedGetirIc(
       ].filter(Boolean) as string[],
     ),
   ];
-  const avatarHarita = uyeAvatar
-    ? await odaUyeAvatarHaritasiGetir(odaIds)
-    : new Map<string, (string | null)[]>();
+
+  const [hostlarRes, avatarHarita, bloklarRes, tersRes] = await Promise.all([
+    hostIds.length > 0
+      ? supabase
+          .from('profiles')
+          .select('id, display_name, username, avatar_url, level')
+          .in('id', hostIds)
+      : Promise.resolve({ data: [] as HostRow[], error: null }),
+    uyeAvatar
+      ? odaUyeAvatarHaritasiGetir(odaIds)
+      : Promise.resolve(new Map<string, (string | null)[]>()),
+    uid
+      ? supabase.from('user_blocks').select('blocked_id').eq('blocker_id', uid)
+      : Promise.resolve({ data: [] as { blocked_id: string }[] }),
+    uid
+      ? supabase.from('user_blocks').select('blocker_id').eq('blocked_id', uid)
+      : Promise.resolve({ data: [] as { blocker_id: string }[] }),
+  ]);
+
+  const hostMap = new Map<string, HostRow>();
+  if (hostlarRes.error) {
+    console.warn('[FEED] live hosts', hostlarRes.error.message);
+  } else {
+    for (const h of (hostlarRes.data as HostRow[]) ?? []) {
+      hostMap.set(h.id, h);
+    }
+  }
 
   const ogeler: FeedOggesi[] = [];
   const gorulen = new Set<string>();
 
-  /** Engellenen host'ları discovery'den çıkar */
-  let engelli = new Set<string>();
-  if (uid) {
-    try {
-      const { data: bloklar } = await supabase
-        .from('user_blocks')
-        .select('blocked_id')
-        .eq('blocker_id', uid);
-      for (const b of (bloklar as { blocked_id: string }[]) ?? []) {
-        engelli.add(b.blocked_id);
-      }
-      const { data: ters } = await supabase
-        .from('user_blocks')
-        .select('blocker_id')
-        .eq('blocked_id', uid);
-      for (const b of (ters as { blocker_id: string }[]) ?? []) {
-        engelli.add(b.blocker_id);
-      }
-    } catch {
-      engelli = new Set();
-    }
+  const engelli = new Set<string>();
+  for (const b of (bloklarRes.data as { blocked_id: string }[]) ?? []) {
+    engelli.add(b.blocked_id);
+  }
+  for (const b of (tersRes.data as { blocker_id: string }[]) ?? []) {
+    engelli.add(b.blocker_id);
   }
 
   for (const r of odaRows) {

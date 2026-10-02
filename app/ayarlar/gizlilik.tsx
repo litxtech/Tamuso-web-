@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
@@ -13,6 +13,12 @@ import {
   type GizlilikAyarlari,
 } from '../../src/moduller/ayarlar/islemler/GizlilikAyarlariniYonet';
 import { GizlilikAnahtarListesi } from '../../src/moduller/ayarlar/bilesenler/GizlilikAnahtarListesi';
+import {
+  UlkeKatkisiAyarlariniGetir,
+  UlkeKatkisiAyarlariniKaydet,
+} from '../../src/moduller/ulke-ligi/islemler/UlkeLigiApi';
+import type { UlkeKatkisiAyarlari } from '../../src/moduller/ulke-ligi/tipler';
+import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
 import { useTema } from '../../src/tasarim-sistemi/tema/TemaSaglayici';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -40,15 +46,29 @@ const EMPTY: GizlilikAyarlari = {
   is_private: false,
 };
 
+const ULKE_EMPTY: UlkeKatkisiAyarlari = {
+  include_in_totals: true,
+  show_on_leaderboard: true,
+  show_on_profile: true,
+  show_country_on_profile: true,
+};
+
 export default function GizlilikAyarlariEkrani() {
   const { palet } = useTema();
   const { t } = useCeviri();
   const [privacy, setPrivacy] = useState<GizlilikAyarlari>(EMPTY);
+  const [ulkeAyar, setUlkeAyar] = useState<UlkeKatkisiAyarlari>(ULKE_EMPTY);
+  const ulkeLigiAcik = OzellikBayragiAktifMi('country_league_enabled');
 
   useFocusEffect(
     useCallback(() => {
       void GizlilikAyarlariniGetir().then(setPrivacy);
-    }, []),
+      if (ulkeLigiAcik) {
+        void UlkeKatkisiAyarlariniGetir()
+          .then(setUlkeAyar)
+          .catch(() => setUlkeAyar(ULKE_EMPTY));
+      }
+    }, [ulkeLigiAcik]),
   );
 
   const degistir = async (key: keyof GizlilikAyarlari, v: boolean) => {
@@ -60,18 +80,24 @@ export default function GizlilikAyarlariEkrani() {
     }
   };
 
+  const ulkeDegistir = async (key: keyof UlkeKatkisiAyarlari, v: boolean) => {
+    setUlkeAyar((p) => ({ ...p, [key]: v }));
+    const r = await UlkeKatkisiAyarlariniKaydet({ [key]: v });
+    if (!r.ok) {
+      Alert.alert(t('gizlilik.kisaBaslik'), r.hata ?? t('ortak.kaydedilemedi'));
+      void UlkeKatkisiAyarlariniGetir().then(setUlkeAyar);
+    }
+  };
+
   return (
     <Screen edges={['top']}>
-      <ModulHataSiniri modulAdi="gizlilik-ayarlar">
+      <ModulHataSiniri modulAdi="gizlilik">
         <EkranBasligi
-          title={t('gizlilik.kisaBaslik')}
+          title={t('gizlilik.baslik')}
           subtitle={t('gizlilik.altBaslik')}
           fallbackHref="/ayarlar"
         />
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.content}
-        >
+        <ScrollView contentContainerStyle={styles.content}>
           <ListeGrubu title={t('gizlilik.hesapGorunurlugu')}>
             <GizlilikAnahtarListesi
               maddeler={GizlilikAlanEtiketleri(t)}
@@ -106,6 +132,48 @@ export default function GizlilikAyarlariEkrani() {
             />
           </ListeGrubu>
 
+          {ulkeLigiAcik ? (
+            <ListeGrubu title={t('gizlilik.ulkeLigiBolum')}>
+              <Text style={[styles.hint, { color: palet.textMuted }]}>
+                {t('gizlilik.ulkeLigiHint')}
+              </Text>
+              {(
+                [
+                  ['include_in_totals', 'includeInTotals', 'includeInTotalsAlt'],
+                  ['show_on_leaderboard', 'showOnLeaderboard', 'showOnLeaderboardAlt'],
+                  ['show_on_profile', 'showOnProfile', 'showOnProfileAlt'],
+                  [
+                    'show_country_on_profile',
+                    'showCountryOnProfile',
+                    'showCountryOnProfileAlt',
+                  ],
+                ] as const
+              ).map(([key, labelKey, altKey], i, arr) => (
+                <View
+                  key={key}
+                  style={[
+                    styles.switchRow,
+                    i === arr.length - 1 && styles.switchRowLast,
+                  ]}
+                >
+                  <View style={styles.switchCopy}>
+                    <Text style={[styles.switchLabel, { color: palet.text }]}>
+                      {t(`ulkeLigi.${labelKey}`)}
+                    </Text>
+                    <Text style={[styles.switchAlt, { color: palet.textMuted }]}>
+                      {t(`ulkeLigi.${altKey}`)}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={ulkeAyar[key]}
+                    onValueChange={(v) => void ulkeDegistir(key, v)}
+                    thumbColor={palet.bgElevated}
+                  />
+                </View>
+              ))}
+            </ListeGrubu>
+          ) : null}
+
           <ListeGrubu title={t('ayarlar.kisilerAramalar')}>
             <ListeSatiri
               icon="people-outline"
@@ -139,4 +207,17 @@ const styles = StyleSheet.create({
     paddingBottom: BoslukTokenlari.xs,
     lineHeight: 18,
   },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: BoslukTokenlari.md,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: RenkTokenlari.border,
+  },
+  switchRowLast: { borderBottomWidth: 0 },
+  switchCopy: { flex: 1, gap: 2 },
+  switchLabel: { ...TipografiTokenlari.body, fontWeight: '600' },
+  switchAlt: { ...TipografiTokenlari.micro },
 });

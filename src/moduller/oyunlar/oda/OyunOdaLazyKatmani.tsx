@@ -6,10 +6,9 @@
  * Wrapper oda flex akışına asla girmez (position absolute).
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { GameCode, GameSession, RoomGameMeta } from '../ortak/tipler/OyunTipleri';
-import { OyunOdaKatmani } from './OyunOdaKatmani';
 
 export type OyunOdaLazyKatmaniProps = {
   aktif: boolean;
@@ -19,6 +18,8 @@ export type OyunOdaLazyKatmaniProps = {
   selfUserId?: string;
   startModalVisible: boolean;
   onStartModalClose: () => void;
+  /** Oyun seçilip başlayınca — parent dock'u gizli tutsun */
+  onGameStarted?: () => void;
   inviteSession?: GameSession | null;
   onInviteDismiss?: () => void;
   onOverlayClosed?: () => void;
@@ -31,14 +32,27 @@ export function OyunOdaLazyKatmani({
   aktif,
   ...props
 }: OyunOdaLazyKatmaniProps) {
-  if (!aktif) return null;
+  const [Katman, setKatman] = useState<React.ComponentType<Omit<OyunOdaLazyKatmaniProps, 'aktif'>> | null>(null);
+
+  useEffect(() => {
+    if (!aktif || Katman) return;
+    let iptal = false;
+    void import('./OyunOdaKatmani').then((mod) => {
+      if (!iptal) setKatman(() => mod.OyunOdaKatmani);
+    });
+    return () => {
+      iptal = true;
+    };
+  }, [aktif, Katman]);
+
+  if (!aktif || !Katman) return null;
   return (
     <View
       pointerEvents="box-none"
       collapsable={false}
       style={styles.overlay}
     >
-      <OyunOdaKatmani {...props} />
+      <Katman {...props} />
     </View>
   );
 }

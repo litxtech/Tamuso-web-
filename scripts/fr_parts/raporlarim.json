@@ -1,0 +1,24 @@
+{
+  "raporlarim": {
+    "baslik": "Mes signalements",
+    "altBaslik": "Vos signalements · suivi du statut",
+    "yeniBildir": "Nouveau signalement",
+    "bos": "Aucun signalement pour le moment",
+    "bosBody": "Lorsque vous signalez quelqu’un, vous pouvez suivre le statut ici.",
+    "durumAlindi": "Reçu",
+    "durumInceleniyor": "En cours d’examen",
+    "durumSonuclandi": "Résolu",
+    "durumKapatildi": "Fermé",
+    "detayBaslik": "Détails du signalement",
+    "detayAlt": "Votre signalement · note de l’équipe",
+    "sebep": "Motif",
+    "seninAciklama": "Votre description",
+    "ekipNotu": "Note / statut de l’équipe",
+    "notInceleniyor": "L’équipe de modération examine ce dossier ; une action sera prise sous 24 heures.",
+    "notSonuclandi": "Action terminée.",
+    "notKapatildi": "Signalement fermé.",
+    "guncelleme": "Mis à jour : {{tarih}}",
+    "yuklenemedi": "Chargement impossible",
+    "profiliGor": "Voir le profil"
+  }
+}

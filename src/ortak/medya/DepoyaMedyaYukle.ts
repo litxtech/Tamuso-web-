@@ -3,6 +3,8 @@
  * Supabase Storage bunu reddeder. ArrayBuffer + açık contentType kullan.
  */
 
+import i18n from '../../i18n';
+
 const SES_UZANTILARI = [
   'mp3',
   'wav',
@@ -142,7 +144,7 @@ export async function YerelDosyayiBaytOku(
 ): Promise<Uint8Array> {
   const response = await fetch(uri);
   if (!response.ok) {
-    throw new Error(`Dosya okunamadı (${response.status})`);
+    throw new Error(i18n.t('medyaYukle.dosyaOkunamadi', { status: response.status }));
   }
   // arrayBuffer: RN'de blob.type=text/plain sorununu atlar
   const buf = await response.arrayBuffer();
@@ -156,6 +158,8 @@ export type DepoyaYukleGirdi = {
   mime?: string | null;
   tur?: 'image' | 'video' | 'audio';
   upsert?: boolean;
+  /** Aşılırsa yükleme yapılmaz (ör. profile-media 5 MiB) */
+  maxBytes?: number;
 };
 
 export type DepoyaYukleSonuc =
@@ -190,7 +194,14 @@ export async function DepoyaMedyaYukle(
   try {
     const bytes = await YerelDosyayiBaytOku(girdi.uri);
     if (bytes.byteLength === 0) {
-      return { ok: false, hata: 'Dosya boş' };
+      return { ok: false, hata: i18n.t('medyaYukle.dosyaBos') };
+    }
+    if (girdi.maxBytes != null && bytes.byteLength > girdi.maxBytes) {
+      const mb = Math.max(1, Math.round(girdi.maxBytes / (1024 * 1024)));
+      return {
+        ok: false,
+        hata: i18n.t('auth.medyaCokBuyuk', { mb }),
+      };
     }
 
     const { error } = await supabase.storage.from(girdi.bucket).upload(
@@ -206,7 +217,7 @@ export async function DepoyaMedyaYukle(
       return {
         ok: false,
         hata: /mime|text\/plain|not supported/i.test(error.message)
-          ? `Dosya tipi reddedildi (${contentType}). Tekrar dene veya JPG seç.`
+          ? i18n.t('medyaYukle.mimeReddedildi', { type: contentType })
           : error.message,
       };
     }
@@ -215,7 +226,7 @@ export async function DepoyaMedyaYukle(
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Yükleme başarısız',
+      hata: e instanceof Error ? e.message : i18n.t('medyaYukle.yuklemeBasarisiz'),
     };
   }
 }

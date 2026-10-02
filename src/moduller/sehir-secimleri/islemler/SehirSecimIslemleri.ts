@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
 
 export type SehirSecimGidisat = {
@@ -40,7 +41,7 @@ export async function SehirAdayBasvurusu(input: {
   manifesto?: string;
 }): Promise<{ ok: boolean; hata?: string }> {
   if (!(await OzellikBayragiAktifMiSunucu('city_elections_enabled'))) {
-    return { ok: false, hata: 'Seçimler kapalı.' };
+    return { ok: false, hata: i18n.t('sehir.secimlerKapali') };
   }
   const { error } = await supabase.rpc('sehir_aday_basvurusu', {
     p_election_id: input.electionId,
@@ -55,7 +56,7 @@ export async function SehirOyuKullan(input: {
   candidateId: string;
 }): Promise<{ ok: boolean; hata?: string; total_votes?: number }> {
   if (!(await OzellikBayragiAktifMiSunucu('city_elections_enabled'))) {
-    return { ok: false, hata: 'Seçimler kapalı.' };
+    return { ok: false, hata: i18n.t('sehir.secimlerKapali') };
   }
   const { data, error } = await supabase.rpc('sehir_oyu_kullan', {
     p_election_id: input.electionId,

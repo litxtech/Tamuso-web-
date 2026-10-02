@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type PkMacBaslatSonuc =
   | { ok: true; matchId: string; endsAt: string | null }
@@ -23,7 +24,7 @@ export async function PkMacBaslat(input: {
   });
   if (error) return { ok: false, hata: error.message };
   const row = data as { id?: string; ends_at?: string | null };
-  if (!row?.id) return { ok: false, hata: 'Maç oluşturulamadı' };
+  if (!row?.id) return { ok: false, hata: i18n.t('pk.macOlusturulamadi') };
   return { ok: true, matchId: row.id, endsAt: row.ends_at ?? null };
 }
 

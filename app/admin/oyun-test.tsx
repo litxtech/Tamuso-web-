@@ -22,6 +22,8 @@ import { ZeusEkrani } from '../../src/moduller/oyunlar/zeus/ekranlar/ZeusEkrani'
 import { GAME_DISPLAY_NAME as ZEUS_NAME } from '../../src/moduller/oyunlar/zeus/config/ZeusSabitleri';
 import { SlotOyunEkrani } from '../../src/moduller/oyunlar/slot/ekranlar/SlotOyunEkrani';
 import { GAME_DISPLAY_NAME as NOX_NAME } from '../../src/moduller/oyunlar/slot/sabitler/SlotAyarlari';
+import { FairSpinEkrani } from '../../src/moduller/oyunlar/fair-spin/ekranlar/FairSpinEkrani';
+import { GAME_DISPLAY_NAME as FAIR_SPIN_NAME } from '../../src/moduller/oyunlar/fair-spin/sabitler/FairSpinSabitleri';
 import type { RoomGameMeta } from '../../src/moduller/oyunlar/ortak/tipler/OyunTipleri';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -30,7 +32,7 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 
-type AktifOyun = 'idle' | 'kaskad' | 'zeus' | 'nox';
+type AktifOyun = 'idle' | 'kaskad' | 'zeus' | 'nox' | 'fair_spin';
 
 export default function AdminOyunTestEkrani() {
   const { profile } = useAuth();
@@ -117,6 +119,20 @@ export default function AdminOyunTestEkrani() {
           </Pressable>
         </View>
 
+        <View style={[styles.card, styles.cardFair]}>
+          <Text style={styles.eyebrowFair}>FAIR WHEEL</Text>
+          <Text style={styles.cardTitle}>{FAIR_SPIN_NAME}</Text>
+          <Text style={styles.cardBody}>
+            8 dilimli çark · sunucu RNG. Bu ekranda coin düşmez (admin test).
+          </Text>
+          <Pressable
+            style={[styles.cta, styles.ctaFair]}
+            onPress={() => setAktif('fair_spin')}
+          >
+            <Text style={styles.ctaText}>Fair Spin aç</Text>
+          </Pressable>
+        </View>
+
         <Pressable
           onPress={() => router.push('/admin/oyunlar' as any)}
           style={styles.link}
@@ -172,6 +188,21 @@ export default function AdminOyunTestEkrani() {
           />
         ) : null}
       </Modal>
+
+      <Modal
+        visible={aktif === 'fair_spin'}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setAktif('idle')}
+      >
+        {aktif === 'fair_spin' ? (
+          <FairSpinEkrani
+            roomId={null}
+            adminTestMode
+            onClose={() => setAktif('idle')}
+          />
+        ) : null}
+      </Modal>
     </Screen>
   );
 }
@@ -217,6 +248,9 @@ const styles = StyleSheet.create({
   cardNox: {
     borderColor: 'rgba(124,58,237,0.5)',
   },
+  cardFair: {
+    borderColor: 'rgba(230,206,146,0.55)',
+  },
   eyebrow: {
     color: RenkTokenlari.primarySoft,
     fontSize: TipografiTokenlari.micro.fontSize,
@@ -231,6 +265,12 @@ const styles = StyleSheet.create({
   },
   eyebrowNox: {
     color: '#B794F6',
+    fontSize: TipografiTokenlari.micro.fontSize,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  eyebrowFair: {
+    color: '#E6CE92',
     fontSize: TipografiTokenlari.micro.fontSize,
     fontWeight: '800',
     letterSpacing: 1.2,
@@ -255,6 +295,7 @@ const styles = StyleSheet.create({
   ctaAlt: { backgroundColor: RenkTokenlari.violet },
   ctaZeus: { backgroundColor: '#C9A24A' },
   ctaNox: { backgroundColor: '#7C3AED' },
+  ctaFair: { backgroundColor: '#C9A24A' },
   ctaText: {
     color: '#fff',
     fontWeight: '900',

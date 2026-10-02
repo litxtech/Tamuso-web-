@@ -1,0 +1,86 @@
+[
+  {
+    "key": "ajans.programSatir",
+    "reason": "no_arabic_script",
+    "en": "{{kind}} · {{zaman}}",
+    "val": "{{kind}} · {{zaman}}",
+    "tr": "{{kind}} · {{zaman}}"
+  },
+  {
+    "key": "ajans.etkinlikSatir",
+    "reason": "no_arabic_script",
+    "en": "{{status}} · {{kind}} · {{zaman}}",
+    "val": "{{status}} · {{kind}} · {{zaman}}",
+    "tr": "{{status}} · {{kind}} · {{zaman}}"
+  },
+  {
+    "key": "ajans.hedefSatir",
+    "reason": "no_arabic_script",
+    "en": "{{cur}}/{{target}} · %{{pct}}",
+    "val": "{{cur}}/{{target}} · %{{pct}}",
+    "tr": "{{cur}}/{{target}} · %{{pct}}"
+  },
+  {
+    "key": "ajans.programListeSatir",
+    "reason": "no_arabic_script",
+    "en": "{{kind}} · {{status}} · {{zaman}} · {{host}}",
+    "val": "{{kind}} · {{status}} · {{zaman}} · {{host}}",
+    "tr": "{{kind}} · {{status}} · {{zaman}} · {{host}}"
+  },
+  {
+    "key": "cuzdanX.uiHesapOzetiSubtitle",
+    "reason": "no_arabic_script",
+    "en": "PDF / Excel",
+    "val": "PDF / Excel",
+    "tr": "PDF / Excel"
+  },
+  {
+    "key": "sesOda.seviyeHandle",
+    "reason": "no_arabic_script",
+    "en": "{{kisalt}} · {{handle}}",
+    "val": "{{kisalt}} · {{handle}}",
+    "tr": "{{kisalt}} · {{handle}}"
+  },
+  {
+    "key": "belge.whatsapp",
+    "reason": "no_arabic_script",
+    "en": "WhatsApp",
+    "val": "WhatsApp",
+    "tr": "WhatsApp"
+  },
+  {
+    "key": "belge.excelCsv",
+    "reason": "no_arabic_script",
+    "en": "Excel (CSV)",
+    "val": "Excel (CSV)",
+    "tr": "Excel (CSV)"
+  },
+  {
+    "key": "belge.dugmeVarsayilan",
+    "reason": "no_arabic_script",
+    "en": "PDF / WhatsApp",
+    "val": "PDF / WhatsApp",
+    "tr": "PDF / WhatsApp"
+  },
+  {
+    "key": "belge.admin.ciroAlt",
+    "reason": "no_arabic_script",
+    "en": "{{donem}} · Tamuso",
+    "val": "{{donem}} · Tamuso",
+    "tr": "{{donem}} · Tamuso"
+  },
+  {
+    "key": "banner.whatsappBaslik",
+    "reason": "no_arabic_script",
+    "en": "WhatsApp",
+    "val": "WhatsApp",
+    "tr": "WhatsApp"
+  },
+  {
+    "key": "banner.instagram",
+    "reason": "no_arabic_script",
+    "en": "Instagram",
+    "val": "Instagram",
+    "tr": "Instagram"
+  }
+]

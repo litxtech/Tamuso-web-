@@ -41,22 +41,46 @@ import {
 
 type FormState = {
   name: string;
+  agencyType: 'INDIVIDUAL' | 'COMPANY';
+  contactFirstName: string;
+  contactLastName: string;
   country: string;
+  city: string;
+  address: string;
   email: string;
   phone: string;
+  whatsapp: string;
+  website: string;
   expectedHosts: string;
   experience: string;
   description: string;
+  whyTamuso: string;
+  existingNetwork: string;
+  languages: string;
+  targetCountries: string;
+  referralCode: string;
 };
 
 const BOS_FORM: FormState = {
   name: '',
+  agencyType: 'INDIVIDUAL',
+  contactFirstName: '',
+  contactLastName: '',
   country: '',
+  city: '',
+  address: '',
   email: '',
   phone: '',
+  whatsapp: '',
+  website: '',
   expectedHosts: '',
   experience: '',
   description: '',
+  whyTamuso: '',
+  existingNetwork: '',
+  languages: '',
+  targetCountries: '',
+  referralCode: '',
 };
 
 type CevirFn = (key: CeviriAnahtari, opts?: Record<string, unknown>) => string;
@@ -68,6 +92,15 @@ function durumEtiketi(status: string, t: CevirFn) {
     approved: 'ajans.durumOnaylandi',
     rejected: 'ajans.durumReddedildi',
     active: 'ajans.durumAktif',
+    SUBMITTED: 'ajans.durumInceleniyor',
+    UNDER_REVIEW: 'ajans.durumInceleniyor',
+    MORE_INFORMATION_REQUIRED: 'ajans.durumInceleniyor',
+    VERIFICATION_REQUIRED: 'ajans.verDurumBekliyor',
+    VERIFICATION_IN_REVIEW: 'ajans.verDurumInceleniyor',
+    VERIFIED: 'ajans.verDurumOk',
+    APPROVED: 'ajans.durumOnaylandi',
+    ACTIVE: 'ajans.durumAktif',
+    REJECTED: 'ajans.durumReddedildi',
   };
   const key = map[status];
   return key ? t(key) : status;
@@ -75,6 +108,8 @@ function durumEtiketi(status: string, t: CevirFn) {
 
 function formDogrula(f: FormState, t: CevirFn): string | null {
   if (f.name.trim().length < 3) return t('ajans.dogrulamaAd');
+  if (f.contactFirstName.trim().length < 1) return t('ajans.verYetkiliAd');
+  if (f.contactLastName.trim().length < 1) return t('ajans.verYetkiliSoyad');
   if (f.country.trim().length < 2) return t('ajans.dogrulamaUlke');
   if (!f.email.trim().includes('@') || f.email.trim().length < 5) {
     return t('ajans.dogrulamaEposta');
@@ -152,12 +187,31 @@ export default function AjansEkrani() {
       setLoading(true);
       const sonuc = await AjansBasvurusuOlustur({
         agencyName: form.name.trim(),
+        agencyType: form.agencyType,
+        contactFirstName: form.contactFirstName.trim(),
+        contactLastName: form.contactLastName.trim(),
         country: form.country.trim(),
+        city: form.city.trim() || undefined,
+        address: form.address.trim() || undefined,
         email: form.email.trim(),
         phone: form.phone.trim(),
+        whatsapp: form.whatsapp.trim() || undefined,
+        website: form.website.trim() || undefined,
         expectedHosts: Number(form.expectedHosts),
         experience: form.experience.trim() || undefined,
         description: form.description.trim(),
+        whyTamuso: form.whyTamuso.trim() || undefined,
+        existingNetwork: form.existingNetwork.trim() || undefined,
+        languages: form.languages
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        targetCountries: form.targetCountries
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        referralCode: form.referralCode.trim() || undefined,
+        idempotencyKey: `app-${user?.id ?? 'x'}-${Date.now()}`,
       });
       setLoading(false);
       if (!sonuc.ok) {
@@ -172,7 +226,20 @@ export default function AjansEkrani() {
   };
 
   const bekleyenVar = useMemo(
-    () => apps.some((a) => a.status === 'pending' || a.status === 'under_review'),
+    () =>
+      apps.some((a) =>
+        [
+          'pending',
+          'under_review',
+          'SUBMITTED',
+          'UNDER_REVIEW',
+          'MORE_INFORMATION_REQUIRED',
+          'PRE_APPROVED',
+          'VERIFICATION_REQUIRED',
+          'VERIFICATION_IN_REVIEW',
+          'DRAFT',
+        ].includes(a.status),
+      ),
     [apps],
   );
 
@@ -230,6 +297,26 @@ export default function AjansEkrani() {
                 {basvuruAcik ? (
                   <View style={styles.formCard}>
                     <Text style={styles.formBaslik}>{t('ajans.formBaslik')}</Text>
+                    <Text style={styles.section}>{t('ajans.verAjansTuru')}</Text>
+                    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                      {(
+                        [
+                          ['INDIVIDUAL', 'ajans.verBireysel'],
+                          ['COMPANY', 'ajans.verKurumsal'],
+                        ] as const
+                      ).map(([k, labelKey]) => (
+                        <Pressable
+                          key={k}
+                          style={[
+                            styles.basvuruToggle,
+                            form.agencyType === k && { borderColor: RenkTokenlari.primarySoft },
+                          ]}
+                          onPress={() => setAlan('agencyType', k)}
+                        >
+                          <Text style={styles.basvuruToggleYazi}>{t(labelKey)}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
                     <TextField
                       label={t('ajans.labelAd')}
                       value={form.name}
@@ -237,11 +324,31 @@ export default function AjansEkrani() {
                       placeholder={t('ajans.phAd')}
                     />
                     <TextField
+                      label={t('ajans.verYetkiliAd')}
+                      value={form.contactFirstName}
+                      onChangeText={(v) => setAlan('contactFirstName', v)}
+                    />
+                    <TextField
+                      label={t('ajans.verYetkiliSoyad')}
+                      value={form.contactLastName}
+                      onChangeText={(v) => setAlan('contactLastName', v)}
+                    />
+                    <TextField
                       label={t('ajans.labelUlke')}
                       value={form.country}
                       onChangeText={(v) => setAlan('country', v)}
                       placeholder={t('ajans.phUlke')}
                       autoCapitalize="characters"
+                    />
+                    <TextField
+                      label={t('ajans.verSehir')}
+                      value={form.city}
+                      onChangeText={(v) => setAlan('city', v)}
+                    />
+                    <TextField
+                      label={t('ajans.verAdresAlan')}
+                      value={form.address}
+                      onChangeText={(v) => setAlan('address', v)}
                     />
                     <TextField
                       label={t('ajans.labelEposta')}
@@ -259,6 +366,18 @@ export default function AjansEkrani() {
                       keyboardType="phone-pad"
                     />
                     <TextField
+                      label={t('ajans.verWhatsapp')}
+                      value={form.whatsapp}
+                      onChangeText={(v) => setAlan('whatsapp', v)}
+                      keyboardType="phone-pad"
+                    />
+                    <TextField
+                      label={t('ajans.verWebsite')}
+                      value={form.website}
+                      onChangeText={(v) => setAlan('website', v)}
+                      autoCapitalize="none"
+                    />
+                    <TextField
                       label={t('ajans.labelHost')}
                       value={form.expectedHosts}
                       onChangeText={(v) => setAlan('expectedHosts', v)}
@@ -270,6 +389,33 @@ export default function AjansEkrani() {
                       value={form.experience}
                       onChangeText={(v) => setAlan('experience', v)}
                       placeholder={t('ajans.phDeneyim')}
+                    />
+                    <TextField
+                      label={t('ajans.verNedenTamuso')}
+                      value={form.whyTamuso}
+                      onChangeText={(v) => setAlan('whyTamuso', v)}
+                      multiline
+                    />
+                    <TextField
+                      label={t('ajans.verNetwork')}
+                      value={form.existingNetwork}
+                      onChangeText={(v) => setAlan('existingNetwork', v)}
+                      multiline
+                    />
+                    <TextField
+                      label={t('ajans.verDiller')}
+                      value={form.languages}
+                      onChangeText={(v) => setAlan('languages', v)}
+                    />
+                    <TextField
+                      label={t('ajans.verUlkeler')}
+                      value={form.targetCountries}
+                      onChangeText={(v) => setAlan('targetCountries', v)}
+                    />
+                    <TextField
+                      label={t('ajans.verReferral')}
+                      value={form.referralCode}
+                      onChangeText={(v) => setAlan('referralCode', v)}
                     />
                     <TextField
                       label={t('ajans.labelAciklama')}

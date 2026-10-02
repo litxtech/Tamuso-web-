@@ -1,5 +1,6 @@
 import { Linking, Alert, Platform } from 'react-native';
 import type { BannerAction } from '../core/BannerTypes';
+import i18n from '../../i18n';
 
 function normalizePhone(raw: string): string {
   return raw.replace(/[^\d]/g, '');
@@ -13,11 +14,16 @@ export async function handleWhatsApp(
     String(payload.phoneNumber ?? payload.phone ?? action.target ?? ''),
   );
   const message = String(
-    payload.message ?? action.url ?? 'Merhaba, Tamuso üzerinden ulaşıyorum.',
+    payload.message ??
+      action.url ??
+      i18n.t('banner.whatsappVarsayilanMesaj'),
   );
 
   if (!phone) {
-    Alert.alert('WhatsApp', 'Telefon numarası tanımlı değil.');
+    Alert.alert(
+      i18n.t('banner.whatsappBaslik'),
+      i18n.t('banner.whatsappTelefonYok'),
+    );
     return { ok: false, error: 'no_phone' };
   }
 
@@ -35,10 +41,10 @@ export async function handleWhatsApp(
     return { ok: true };
   } catch {
     Alert.alert(
-      'WhatsApp',
+      i18n.t('banner.whatsappBaslik'),
       Platform.OS === 'ios'
-        ? 'WhatsApp açılamadı. Uygulama yüklü mü kontrol edin.'
-        : 'WhatsApp açılamadı.',
+        ? i18n.t('banner.whatsappAcilamadiIos')
+        : i18n.t('banner.whatsappAcilamadi'),
     );
     return { ok: false, error: 'open_failed' };
   }

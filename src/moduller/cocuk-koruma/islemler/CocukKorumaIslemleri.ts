@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { GuvenlikOlayiKaydet } from '../../guvenlik/olaylar/GuvenlikOlayiKaydet';
 import { ManuelCikisYap } from '../../kimlik-dogrulama/oturum/ManuelCikisYap';
 import Constants from 'expo-constants';
@@ -108,7 +109,7 @@ export async function CocukKorumaReddetVeHesapKapat(): Promise<
   if (error) return { ok: false, hata: error.message };
   const row = (data ?? {}) as { ok?: boolean; kod?: string };
   if (row.ok === false) {
-    return { ok: false, hata: row.kod ?? 'İşlem başarısız' };
+    return { ok: false, hata: row.kod ?? i18n.t('ortak.islemBasarisiz') };
   }
 
   void GuvenlikOlayiKaydet('child_protection_declined', {

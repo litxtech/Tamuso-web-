@@ -11,8 +11,8 @@ export type DusmeHucre = {
 };
 
 /** Sabit hız: her hücre aynı sürede kat edilir, istif dağılmaz. */
-export const DUSME_MS_PER_CELL = 48;
-export const DUSME_BOUNCE_MS = 55;
+export const DUSME_MS_PER_CELL = 18;
+export const DUSME_BOUNCE_MS = 24;
 
 function herHucre(
   grid: readonly (readonly DusmeHucre[])[],

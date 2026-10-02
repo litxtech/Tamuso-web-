@@ -10,16 +10,8 @@ import {
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import type { AjansListeKart } from '../okuma/AjansProfilGetir';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
-
-function sayi(n: number) {
-  return new Intl.NumberFormat('tr-TR').format(n);
-}
-
-function kisa(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return sayi(n);
-}
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   ajans: AjansListeKart;
@@ -28,6 +20,14 @@ type Props = {
 };
 
 export function AjansKesfetKarti({ ajans, sahipMi, onPress }: Props) {
+  const { t, dil } = useCeviri();
+  const sayi = (n: number) =>
+    new Intl.NumberFormat(DIL_LOCALE_MAP[dil]).format(n);
+  const kisa = (n: number) => {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+    return sayi(n);
+  };
   const banner = MedyaUriGuvenli(ajans.banner_url);
   const logo = MedyaUriGuvenli(ajans.logo_url);
   return (
@@ -71,7 +71,7 @@ export function AjansKesfetKarti({ ajans, sahipMi, onPress }: Props) {
             </View>
             {sahipMi ? (
               <View style={styles.sahipRozet}>
-                <Text style={styles.sahipYazi}>Senin</Text>
+                <Text style={styles.sahipYazi}>{t('ajans.senin')}</Text>
               </View>
             ) : null}
           </View>
@@ -79,15 +79,15 @@ export function AjansKesfetKarti({ ajans, sahipMi, onPress }: Props) {
           <View style={styles.statSatir}>
             <View style={styles.stat}>
               <Text style={styles.statDeger}>{sayi(ajans.uye_sayisi)}</Text>
-              <Text style={styles.statLabel}>üye</Text>
+              <Text style={styles.statLabel}>{t('ajans.uye')}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statDeger}>{kisa(ajans.haftalik_coin)}</Text>
-              <Text style={styles.statLabel}>haftalık coin</Text>
+              <Text style={styles.statLabel}>{t('ajans.haftalikCoin')}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statDeger}>{kisa(ajans.toplam_coin)}</Text>
-              <Text style={styles.statLabel}>toplam coin</Text>
+              <Text style={styles.statLabel}>{t('ajans.toplamCoin')}</Text>
             </View>
           </View>
         </View>

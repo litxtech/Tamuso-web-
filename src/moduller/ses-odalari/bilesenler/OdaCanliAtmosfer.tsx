@@ -1,64 +1,49 @@
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
+import { OdaTemasiniCoz } from '../../oda-olusturma/katalog/OdaTemaKatalogu';
 
 type Props = {
   yogunluk?: 'kapali' | 'hafif' | 'normal';
+  /** Seçili oda teması — aura rengi temaya uyum sağlar */
+  themeCode?: string | null;
 };
 
+function hexAlpha(hex: string, alpha: number): string {
+  const a = Math.round(Math.min(1, Math.max(0, alpha)) * 255)
+    .toString(16)
+    .padStart(2, '0');
+  const h = hex.replace('#', '');
+  if (h.length === 6) return `#${h}${a}`;
+  if (h.length === 8) return `#${h.slice(0, 6)}${a}`;
+  return hex;
+}
+
 /**
- * Sesli oda sahnesi — sabit aura + yumuşak opacity nabız.
- * Scale yok: sahne titremesini önler.
+ * Sesli oda sahnesi — tema uyumlu sabit aura.
+ * Sürekli nabız tüm sahneyi her karede yeniden boyayıp kasıyordu.
  */
-export function OdaCanliAtmosfer({ yogunluk = 'hafif' }: Props) {
-  const nabiz = useSharedValue(0);
-
-  useEffect(() => {
-    if (yogunluk === 'kapali') {
-      nabiz.value = 0;
-      return;
-    }
-    nabiz.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 4800, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0, { duration: 4800, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-      false,
-    );
-  }, [yogunluk, nabiz]);
-
-  const auraStil = useAnimatedStyle(() => ({
-    opacity: 0.045 + nabiz.value * (yogunluk === 'normal' ? 0.04 : 0.025),
-  }));
+export function OdaCanliAtmosfer({ yogunluk = 'hafif', themeCode }: Props) {
+  const tema = useMemo(() => OdaTemasiniCoz(themeCode), [themeCode]);
 
   if (yogunluk === 'kapali') return null;
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Animated.View style={[styles.aura, auraStil]}>
+      <View style={[styles.aura, yogunluk === 'normal' ? styles.auraNormal : styles.auraHafif]}>
         <LinearGradient
           colors={[
-            'rgba(196,59,255,0.28)',
-            'rgba(240,180,41,0.12)',
+            hexAlpha(tema.vurgu, 0.32),
+            hexAlpha(tema.renkler[0], 0.14),
             'transparent',
           ]}
           style={StyleSheet.absoluteFill}
         />
-      </Animated.View>
+      </View>
       <View
         style={[
           styles.halka,
-          { borderColor: RenkTokenlari.accent, opacity: 0.035 },
+          { borderColor: tema.vurgu, opacity: 0.045 },
         ]}
       />
     </View>
@@ -75,6 +60,8 @@ const styles = StyleSheet.create({
     borderRadius: 150,
     overflow: 'hidden',
   },
+  auraHafif: { opacity: 0.06 },
+  auraNormal: { opacity: 0.08 },
   halka: {
     position: 'absolute',
     alignSelf: 'center',

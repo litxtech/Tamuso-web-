@@ -1,0 +1,29 @@
+{
+  "siralamalar": {
+    "baslik": "Rankings",
+    "boardYukleme": "Top-up",
+    "boardHediye": "Gifts",
+    "boardCekicilik": "Charm",
+    "boardVip": "VIP",
+    "boardHost": "Hosts",
+    "boardOda": "Rooms",
+    "periodHaftalik": "Weekly",
+    "periodGunluk": "Daily",
+    "periodTumu": "All time",
+    "altYuklemeHaftalik": "Top coin top-ups this week",
+    "altYuklemeGunluk": "Top top-ups today",
+    "altYuklemeTumu": "All-time top-ups",
+    "altHediye": "Gift senders",
+    "altOda": "Gifts + game coins spent in rooms this week · resets Monday",
+    "altHost": "Hosts who received gifts",
+    "podiumOdalar": "This week's rooms",
+    "podiumYukleme": "This week's top",
+    "podiumZirve": "Top",
+    "bosBaslik": "Ranking empty",
+    "bosYukleme": "No coin top-ups in this period yet. You can hide rankings in Profile → Settings.",
+    "bosOda": "No gift or game coin spend in rooms this week yet. Ranking resets on Monday.",
+    "bosGenel": "No records for this period.",
+    "hostOdasi": "{{host}}'s room",
+    "odaHarcamasi": "Room spend"
+  }
+}

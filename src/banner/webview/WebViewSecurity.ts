@@ -1,3 +1,5 @@
+import i18n from '../../i18n';
+
 const BLOCKED_SCHEMES = [
   'javascript:',
   'file:',
@@ -20,12 +22,15 @@ export type UrlValidation = {
  */
 export function isSafeHttpsUrl(raw: string): UrlValidation {
   const trimmed = (raw ?? '').trim();
-  if (!trimmed) return { ok: false, reason: 'URL boş' };
+  if (!trimmed) return { ok: false, reason: i18n.t('webview.urlBos') };
 
   const lower = trimmed.toLowerCase();
   for (const scheme of BLOCKED_SCHEMES) {
     if (lower.startsWith(scheme)) {
-      return { ok: false, reason: `Engellenen şema: ${scheme}` };
+      return {
+        ok: false,
+        reason: i18n.t('webview.engellenenSema', { scheme }),
+      };
     }
   }
 
@@ -33,26 +38,26 @@ export function isSafeHttpsUrl(raw: string): UrlValidation {
   try {
     parsed = new URL(trimmed);
   } catch {
-    return { ok: false, reason: 'Geçersiz URL' };
+    return { ok: false, reason: i18n.t('webview.gecersizUrl') };
   }
 
   if (parsed.protocol !== 'https:') {
-    return { ok: false, reason: 'Sadece HTTPS izinli' };
+    return { ok: false, reason: i18n.t('webview.sadeceHttps') };
   }
 
   // Host kontrolü — "https://" boş host'u da yakala
   if (!parsed.hostname || parsed.hostname === 'localhost') {
-    return { ok: false, reason: 'Eksik veya geçersiz adres (ör. https://ornek.com)' };
+    return { ok: false, reason: i18n.t('webview.bosHost') };
   }
 
   // Userinfo (user:pass@) şüpheli — engelle
   if (parsed.username || parsed.password) {
-    return { ok: false, reason: 'URL kimlik bilgisi engellendi' };
+    return { ok: false, reason: i18n.t('webview.kimlikEngellendi') };
   }
 
   // Control characters
   if (/[\u0000-\u001F\u007F]/.test(trimmed)) {
-    return { ok: false, reason: 'Geçersiz karakter' };
+    return { ok: false, reason: i18n.t('webview.gecersizKarakter') };
   }
 
   return { ok: true, url: parsed.toString() };

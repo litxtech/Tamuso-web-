@@ -62,21 +62,30 @@ Deno.serve(async (req) => {
 
     const body = (await req.json()) as {
       channelName?: string;
+      roomName?: string;
       role?: AgoraRol;
-      expireSeconds?: number;
     };
-    const channelName = body.channelName?.trim();
-    const role: AgoraRol = body.role ?? 'listener';
-    if (!channelName || channelName.length > 64) {
-      return Response.json(
-        { error: 'Invalid channelName' },
-        { status: 400, headers: corsHeaders },
-      );
+    const channelName = (body.channelName ?? body.roomName ?? '').trim();
+    const istenen: AgoraRol = body.role ?? 'listener';
+
+    const { data: hazir, error: hazirHata } = await supabase.rpc(
+      'rtc_agora_kanal_hazirla',
+      { p_kanal: channelName, p_rol: istenen },
+    );
+    if (hazirHata) {
+      const kod = hazirHata.message.includes('uyusmuyor') ? 409 : 403;
+      return Response.json({ error: hazirHata.message }, { status: kod, headers: corsHeaders });
     }
 
-    // Audit + kill_live (FAZ 5 RPC)
+    const hazirSatir = (hazir ?? {}) as { kanal?: string; rol?: AgoraRol };
+    const kanal = String(hazirSatir.kanal ?? '');
+    const role: AgoraRol = hazirSatir.rol ?? 'listener';
+    if (!kanal) {
+      return Response.json({ error: 'Invalid roomName' }, { status: 400, headers: corsHeaders });
+    }
+
     const { error: auditError } = await supabase.rpc('livekit_token_istegi_kaydet', {
-      p_room_name: channelName,
+      p_room_name: kanal,
       p_role: role,
     });
     if (auditError) {
@@ -86,15 +95,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const uid = 0; // string UID kullanmak icin 0 + account
-    const expire = Math.max(60, Math.min(body.expireSeconds ?? 3600, 86400));
+    const expire = 3600;
     const privilegeExpire = Math.floor(Date.now() / 1000) + expire;
     const rtcRole = rolPublisherMi(role) ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
 
     const token = RtcTokenBuilder.buildTokenWithUserAccount(
       appId,
       appCertificate,
-      channelName,
+      kanal,
       user.id,
       rtcRole,
       privilegeExpire,
@@ -105,7 +113,7 @@ Deno.serve(async (req) => {
       {
         token,
         appId,
-        channelName,
+        channelName: kanal,
         uid: user.id,
         role,
         expireSeconds: expire,

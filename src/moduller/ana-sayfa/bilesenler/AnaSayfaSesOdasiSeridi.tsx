@@ -21,7 +21,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { SayiKisaBicim } from '../../../tasarim-sistemi/premium/SeviyeXpHesap';
-import { kullaniciTemaKodunuAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
 import { useCeviri } from '../../../i18n/useCeviri';
 
@@ -41,7 +41,7 @@ export function AnaSayfaSesOdasiSeridi({
 }: Props) {
   useTemayaAboneOl();
   const { t } = useCeviri();
-  const acik = kullaniciTemaKodunuAl() === 'acik';
+  const acik = temaAcikMi(kullaniciTemaKodunuAl());
 
   if (ogeler.length === 0) {
     return (

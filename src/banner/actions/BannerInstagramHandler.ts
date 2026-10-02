@@ -5,6 +5,7 @@ import {
   type ActionContext,
 } from './BannerActionContext';
 import { isSafeHttpsUrl } from '../webview/WebViewSecurity';
+import i18n from '../../i18n';
 
 function resolveInstagram(action: BannerAction): {
   username?: string;
@@ -38,7 +39,7 @@ export async function handleInstagram(
 ): Promise<{ ok: boolean; error?: string }> {
   const { username, webUrl, appUrl } = resolveInstagram(action);
   if (!webUrl && !username) {
-    Alert.alert('Instagram', 'Profil tanımlı değil.');
+    Alert.alert(i18n.t('banner.instagram'), i18n.t('banner.profilTanimliDegil'));
     return { ok: false, error: 'no_profile' };
   }
 

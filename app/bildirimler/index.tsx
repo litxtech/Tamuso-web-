@@ -26,6 +26,7 @@ import {
   BildirimHedefYolu,
   BildirimTarihSaat,
 } from '../../src/moduller/bildirimler/islemler/BildirimHedefYolu';
+import { BildirimHedefineGit } from '../../src/moduller/bildirimler/islemler/BildirimPushYonlendirme';
 import { ProfilAvatarKucuk } from '../../src/moduller/canli-sohbet/bilesenler/ProfilAvatarKucuk';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -201,7 +202,7 @@ export default function BildirimMerkeziEkrani() {
       actor_id: item.actor_id,
     });
     if (hedef) {
-      router.push(hedef as any);
+      void BildirimHedefineGit(hedef);
     }
   };
 

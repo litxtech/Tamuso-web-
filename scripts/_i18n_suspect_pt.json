@@ -1,0 +1,359 @@
+[
+  {
+    "key": "sekmeler.durum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "sekmeler.mesaj",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Mesaj"
+  },
+  {
+    "key": "gorunum.sampanya",
+    "reason": "same_as_en",
+    "en": "Champagne",
+    "val": "Champagne",
+    "tr": "Şampanya"
+  },
+  {
+    "key": "gorunum.bordo",
+    "reason": "same_as_en",
+    "en": "Bordeaux",
+    "val": "Bordeaux",
+    "tr": "Bordo"
+  },
+  {
+    "key": "gorunum.plasma",
+    "reason": "same_as_en",
+    "en": "Plasma",
+    "val": "Plasma",
+    "tr": "Plazma"
+  },
+  {
+    "key": "gorunum.mercana",
+    "reason": "same_as_en",
+    "en": "Coral",
+    "val": "Coral",
+    "tr": "Mercan"
+  },
+  {
+    "key": "ayarlar.uygulama",
+    "reason": "same_as_en",
+    "en": "App",
+    "val": "App",
+    "tr": "Uygulama"
+  },
+  {
+    "key": "auth.politikaBaglanti",
+    "reason": "same_as_en",
+    "en": "link",
+    "val": "link",
+    "tr": "bağlantı"
+  },
+  {
+    "key": "mesajlar.fisilti",
+    "reason": "same_as_en",
+    "en": "CHAT",
+    "val": "CHAT",
+    "tr": "SOHBET"
+  },
+  {
+    "key": "cuzdan.refAdmin",
+    "reason": "same_as_en",
+    "en": "Admin",
+    "val": "Admin",
+    "tr": "Yönetim"
+  },
+  {
+    "key": "cuzdan.ajansPaketPopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "durum.baslik",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "bildirimler.kategoriSosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "bildirimAyar.sosyal",
+    "reason": "same_as_en",
+    "en": "Social",
+    "val": "Social",
+    "tr": "Sosyal"
+  },
+  {
+    "key": "aiCeviri.gorusmeSohbetKisa",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "guvenlik.cinsel",
+    "reason": "same_as_en",
+    "en": "Sexual",
+    "val": "Sexual",
+    "tr": "Cinsel"
+  },
+  {
+    "key": "ajans.phSlogan",
+    "reason": "same_as_tr",
+    "en": "Tagline",
+    "val": "Slogan",
+    "tr": "Slogan"
+  },
+  {
+    "key": "ajans.formSecSohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "ajans.kpiCevrimici",
+    "reason": "same_as_en",
+    "en": "Online",
+    "val": "Online",
+    "tr": "Çevrimiçi"
+  },
+  {
+    "key": "ajans.alertDurum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "ajans.dkKisa",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "aiMuzik.vokalEnstr",
+    "reason": "same_as_en",
+    "en": "Instrumental",
+    "val": "Instrumental",
+    "tr": "Enstrümantal"
+  },
+  {
+    "key": "aiMuzik.alertDurum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "odaMuzik.tabPopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "odaMuzik.dashToplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "modlar.tekli",
+    "reason": "same_as_en",
+    "en": "Solo",
+    "val": "Solo",
+    "tr": "Tekli"
+  },
+  {
+    "key": "ulkeLigi.puanEtiket",
+    "reason": "same_as_en",
+    "en": "pts",
+    "val": "pts",
+    "tr": "puan"
+  },
+  {
+    "key": "satinAlma.kanalManuel",
+    "reason": "same_as_en",
+    "en": "Manual",
+    "val": "Manual",
+    "tr": "Manuel"
+  },
+  {
+    "key": "satinAlma.durum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "sertifikasyon.internet",
+    "reason": "same_as_en",
+    "en": "Internet",
+    "val": "Internet",
+    "tr": "İnternet"
+  },
+  {
+    "key": "anaSayfa.yayinci",
+    "reason": "same_as_en",
+    "en": "Streamer",
+    "val": "Streamer",
+    "tr": "Yayıncı"
+  },
+  {
+    "key": "anaSayfa.menu",
+    "reason": "same_as_en",
+    "en": "Menu",
+    "val": "Menu",
+    "tr": "Menü"
+  },
+  {
+    "key": "anaSayfa.populer",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "anaSayfa.grupYonetim",
+    "reason": "same_as_en",
+    "en": "ADMIN",
+    "val": "ADMIN",
+    "tr": "YÖNETİM"
+  },
+  {
+    "key": "cuzdanX.taban",
+    "reason": "same_as_en",
+    "en": "{{adet}} base",
+    "val": "{{adet}} base",
+    "tr": "{{adet}} taban"
+  },
+  {
+    "key": "olusturTab.duzen",
+    "reason": "same_as_en",
+    "en": "Layout",
+    "val": "Layout",
+    "tr": "Görünüm"
+  },
+  {
+    "key": "olusturTab.tema",
+    "reason": "same_as_tr",
+    "en": "Theme",
+    "val": "Tema",
+    "tr": "Tema"
+  },
+  {
+    "key": "hediye.sekmePopuler",
+    "reason": "same_as_en",
+    "en": "Popular",
+    "val": "Popular",
+    "tr": "Popüler"
+  },
+  {
+    "key": "canliYayin.katSohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "mesajSohbet.sohbet",
+    "reason": "same_as_en",
+    "en": "Chat",
+    "val": "Chat",
+    "tr": "Sohbet"
+  },
+  {
+    "key": "sesOda.dk",
+    "reason": "same_as_en",
+    "en": "{{n}} min",
+    "val": "{{n}} min",
+    "tr": "{{n}} dk"
+  },
+  {
+    "key": "sesOda.saDk",
+    "reason": "same_as_en",
+    "en": "{{sa}} h {{dk}} min",
+    "val": "{{sa}} h {{dk}} min",
+    "tr": "{{sa}} sa {{dk}} dk"
+  },
+  {
+    "key": "sesOda.yonetici",
+    "reason": "same_as_en",
+    "en": "Admin",
+    "val": "Admin",
+    "tr": "Yönetici"
+  },
+  {
+    "key": "kisilerX.cevrimici",
+    "reason": "same_as_en",
+    "en": "Online",
+    "val": "Online",
+    "tr": "Çevrimiçi"
+  },
+  {
+    "key": "belge.durum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "belge.excelBaslikDurum",
+    "reason": "same_as_en",
+    "en": "Status",
+    "val": "Status",
+    "tr": "Durum"
+  },
+  {
+    "key": "belge.admin.toplam",
+    "reason": "same_as_en",
+    "en": "Total",
+    "val": "Total",
+    "tr": "Toplam"
+  },
+  {
+    "key": "banner.uygulamaBaslik",
+    "reason": "same_as_en",
+    "en": "App",
+    "val": "App",
+    "tr": "Uygulama"
+  },
+  {
+    "key": "odaDuzen.kategoriSalon",
+    "reason": "same_as_en",
+    "en": "Lounge",
+    "val": "Lounge",
+    "tr": "Salon"
+  },
+  {
+    "key": "kullanimSuresiFmt.gunSaatKisa",
+    "reason": "same_as_en",
+    "en": "{{gun}}d {{saat}}h",
+    "val": "{{gun}}d {{saat}}h",
+    "tr": "{{gun}}g {{saat}}s"
+  }
+]

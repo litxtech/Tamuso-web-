@@ -28,9 +28,11 @@ import {
   OdaKapakUriIleYukle,
 } from '../islemler/OdaKapakMedyasiYukle';
 import { OdaArkaPlanTemaSeridi } from './OdaArkaPlanTemaSeridi';
+import { OdaDuzenSecimSeridi } from './OdaDuzenSecimSeridi';
 import {
   OdaTemasiniCoz,
 } from '../../oda-olusturma/katalog/OdaTemaKatalogu';
+import { OdaDuzeniniCoz } from '../duzen/OdaDuzeniniCoz';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -46,6 +48,7 @@ type Props = {
   topic: string | null;
   coverUrl: string | null;
   themeCode?: string | null;
+  layoutCode?: string | null;
   maxSeats: number;
   /** Dolu mikrofon koltuğu sayısı (azaltmada uyarı için) */
   doluKoltuk: number;
@@ -55,6 +58,7 @@ type Props = {
     topic: string | null;
     cover_url: string | null;
     theme_code: string | null;
+    layout_code?: string | null;
     max_seats?: number;
     capacity_tier_code?: string | null;
   }) => void;
@@ -68,6 +72,7 @@ export function OdaKapakDuzenlePaneli({
   topic: topicIlk,
   coverUrl: kapakIlk,
   themeCode: temaIlk,
+  layoutCode: duzenIlk,
   maxSeats: maxSeatsIlk,
   doluKoltuk,
   onClose,
@@ -83,6 +88,9 @@ export function OdaKapakDuzenlePaneli({
   const [temaKod, setTemaKod] = useState(
     () => OdaTemasiniCoz(temaIlk).kod,
   );
+  const [duzenKod, setDuzenKod] = useState(
+    () => OdaDuzeniniCoz(duzenIlk).kod,
+  );
   const [maxSeats, setMaxSeats] = useState(
     Math.min(ODA_KOLTUK_MAX, Math.max(ODA_KOLTUK_MIN, maxSeatsIlk || 8)),
   );
@@ -97,12 +105,13 @@ export function OdaKapakDuzenlePaneli({
     setTopic(topicIlk ?? '');
     setKapakUrl(kapakIlk);
     setTemaKod(OdaTemasiniCoz(temaIlk).kod);
+    setDuzenKod(OdaDuzeniniCoz(duzenIlk).kod);
     setMaxSeats(
       Math.min(ODA_KOLTUK_MAX, Math.max(ODA_KOLTUK_MIN, maxSeatsIlk || 8)),
     );
     setYerelUri(null);
     setYerelMime(null);
-  }, [visible, baslikIlk, topicIlk, kapakIlk, temaIlk, maxSeatsIlk]);
+  }, [visible, baslikIlk, topicIlk, kapakIlk, temaIlk, duzenIlk, maxSeatsIlk]);
   useEffect(() => {
     if (!visible || !klavyeAcik) return;
     const t = setTimeout(() => {
@@ -193,6 +202,7 @@ export function OdaKapakDuzenlePaneli({
           topic: topic.trim() || null,
           coverUrl: cover,
           themeCode: temaKod,
+          layoutCode: duzenKod,
         });
         if (!r.ok) {
           Alert.alert(t('sesOda.oda'), r.hata);
@@ -215,6 +225,7 @@ export function OdaKapakDuzenlePaneli({
           topic: topic.trim() || null,
           cover_url: cover,
           theme_code: temaKod,
+          layout_code: duzenKod,
           ...koltukPatch,
         });
         onClose();
@@ -392,6 +403,17 @@ export function OdaKapakDuzenlePaneli({
                 <OdaArkaPlanTemaSeridi
                   seciliKod={temaKod}
                   onSec={(tema) => setTemaKod(tema.kod)}
+                />
+
+                <Text style={[styles.onizlemeEtiket, { marginTop: 14 }]}>
+                  {t('sesOda.gorunumDuzeni')}
+                </Text>
+                <Text style={styles.temaAlt}>
+                  {t('sesOda.gorunumDuzeniAlt')}
+                </Text>
+                <OdaDuzenSecimSeridi
+                  seciliKod={duzenKod}
+                  onSec={(duzen) => setDuzenKod(duzen.kod)}
                 />
               </>
             ) : (

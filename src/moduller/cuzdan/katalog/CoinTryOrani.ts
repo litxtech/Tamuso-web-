@@ -1,9 +1,6 @@
-/**
- * Coin / elmas katalog oranı.
- * Canlı değer: `platform_economy_config` (EkonomiOranlariniGetir).
- * Fallback: 0,10 ₺ — ağ yokken / ilk render.
- */
 import { EkonomiOranCacheOku } from './EkonomiOranlariniGetir';
+import i18n from '../../../i18n';
+import { AktifSayiLocale } from '../../../i18n/diller';
 
 /** @deprecated Canlı oran için EkonomiOranCacheOku().coin_try kullan */
 export const COIN_TRY_ORANI = 0.1;
@@ -28,8 +25,9 @@ export function ElmasTryKarsiligi(diamonds: number): number {
   return Math.round(n * DiamondTryOraniCanli() * 100) / 100;
 }
 
-export function TryYazi(tutar: number): string {
-  return `${tutar.toLocaleString('tr-TR', {
+export function TryYazi(tutar: number, locale?: string | null): string {
+  const loc = locale ?? AktifSayiLocale(i18n.language);
+  return `${tutar.toLocaleString(loc, {
     minimumFractionDigits: tutar % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   })} ₺`;

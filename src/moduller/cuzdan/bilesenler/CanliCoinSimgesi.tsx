@@ -95,25 +95,27 @@ export function CanliCoinSimgesi({
   );
 }
 
-/** Hediye için giriş animasyonu + seçilince hafif nabız.
- * Android: grid'de 50 spring UI dondurur → statik emoji; nabız yalnız seçilide tek vuruş. */
+/** Hediye simgesi. Mağaza ızgarasında `sakin` kullan — spring ve sürekli nabız kartı titretir. */
 export function CanliHediyeSimgesi({
   emoji,
   size = 40,
   delayMs = 0,
   secili = false,
+  sakin = false,
 }: {
   emoji: string;
   size?: number;
   delayMs?: number;
   secili?: boolean;
+  /** Izgarada spring/nabız kartı titretmesin */
+  sakin?: boolean;
 }) {
   const android = Platform.OS === 'android';
-  const giris = useSharedValue(android ? 1 : 0);
+  const giris = useSharedValue(1);
   const nabiz = useSharedValue(1);
 
   useEffect(() => {
-    if (android) {
+    if (sakin || android) {
       giris.value = 1;
       return;
     }
@@ -122,30 +124,18 @@ export function CanliHediyeSimgesi({
       Math.min(delayMs, 120),
       withSpring(1, { damping: 14, stiffness: 180, mass: 0.6 }),
     );
-  }, [android, delayMs, giris, emoji]);
+  }, [android, delayMs, giris, emoji, sakin]);
 
   useEffect(() => {
-    if (!secili) {
-      nabiz.value = withTiming(1, { duration: 120 });
+    if (sakin || !secili) {
+      nabiz.value = withTiming(1, { duration: 80 });
       return;
     }
-    if (android) {
-      // Sonsuz loop yok — tek vuruş
-      nabiz.value = withSequence(
-        withTiming(1.12, { duration: 140 }),
-        withTiming(1, { duration: 160 }),
-      );
-      return;
-    }
-    nabiz.value = withRepeat(
-      withSequence(
-        withTiming(1.14, { duration: 520 }),
-        withTiming(1, { duration: 520 }),
-      ),
-      -1,
-      false,
+    nabiz.value = withSequence(
+      withTiming(1.08, { duration: 120 }),
+      withTiming(1, { duration: 140 }),
     );
-  }, [android, nabiz, secili]);
+  }, [nabiz, sakin, secili]);
 
   const stil = useAnimatedStyle(() => ({
     opacity: giris.value,
@@ -155,7 +145,7 @@ export function CanliHediyeSimgesi({
     ],
   }));
 
-  if (android && !secili) {
+  if (sakin || (android && !secili)) {
     return <Text style={{ fontSize: size }}>{emoji}</Text>;
   }
 

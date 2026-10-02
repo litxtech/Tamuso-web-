@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -13,118 +13,198 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import type { RenkPaleti, TemaKodu } from '../../../tasarim-sistemi/tema/TemaTipleri';
+import {
+  TEMA_KATEGORILERI,
+  TEMA_KODLARI,
+  TEMA_META,
+  type RenkPaleti,
+  type TemaKategori,
+  type TemaKodu,
+} from '../../../tasarim-sistemi/tema/TemaTipleri';
 import { useTema } from '../../../tasarim-sistemi/tema/TemaSaglayici';
 import { paletiKoddanAl } from '../../../tasarim-sistemi/tema/TemaDurumu';
+import { useCeviri, type CeviriAnahtari } from '../../../i18n/useCeviri';
 
-type Kart = {
-  kod: TemaKodu;
-  baslik: string;
+type Props = {
+  onSec?: (kod: TemaKodu) => void;
+  /** true: dikey grid (katalog ekranı); false: yatay şerit */
+  katalogMu?: boolean;
 };
 
-const KARTLAR: Kart[] = [
-  { kod: 'koyu', baslik: 'Koyu' },
-  { kod: 'acik', baslik: 'Açık' },
-  { kod: 'kadife', baslik: 'Kadife' },
-  { kod: 'sampanya', baslik: 'Şampanya' },
-  { kod: 'kozmik', baslik: 'Kozmik' },
-  { kod: 'zumrut', baslik: 'Zümrüt' },
-];
-
 /**
- * Görünüm sekmeleri — kompakt yatay seçim (ayarlar / profil).
+ * Uygulama görünüm seçici — tüm app paleti (oda temalarından bağımsız).
  */
-export function GorunumSecimKartlari({
-  onSec,
-}: {
-  onSec?: (kod: TemaKodu) => void;
-}) {
+export function GorunumSecimKartlari({ onSec, katalogMu = false }: Props) {
+  const { t } = useCeviri();
   const { kod: aktif, temayiSec, palet } = useTema();
+  const [kategori, setKategori] = useState<TemaKategori | 'hepsi'>('hepsi');
+
+  const kodlar = useMemo(() => {
+    if (kategori === 'hepsi') return [...TEMA_KODLARI];
+    return TEMA_KODLARI.filter((k) => TEMA_META[k].kategori === kategori);
+  }, [kategori]);
 
   const sec = async (kod: TemaKodu) => {
     await temayiSec(kod);
     onSec?.(kod);
   };
 
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.serit}
-      style={styles.scroll}
-    >
-      {KARTLAR.map((kart) => {
-        const ornek: RenkPaleti = paletiKoddanAl(kart.kod);
-        const secili = aktif === kart.kod;
-        return (
-          <Pressable
-            key={kart.kod}
-            onPress={() => void sec(kart.kod)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: secili }}
-            accessibilityLabel={`${kart.baslik} görünüm`}
-            style={({ pressed }) => [
-              styles.hit,
-              pressed && styles.pressed,
-            ]}
+  const kart = (kod: TemaKodu) => {
+    const ornek: RenkPaleti = paletiKoddanAl(kod);
+    const meta = TEMA_META[kod];
+    const secili = aktif === kod;
+    const baslik = t(meta.adKey as CeviriAnahtari);
+    const alt = t(meta.altKey as CeviriAnahtari);
+    return (
+      <Pressable
+        key={kod}
+        onPress={() => void sec(kod)}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: secili }}
+        accessibilityLabel={t('gorunum.temaA11y', { baslik })}
+        style={({ pressed }) => [
+          katalogMu ? styles.gridHit : styles.hit,
+          pressed && styles.pressed,
+        ]}
+      >
+        <View
+          style={[
+            katalogMu ? styles.gridKart : styles.sekme,
+            {
+              borderColor: secili ? palet.primary : palet.border,
+              backgroundColor: secili ? palet.pressFill : palet.bgCard,
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={[...ornek.gradientNight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={katalogMu ? styles.gridSwatch : styles.swatch}
           >
             <View
               style={[
-                styles.sekme,
+                styles.swatchNokta,
+                katalogMu && styles.swatchNoktaBuyuk,
+                { backgroundColor: ornek.primary },
+              ]}
+            />
+            {secili ? (
+              <View
+                style={[styles.onay, { backgroundColor: ornek.primary }]}
+              >
+                <Ionicons
+                  name="checkmark"
+                  size={katalogMu ? 14 : 10}
+                  color={ornek.textOnPrimary}
+                />
+              </View>
+            ) : null}
+          </LinearGradient>
+          <View style={katalogMu ? styles.gridCopy : undefined}>
+            <Text
+              style={[
+                katalogMu ? styles.gridAd : styles.etiket,
+                {
+                  color: secili ? palet.text : palet.textMuted,
+                  fontWeight: secili ? '700' : '600',
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {baslik}
+            </Text>
+            {katalogMu ? (
+              <Text
+                style={[styles.gridAlt, { color: palet.textDim }]}
+                numberOfLines={1}
+              >
+                {alt}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
+
+  return (
+    <View style={styles.kok}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.kategoriSerit}
+      >
+        {TEMA_KATEGORILERI.map((k) => {
+          const secili = kategori === k.kod;
+          return (
+            <Pressable
+              key={k.kod}
+              onPress={() => setKategori(k.kod)}
+              style={[
+                styles.kategoriChip,
                 {
                   borderColor: secili ? palet.primary : palet.border,
                   backgroundColor: secili ? palet.pressFill : palet.bgCard,
                 },
               ]}
             >
-              <LinearGradient
-                colors={[...ornek.gradientNight]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.swatch}
-              >
-                <View
-                  style={[
-                    styles.swatchNokta,
-                    { backgroundColor: ornek.primary },
-                  ]}
-                />
-                {secili ? (
-                  <View
-                    style={[
-                      styles.onay,
-                      { backgroundColor: ornek.primary },
-                    ]}
-                  >
-                    <Ionicons
-                      name="checkmark"
-                      size={10}
-                      color={ornek.textOnPrimary}
-                    />
-                  </View>
-                ) : null}
-              </LinearGradient>
               <Text
                 style={[
-                  styles.etiket,
-                  {
-                    color: secili ? palet.text : palet.textMuted,
-                    fontWeight: secili ? '700' : '600',
-                  },
+                  styles.kategoriYazi,
+                  { color: secili ? palet.text : palet.textMuted },
                 ]}
-                numberOfLines={1}
               >
-                {kart.baslik}
+                {t(k.adKey as CeviriAnahtari)}
               </Text>
-            </View>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      <Text style={[styles.sayac, { color: palet.textDim }]}>
+        {t('gorunum.temaSayisi', { n: kodlar.length })}
+      </Text>
+
+      {katalogMu ? (
+        <View style={styles.grid}>{kodlar.map(kart)}</View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.serit}
+          style={styles.scroll}
+        >
+          {kodlar.map(kart)}
+        </ScrollView>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  kok: { gap: 8 },
+  kategoriSerit: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 2,
+  },
+  kategoriChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  kategoriYazi: {
+    ...TipografiTokenlari.micro,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sayac: {
+    ...TipografiTokenlari.micro,
+    fontSize: 10,
+    paddingLeft: 2,
+  },
   scroll: {
     marginBottom: BoslukTokenlari.md,
     marginHorizontal: -BoslukTokenlari.sm,
@@ -136,13 +216,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: BoslukTokenlari.sm,
     paddingVertical: 2,
   },
-  hit: {
-    flexShrink: 0,
-  },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.97 }],
-  },
+  hit: { flexShrink: 0 },
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
   sekme: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,6 +242,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
+  swatchNoktaBuyuk: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
   onay: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
@@ -176,5 +256,40 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.micro,
     fontSize: 12,
     letterSpacing: -0.1,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  gridHit: {
+    width: '47%',
+    flexGrow: 1,
+    maxWidth: '48.5%',
+  },
+  gridKart: {
+    borderRadius: YaricapTokenlari.md,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+    minHeight: 118,
+  },
+  gridSwatch: {
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gridCopy: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 2,
+  },
+  gridAd: {
+    ...TipografiTokenlari.micro,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  gridAlt: {
+    ...TipografiTokenlari.micro,
+    fontSize: 10,
   },
 });

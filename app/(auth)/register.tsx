@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { TextField } from '../../src/components/TextField';
@@ -62,13 +62,27 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { SPOTIFY_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/SpotifyGirisAktif';
+import { TWITCH_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/TwitchGirisAktif';
+import { X_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/XGirisAktif';
+import { GOOGLE_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/GoogleGirisAktif';
 
 const YIL_OPTS = DogumYilSecenekleri(18);
 const SPOTIFY_GREEN = '#1DB954';
+const TWITCH_PURPLE = '#9146FF';
+const X_BLACK = '#000000';
+const GOOGLE_WHITE = '#FFFFFF';
 
 export default function RegisterScreen() {
   const { t } = useCeviri();
-  const { signUp, signInWithSpotify, refreshProfile } = useAuth();
+  const {
+    signUp,
+    signInWithSpotify,
+    signInWithTwitch,
+    signInWithX,
+    signInWithGoogle,
+    refreshProfile,
+  } = useAuth();
   const genders = [
     { id: 'female', label: t('auth.cinsiyetKadin') },
     { id: 'male', label: t('auth.cinsiyetErkek') },
@@ -101,6 +115,9 @@ export default function RegisterScreen() {
   const [avatar, setAvatar] = useState<SecilenProfilMedya | null>(null);
   const [loading, setLoading] = useState(false);
   const [spotifyLoading, setSpotifyLoading] = useState(false);
+  const [twitchLoading, setTwitchLoading] = useState(false);
+  const [xLoading, setXLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [kayitPolitikalari, setKayitPolitikalari] = useState<PolitikaGorunum[]>(
     [],
   );
@@ -154,6 +171,93 @@ export default function RegisterScreen() {
     if (cancelled) return;
     if (error) {
       Alert.alert(t('auth.spotifyKaydi'), error);
+      return;
+    }
+    const kabul = await KayitPolitikaKabulKaydet(
+      kayitPolitikalari.map((p) => p.kod),
+    );
+    if (!kabul.ok) {
+      Alert.alert(
+        t('auth.yasalOnay'),
+        kabul.hata ?? t('auth.politikaKaydiBasarisiz'),
+      );
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onTwitch = async () => {
+    if (!TumPolitikaOnaylariVerildi(kayitPolitikalari, onaylar)) {
+      Alert.alert(t('auth.yasalOnay'), t('auth.yasalOnayTwitch'));
+      return;
+    }
+    if (!yas18Beyani) {
+      Alert.alert(t('auth.yasBeyani'), t('auth.yasBeyaniMesaj'));
+      return;
+    }
+    setTwitchLoading(true);
+    const { error, cancelled } = await signInWithTwitch();
+    setTwitchLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.twitchKaydi'), error);
+      return;
+    }
+    const kabul = await KayitPolitikaKabulKaydet(
+      kayitPolitikalari.map((p) => p.kod),
+    );
+    if (!kabul.ok) {
+      Alert.alert(
+        t('auth.yasalOnay'),
+        kabul.hata ?? t('auth.politikaKaydiBasarisiz'),
+      );
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onX = async () => {
+    if (!TumPolitikaOnaylariVerildi(kayitPolitikalari, onaylar)) {
+      Alert.alert(t('auth.yasalOnay'), t('auth.yasalOnayX'));
+      return;
+    }
+    if (!yas18Beyani) {
+      Alert.alert(t('auth.yasBeyani'), t('auth.yasBeyaniMesaj'));
+      return;
+    }
+    setXLoading(true);
+    const { error, cancelled } = await signInWithX();
+    setXLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.xKaydi'), error);
+      return;
+    }
+    const kabul = await KayitPolitikaKabulKaydet(
+      kayitPolitikalari.map((p) => p.kod),
+    );
+    if (!kabul.ok) {
+      Alert.alert(
+        t('auth.yasalOnay'),
+        kabul.hata ?? t('auth.politikaKaydiBasarisiz'),
+      );
+    }
+    router.replace('/(tabs)');
+  };
+
+  const onGoogle = async () => {
+    if (!TumPolitikaOnaylariVerildi(kayitPolitikalari, onaylar)) {
+      Alert.alert(t('auth.yasalOnay'), t('auth.yasalOnayGoogle'));
+      return;
+    }
+    if (!yas18Beyani) {
+      Alert.alert(t('auth.yasBeyani'), t('auth.yasBeyaniMesaj'));
+      return;
+    }
+    setGoogleLoading(true);
+    const { error, cancelled } = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (cancelled) return;
+    if (error) {
+      Alert.alert(t('auth.googleKaydi'), error);
       return;
     }
     const kabul = await KayitPolitikaKabulKaydet(
@@ -548,23 +652,84 @@ export default function RegisterScreen() {
               loading={loading}
             />
 
-            <Pressable
-              onPress={() => void onSpotify()}
-              disabled={spotifyLoading}
-              style={[
-                styles.spotifyBtn,
-                spotifyLoading && styles.spotifyDisabled,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={t('auth.spotifyIleKayit')}
-            >
-              <Ionicons name="musical-notes" size={20} color="#121212" />
-              <Text style={styles.spotifyText}>
-                {spotifyLoading
-                  ? t('auth.spotifyBaglaniyor')
-                  : t('auth.spotifyIleKayit')}
-              </Text>
-            </Pressable>
+            {SPOTIFY_GIRIS_AKTIF ? (
+              <Pressable
+                onPress={() => void onSpotify()}
+                disabled={spotifyLoading}
+                style={[
+                  styles.spotifyBtn,
+                  spotifyLoading && styles.spotifyDisabled,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.spotifyIleKayit')}
+              >
+                <Ionicons name="musical-notes" size={20} color="#121212" />
+                <Text style={styles.spotifyText}>
+                  {spotifyLoading
+                    ? t('auth.spotifyBaglaniyor')
+                    : t('auth.spotifyIleKayit')}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {TWITCH_GIRIS_AKTIF ? (
+              <Pressable
+                onPress={() => void onTwitch()}
+                disabled={twitchLoading}
+                style={[
+                  styles.twitchBtn,
+                  twitchLoading && styles.twitchDisabled,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.twitchIleKayit')}
+              >
+                <Ionicons name="logo-twitch" size={20} color="#fff" />
+                <Text style={styles.twitchText}>
+                  {twitchLoading
+                    ? t('auth.twitchBaglaniyor')
+                    : t('auth.twitchIleKayit')}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {X_GIRIS_AKTIF ? (
+              <Pressable
+                onPress={() => void onX()}
+                disabled={xLoading}
+                style={[styles.xBtn, xLoading && styles.xDisabled]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.xIleKayit')}
+              >
+                <Text style={styles.xLogo}>𝕏</Text>
+                <Text style={styles.xText}>
+                  {xLoading ? t('auth.xBaglaniyor') : t('auth.xIleKayit')}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {GOOGLE_GIRIS_AKTIF ? (
+              <Pressable
+                onPress={() => void onGoogle()}
+                disabled={googleLoading}
+                style={[
+                  styles.googleBtn,
+                  googleLoading && styles.googleDisabled,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.googleIleKayit')}
+              >
+                <MaterialCommunityIcons
+                  name="google"
+                  size={20}
+                  color="#4285F4"
+                />
+                <Text style={styles.googleText}>
+                  {googleLoading
+                    ? t('auth.googleBaglaniyor')
+                    : t('auth.googleIleKayit')}
+                </Text>
+              </Pressable>
+            ) : null}
 
             <Link href="/(auth)/login" asChild>
               <Pressable style={styles.switchRow}>
@@ -727,6 +892,64 @@ const styles = StyleSheet.create({
   spotifyText: {
     ...TipografiTokenlari.body,
     color: '#121212',
+    fontWeight: '700',
+  },
+  twitchBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: TWITCH_PURPLE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+  },
+  twitchDisabled: { opacity: 0.7 },
+  twitchText: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  xBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: X_BLACK,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  xDisabled: { opacity: 0.7 },
+  xLogo: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 22,
+  },
+  xText: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  googleBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: GOOGLE_WHITE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  googleDisabled: { opacity: 0.7 },
+  googleText: {
+    ...TipografiTokenlari.body,
+    color: '#3C4043',
     fontWeight: '700',
   },
   switchRow: {

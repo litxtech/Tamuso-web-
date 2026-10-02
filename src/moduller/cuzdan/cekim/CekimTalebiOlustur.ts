@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { FinansIdempotencyAnahtariOlustur } from '../islemler/FinansIdempotencyAnahtariOlustur';
 import { KillSwitchAktifMiSunucu } from '../../ozellik-bayraklari/okuma/KillSwitchAktifMiSunucu';
@@ -5,16 +6,16 @@ import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/Ozel
 
 function CekimHataMesaji(ham?: string): string {
   const m = (ham ?? '').toLowerCase();
-  if (!m) return 'Çekim talebi oluşturulamadı.';
-  if (m.includes('insufficient')) return 'Elmas bakiyesi yetersiz.';
-  if (m.includes('guest')) return 'Misafir hesaplar çekim yapamaz.';
+  if (!m) return i18n.t('cuzdanX.cekimOlusturulamadi');
+  if (m.includes('insufficient')) return i18n.t('cuzdanX.elmasYetersiz');
+  if (m.includes('guest')) return i18n.t('cuzdanX.misafirCekimYapamaz');
   if (m.includes('temporarily disabled') || m.includes('kill'))
-    return 'Çekim geçici olarak kapalı.';
+    return i18n.t('cuzdanX.cekimGeciciKapali');
   if (m.includes('feature disabled') || m.includes('withdrawals'))
-    return 'Çekim şu an kullanılamıyor.';
-  if (m.includes('invalid amount')) return 'Geçerli bir elmas miktarı gir.';
-  if (m.includes('not authenticated')) return 'Oturum gerekli.';
-  return ham ?? 'Çekim talebi oluşturulamadı.';
+    return i18n.t('cuzdanX.cekimKullanilamiyor');
+  if (m.includes('invalid amount')) return i18n.t('cuzdanX.gecerliElmasGir');
+  if (m.includes('not authenticated')) return i18n.t('aiMuzik.oturumGerekli');
+  return ham ?? i18n.t('cuzdanX.cekimOlusturulamadi');
 }
 
 export async function CekimTalebiOlustur(input: {
@@ -23,13 +24,13 @@ export async function CekimTalebiOlustur(input: {
   details?: Record<string, unknown>;
 }): Promise<{ ok: boolean; hata?: string }> {
   if (await KillSwitchAktifMiSunucu('kill_withdrawal')) {
-    return { ok: false, hata: 'Çekim geçici olarak kapalı.' };
+    return { ok: false, hata: i18n.t('cuzdanX.cekimGeciciKapali') };
   }
   const withdrawAcik =
     (await OzellikBayragiAktifMiSunucu('wallet_withdraw_enabled')) ||
     (await OzellikBayragiAktifMiSunucu('withdrawals_enabled'));
   if (!withdrawAcik) {
-    return { ok: false, hata: 'Çekim şu an kullanılamıyor.' };
+    return { ok: false, hata: i18n.t('cuzdanX.cekimKullanilamiyor') };
   }
   const { error: bayrakErr } = await supabase.rpc('cekim_wallet_bayrak_kontrol');
   if (bayrakErr) {

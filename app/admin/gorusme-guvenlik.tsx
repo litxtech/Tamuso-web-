@@ -12,7 +12,9 @@ import {
   View,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
+import { KlavyeGuvenliAlan } from '../../src/bilesenler/klavye/KlavyeGuvenliAlan';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVarMi';
@@ -36,6 +38,7 @@ const OLAY_ETIKET: Record<string, string> = {
 
 export default function AdminGorusmeGuvenlikEkrani() {
   const { profile } = useAuth();
+  const insets = useSafeAreaInsets();
   const admin = AdminYetkisiVarMi(profile);
   const [liste, setListe] = useState<CallSecurityEvent[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -150,67 +153,81 @@ export default function AdminGorusmeGuvenlikEkrani() {
       </ScrollView>
 
       <Modal visible={!!secili} animationType="slide" transparent>
-        <View style={styles.modalPerde}>
-          <View style={styles.modalKart}>
-            <Text style={styles.modalBaslik}>Olay detayı</Text>
-            {secili ? (
-              <>
-                <Text style={AdminStil.kartAlt}>
-                  Tür: {OLAY_ETIKET[secili.event_type] ?? secili.event_type}
-                </Text>
-                <Text style={AdminStil.kartAlt}>
-                  Kullanıcı: {secili.user_name}
-                </Text>
-                <Text style={AdminStil.kartAlt}>
-                  Karşı taraf: {secili.peer_name}
-                </Text>
-                <Text style={AdminStil.kartAlt}>
-                  Görüşme: {secili.call_id ?? '—'}
-                </Text>
-                <Text style={AdminStil.kartAlt}>
-                  Platform: {secili.platform ?? '—'} · Durum:{' '}
-                  {secili.call_status ?? '—'}
-                </Text>
-                <Text style={[AdminStil.kartAlt, { marginBottom: 8 }]}>
-                  {JSON.stringify(secili.details ?? {}, null, 0)}
-                </Text>
-                <Text style={styles.uyariEtiket}>Uyarı mesajı</Text>
-                <TextInput
-                  style={AdminStil.input}
-                  value={uyari}
-                  onChangeText={setUyari}
-                  multiline
-                  placeholderTextColor={RenkTokenlari.textDim}
-                />
-                <View style={AdminStil.aksiyonSatir}>
-                  <Pressable
-                    style={AdminStil.aksiyon}
-                    onPress={() => setSecili(null)}
-                  >
-                    <Text style={AdminStil.aksiyonYazi}>Kapat</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[
-                      AdminStil.aksiyon,
-                      { borderColor: RenkTokenlari.danger },
-                    ]}
-                    disabled={busy}
-                    onPress={() => void uyarGonder()}
-                  >
-                    <Text
-                      style={[
-                        AdminStil.aksiyonYazi,
-                        { color: RenkTokenlari.danger },
-                      ]}
+        <KlavyeGuvenliAlan style={styles.modalPerde}>
+          <Pressable style={styles.modalBosluk} onPress={() => setSecili(null)} />
+          <View
+            style={[
+              styles.modalKart,
+              { paddingBottom: Math.max(insets.bottom, 12) + 8 },
+            ]}
+          >
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              contentContainerStyle={styles.modalIcerik}
+            >
+              <Text style={styles.modalBaslik}>Olay detayı</Text>
+              {secili ? (
+                <>
+                  <Text style={AdminStil.kartAlt}>
+                    Tür: {OLAY_ETIKET[secili.event_type] ?? secili.event_type}
+                  </Text>
+                  <Text style={AdminStil.kartAlt}>
+                    Kullanıcı: {secili.user_name}
+                  </Text>
+                  <Text style={AdminStil.kartAlt}>
+                    Karşı taraf: {secili.peer_name}
+                  </Text>
+                  <Text style={AdminStil.kartAlt}>
+                    Görüşme: {secili.call_id ?? '—'}
+                  </Text>
+                  <Text style={AdminStil.kartAlt}>
+                    Platform: {secili.platform ?? '—'} · Durum:{' '}
+                    {secili.call_status ?? '—'}
+                  </Text>
+                  <Text style={[AdminStil.kartAlt, { marginBottom: 8 }]}>
+                    {JSON.stringify(secili.details ?? {}, null, 0)}
+                  </Text>
+                  <Text style={styles.uyariEtiket}>Uyarı mesajı</Text>
+                  <TextInput
+                    style={[AdminStil.input, styles.uyariInput]}
+                    value={uyari}
+                    onChangeText={setUyari}
+                    multiline
+                    textAlignVertical="top"
+                    placeholderTextColor={RenkTokenlari.textDim}
+                  />
+                  <View style={AdminStil.aksiyonSatir}>
+                    <Pressable
+                      style={AdminStil.aksiyon}
+                      onPress={() => setSecili(null)}
                     >
-                      Uyarı gönder
-                    </Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : null}
+                      <Text style={AdminStil.aksiyonYazi}>Kapat</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[
+                        AdminStil.aksiyon,
+                        { borderColor: RenkTokenlari.danger },
+                      ]}
+                      disabled={busy}
+                      onPress={() => void uyarGonder()}
+                    >
+                      <Text
+                        style={[
+                          AdminStil.aksiyonYazi,
+                          { color: RenkTokenlari.danger },
+                        ]}
+                      >
+                        Uyarı gönder
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : null}
+            </ScrollView>
           </View>
-        </View>
+        </KlavyeGuvenliAlan>
       </Modal>
     </Screen>
   );
@@ -223,13 +240,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
+  modalBosluk: { flex: 1 },
   modalKart: {
     backgroundColor: RenkTokenlari.bgElevated,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    maxHeight: '88%',
+  },
+  modalIcerik: {
     padding: BoslukTokenlari.lg,
     gap: BoslukTokenlari.sm,
-    maxHeight: '80%',
+  },
+  uyariInput: {
+    minHeight: 96,
+    maxHeight: 160,
   },
   modalBaslik: {
     ...TipografiTokenlari.h2,

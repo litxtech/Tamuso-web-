@@ -1,0 +1,11 @@
+{
+  "duyuru": {
+    "baslik": "Announcement",
+    "altBaslik": "Platform notifications",
+    "yok": "No announcements",
+    "yokBody": "New announcements will appear here when published.",
+    "alertBaslik": "Announcement",
+    "okundu": "Read",
+    "ozellikKapali": "Announcements are currently off."
+  }
+}

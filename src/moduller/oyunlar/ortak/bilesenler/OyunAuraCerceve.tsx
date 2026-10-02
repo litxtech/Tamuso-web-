@@ -94,7 +94,7 @@ export function OyunAuraCerceve({
 
   return (
     <View style={[{ borderRadius: yaricap }, style]}>
-      {/* Dış parlama — kartın etrafında yumuşak hale */}
+      {/* Dış parlama — yalnızca halka; içerik üstünde kalmasın */}
       <Animated.View
         pointerEvents="none"
         style={[
@@ -104,12 +104,13 @@ export function OyunAuraCerceve({
             borderRadius: yaricap + 2,
             shadowColor: parlama,
             borderColor: parlama,
+            zIndex: 0,
           },
           parlamaStil,
         ]}
       />
       <View
-        style={[styles.halkaKirp, { borderRadius: yaricap, padding: kalinlik }]}
+        style={[styles.halkaKirp, { borderRadius: yaricap, padding: kalinlik, zIndex: 1 }]}
         onLayout={(e) => {
           const { width, height } = e.nativeEvent.layout;
           if (width !== boyut.w || height !== boyut.h) {
@@ -168,9 +169,10 @@ export function OyunAuraCerceve({
             colors={[r0, r1, r2]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, styles.halkaAlt]}
           />
         )}
+        {/* Poster / simgeler — dönen halkaların ÜSTÜNDE */}
         <View style={[styles.icerik, { borderRadius: yaricap - kalinlik }]}>
           {children}
         </View>
@@ -188,13 +190,21 @@ const styles = StyleSheet.create({
   },
   halkaKirp: {
     overflow: 'hidden',
+    position: 'relative',
+  },
+  halkaAlt: {
+    zIndex: 0,
   },
   donenKare: {
     position: 'absolute',
     left: '50%',
     top: '50%',
+    zIndex: 0,
   },
   icerik: {
     overflow: 'hidden',
+    zIndex: 2,
+    elevation: 2,
+    position: 'relative',
   },
 });

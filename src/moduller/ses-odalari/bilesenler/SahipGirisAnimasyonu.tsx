@@ -20,6 +20,7 @@ import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 
 type Props = {
   gorunur: boolean;
@@ -30,8 +31,8 @@ type Props = {
 
 const { width: W, height: H } = Dimensions.get('window');
 const AVATAR = Math.min(128, W * 0.32);
-/** Kısa ama vurgulu sahip girişi */
-const TOPLAM_MS = 2600;
+/** Kısa ama vurgulu sahip girişi — platform VIP giriş süresi */
+const TOPLAM_MS = 3200;
 
 const PARCACIKLAR = [
   { x: -0.38, y: -0.42, s: 7, d: 0 },
@@ -166,7 +167,8 @@ export function SahipGirisAnimasyonu({
   avatarUrl,
   onBitti,
 }: Props) {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
+  const locale = DIL_LOCALE_MAP[dil];
   const progress = useSharedValue(0);
   const orbit = useSharedValue(0);
   const pulse = useSharedValue(0);
@@ -352,8 +354,8 @@ export function SahipGirisAnimasyonu({
   });
 
   const harf = useMemo(
-    () => (ad || 'H').charAt(0).toLocaleUpperCase('tr-TR'),
-    [ad],
+    () => (ad || 'H').charAt(0).toLocaleUpperCase(locale),
+    [ad, locale],
   );
 
   if (!gorunur) return null;
@@ -482,7 +484,7 @@ export function SahipGirisAnimasyonu({
             <Text style={styles.ad} numberOfLines={1}>
               {ad}
             </Text>
-            <Text style={styles.alt}>Tahta oturdu</Text>
+            <Text style={styles.alt}>{t('sesOda.tahtaOturdu')}</Text>
             <View style={styles.altCizgi}>
               <LinearGradient
                 colors={['transparent', RenkTokenlari.accent, RenkTokenlari.primary, 'transparent']}

@@ -20,6 +20,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Yayinci = {
   id: string;
@@ -46,6 +47,7 @@ export function PkDavetPaneli({
   onClose,
   onGonderildi,
 }: Props) {
+  const { t } = useCeviri();
   const [liste, setListe] = useState<Yayinci[]>([]);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [gonderen, setGonderen] = useState<string | null>(null);
@@ -63,12 +65,12 @@ export function PkDavetPaneli({
             const host = Array.isArray(r.host) ? r.host[0] : r.host;
             return {
               id: r.id as string,
-              title: (r.title as string) ?? 'Canlı',
+              title: (r.title as string) ?? t('pk.canli'),
               host_id: r.host_id as string,
               hostAd:
                 host?.display_name?.trim() ||
                 host?.username?.trim() ||
-                'Yayıncı',
+                t('pk.yayinci'),
               avatar: host?.avatar_url ?? null,
               viewer_count: Number(r.viewer_count ?? 0),
             };
@@ -77,7 +79,7 @@ export function PkDavetPaneli({
       })
       .catch(() => setListe([]))
       .finally(() => setYukleniyor(false));
-  }, [visible, fromLiveId, selfHostId]);
+  }, [visible, fromLiveId, selfHostId, t]);
 
   const bos = useMemo(
     () => !yukleniyor && liste.length === 0,
@@ -115,14 +117,12 @@ export function PkDavetPaneli({
           />
           <View style={styles.handle} />
           <View style={styles.ust}>
-            <Text style={styles.baslik}>PK daveti</Text>
+            <Text style={styles.baslik}>{t('pk.davetBaslik')}</Text>
             <Pressable onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color={RenkTokenlari.textMuted} />
             </Pressable>
           </View>
-          <Text style={styles.alt}>
-            Canlı bir yayıncı seç — davet kabul edilince 5 dk PK başlar
-          </Text>
+          <Text style={styles.alt}>{t('pk.davetSecAlt')}</Text>
 
           {hata ? <Text style={styles.hata}>{hata}</Text> : null}
 
@@ -132,7 +132,7 @@ export function PkDavetPaneli({
               style={{ marginTop: 28 }}
             />
           ) : bos ? (
-            <Text style={styles.bos}>Başka canlı yayın yok</Text>
+            <Text style={styles.bos}>{t('pk.baskaCanliYok')}</Text>
           ) : (
             <FlatList
               data={liste}
@@ -163,7 +163,7 @@ export function PkDavetPaneli({
                     {gonderen === item.id ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
-                      <Text style={styles.davetYazi}>Davet</Text>
+                      <Text style={styles.davetYazi}>{t('pk.davetBtn')}</Text>
                     )}
                   </View>
                 </Pressable>

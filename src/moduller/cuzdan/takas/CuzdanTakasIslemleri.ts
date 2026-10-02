@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import { FinansIdempotencyAnahtariOlustur } from '../islemler/FinansIdempotencyAnahtariOlustur';
 import type { CoinTradeOffer } from './CuzdanTakasTipleri';
 
@@ -20,20 +21,20 @@ export async function CuzdanNoIleTransfer(input: {
     if (/name mismatch/i.test(m)) {
       return {
         ok: false,
-        hata: 'İsim soyisim eşleşmedi — transfer iptal edildi.',
+        hata: i18n.t('takas.isimEslesmedi'),
       };
     }
     if (/kyc required/i.test(m)) {
-      return { ok: false, hata: 'Alıcının kimlik onayı tamamlanmamış.' };
+      return { ok: false, hata: i18n.t('takas.aliciKycEksik') };
     }
     if (/18 digits/i.test(m)) {
-      return { ok: false, hata: 'Cüzdan numarası 18 haneli olmalı.' };
+      return { ok: false, hata: i18n.t('takas.cuzdan18Hane') };
     }
     if (/insufficient/i.test(m)) {
-      return { ok: false, hata: 'Yetersiz coin bakiyesi.' };
+      return { ok: false, hata: i18n.t('takas.yetersizCoinBakiye') };
     }
     if (/not found/i.test(m)) {
-      return { ok: false, hata: 'Cüzdan bulunamadı.' };
+      return { ok: false, hata: i18n.t('takas.cuzdanBulunamadi') };
     }
     return { ok: false, hata: m };
   }
@@ -55,14 +56,14 @@ export async function CuzdanNoIleAliciGetir(
 > {
   const num = walletNumber.replace(/\D/g, '');
   if (num.length !== 18) {
-    return { ok: false, hata: 'Cüzdan numarası 18 haneli olmalı.' };
+    return { ok: false, hata: i18n.t('takas.cuzdan18Hane') };
   }
   const { data, error } = await supabase.rpc('cuzdan_no_ile_alici_getir', {
     p_wallet_number: num,
   });
   if (error) return { ok: false, hata: error.message };
   const row = Array.isArray(data) ? data[0] : data;
-  if (!row) return { ok: false, hata: 'Cüzdan bulunamadı.' };
+  if (!row) return { ok: false, hata: i18n.t('takas.cuzdanBulunamadi') };
   return {
     ok: true,
     walletNumber: String(row.wallet_number),
@@ -141,7 +142,7 @@ export function TakasKullaniciGorunenAd(k: TakasKullaniciSatir): string {
     .filter(Boolean)
     .join(' ');
   if (ad) return ad;
-  return (k.display_name ?? k.username ?? 'Kullanıcı').trim() || 'Kullanıcı';
+  return (k.display_name ?? k.username ?? i18n.t('ortak.kullanici')).trim() || i18n.t('ortak.kullanici');
 }
 
 export async function TakasTeklifOlustur(input: {
@@ -155,7 +156,7 @@ export async function TakasTeklifOlustur(input: {
     '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu'
   );
   if (!(await OzellikBayragiAktifMiSunucu('wallet_exchange_enabled'))) {
-    return { ok: false, hata: 'Takas şu an kullanılamıyor.' };
+    return { ok: false, hata: i18n.t('takas.takasKullanilamiyor') };
   }
 
   const { data, error } = await supabase.rpc('coin_takas_teklif_olustur', {
@@ -167,23 +168,21 @@ export async function TakasTeklifOlustur(input: {
   });
   if (error) {
     if (/takas kapali|wallet_exchange/i.test(error.message)) {
-      return { ok: false, hata: 'Takas şu an kullanılamıyor.' };
+      return { ok: false, hata: i18n.t('takas.takasKullanilamiyor') };
     }
     if (/kyc required/i.test(error.message)) {
-      return { ok: false, hata: 'Takas için kimlik onayı gerekli.' };
+      return { ok: false, hata: i18n.t('takas.kycGerekli') };
     }
     if (/refund risk/i.test(error.message)) {
       return {
         ok: false,
-        hata:
-          'İade / cashback riski nedeniyle takas kapalı. Hesap incelemede olabilir; destek ile iletişime geçin.',
+        hata: i18n.t('takas.iadeRiskKapali'),
       };
     }
     if (/iap cooling/i.test(error.message)) {
       return {
         ok: false,
-        hata:
-          'Mağazadan yüklenen coinler 14 gün soğutulur. Bu süre dolmadan takasa giremez.',
+        hata: i18n.t('takas.iapSogutma'),
       };
     }
     return { ok: false, hata: error.message };

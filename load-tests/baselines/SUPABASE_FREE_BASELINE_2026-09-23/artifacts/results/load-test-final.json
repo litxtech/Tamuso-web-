@@ -1,0 +1,858 @@
+{
+  "results": [
+    {
+      "ccu": 100,
+      "started_at": "2026-09-23T16:12:19.841Z",
+      "ended_at": "2026-09-23T16:16:09.019Z",
+      "exit_code": 0,
+      "aborted_by_safety": false,
+      "metrics": {
+        "rps": 39.132742779230135,
+        "total": 8886,
+        "p50": 78.6631,
+        "p90": 89.6733,
+        "p95": 95.05754999999999,
+        "p99": 127.5134899999997,
+        "max": 1171.8122,
+        "error_rate": 0,
+        "http_2xx": 8886,
+        "http_4xx": 0,
+        "http_401": 0,
+        "http_403": 0,
+        "http_409": 0,
+        "http_429": 0,
+        "http_5xx": 0,
+        "rate_5xx_pct": 0,
+        "rate_429_pct": 0,
+        "successful": 8886,
+        "failed": 0,
+        "operations": [
+          {
+            "name": "home:rooms",
+            "count": 1374,
+            "p50": 81.96905,
+            "p95": 99.91562999999995,
+            "p99": 133.55117499999994,
+            "max": 1119.8997,
+            "error_rate": 0,
+            "ok": 1374,
+            "fail": 0
+          },
+          {
+            "name": "rpc:durum_akisi_takip",
+            "count": 431,
+            "p50": 78.8083,
+            "p95": 99.5721,
+            "p99": 125.74266999999988,
+            "max": 1057.6219,
+            "error_rate": 0,
+            "ok": 431,
+            "fail": 0
+          },
+          {
+            "name": "rpc:liderlik_siralamasi_listele",
+            "count": 477,
+            "p50": 78.1958,
+            "p95": 99.08742,
+            "p99": 296.8786760000059,
+            "max": 1171.8122,
+            "error_rate": 0,
+            "ok": 477,
+            "fail": 0
+          },
+          {
+            "name": "rpc:durum_akisi",
+            "count": 544,
+            "p50": 79.38995,
+            "p95": 98.00807500000002,
+            "p99": 137.52720500000058,
+            "max": 1013.0015,
+            "error_rate": 0,
+            "ok": 544,
+            "fail": 0
+          },
+          {
+            "name": "rpc:takipcileri_listele",
+            "count": 234,
+            "p50": 79.00120000000001,
+            "p95": 97.18955,
+            "p99": 126.75456199999984,
+            "max": 358.8923,
+            "error_rate": 0,
+            "ok": 234,
+            "fail": 0
+          },
+          {
+            "name": "home:live_sessions",
+            "count": 1374,
+            "p50": 79.92375,
+            "p95": 96.846065,
+            "p99": 133.55117499999994,
+            "max": 1128.9158,
+            "error_rate": 0,
+            "ok": 1374,
+            "fail": 0
+          },
+          {
+            "name": "rpc:mesaj_konularini_getir",
+            "count": 482,
+            "p50": 78.55795,
+            "p95": 95.20719,
+            "p99": 137.93626599999996,
+            "max": 198.922,
+            "error_rate": 0,
+            "ok": 482,
+            "fail": 0
+          },
+          {
+            "name": "rpc:takip_edilenleri_listele",
+            "count": 234,
+            "p50": 78.39,
+            "p95": 94.67752,
+            "p99": 99.047269,
+            "max": 106.9454,
+            "error_rate": 0,
+            "ok": 234,
+            "fail": 0
+          },
+          {
+            "name": "profile:get",
+            "count": 750,
+            "p50": 77.93690000000001,
+            "p95": 93.259665,
+            "p99": 132.70687899999996,
+            "max": 1101.2273,
+            "error_rate": 0,
+            "ok": 750,
+            "fail": 0
+          },
+          {
+            "name": "rpc:bildirimlerimi_listele",
+            "count": 196,
+            "p50": 77.1859,
+            "p95": 92.1189,
+            "p99": 105.02275500000002,
+            "max": 113.6662,
+            "error_rate": 0,
+            "ok": 196,
+            "fail": 0
+          },
+          {
+            "name": "room:live_list",
+            "count": 235,
+            "p50": 78.5141,
+            "p95": 91.99766999999999,
+            "p99": 132.331058,
+            "max": 184.2739,
+            "error_rate": 0,
+            "ok": 235,
+            "fail": 0
+          },
+          {
+            "name": "rpc:bildirim_okunmamis_sayim",
+            "count": 196,
+            "p50": 78.88325,
+            "p95": 91.773375,
+            "p99": 107.55086000000018,
+            "max": 143.863,
+            "error_rate": 0,
+            "ok": 196,
+            "fail": 0
+          },
+          {
+            "name": "profile:stats",
+            "count": 750,
+            "p50": 77.39945,
+            "p95": 91.287475,
+            "p99": 110.34135299999997,
+            "max": 336.0746,
+            "error_rate": 0,
+            "ok": 750,
+            "fail": 0
+          },
+          {
+            "name": "live:live_list",
+            "count": 235,
+            "p50": 76.8829,
+            "p95": 89.84595999999999,
+            "p99": 112.92312599999994,
+            "max": 193.3777,
+            "error_rate": 0,
+            "ok": 235,
+            "fail": 0
+          },
+          {
+            "name": "home:blocks",
+            "count": 1374,
+            "p50": 75.15344999999999,
+            "p95": 87.94412999999999,
+            "p99": 103.99589299999997,
+            "max": 294.1815,
+            "error_rate": 0,
+            "ok": 1374,
+            "fail": 0
+          }
+        ]
+      },
+      "generator_before": {
+        "at": "2026-09-23T16:12:21.276Z",
+        "cpu_count": 16,
+        "loadavg_1m": 0,
+        "cpu_pct": 0,
+        "freemem_mb": 4587,
+        "totalmem_mb": 15707,
+        "mem_used_pct": 70.8,
+        "platform": "win32"
+      },
+      "generator_after": {
+        "at": "2026-09-23T16:16:10.218Z",
+        "cpu_count": 16,
+        "loadavg_1m": 0,
+        "cpu_pct": 0,
+        "freemem_mb": 5137,
+        "totalmem_mb": 15707,
+        "mem_used_pct": 67.3,
+        "platform": "win32"
+      },
+      "generator_bottleneck": false,
+      "summary_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\prod-read-ccu100-2026-09-23T16-12-19-840Z.summary.json",
+      "healthy": {
+        "ok": true,
+        "reasons": []
+      },
+      "circuit": []
+    },
+    {
+      "ccu": 500,
+      "started_at": "2026-09-23T16:16:55.758Z",
+      "ended_at": "2026-09-23T16:20:57.113Z",
+      "exit_code": 0,
+      "aborted_by_safety": false,
+      "metrics": {
+        "rps": 166.02006303480053,
+        "total": 39758,
+        "p50": 76.38605,
+        "p90": 94.51021000000007,
+        "p95": 277.6892300000004,
+        "p99": 22960.253354000022,
+        "max": 31566.9565,
+        "error_rate": 0,
+        "http_2xx": 39758,
+        "http_4xx": 0,
+        "http_401": 0,
+        "http_403": 0,
+        "http_409": 0,
+        "http_429": 0,
+        "http_5xx": 0,
+        "rate_5xx_pct": 0,
+        "rate_429_pct": 0,
+        "successful": 39758,
+        "failed": 0,
+        "operations": [
+          {
+            "name": "rpc:durum_akisi_takip",
+            "count": 1992,
+            "p50": 75.9376,
+            "p95": 799.186244999989,
+            "p99": 26068.81076999998,
+            "max": 30791.9817,
+            "error_rate": 0,
+            "ok": 1992,
+            "fail": 0
+          },
+          {
+            "name": "rpc:durum_akisi",
+            "count": 2248,
+            "p50": 77.0215,
+            "p95": 633.2687250000014,
+            "p99": 24913.07786800004,
+            "max": 31398.5303,
+            "error_rate": 0,
+            "ok": 2248,
+            "fail": 0
+          },
+          {
+            "name": "profile:get",
+            "count": 3113,
+            "p50": 75.7992,
+            "p95": 613.5292799999883,
+            "p99": 25964.765512000013,
+            "max": 30873.4282,
+            "error_rate": 0,
+            "ok": 3113,
+            "fail": 0
+          },
+          {
+            "name": "home:rooms",
+            "count": 6258,
+            "p50": 80.2267,
+            "p95": 339.6750699999965,
+            "p99": 24687.850562,
+            "max": 31479.6874,
+            "error_rate": 0,
+            "ok": 6258,
+            "fail": 0
+          },
+          {
+            "name": "rpc:mesaj_konularini_getir",
+            "count": 2139,
+            "p50": 75.4353,
+            "p95": 339.0080499999965,
+            "p99": 25198.79594199998,
+            "max": 30966.0371,
+            "error_rate": 0,
+            "ok": 2139,
+            "fail": 0
+          },
+          {
+            "name": "rpc:liderlik_siralamasi_listele",
+            "count": 2075,
+            "p50": 75.217,
+            "p95": 317.9568499999989,
+            "p99": 24281.178479999904,
+            "max": 30549.067,
+            "error_rate": 0,
+            "ok": 2075,
+            "fail": 0
+          },
+          {
+            "name": "rpc:takipcileri_listele",
+            "count": 1044,
+            "p50": 75.5296,
+            "p95": 281.68581999999844,
+            "p99": 25447.65947099999,
+            "max": 29413.4846,
+            "error_rate": 0,
+            "ok": 1044,
+            "fail": 0
+          },
+          {
+            "name": "home:live_sessions",
+            "count": 6258,
+            "p50": 77.72485,
+            "p95": 276.4266749999995,
+            "p99": 24798.139280000007,
+            "max": 31566.9565,
+            "error_rate": 0,
+            "ok": 6258,
+            "fail": 0
+          },
+          {
+            "name": "room:live_list",
+            "count": 1065,
+            "p50": 76.2403,
+            "p95": 261.57359999999903,
+            "p99": 25772.412611999982,
+            "max": 31041.5027,
+            "error_rate": 0,
+            "ok": 1065,
+            "fail": 0
+          },
+          {
+            "name": "profile:stats",
+            "count": 3113,
+            "p50": 75.5255,
+            "p95": 246.75403999999975,
+            "p99": 1934.9583160000002,
+            "max": 23750.5197,
+            "error_rate": 0,
+            "ok": 3113,
+            "fail": 0
+          },
+          {
+            "name": "rpc:takip_edilenleri_listele",
+            "count": 1044,
+            "p50": 75.02645000000001,
+            "p95": 209.5867699999997,
+            "p99": 2396.2417389999746,
+            "max": 20437.549,
+            "error_rate": 0,
+            "ok": 1044,
+            "fail": 0
+          },
+          {
+            "name": "home:blocks",
+            "count": 6258,
+            "p50": 73.52414999999999,
+            "p95": 200.21388999999994,
+            "p99": 2173.040134000002,
+            "max": 24436.5758,
+            "error_rate": 0,
+            "ok": 6258,
+            "fail": 0
+          },
+          {
+            "name": "live:live_list",
+            "count": 1065,
+            "p50": 74.7883,
+            "p95": 191.04345999999978,
+            "p99": 2295.0686119999777,
+            "max": 23646.9276,
+            "error_rate": 0,
+            "ok": 1065,
+            "fail": 0
+          },
+          {
+            "name": "rpc:bildirim_okunmamis_sayim",
+            "count": 1043,
+            "p50": 75.0917,
+            "p95": 168.33694999999977,
+            "p99": 21228.734491999687,
+            "max": 28262.7956,
+            "error_rate": 0,
+            "ok": 1043,
+            "fail": 0
+          },
+          {
+            "name": "rpc:bildirimlerimi_listele",
+            "count": 1043,
+            "p50": 74.5013,
+            "p95": 139.94713999999993,
+            "p99": 1817.7252499999881,
+            "max": 21560.978,
+            "error_rate": 0,
+            "ok": 1043,
+            "fail": 0
+          }
+        ]
+      },
+      "generator_before": {
+        "at": "2026-09-23T16:16:56.917Z",
+        "cpu_count": 16,
+        "loadavg_1m": 0,
+        "cpu_pct": 0,
+        "freemem_mb": 5145,
+        "totalmem_mb": 15707,
+        "mem_used_pct": 67.2,
+        "platform": "win32"
+      },
+      "generator_after": {
+        "at": "2026-09-23T16:20:58.279Z",
+        "cpu_count": 16,
+        "loadavg_1m": 0,
+        "cpu_pct": 0,
+        "freemem_mb": 5128,
+        "totalmem_mb": 15707,
+        "mem_used_pct": 67.4,
+        "platform": "win32"
+      },
+      "generator_bottleneck": false,
+      "summary_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\prod-read-ccu500-2026-09-23T16-16-55-758Z.summary.json",
+      "healthy": {
+        "ok": false,
+        "reasons": [
+          "p99 22960.253354000022ms >= 1500ms"
+        ]
+      },
+      "circuit": []
+    }
+  ],
+  "stopReason": "unhealthy_for_escalation: p99 22960.253354000022ms >= 1500ms",
+  "stoppedAt": 500,
+  "table": [
+    {
+      "ccu": 100,
+      "ran": true,
+      "rps": 39.132742779230135,
+      "total": 8886,
+      "p50": 78.6631,
+      "p90": 89.6733,
+      "p95": 95.05754999999999,
+      "p99": 127.5134899999997,
+      "max": 1171.8122,
+      "error_rate": 0,
+      "http_2xx": 8886,
+      "http_4xx": 0,
+      "http_401": 0,
+      "http_403": 0,
+      "http_409": 0,
+      "http_429": 0,
+      "http_5xx": 0,
+      "rate_5xx_pct": 0,
+      "rate_429_pct": 0,
+      "successful": 8886,
+      "failed": 0,
+      "operations": [
+        {
+          "name": "home:rooms",
+          "count": 1374,
+          "p50": 81.96905,
+          "p95": 99.91562999999995,
+          "p99": 133.55117499999994,
+          "max": 1119.8997,
+          "error_rate": 0,
+          "ok": 1374,
+          "fail": 0
+        },
+        {
+          "name": "rpc:durum_akisi_takip",
+          "count": 431,
+          "p50": 78.8083,
+          "p95": 99.5721,
+          "p99": 125.74266999999988,
+          "max": 1057.6219,
+          "error_rate": 0,
+          "ok": 431,
+          "fail": 0
+        },
+        {
+          "name": "rpc:liderlik_siralamasi_listele",
+          "count": 477,
+          "p50": 78.1958,
+          "p95": 99.08742,
+          "p99": 296.8786760000059,
+          "max": 1171.8122,
+          "error_rate": 0,
+          "ok": 477,
+          "fail": 0
+        },
+        {
+          "name": "rpc:durum_akisi",
+          "count": 544,
+          "p50": 79.38995,
+          "p95": 98.00807500000002,
+          "p99": 137.52720500000058,
+          "max": 1013.0015,
+          "error_rate": 0,
+          "ok": 544,
+          "fail": 0
+        },
+        {
+          "name": "rpc:takipcileri_listele",
+          "count": 234,
+          "p50": 79.00120000000001,
+          "p95": 97.18955,
+          "p99": 126.75456199999984,
+          "max": 358.8923,
+          "error_rate": 0,
+          "ok": 234,
+          "fail": 0
+        },
+        {
+          "name": "home:live_sessions",
+          "count": 1374,
+          "p50": 79.92375,
+          "p95": 96.846065,
+          "p99": 133.55117499999994,
+          "max": 1128.9158,
+          "error_rate": 0,
+          "ok": 1374,
+          "fail": 0
+        },
+        {
+          "name": "rpc:mesaj_konularini_getir",
+          "count": 482,
+          "p50": 78.55795,
+          "p95": 95.20719,
+          "p99": 137.93626599999996,
+          "max": 198.922,
+          "error_rate": 0,
+          "ok": 482,
+          "fail": 0
+        },
+        {
+          "name": "rpc:takip_edilenleri_listele",
+          "count": 234,
+          "p50": 78.39,
+          "p95": 94.67752,
+          "p99": 99.047269,
+          "max": 106.9454,
+          "error_rate": 0,
+          "ok": 234,
+          "fail": 0
+        },
+        {
+          "name": "profile:get",
+          "count": 750,
+          "p50": 77.93690000000001,
+          "p95": 93.259665,
+          "p99": 132.70687899999996,
+          "max": 1101.2273,
+          "error_rate": 0,
+          "ok": 750,
+          "fail": 0
+        },
+        {
+          "name": "rpc:bildirimlerimi_listele",
+          "count": 196,
+          "p50": 77.1859,
+          "p95": 92.1189,
+          "p99": 105.02275500000002,
+          "max": 113.6662,
+          "error_rate": 0,
+          "ok": 196,
+          "fail": 0
+        },
+        {
+          "name": "room:live_list",
+          "count": 235,
+          "p50": 78.5141,
+          "p95": 91.99766999999999,
+          "p99": 132.331058,
+          "max": 184.2739,
+          "error_rate": 0,
+          "ok": 235,
+          "fail": 0
+        },
+        {
+          "name": "rpc:bildirim_okunmamis_sayim",
+          "count": 196,
+          "p50": 78.88325,
+          "p95": 91.773375,
+          "p99": 107.55086000000018,
+          "max": 143.863,
+          "error_rate": 0,
+          "ok": 196,
+          "fail": 0
+        },
+        {
+          "name": "profile:stats",
+          "count": 750,
+          "p50": 77.39945,
+          "p95": 91.287475,
+          "p99": 110.34135299999997,
+          "max": 336.0746,
+          "error_rate": 0,
+          "ok": 750,
+          "fail": 0
+        },
+        {
+          "name": "live:live_list",
+          "count": 235,
+          "p50": 76.8829,
+          "p95": 89.84595999999999,
+          "p99": 112.92312599999994,
+          "max": 193.3777,
+          "error_rate": 0,
+          "ok": 235,
+          "fail": 0
+        },
+        {
+          "name": "home:blocks",
+          "count": 1374,
+          "p50": 75.15344999999999,
+          "p95": 87.94412999999999,
+          "p99": 103.99589299999997,
+          "max": 294.1815,
+          "error_rate": 0,
+          "ok": 1374,
+          "fail": 0
+        }
+      ],
+      "started_at": "2026-09-23T16:12:19.841Z",
+      "ended_at": "2026-09-23T16:16:09.019Z"
+    },
+    {
+      "ccu": 500,
+      "ran": true,
+      "rps": 166.02006303480053,
+      "total": 39758,
+      "p50": 76.38605,
+      "p90": 94.51021000000007,
+      "p95": 277.6892300000004,
+      "p99": 22960.253354000022,
+      "max": 31566.9565,
+      "error_rate": 0,
+      "http_2xx": 39758,
+      "http_4xx": 0,
+      "http_401": 0,
+      "http_403": 0,
+      "http_409": 0,
+      "http_429": 0,
+      "http_5xx": 0,
+      "rate_5xx_pct": 0,
+      "rate_429_pct": 0,
+      "successful": 39758,
+      "failed": 0,
+      "operations": [
+        {
+          "name": "rpc:durum_akisi_takip",
+          "count": 1992,
+          "p50": 75.9376,
+          "p95": 799.186244999989,
+          "p99": 26068.81076999998,
+          "max": 30791.9817,
+          "error_rate": 0,
+          "ok": 1992,
+          "fail": 0
+        },
+        {
+          "name": "rpc:durum_akisi",
+          "count": 2248,
+          "p50": 77.0215,
+          "p95": 633.2687250000014,
+          "p99": 24913.07786800004,
+          "max": 31398.5303,
+          "error_rate": 0,
+          "ok": 2248,
+          "fail": 0
+        },
+        {
+          "name": "profile:get",
+          "count": 3113,
+          "p50": 75.7992,
+          "p95": 613.5292799999883,
+          "p99": 25964.765512000013,
+          "max": 30873.4282,
+          "error_rate": 0,
+          "ok": 3113,
+          "fail": 0
+        },
+        {
+          "name": "home:rooms",
+          "count": 6258,
+          "p50": 80.2267,
+          "p95": 339.6750699999965,
+          "p99": 24687.850562,
+          "max": 31479.6874,
+          "error_rate": 0,
+          "ok": 6258,
+          "fail": 0
+        },
+        {
+          "name": "rpc:mesaj_konularini_getir",
+          "count": 2139,
+          "p50": 75.4353,
+          "p95": 339.0080499999965,
+          "p99": 25198.79594199998,
+          "max": 30966.0371,
+          "error_rate": 0,
+          "ok": 2139,
+          "fail": 0
+        },
+        {
+          "name": "rpc:liderlik_siralamasi_listele",
+          "count": 2075,
+          "p50": 75.217,
+          "p95": 317.9568499999989,
+          "p99": 24281.178479999904,
+          "max": 30549.067,
+          "error_rate": 0,
+          "ok": 2075,
+          "fail": 0
+        },
+        {
+          "name": "rpc:takipcileri_listele",
+          "count": 1044,
+          "p50": 75.5296,
+          "p95": 281.68581999999844,
+          "p99": 25447.65947099999,
+          "max": 29413.4846,
+          "error_rate": 0,
+          "ok": 1044,
+          "fail": 0
+        },
+        {
+          "name": "home:live_sessions",
+          "count": 6258,
+          "p50": 77.72485,
+          "p95": 276.4266749999995,
+          "p99": 24798.139280000007,
+          "max": 31566.9565,
+          "error_rate": 0,
+          "ok": 6258,
+          "fail": 0
+        },
+        {
+          "name": "room:live_list",
+          "count": 1065,
+          "p50": 76.2403,
+          "p95": 261.57359999999903,
+          "p99": 25772.412611999982,
+          "max": 31041.5027,
+          "error_rate": 0,
+          "ok": 1065,
+          "fail": 0
+        },
+        {
+          "name": "profile:stats",
+          "count": 3113,
+          "p50": 75.5255,
+          "p95": 246.75403999999975,
+          "p99": 1934.9583160000002,
+          "max": 23750.5197,
+          "error_rate": 0,
+          "ok": 3113,
+          "fail": 0
+        },
+        {
+          "name": "rpc:takip_edilenleri_listele",
+          "count": 1044,
+          "p50": 75.02645000000001,
+          "p95": 209.5867699999997,
+          "p99": 2396.2417389999746,
+          "max": 20437.549,
+          "error_rate": 0,
+          "ok": 1044,
+          "fail": 0
+        },
+        {
+          "name": "home:blocks",
+          "count": 6258,
+          "p50": 73.52414999999999,
+          "p95": 200.21388999999994,
+          "p99": 2173.040134000002,
+          "max": 24436.5758,
+          "error_rate": 0,
+          "ok": 6258,
+          "fail": 0
+        },
+        {
+          "name": "live:live_list",
+          "count": 1065,
+          "p50": 74.7883,
+          "p95": 191.04345999999978,
+          "p99": 2295.0686119999777,
+          "max": 23646.9276,
+          "error_rate": 0,
+          "ok": 1065,
+          "fail": 0
+        },
+        {
+          "name": "rpc:bildirim_okunmamis_sayim",
+          "count": 1043,
+          "p50": 75.0917,
+          "p95": 168.33694999999977,
+          "p99": 21228.734491999687,
+          "max": 28262.7956,
+          "error_rate": 0,
+          "ok": 1043,
+          "fail": 0
+        },
+        {
+          "name": "rpc:bildirimlerimi_listele",
+          "count": 1043,
+          "p50": 74.5013,
+          "p95": 139.94713999999993,
+          "p99": 1817.7252499999881,
+          "max": 21560.978,
+          "error_rate": 0,
+          "ok": 1043,
+          "fail": 0
+        }
+      ],
+      "started_at": "2026-09-23T16:16:55.758Z",
+      "ended_at": "2026-09-23T16:20:57.113Z"
+    },
+    {
+      "ccu": 1000,
+      "ran": false
+    },
+    {
+      "ccu": 2500,
+      "ran": false
+    },
+    {
+      "ccu": 5000,
+      "ran": false
+    },
+    {
+      "ccu": 7500,
+      "ran": false
+    },
+    {
+      "ccu": 10000,
+      "ran": false
+    }
+  ]
+}

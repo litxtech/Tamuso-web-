@@ -15,8 +15,11 @@ import {
   AjansDestekListesi,
   AjansDestekOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import { AjansKayitDurum } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 
 export default function AjansDestekEkrani() {
+  const { t, dil } = useCeviri();
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [subject, setSubject] = useState('');
@@ -37,22 +40,34 @@ export default function AjansDestekEkrani() {
 
   useFocusEffect(useCallback(() => { void yukle(); }, [yukle]));
 
+  const locale =
+    dil === 'tr' ? 'tr-TR' : dil === 'es' ? 'es-ES' : dil === 'ar' ? 'ar' : 'en-US';
+
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Destek"
-      subtitle="Ajans destek talepleri"
+      title={t('ajans.rayDestek')}
+      subtitle={t('ajans.destekAlt')}
       aktif="destek"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni talep</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniTalep')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={subject} onChangeText={setSubject} placeholder="Konu" />
-        <AjansInput value={body} onChangeText={setBody} placeholder="Açıklama" multiline />
+        <AjansInput
+          value={subject}
+          onChangeText={setSubject}
+          placeholder={t('ajans.phKonu')}
+        />
+        <AjansInput
+          value={body}
+          onChangeText={setBody}
+          placeholder={t('ajans.phAciklamaKisa')}
+          multiline
+        />
         <AjansCta
-          label="Gönder"
+          label={t('ortak.gonder')}
           onPress={() => {
             void (async () => {
               const r = await AjansDestekOlustur({
@@ -60,7 +75,7 @@ export default function AjansDestekEkrani() {
                 subject: subject.trim(),
                 body: body.trim(),
               });
-              if (!r.ok) Alert.alert('Destek', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.rayDestek'), r.hata);
               else {
                 setSubject('');
                 setBody('');
@@ -72,13 +87,13 @@ export default function AjansDestekEkrani() {
       </AjansKart>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
-          liste.map((t) => (
+          liste.map((row) => (
             <AjansListeSatir
-              key={String(t.id)}
-              title={String(t.subject)}
-              subtitle={`${t.status} · ${t.creator_name ?? ''} · ${new Date(String(t.created_at)).toLocaleString('tr-TR')}`}
+              key={String(row.id)}
+              title={String(row.subject)}
+              subtitle={`${AjansKayitDurum(String(row.status), t)} · ${row.creator_name ?? ''} · ${new Date(String(row.created_at)).toLocaleString(locale)}`}
             />
           ))
         )}

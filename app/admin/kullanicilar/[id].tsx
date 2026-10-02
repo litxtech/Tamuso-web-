@@ -42,6 +42,13 @@ import {
 import { AdminKullaniciCoinPaneli } from '../../../src/moduller/admin/bilesenler/AdminKullaniciCoinPaneli';
 import { AdminKullaniciHesapDegeriPaneli } from '../../../src/moduller/admin/bilesenler/AdminKullaniciHesapDegeriPaneli';
 import {
+  AdminKullaniciUnvanlari,
+  AdminUnvanGeriAl,
+} from '../../../src/moduller/unvanlar/islemler/UnvanAdminIslemleri';
+import { UserTitleBadge } from '../../../src/moduller/unvanlar/bilesenler/UserTitleBadge';
+import { UnvanKayittanSunum } from '../../../src/moduller/unvanlar/okuma/UnvanSunumunuCoz';
+import { UnvanTasariminiDogrula } from '../../../src/moduller/unvanlar/dogrulama/UnvanTasarimZod';
+import {
   ProfilIstatistikleriniGetir,
   type KullaniciProfilIstatistikleri,
 } from '../../../src/moduller/kullanici-profili/istatistik/ProfilIstatistikleriniGetir';
@@ -100,6 +107,8 @@ export default function AdminKullaniciDosyaEkrani() {
   const [takipIstat, setTakipIstat] = useState<AdminTakipIstatistikleri | null>(null);
   const [stats, setStats] = useState<KullaniciProfilIstatistikleri | null>(null);
   const [politikalar, setPolitikalar] = useState<AdminKullaniciPolitikaKabulleri | null>(null);
+  const [unvanlar, setUnvanlar] = useState<Record<string, unknown>[]>([]);
+  const [displayTitleId, setDisplayTitleId] = useState<string | null>(null);
 
   const yukle = useCallback(async () => {
     if (!id) return;
@@ -107,18 +116,30 @@ export default function AdminKullaniciDosyaEkrani() {
     try {
       const d = await AdminKullaniciDosyasiGetir(id);
       setDosya(d?.ok === false ? null : d);
-      const [s, st, pol] = await Promise.all([
+      const [s, st, pol, unv] = await Promise.all([
         AdminTakipIstatistikGetir(id).catch(() => null),
         ProfilIstatistikleriniGetir(id).catch(() => null),
         AdminKullaniciPolitikaKabulleriGetir(id).catch(() => null),
+        AdminKullaniciUnvanlari(id).catch(() => null),
       ]);
       setTakipIstat(s);
       setStats(st);
       setPolitikalar(pol);
+      const assignments = Array.isArray(unv?.assignments)
+        ? (unv.assignments as Record<string, unknown>[])
+        : [];
+      setUnvanlar(assignments);
+      setDisplayTitleId(
+        (unv?.display_title_id as string | null) ??
+          (unv?.selected_title_id as string | null) ??
+          null,
+      );
     } catch {
       setDosya(null);
       setStats(null);
       setPolitikalar(null);
+      setUnvanlar([]);
+      setDisplayTitleId(null);
     } finally {
       setYukleniyor(false);
     }
@@ -452,6 +473,83 @@ export default function AdminKullaniciDosyaEkrani() {
             />
           </Bolum>
 
+          <Bolum baslik="Ünvanlar">
+            <Satir
+              e="Vitrin"
+              d={displayTitleId ? displayTitleId.slice(0, 8) + '…' : 'Yok'}
+            />
+            <Pressable
+              onPress={() => router.push('/admin/unvanlar' as never)}
+              style={{ marginBottom: 8 }}
+            >
+              <Text style={{ color: RenkTokenlari.primarySoft }}>
+                Ünvan Yönetimi →
+              </Text>
+            </Pressable>
+            {unvanlar.length === 0 ? (
+              <Text style={styles.hint}>Atanmış ünvan yok</Text>
+            ) : (
+              unvanlar.slice(0, 12).map((a, idx) => {
+                const titleId = String(a.title_id ?? '');
+                const assignmentId = String(a.assignment_id ?? a.id ?? '');
+                const design = UnvanTasariminiDogrula(a.design ?? a.title_design);
+                const name = String(a.title_name ?? a.name ?? 'Ünvan');
+                const sunum = UnvanKayittanSunum({
+                  id: titleId || `tmp-${idx}`,
+                  slug: String(a.title_slug ?? a.slug ?? ''),
+                  name,
+                  name_i18n: {},
+                  design,
+                  version: Number(a.version) || 1,
+                  priority: Number(a.priority) || 1,
+                });
+                const aktif = a.currently_valid !== false && !a.revoked_at;
+                return (
+                  <View
+                    key={assignmentId || `${titleId}-${idx}`}
+                    style={{ gap: 4, marginBottom: 10 }}
+                  >
+                    <UserTitleBadge presentation={sunum} size="COMPACT" />
+                    <Text style={styles.hint}>
+                      {aktif ? 'Aktif' : 'Pasif'} · {tr(a.assigned_at as string)}
+                      {a.expires_at
+                        ? ` → ${tr(a.expires_at as string)}`
+                        : ' · kalıcı'}
+                      {displayTitleId === titleId ? ' · seçili' : ''}
+                    </Text>
+                    {aktif ? (
+                      <Pressable
+                        onPress={() => {
+                          Alert.alert('Geri al?', undefined, [
+                            { text: 'Vazgeç', style: 'cancel' },
+                            {
+                              text: 'Geri Al',
+                              style: 'destructive',
+                              onPress: () => {
+                                void AdminUnvanGeriAl({
+                                  assignmentId: assignmentId || null,
+                                  userId: id,
+                                  titleId: titleId || null,
+                                }).then((r) => {
+                                  if (r.ok) void yukle();
+                                  else Alert.alert('Hata', r.hata ?? '');
+                                });
+                              },
+                            },
+                          ]);
+                        }}
+                      >
+                        <Text style={{ color: RenkTokenlari.danger }}>
+                          Geri al
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                );
+              })
+            )}
+          </Bolum>
+
           <Bolum baslik="Şifre değiştir">
             <Text style={styles.hint}>
               Yeni şifre en az 6 karakter olmalı. Kullanıcı bir sonraki girişte
@@ -507,6 +605,79 @@ export default function AdminKullaniciDosyaEkrani() {
                 d={`${y.coin} · ${y.store ?? y.provider ?? '?'} · ${y.status ?? ''}`}
               />
             ))}
+          </Bolum>
+
+          <Bolum baslik="Doğrulama">
+            <Satir e="Kullanıcı ID" d={id ?? '—'} />
+            <Satir e="Public ID" d={dosya.profil.public_user_id ?? '—'} />
+            <Satir e="Ad / Soyad" d={`${dosya.profil.display_name ?? '—'}`} />
+            <Satir e="Ülke" d={dosya.profil.country ?? '—'} />
+            <Satir e="Hesap oluşturma" d={tr(dosya.profil.created_at)} />
+            <Satir e="Rozet (is_verified)" d={dosya.profil.is_verified ? 'Evet' : 'Hayır'} />
+            <Text style={styles.hint}>
+              Rozet ≠ admin yetkisi. Doğrulama işlemleri audit ile kaydedilir.
+            </Text>
+            <View style={styles.aksiyonlar}>
+              {(
+                [
+                  ['REQUEST_VERIFICATION', 'Doğrulama iste'],
+                  ['VERIFY', 'Doğrula'],
+                  ['REJECT', 'Reddet'],
+                  ['REQUEST_NEW_DOCUMENT', 'Yeni belge iste'],
+                  ['SUSPEND_VERIFICATION', 'Askıya al'],
+                  ['REVOKE_VERIFICATION', 'Geri al'],
+                ] as const
+              ).map(([action, label]) => (
+                <Pressable
+                  key={action}
+                  style={styles.aksiyon}
+                  onPress={() => {
+                    Alert.alert(label, 'Onaylıyor musun?', [
+                      { text: 'Vazgeç', style: 'cancel' },
+                      {
+                        text: 'Tamam',
+                        onPress: () => {
+                          void (async () => {
+                            try {
+                              const { AdminKullaniciDogrulamaAksiyon } = await import(
+                                '../../../src/moduller/admin/dogrulama/AdminDogrulamaIslemleri'
+                              );
+                              await AdminKullaniciDogrulamaAksiyon({
+                                userId: id!,
+                                action,
+                                note: ihtar.trim() || label,
+                                reason: ihtar.trim() || action,
+                              });
+                              Alert.alert('Tamam', `${label} uygulandı`);
+                              await yukle();
+                            } catch (e) {
+                              Alert.alert(
+                                'Doğrulama',
+                                e instanceof Error ? e.message : 'Başarısız',
+                              );
+                            }
+                          })();
+                        },
+                      },
+                    ]);
+                  }}
+                >
+                  <Text style={styles.aksiyonYazi}>{label}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                style={styles.aksiyon}
+                onPress={() => router.push('/admin/dogrulama' as any)}
+              >
+                <Text style={styles.aksiyonYazi}>Doğrulama Merkezi</Text>
+              </Pressable>
+              <Pressable
+                style={styles.aksiyon}
+                onPress={() => router.push('/admin/kyc' as any)}
+              >
+                <Text style={styles.aksiyonYazi}>Cüzdan KYC</Text>
+              </Pressable>
+            </View>
           </Bolum>
 
           <AdminKullaniciCoinPaneli

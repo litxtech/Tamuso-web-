@@ -8,6 +8,7 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import {
   simulateZeusSpin,
   DEFAULT_CONFIG,
+  mergeZeusMathConfig,
   type ZeusMathConfig,
 } from '../_shared/zeus/math.ts';
 
@@ -180,7 +181,27 @@ Deno.serve(async (req) => {
       ctx = await loadContextFallback(admin, userId);
     }
 
-    const config: ZeusMathConfig = { ...DEFAULT_CONFIG };
+    let config: ZeusMathConfig = { ...DEFAULT_CONFIG };
+    try {
+      const aktif = await admin.rpc('game_aktif_config', { p_game_code: 'zeus' });
+      if (aktif.data && typeof aktif.data === 'object') {
+        const raw = aktif.data as Record<string, unknown>;
+        const durum = (raw.durum ?? {}) as Record<string, unknown>;
+        if (durum.maintenance === true && !(ctx.isAdmin && body.adminTest === true && roomId == null)) {
+          return businessError(
+            String(durum.maintenanceMessage || 'Zeus bakımda'),
+            'maintenance',
+          );
+        }
+        if (durum.gamePaused === true && !(ctx.isAdmin && body.adminTest === true && roomId == null)) {
+          return businessError('Zeus geçici olarak durduruldu', 'paused');
+        }
+        config = mergeZeusMathConfig(raw);
+      }
+    } catch {
+      config = { ...DEFAULT_CONFIG };
+    }
+
     const isAdmin = ctx.isAdmin;
     const isAdminTest = isAdmin && body.adminTest === true && roomId == null;
     const bonusLeft = ctx.bonusSpinsRemaining;

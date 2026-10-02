@@ -1,0 +1,15 @@
+{
+  "started_at": "2026-09-23T16:52:50.494Z",
+  "ended_at": "2026-09-23T17:02:05.208Z",
+  "exit_code": 0,
+  "summary_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.summary.json",
+  "console_log": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.console.log",
+  "generator_csv": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.generator.csv",
+  "slows_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.slows.json",
+  "slow_count": 0,
+  "host": {
+    "cpus": 16,
+    "totalmem_mb": 15707,
+    "platform": "win32"
+  }
+}

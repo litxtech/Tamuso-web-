@@ -1,0 +1,20 @@
+{
+  "odalar": {
+    "baslik": "Rooms",
+    "fisilti": "VOICE ROOMS",
+    "canliOdalar": "Live rooms",
+    "slogan": "Join · listen · chat",
+    "olustur": "Create room",
+    "odaKur": "Create a room",
+    "katil": "Join",
+    "ayril": "Leave",
+    "canli": "Live",
+    "bos": "No open rooms",
+    "sahneBos": "Stage is empty",
+    "moddaYok": "No rooms in this mode",
+    "bosBody": "Live rooms will appear here when they open.",
+    "modBosBody": "Try another mode or start your own room.",
+    "seciliSahne": "Selected stage",
+    "tumSahneler": "Show all stages"
+  }
+}

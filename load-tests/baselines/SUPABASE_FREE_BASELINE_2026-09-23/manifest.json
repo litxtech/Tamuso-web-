@@ -1,0 +1,280 @@
+{
+  "baseline_id": "SUPABASE_FREE_BASELINE_2026-09-23",
+  "immutable": true,
+  "captured_at": "2026-09-23",
+  "project_ref": "vdkqrqtrftzhbtquzked",
+  "mode": "production_read_only",
+  "locked_config": {
+    "scenario": "scenarios/10_mixed_real_user_test.js",
+    "think_min": 2,
+    "think_max": 5,
+    "hold_sec": 180,
+    "ramp_sec": 45,
+    "traffic_weights": {
+      "home": 30,
+      "status": 20,
+      "profile": 15,
+      "messages": 10,
+      "leaderboard": 10,
+      "follow": 5,
+      "notifications": 5,
+      "other": 5
+    },
+    "health_gate": {
+      "error_rate_pct_max": 1,
+      "p95_ms_max": 800,
+      "p99_ms_max": 1500
+    },
+    "circuit": {
+      "p95_ms": 5000,
+      "fail_rate": 0.1,
+      "five_xx_rate": 0.05
+    },
+    "k6_thresholds_reference": [
+      "p(50)<300",
+      "p(95)<800",
+      "p(99)<1500",
+      "http_req_failed rate<0.01"
+    ],
+    "connection_reuse": {
+      "noConnectionReuse": false,
+      "noVUConnectionReuse": false,
+      "batchPerHost": 6
+    }
+  },
+  "ladder": {
+    "stopReason": "unhealthy_for_escalation: p99 22960.253354000022ms >= 1500ms",
+    "stoppedAt": 500,
+    "levels": [
+      {
+        "ccu": 100,
+        "started_at": "2026-09-23T16:12:19.841Z",
+        "ended_at": "2026-09-23T16:16:09.019Z",
+        "rps": 39.132742779230135,
+        "p50": 78.6631,
+        "p90": 89.6733,
+        "p95": 95.05754999999999,
+        "p99": 127.5134899999997,
+        "max": 1171.8122,
+        "error_rate": 0,
+        "http_429": 0,
+        "http_5xx": 0,
+        "total": 8886,
+        "successful": 8886
+      },
+      {
+        "ccu": 500,
+        "started_at": "2026-09-23T16:16:55.758Z",
+        "ended_at": "2026-09-23T16:20:57.113Z",
+        "rps": 166.02006303480053,
+        "p50": 76.38605,
+        "p90": 94.51021000000007,
+        "p95": 277.6892300000004,
+        "p99": 22960.253354000022,
+        "max": 31566.9565,
+        "error_rate": 0,
+        "http_429": 0,
+        "http_5xx": 0,
+        "total": 39758,
+        "successful": 39758
+      }
+    ]
+  },
+  "diagnostic": {
+    "note": "slow-ramp 100..500; from tail-rca-analysis.json",
+    "meta": {
+      "started_at": "2026-09-23T16:52:50.494Z",
+      "ended_at": "2026-09-23T17:02:05.208Z",
+      "exit_code": 0,
+      "summary_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.summary.json",
+      "console_log": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.console.log",
+      "generator_csv": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.generator.csv",
+      "slows_path": "C:\\Users\\ilkse\\muta\\load-tests\\results\\tail-diag-500-2026-09-23T16-52-42-860Z.slows.json",
+      "slow_count": 0,
+      "host": {
+        "cpus": 16,
+        "totalmem_mb": 15707,
+        "platform": "win32"
+      }
+    },
+    "buckets": {
+      "<100ms": 65024,
+      "100-250ms": 1805,
+      "250-500ms": 810,
+      "500ms-1s": 1057,
+      "1-2s": 1162,
+      "2-5s": 1645,
+      "5-10s": 867,
+      "10-20s": 542,
+      "20-30s": 0,
+      ">30s": 0
+    },
+    "stages": {
+      "100": {
+        "reqs": 2468,
+        "slow20": 0,
+        "p50": 78.4158,
+        "p95": 93.424125,
+        "p99": 145.22983699999966,
+        "max": 1421.9637
+      },
+      "200": {
+        "reqs": 5577,
+        "slow20": 0,
+        "p50": 78.1014,
+        "p95": 1272.8833599999998,
+        "p99": 3377.940643999999,
+        "max": 3994.1281
+      },
+      "300": {
+        "reqs": 9067,
+        "slow20": 0,
+        "p50": 76.7048,
+        "p95": 113.64434999999952,
+        "p99": 2394.627502,
+        "max": 3938.9245
+      },
+      "400": {
+        "reqs": 12803,
+        "slow20": 0,
+        "p50": 76.4517,
+        "p95": 93.54865999999997,
+        "p99": 483.87047399999915,
+        "max": 1365.9463
+      },
+      "500": {
+        "reqs": 42997,
+        "slow20": 0,
+        "p50": 77.1778,
+        "p95": 3299.93191999999,
+        "p99": 10651.576628,
+        "max": 13820.6542
+      }
+    },
+    "phases_all": {
+      "duration": {
+        "avg": 358.5861858240089,
+        "min": 65.1757,
+        "med": 77.0938,
+        "p(90)": 111.18674000000006,
+        "p(95)": 1465.6845399999936,
+        "p(99)": 8463.673672999974,
+        "max": 13820.6542,
+        "count": 72912
+      },
+      "waiting": {
+        "med": 76.5781,
+        "p(90)": 110.73190000000106,
+        "p(95)": 1465.3476649999918,
+        "p(99)": 8463.085649999975,
+        "max": 13820.316,
+        "count": 72912,
+        "avg": 358.0378878538508,
+        "min": 64.9041
+      },
+      "blocked": {
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 211.1176,
+        "count": 72912,
+        "avg": 0.46659592111038006,
+        "min": 0,
+        "med": 0,
+        "p(90)": 0
+      },
+      "connecting": {
+        "avg": 0.21179322059468944,
+        "min": 0,
+        "med": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 126.6801,
+        "count": 72912
+      },
+      "tls": {
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 89.7756,
+        "count": 72912,
+        "avg": 0.25312738643844634,
+        "min": 0,
+        "med": 0,
+        "p(90)": 0
+      },
+      "sending": {
+        "min": 0,
+        "med": 0,
+        "p(90)": 0.6202,
+        "p(95)": 0.6781,
+        "p(99)": 0.8042889999999999,
+        "max": 2.8905,
+        "count": 72912,
+        "avg": 0.24101593290541876
+      },
+      "receiving": {
+        "min": 0,
+        "med": 0,
+        "p(90)": 0.9112900000000008,
+        "p(95)": 2.0853699999999984,
+        "p(99)": 3.468256999999999,
+        "max": 46.371,
+        "count": 72912,
+        "avg": 0.30728203725038394
+      }
+    }
+  },
+  "compare_protocol": {
+    "do_not_overwrite_baseline": true,
+    "new_runs_path": "results/runs/<LOADTEST_RUN_ID>/",
+    "required_env": [
+      "LOADTEST_ALLOW_PROD_READ=1",
+      "LOADTEST_ENV=production",
+      "LOADTEST_THINK_MIN=2",
+      "LOADTEST_THINK_MAX=5",
+      "LOADTEST_HOLD_SEC=180",
+      "LOADTEST_RAMP_SEC=45"
+    ],
+    "planned_ccu_levels": [
+      500,
+      1000,
+      2500,
+      5000,
+      10000
+    ]
+  },
+  "artifact_files": [
+    "config\\actions.js",
+    "config\\stages.js",
+    "config\\think.js",
+    "config\\thresholds.js",
+    "config\\traffic.js",
+    "reports\\TAMUSO_LOAD_TEST_REPORT.md",
+    "reports\\TAMUSO_TAIL_LATENCY_RCA.md",
+    "results\\.gitkeep",
+    "results\\_gen_sampler_2026-09-23T16-41-22-279Z.ps1",
+    "results\\_gen_sampler_2026-09-23T16-52-42-860Z.ps1",
+    "results\\ladder-run.log",
+    "results\\load-test-final.json",
+    "results\\load-test-results.json",
+    "results\\load-test-summary.csv",
+    "results\\mint-retry.log",
+    "results\\prod-read-ccu100-2026-09-23T16-09-13-998Z.summary.json",
+    "results\\prod-read-ccu100-2026-09-23T16-12-19-840Z.summary.json",
+    "results\\prod-read-ccu500-2026-09-23T16-16-55-758Z.summary.json",
+    "results\\smoke-2vu.summary.json",
+    "results\\tail-diag-500-2026-09-23T16-41-22-279Z.generator.csv",
+    "results\\tail-diag-500-2026-09-23T16-41-22-279Z.meta.json",
+    "results\\tail-diag-500-2026-09-23T16-41-22-279Z.summary.json",
+    "results\\tail-diag-500-2026-09-23T16-52-42-860Z.console.log",
+    "results\\tail-diag-500-2026-09-23T16-52-42-860Z.generator.csv",
+    "results\\tail-diag-500-2026-09-23T16-52-42-860Z.meta.json",
+    "results\\tail-diag-500-2026-09-23T16-52-42-860Z.slows.json",
+    "results\\tail-diag-500-2026-09-23T16-52-42-860Z.summary.json",
+    "results\\tail-diag-run.log",
+    "results\\tail-diag-run2.log",
+    "results\\tail-rca-analysis.json",
+    "results\\tail-rca-analyze-out.log",
+    "sql\\readonly-tail-diagnostics.sql"
+  ]
+}

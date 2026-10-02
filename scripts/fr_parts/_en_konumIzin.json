@@ -1,0 +1,11 @@
+{
+  "konumIzin": {
+    "ayarlar": "Settings",
+    "ayarlarYolIos": "You can manage permissions via Settings → {{app}}.",
+    "ayarlarYolAndroid": "You can manage permissions in the app settings.",
+    "reddedildiBaslik": "Location unavailable",
+    "reddedildiBody": "Permission is required for location-based features. You can still pick your city manually.",
+    "sehirSec": "Choose city",
+    "ayarlariAc": "Open Settings"
+  }
+}

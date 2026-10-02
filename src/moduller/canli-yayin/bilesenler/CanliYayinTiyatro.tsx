@@ -23,12 +23,12 @@ import { CanliYayinVideoSahne } from './CanliYayinVideoSahne';
 import { CanliYorumAkisi } from './CanliYorumAkisi';
 import { CanliYorumComposer } from './CanliYorumComposer';
 import { CanliBegeniEfekti } from './CanliBegeniEfekti';
+import { CanliIzleyiciPaneli } from './CanliIzleyiciPaneli';
 import { CanliYayinBegen } from '../islemler/CanliYayinIslemleri';
 import { TakipEt } from '../../kullanici-profili/okuma/TakipIslemleri';
-import { ProfilGetir } from '../../kullanici-profili/okuma/ProfilGetir';
-import { OdaProfilKartiPaneli } from '../../ses-odalari/bilesenler/OdaProfilKartiPaneli';
 import type { CanliSohbetMesajGorunum } from '../../canli-sohbet/bilesenler/CanliSohbetMesajKarti';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
+import { MedyaKameraCevir } from '../../livekit/MedyaBaglantisi';
 import { supabase } from '../../../lib/supabase';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
@@ -52,7 +52,18 @@ export type CanliYayinMeta = {
   total_coins_earned: number;
   hostAd: string;
   hostAvatar?: string | null;
+  /** Yayın başlangıcı — süre sayacı için */
+  started_at?: string | null;
 };
+
+function canliSureYazi(sn: number): string {
+  const h = Math.floor(sn / 3600);
+  const m = Math.floor((sn % 3600) / 60);
+  const s = sn % 60;
+  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
+  if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+  return `${m}:${pad(s)}`;
+}
 
 type Props = {
   rol: 'host' | 'izleyici';
@@ -125,16 +136,24 @@ export function CanliYayinTiyatro({
   const [takipEdildi, setTakipEdildi] = useState(false);
   const [kameraCevirBusy, setKameraCevirBusy] = useState(false);
   const [baglantiBanner, setBaglantiBanner] = useState<string | null>(null);
-  const [profilKart, setProfilKart] = useState<{
-    userId: string;
-    displayName?: string | null;
-    username?: string | null;
-    avatarUrl?: string | null;
-    bio?: string | null;
-    level?: number | null;
-  } | null>(null);
+  const [izleyiciAcik, setIzleyiciAcik] = useState(false);
+  const [sureSn, setSureSn] = useState(0);
   const begeniKilit = useRef(false);
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const bas = meta.started_at ? Date.parse(meta.started_at) : NaN;
+    if (!Number.isFinite(bas)) {
+      setSureSn(0);
+      return;
+    }
+    const tick = () => {
+      setSureSn(Math.max(0, Math.floor((Date.now() - bas) / 1000)));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [meta.started_at]);
 
   useEffect(() => {
     return LiveKitBaglantiYoneticisi.dinle((_durum, detay) => {
@@ -255,49 +274,16 @@ export function CanliYayinTiyatro({
     });
   };
 
-  const profilKartAc = useCallback(
-    (input: {
-      userId: string;
-      displayName?: string | null;
-      username?: string | null;
-      avatarUrl?: string | null;
-      bio?: string | null;
-      level?: number | null;
-    }) => {
-      if (!input.userId) return;
-      setProfilKart(input);
-      void ProfilGetir(input.userId)
-        .then((p) => {
-          if (!p) return;
-          setProfilKart((prev) =>
-            prev?.userId === p.id
-              ? {
-                  ...prev,
-                  displayName: p.display_name ?? prev.displayName,
-                  username: p.username ?? prev.username,
-                  avatarUrl: p.avatar_url ?? prev.avatarUrl,
-                  bio: p.bio ?? prev.bio,
-                  level: p.level ?? prev.level,
-                }
-              : prev,
-          );
-        })
-        .catch(() => undefined);
-    },
-    [],
-  );
+  const profilAc = useCallback((userId: string) => {
+    if (!userId) return;
+    router.push(`/kullanici/${userId}` as any);
+  }, []);
 
   const yorumProfilAc = useCallback(
     (item: CanliSohbetMesajGorunum) => {
-      profilKartAc({
-        userId: item.user_id,
-        displayName: item.display_name,
-        username: item.username,
-        avatarUrl: item.avatar_url,
-        level: item.level,
-      });
+      profilAc(item.user_id);
     },
-    [profilKartAc],
+    [profilAc],
   );
 
   // Yorumlar yalnızca composer + klavyenin hemen üstünde dursun.
@@ -365,13 +351,7 @@ export function CanliYayinTiyatro({
           <View style={styles.hostSatir} pointerEvents="box-none">
             <Pressable
               style={styles.hostKart}
-              onPress={() =>
-                profilKartAc({
-                  userId: meta.host_id,
-                  displayName: meta.hostAd,
-                  avatarUrl: meta.hostAvatar,
-                })
-              }
+              onPress={() => profilAc(meta.host_id)}
             >
               <View style={styles.avatar}>
                 <Text style={styles.avatarHarf}>
@@ -408,14 +388,41 @@ export function CanliYayinTiyatro({
           </View>
 
           <View style={styles.sagUst}>
-            <View style={styles.izleyiciChip}>
+            {walletCoins != null ? (
+              <Pressable
+                style={styles.coinChipUst}
+                onPress={() => {
+                  if (!canSend) {
+                    onNeedUpgrade?.();
+                    return;
+                  }
+                  onCoinYukle?.();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('canliYayin.a11yCoinYukle')}
+              >
+                <Text style={styles.coinText}>
+                  🪙 {walletCoins.toLocaleString(locale)}
+                </Text>
+                {onCoinYukle ? (
+                  <Ionicons name="add-circle" size={15} color="#F0B429" />
+                ) : null}
+              </Pressable>
+            ) : null}
+            <Pressable
+              style={styles.izleyiciChip}
+              onPress={() => setIzleyiciAcik(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('canliYayin.a11yIzleyenler')}
+              hitSlop={6}
+            >
               <Ionicons name="eye" size={13} color="#fff" />
               <Text style={styles.izleyiciSayi}>
                 {meta.viewer_count >= 1000
                   ? `${(meta.viewer_count / 1000).toFixed(1)}K`
                   : meta.viewer_count}
               </Text>
-            </View>
+            </Pressable>
             {rol === 'izleyici' ? (
               <IcerikGuvenlikDugmesi
                 tur="live"
@@ -431,7 +438,7 @@ export function CanliYayinTiyatro({
                 onPress={() => {
                   if (kameraCevirBusy) return;
                   setKameraCevirBusy(true);
-                  void LiveKitBaglantiYoneticisi.kameraCevir().finally(() => {
+                  void Promise.resolve(MedyaKameraCevir()).finally(() => {
                     setKameraCevirBusy(false);
                   });
                 }}
@@ -464,6 +471,15 @@ export function CanliYayinTiyatro({
           <View style={styles.chip}>
             <Text style={styles.chipYazi}>🔥 {t('canliYayin.saatlik')}</Text>
           </View>
+          {meta.started_at ? (
+            <View
+              style={styles.surePill}
+              accessibilityLabel={`${t('canliYayin.sure')} ${canliSureYazi(sureSn)}`}
+            >
+              <Ionicons name="time-outline" size={11} color="#fff" />
+              <Text style={styles.sureText}>{canliSureYazi(sureSn)}</Text>
+            </View>
+          ) : null}
           <View style={styles.livePill}>
             <View style={styles.dot} />
             <Text style={styles.liveText}>{t('canliYayin.rozetCanli')}</Text>
@@ -537,55 +553,17 @@ export function CanliYayinTiyatro({
                   <Ionicons name="flash" size={20} color="#F0B429" />
                 </Pressable>
               ) : null}
-              {walletCoins != null ? (
-                <Pressable
-                  style={styles.coinChip}
-                  onPress={() => {
-                    if (!canSend) {
-                      onNeedUpgrade?.();
-                      return;
-                    }
-                    onCoinYukle?.();
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('canliYayin.a11yCoinYukle')}
-                >
-                  <Text style={styles.coinText}>
-                    🪙 {walletCoins.toLocaleString(locale)}
-                  </Text>
-                  {onCoinYukle ? (
-                    <Ionicons name="add-circle" size={16} color="#F0B429" />
-                  ) : null}
-                </Pressable>
-              ) : null}
             </View>
           ) : null}
         </View>
       </View>
 
-      <OdaProfilKartiPaneli
-        visible={!!profilKart}
-        onClose={() => setProfilKart(null)}
-        userId={profilKart?.userId}
-        viewerId={currentUserId}
-        isGuest={isGuest}
-        displayName={profilKart?.displayName}
-        username={profilKart?.username}
-        avatarUrl={profilKart?.avatarUrl}
-        bio={profilKart?.bio}
-        level={profilKart?.level}
-        baslik={t('sekmeler.profil')}
-        onNeedUpgrade={onNeedUpgrade}
-        yukseklikOrani={0.58}
-        onProfilAc={
-          profilKart?.userId
-            ? () => {
-                const uid = profilKart.userId;
-                setProfilKart(null);
-                router.push(`/kullanici/${uid}` as any);
-              }
-            : undefined
-        }
+      <CanliIzleyiciPaneli
+        sessionId={meta.id}
+        visible={izleyiciAcik}
+        onClose={() => setIzleyiciAcik(false)}
+        currentUserId={currentUserId}
+        onProfil={profilAc}
       />
     </View>
   );
@@ -835,19 +813,38 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.18)',
   },
   aksiyonEmoji: { fontSize: 20 },
-  coinChip: {
-    paddingHorizontal: 10,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(240,180,41,0.22)',
+  coinChipUst: {
+    paddingHorizontal: 9,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(240,180,41,0.28)',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 4,
+    gap: 3,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(240,180,41,0.4)',
   },
   coinText: {
     ...TipografiTokenlari.micro,
-    color: '#F0B429',
+    color: '#FFE08A',
     fontWeight: '800',
+    fontSize: 12,
+  },
+  surePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  sureText: {
+    ...TipografiTokenlari.micro,
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 11,
+    fontVariant: ['tabular-nums'],
   },
 });

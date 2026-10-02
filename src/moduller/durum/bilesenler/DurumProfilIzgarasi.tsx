@@ -13,8 +13,10 @@ import {
   DurumMedyaHttpsMi,
   DurumMuzikPayloadAl,
   DurumOyunKazanciPayloadAl,
+  DurumSesPayloadAl,
 } from '../islemler/DurumIslemleri';
 import { DurumMuzikKarti } from './DurumMuzikKarti';
+import { DurumSesKarti } from './DurumSesKarti';
 import { DurumOyunKazanciKart } from './DurumOyunKazanciKart';
 import { DurumVideoOnizleme } from './DurumVideoOnizleme';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -89,6 +91,7 @@ export function DurumProfilIzgarasi({
             .map((oge) => {
             const kazanc = DurumOyunKazanciPayloadAl(oge);
             const muzik = DurumMuzikPayloadAl(oge);
+            const ses = DurumSesPayloadAl(oge);
             return (
               <Pressable
                 key={oge.id}
@@ -106,6 +109,13 @@ export function DurumProfilIzgarasi({
                   <DurumOyunKazanciKart payload={kazanc} compact />
                 ) : muzik ? (
                   <DurumMuzikKarti payload={muzik} compact />
+                ) : ses ? (
+                  <DurumSesKarti
+                    oynaticiId={`durum-ses:${oge.id}`}
+                    uri={oge.media_url}
+                    durationMs={ses.duration_ms}
+                    compact
+                  />
                 ) : oge.media_type === 'video' ? (
                   <View style={[styles.img, styles.imgBos]}>
                     <DurumVideoOnizleme
@@ -135,7 +145,7 @@ export function DurumProfilIzgarasi({
                     </Text>
                   </View>
                 )}
-                {oge.media_type === 'video' && !kazanc ? (
+                {oge.media_type === 'video' && !kazanc && !ses ? (
                   <View style={styles.videoBadge} pointerEvents="none">
                     <Ionicons name="play" size={12} color="#fff" />
                   </View>

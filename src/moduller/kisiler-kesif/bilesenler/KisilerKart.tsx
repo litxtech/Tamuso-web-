@@ -1,5 +1,5 @@
 /**
- * Kişiler kartı — fotoğraf NET, alt aksiyonlar frosted glass.
+ * Kişiler kartı — fotoğraf alanı + tema yüzeyinde aksiyon şeridi.
  */
 
 import React, { memo } from 'react';
@@ -9,15 +9,14 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
   BoslukTokenlari,
+  HeaderTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import type { KisilerKesifKarti } from '../tipler';
@@ -26,19 +25,21 @@ import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   kart: KisilerKesifKarti;
+  genislik: number;
   showPrices: boolean;
   showOnline: boolean;
   /** Kapalı aramada da basılabilir — sheet mesaj + bildirim gösterir */
   sesEnabled: boolean;
   videoEnabled: boolean;
-  onProfil: () => void;
-  onMesaj: () => void;
-  onSesli: () => void;
-  onGoruntulu: () => void;
+  onProfil: (userId: string) => void;
+  onMesaj: (userId: string) => void;
+  onSesli: (userId: string) => void;
+  onGoruntulu: (userId: string) => void;
 };
 
 function KisilerKartIc({
   kart,
+  genislik,
   showPrices,
   showOnline,
   sesEnabled,
@@ -49,17 +50,14 @@ function KisilerKartIc({
   onGoruntulu,
 }: Props) {
   const { t } = useCeviri();
-  const { width } = useWindowDimensions();
-  const gap = BoslukTokenlari.md;
-  const pad = BoslukTokenlari.lg;
-  const cardW = Math.floor((width - pad * 2 - gap) / 2);
   const bayrak = ulkeBayragi(kart.public_country_code);
   const isim = kart.display_name?.trim() || kart.username || t('ortak.kullanici');
+  const kullanici = kart.username ?? '—';
 
   return (
-    <View style={[styles.kart, { width: cardW }]}>
+    <View style={[styles.kart, { width: genislik }]}>
       <Pressable
-        onPress={onProfil}
+        onPress={() => onProfil(kart.user_id)}
         accessibilityRole="button"
         accessibilityLabel={t('kisilerX.profilA11y', { isim })}
         style={styles.fotoWrap}
@@ -71,9 +69,12 @@ function KisilerKartIc({
             resizeMode="cover"
           />
         ) : (
-          <View style={[styles.foto, styles.fotoBos]}>
-            <Ionicons name="person" size={40} color={RenkTokenlari.textMuted} />
-          </View>
+          <LinearGradient
+            colors={[...RenkTokenlari.gradientPlaceholder]}
+            style={styles.fotoBos}
+          >
+            <Ionicons name="person" size={40} color={RenkTokenlari.textOnOverlay} />
+          </LinearGradient>
         )}
 
         {showOnline && kart.online_display ? (
@@ -81,11 +82,12 @@ function KisilerKartIc({
         ) : null}
 
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.75)']}
+          colors={[...RenkTokenlari.overlayGradient]}
           style={styles.grad}
+          pointerEvents="none"
         />
 
-        <View style={styles.meta}>
+        <View style={styles.meta} pointerEvents="none">
           <View style={styles.isimSatir}>
             <Text style={styles.isim} numberOfLines={1}>
               {isim}
@@ -100,21 +102,21 @@ function KisilerKartIc({
             {bayrak ? <Text style={styles.bayrak}>{bayrak}</Text> : null}
           </View>
           <Text style={styles.alt} numberOfLines={1}>
-            @{kart.username ?? '—'}
-            {kart.level != null ? ` · Lv.${kart.level}` : ''}
+            @{kullanici}
+            {kart.level != null ? ` · ${t('kisilerX.seviye', { n: kart.level })}` : ''}
           </Text>
           {showPrices && (kart.voice_price != null || kart.video_price != null) ? (
             <View style={styles.fiyatSatir}>
               {kart.voice_price != null ? (
                 <Text style={styles.fiyat}>
                   <Ionicons name="call" size={10} color={RenkTokenlari.mint} />{' '}
-                  {kart.voice_price} /dk
+                  {t('kisilerX.coinDk', { n: kart.voice_price })}
                 </Text>
               ) : null}
               {kart.video_price != null ? (
                 <Text style={styles.fiyat}>
                   <Ionicons name="videocam" size={10} color={RenkTokenlari.primarySoft} />{' '}
-                  {kart.video_price} /dk
+                  {t('kisilerX.coinDk', { n: kart.video_price })}
                 </Text>
               ) : null}
             </View>
@@ -122,31 +124,28 @@ function KisilerKartIc({
         </View>
       </Pressable>
 
-      <View style={styles.aksiyonWrap}>
-        <CamArkaplan intensity={36} hafif style={StyleSheet.absoluteFill} />
-        <View style={styles.aksiyonlar}>
-          <Aksiyon
-            icon="chatbubble"
-            label={t('kisilerX.mesaj')}
-            enabled={kart.message_enabled}
-            onPress={onMesaj}
-            tint={RenkTokenlari.primarySoft}
-          />
-          <Aksiyon
-            icon="call"
-            label={t('kisilerX.sesliAra')}
-            enabled={sesEnabled}
-            onPress={onSesli}
-            tint={RenkTokenlari.mint}
-          />
-          <Aksiyon
-            icon="videocam"
-            label={t('kisilerX.goruntuluAra')}
-            enabled={videoEnabled}
-            onPress={onGoruntulu}
-            tint={RenkTokenlari.magenta}
-          />
-        </View>
+      <View style={styles.aksiyonlar}>
+        <Aksiyon
+          icon="chatbubble"
+          label={t('kisilerX.mesaj')}
+          enabled={kart.message_enabled}
+          onPress={() => onMesaj(kart.user_id)}
+          tint={RenkTokenlari.primarySoft}
+        />
+        <Aksiyon
+          icon="call"
+          label={t('kisilerX.sesliAra')}
+          enabled={sesEnabled}
+          onPress={() => onSesli(kart.user_id)}
+          tint={RenkTokenlari.mint}
+        />
+        <Aksiyon
+          icon="videocam"
+          label={t('kisilerX.goruntuluAra')}
+          enabled={videoEnabled}
+          onPress={() => onGoruntulu(kart.user_id)}
+          tint={RenkTokenlari.magenta}
+        />
       </View>
     </View>
   );
@@ -172,9 +171,10 @@ function Aksiyon({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: !enabled }}
+      hitSlop={BoslukTokenlari.xs}
       style={({ pressed }) => [
         styles.btn,
-        { borderColor: `${tint}55`, opacity: enabled ? (pressed ? 0.7 : 1) : 0.35 },
+        { opacity: enabled ? (pressed ? 0.7 : 1) : 0.35 },
       ]}
     >
       <Ionicons name={icon} size={16} color={tint} />
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: YaricapTokenlari.xl,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: RenkTokenlari.border,
     backgroundColor: RenkTokenlari.bgElevated,
   },
   fotoWrap: {
@@ -201,20 +201,20 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   fotoBos: {
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: RenkTokenlari.bgCard,
   },
   online: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: BoslukTokenlari.sm,
+    right: BoslukTokenlari.sm,
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: RenkTokenlari.mint,
     borderWidth: 1.5,
-    borderColor: '#000',
+    borderColor: RenkTokenlari.textOnOverlay,
     zIndex: 2,
   },
   grad: {
@@ -226,61 +226,58 @@ const styles = StyleSheet.create({
   },
   meta: {
     position: 'absolute',
-    left: 10,
-    right: 10,
-    bottom: 10,
+    left: BoslukTokenlari.sm,
+    right: BoslukTokenlari.sm,
+    bottom: BoslukTokenlari.sm,
     gap: 2,
   },
   isimSatir: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: BoslukTokenlari.xs,
   },
   isim: {
     ...TipografiTokenlari.caption,
-    color: '#fff',
+    color: RenkTokenlari.textOnOverlay,
     fontWeight: '700',
     flexShrink: 1,
-    fontSize: 14,
   },
   bayrak: {
-    fontSize: 12,
+    fontSize: TipografiTokenlari.micro.fontSize,
   },
   alt: {
     ...TipografiTokenlari.micro,
-    color: 'rgba(255,255,255,0.72)',
-    fontSize: 11,
+    color: RenkTokenlari.textOnOverlay,
   },
   fiyatSatir: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
+    gap: BoslukTokenlari.sm,
+    marginTop: BoslukTokenlari.xs,
   },
   fiyat: {
     ...TipografiTokenlari.micro,
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 10,
-  },
-  aksiyonWrap: {
-    overflow: 'hidden',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    color: RenkTokenlari.textOnOverlay,
   },
   aksiyonlar: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    gap: 6,
+    alignItems: 'center',
+    paddingVertical: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.sm,
+    gap: BoslukTokenlari.sm,
+    backgroundColor: RenkTokenlari.bgElevated,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: RenkTokenlari.divider,
   },
   btn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,
+    height: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,
+    borderRadius: (HeaderTokenlari.touchTarget - BoslukTokenlari.sm) / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: RenkTokenlari.border,
+    backgroundColor: RenkTokenlari.pressFill,
   },
 });

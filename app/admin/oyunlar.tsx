@@ -361,6 +361,16 @@ export default function AdminOyunlarEkrani() {
                     <Text style={AdminStil.aksiyonYazi}>Kaskad RTP</Text>
                   </Pressable>
                 ) : null}
+                {c.game_code === 'zeus' ? (
+                  <Pressable
+                    onPress={() =>
+                      router.push('/admin/oyun-algoritma?oyun=zeus' as any)
+                    }
+                    style={AdminStil.aksiyon}
+                  >
+                    <Text style={AdminStil.aksiyonYazi}>Algoritma</Text>
+                  </Pressable>
+                ) : null}
               </View>
 
               {detayKod === c.game_code && detay ? (
@@ -491,6 +501,15 @@ export default function AdminOyunlarEkrani() {
         >
           <Text style={AdminStil.kartBaslik}>Realm of Storms yönetimi</Text>
           <Text style={AdminStil.kartAlt}>RTP · math · refund · müzik</Text>
+        </Pressable>
+        <Pressable
+          style={AdminStil.kart}
+          onPress={() => router.push('/admin/oyun-algoritma?oyun=zeus' as any)}
+        >
+          <Text style={AdminStil.kartBaslik}>Ortak oyun algoritması</Text>
+          <Text style={AdminStil.kartAlt}>
+            Zeus RTP · takvim · bahis 200 · açıklamalı kontroller
+          </Text>
         </Pressable>
 
         <View style={AdminStil.kart}>

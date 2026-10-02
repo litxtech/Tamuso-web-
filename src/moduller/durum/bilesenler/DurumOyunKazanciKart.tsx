@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-na
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import type { DurumOyunKazanciPayload } from '../islemler/DurumIslemleri';
-import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { DilNormalizeEt, DIL_LOCALE_MAP } from '../../../i18n/diller';
 import i18n from '../../../i18n';
@@ -52,7 +51,7 @@ export function DurumOyunKazanciKart({ payload, compact, style }: Props) {
         end={{ x: 1, y: 1 }}
         style={[styles.compact, style]}
       >
-        <Ionicons name="trophy" size={14} color="rgba(255,255,255,0.9)" />
+          <Ionicons name="trophy" size={12} color="rgba(255,255,255,0.9)" />
         <Text style={styles.compactAmount} numberOfLines={1}>
           {formatCoin(payload.total_win)}
         </Text>
@@ -72,7 +71,7 @@ export function DurumOyunKazanciKart({ payload, compact, style }: Props) {
     >
       <View style={styles.badgeRow}>
         <View style={styles.badge}>
-          <Ionicons name="game-controller" size={12} color="#fff" />
+          <Ionicons name="game-controller" size={11} color="#fff" />
           <Text style={styles.badgeText}>{title}</Text>
         </View>
       </View>
@@ -91,66 +90,66 @@ export function DurumOyunKazanciKart({ payload, compact, style }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    minHeight: 168,
-    paddingVertical: 22,
-    paddingHorizontal: 20,
-    borderRadius: 18,
+    minHeight: 118,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.28)',
+    borderColor: 'rgba(255,255,255,0.22)',
     overflow: 'hidden',
   },
   badgeRow: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 8,
+    left: 8,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 999,
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   badgeText: {
     color: 'rgba(255,255,255,0.92)',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   tier: {
-    marginTop: 8,
+    marginTop: 4,
     color: '#fff',
-    fontSize: TipografiTokenlari.h2.fontSize,
+    fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 2,
+    letterSpacing: 1.4,
     textShadowColor: 'rgba(0,0,0,0.35)',
     textShadowRadius: 6,
   },
   formula: {
-    marginTop: 8,
+    marginTop: 4,
     color: 'rgba(255,255,255,0.85)',
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '700',
   },
   amount: {
-    marginTop: 4,
+    marginTop: 2,
     color: '#FFE28A',
-    fontSize: 36,
+    fontSize: 26,
     fontWeight: '900',
     fontVariant: ['tabular-nums'],
     textShadowColor: 'rgba(0,0,0,0.45)',
     textShadowRadius: 6,
   },
   coinHint: {
-    marginTop: 4,
+    marginTop: 2,
     color: 'rgba(255,255,255,0.65)',
-    fontSize: TipografiTokenlari.micro.fontSize,
+    fontSize: 9,
     fontWeight: '600',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   compact: {
@@ -158,19 +157,19 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    padding: 6,
+    gap: 1,
+    padding: 4,
   },
   compactAmount: {
     color: '#FFE28A',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '900',
     fontVariant: ['tabular-nums'],
   },
   compactTier: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
 });

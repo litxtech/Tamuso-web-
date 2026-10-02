@@ -1,4 +1,5 @@
 import { OrtamDegiskenleri } from '../../yapilandirma/OrtamDegiskenleri';
+import i18n from '../../i18n';
 
 /** Paylaşılabilir HTTPS indirme/davet linki (edge function) */
 export function PaylasimHttpsUrlOlustur(davetKodu?: string | null): string {
@@ -24,6 +25,8 @@ export function PaylasimMesajiOlustur(opts: {
   davetKodu?: string;
 }): string {
   const ad = opts.uygulamaAdi ?? OrtamDegiskenleri.uygulamaAdi;
-  const kodSatiri = opts.davetKodu ? `\nDavet kodu: ${opts.davetKodu}` : '';
-  return `${ad}'ya katıl — ses, sahne ve canlı odalar seni bekliyor.${kodSatiri}\n\nİndir: ${opts.url}`;
+  const kodSatiri = opts.davetKodu
+    ? i18n.t('paylasim.davetKoduSatiri', { kod: opts.davetKodu })
+    : '';
+  return i18n.t('paylasim.mesajKatil', { ad, kodSatiri, url: opts.url });
 }

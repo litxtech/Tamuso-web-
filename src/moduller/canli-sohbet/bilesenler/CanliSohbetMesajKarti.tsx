@@ -7,6 +7,8 @@ import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
 import i18n from '../../../i18n';
+import { CeviriMetinKarti } from '../../ai-ceviri/bilesenler/CeviriMetinKarti';
+import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 
 export type CanliSohbetMesajGorunum = {
   id: string;
@@ -17,6 +19,11 @@ export type CanliSohbetMesajGorunum = {
   username?: string | null;
   avatar_url?: string | null;
   level?: number | null;
+  /** chat (varsayılan) | gift — oda hediye satırı */
+  tur?: 'chat' | 'gift';
+  gift_emoji?: string | null;
+  gift_name?: string | null;
+  gift_quantity?: number | null;
 };
 
 type Props = {
@@ -27,6 +34,8 @@ type Props = {
   onProfilPress?: (item: CanliSohbetMesajGorunum) => void;
   /** live: TikTok/Twitch/YouTube — kompakt, okunabilir overlay */
   varyant?: 'kart' | 'live';
+  /** Float overlay'de zaman damgasını gizle — daha temiz satır */
+  zamanGizle?: boolean;
 };
 
 function yorumZamani(iso: string): string {
@@ -52,6 +61,7 @@ export function CanliSohbetMesajKarti({
   onLongPress,
   onProfilPress,
   varyant = 'kart',
+  zamanGizle = false,
 }: Props) {
   const { t } = useCeviri();
   const ad =
@@ -62,12 +72,20 @@ export function CanliSohbetMesajKarti({
   const zaman = useMemo(() => yorumZamani(item.created_at), [item.created_at]);
   const profilA11y = t('kisilerX.profilA11y', { isim: ad });
 
+  const hediyeMi = item.tur === 'gift';
+  const ceviriAcik =
+    !hediyeMi && OzellikBayragiAktifMi('live_chat_translation_enabled');
+
   if (varyant === 'live') {
     return (
       <Pressable
         onLongPress={onLongPress}
         delayLongPress={350}
-        style={[styles.liveRow, mine && styles.liveRowMine]}
+        style={[
+          styles.liveRow,
+          mine && styles.liveRowMine,
+          hediyeMi && styles.liveRowGift,
+        ]}
       >
         <Pressable
           onPress={onProfilPress ? () => onProfilPress(item) : undefined}
@@ -77,9 +95,9 @@ export function CanliSohbetMesajKarti({
           accessibilityRole="button"
           accessibilityLabel={profilA11y}
         >
-          <SeviyeTaci level={seviye} size="sm" avatarBoy={32}>
+          <SeviyeTaci level={seviye} size="sm" avatarBoy={28}>
             <ProfilAvatarKucuk
-              size={32}
+              size={28}
               displayName={item.display_name}
               username={item.username}
               avatarUrl={item.avatar_url}
@@ -103,9 +121,27 @@ export function CanliSohbetMesajKarti({
                 {ad}
               </Text>
             </Pressable>
-            {zaman ? <Text style={styles.liveZaman}>{zaman}</Text> : null}
+            {!zamanGizle && zaman ? (
+              <Text style={styles.liveZaman}>{zaman}</Text>
+            ) : null}
           </View>
-          <Text style={styles.liveBody}>{item.body}</Text>
+          {hediyeMi ? (
+            <View style={styles.giftPill}>
+              <Text style={styles.giftEmoji}>
+                {item.gift_emoji?.trim() || '🎁'}
+              </Text>
+              <Text style={styles.giftBody} numberOfLines={2}>
+                {item.body}
+              </Text>
+            </View>
+          ) : (
+            <CeviriMetinKarti
+              text={item.body}
+              context="live"
+              varyant="live"
+              enabled={ceviriAcik}
+            />
+          )}
         </View>
       </Pressable>
     );
@@ -148,7 +184,12 @@ export function CanliSohbetMesajKarti({
           </Pressable>
           {zaman ? <Text style={styles.liveZaman}>{zaman}</Text> : null}
         </View>
-        <Text style={styles.mesaj}>{item.body}</Text>
+        <CeviriMetinKarti
+          text={item.body}
+          context="room"
+          varyant="kart"
+          enabled={ceviriAcik}
+        />
       </View>
     </Pressable>
   );
@@ -170,18 +211,46 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
-    paddingVertical: 5,
+    gap: 8,
+    paddingVertical: 3,
     paddingHorizontal: 2,
     maxWidth: '96%',
   },
   liveRowMine: {
     opacity: 1,
   },
+  liveRowGift: {
+    maxWidth: '98%',
+  },
+  giftPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,180,90,0.16)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,180,90,0.3)',
+    maxWidth: '100%',
+  },
+  giftEmoji: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  giftBody: {
+    ...TipografiTokenlari.body,
+    color: '#FFE6C2',
+    fontWeight: '700',
+    fontSize: 13,
+    lineHeight: 17,
+    flexShrink: 1,
+  },
   liveAvatarWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
+    marginTop: 1,
   },
   kartAvatarWrap: {
     alignItems: 'center',
@@ -190,19 +259,19 @@ const styles = StyleSheet.create({
   liveGovde: {
     flexShrink: 1,
     minWidth: 0,
-    gap: 2,
+    gap: 1,
   },
   liveUst: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     maxWidth: '100%',
   },
   liveAd: {
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.mint,
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 12,
     flexShrink: 1,
     textShadowColor: 'rgba(0,0,0,0.55)',
     textShadowOffset: { width: 0, height: 1 },
@@ -215,14 +284,14 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textDim,
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: 10,
   },
   liveBody: {
     ...TipografiTokenlari.body,
     color: '#FFFFFF',
     fontWeight: '500',
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 19,
     textShadowColor: 'rgba(0,0,0,0.65)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,

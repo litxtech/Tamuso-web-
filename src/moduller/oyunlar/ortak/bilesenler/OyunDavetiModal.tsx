@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useCeviri } from '../../../../i18n/useCeviri';
 import { RenkTokenlari } from '../../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -40,30 +41,36 @@ export function OyunDavetiModal({
   onIzle,
   onReddet,
 }: Props) {
+  const { t } = useCeviri();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onReddet}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <Text style={styles.eyebrow}>OYUN DAVETİ</Text>
-          <Text style={styles.title}>{davet?.gameName ?? 'Tamuso Oyun'}</Text>
+          <Text style={styles.eyebrow}>{t('oyun.davetEyebrow')}</Text>
+          <Text style={styles.title}>{davet?.gameName ?? t('oyun.varsayilanAd')}</Text>
           <Text style={styles.body}>
-            {davet?.hostName ?? 'Bir oyuncu'} bir oyun başlattı. Katılmak ister misin?
+            {t('oyun.davetBody', {
+              host: davet?.hostName ?? t('oyun.birOyuncu'),
+            })}
           </Text>
           <Text style={styles.meta}>
-            {davet?.durationSeconds ?? 90} sn · {davet?.joinedCount ?? 0}/
-            {davet?.maxPlayers ?? 8} oyuncu
+            {t('oyun.davetMeta', {
+              sn: davet?.durationSeconds ?? 90,
+              joined: davet?.joinedCount ?? 0,
+              max: davet?.maxPlayers ?? 8,
+            })}
           </Text>
 
           <Pressable style={styles.primary} onPress={onKatil}>
-            <Text style={styles.primaryText}>KATIL</Text>
+            <Text style={styles.primaryText}>{t('oyun.katil')}</Text>
           </Pressable>
           {onIzle ? (
             <Pressable style={styles.secondary} onPress={onIzle}>
-              <Text style={styles.secondaryText}>İZLE</Text>
+              <Text style={styles.secondaryText}>{t('oyun.izle')}</Text>
             </Pressable>
           ) : null}
           <Pressable style={styles.ghost} onPress={onReddet}>
-            <Text style={styles.ghostText}>ŞİMDİ DEĞİL</Text>
+            <Text style={styles.ghostText}>{t('oyun.simdiDegil')}</Text>
           </Pressable>
         </View>
       </View>

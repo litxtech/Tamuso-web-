@@ -27,7 +27,7 @@ import { CamArkaplan } from '../bilesenler/yuzey/CamArkaplan';
 import { RenkTokenlari } from '../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../tasarim-sistemi/TipografiTokenlari';
 import { useTemayaAboneOl } from '../tasarim-sistemi/tema/useTemayaAboneOl';
-import { kullaniciTemaKodunuAl } from '../tasarim-sistemi/tema/TemaDurumu';
+import { kullaniciTemaKodunuAl, temaAcikMi } from '../tasarim-sistemi/tema/TemaDurumu';
 import {
   IOS_TAB_FLOAT_GAP,
   IOS_TAB_H_MARGIN,
@@ -134,7 +134,7 @@ function YuzenTabBarIc() {
   const { okunmamis: mesajOkunmamis } = useMesajOkunmamis();
   const avatarUrl = MedyaUriGuvenli(profile?.avatar_url);
   const [, setTick] = useState(0);
-  const acikTema = kullaniciTemaKodunuAl() === 'acik';
+  const acikTema = temaAcikMi(kullaniciTemaKodunuAl());
 
   const tabEtiket: Record<GorunurTabAdi, string> = {
     index: t('sekmeler.ana'),

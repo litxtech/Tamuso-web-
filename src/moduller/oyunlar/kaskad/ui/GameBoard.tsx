@@ -1,17 +1,14 @@
 /**
- * 6×5 oyun tahtası — kolon tünelleri, ornate gold frame, tumble partikülleri.
+ * 6×5 oyun tahtası — yalnızca semboller. Dış çerçeve yok.
  */
 
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 import { dusmeSuresiMs } from '../../ortak/grid/DusmeMesafeleri';
@@ -35,13 +32,11 @@ import {
   newBurstId,
   type ActiveBurst,
 } from '../animasyonlar/ParticleController';
-import { STORM_ART_BIBLE } from '../assets/ArtBible';
 
-const BOARD_PAD = 6;
+const BOARD_PAD = 0;
 const MAX_BOARD_WIDTH = 412;
 const MAX_ACTIVE_BURSTS = 10;
-const REEL_GAP = 3;
-const P = STORM_ART_BIBLE.palette;
+const REEL_GAP = 1;
 
 type Props = {
   grid: GridMatrix;
@@ -134,7 +129,6 @@ function GameBoardInner({
   dropping,
   anticipation = false,
   performance = 'HIGH',
-  bonusMode = false,
   speedFactor = 1,
 }: Props) {
   const { width } = useWindowDimensions();
@@ -144,7 +138,6 @@ function GameBoardInner({
   const boardW = cell * GRID_COLUMNS + REEL_GAP * (GRID_COLUMNS - 1) + BOARD_PAD * 2;
   const highlightActive = (matchedIds?.size ?? 0) > 0;
   const [bursts, setBursts] = useState<ActiveBurst[]>([]);
-  const framePulse = useSharedValue(0.45);
 
   const columns = useMemo(() => {
     const cols: GridCell[][] = Array.from({ length: GRID_COLUMNS }, () => []);
@@ -159,21 +152,6 @@ function GameBoardInner({
   }, [grid]);
 
   const flat = useMemo(() => grid.flat(), [grid]);
-
-  useEffect(() => {
-    if (anticipation || bonusMode) {
-      framePulse.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 420, easing: Easing.inOut(Easing.sin) }),
-          withTiming(0.4, { duration: 420, easing: Easing.inOut(Easing.sin) }),
-        ),
-        -1,
-        true,
-      );
-    } else {
-      framePulse.value = withTiming(0.45, { duration: 280 });
-    }
-  }, [anticipation, bonusMode, framePulse]);
 
   useEffect(() => {
     if (!destroyingIds || destroyingIds.size === 0) return;
@@ -201,43 +179,9 @@ function GameBoardInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destroyingIds]);
 
-  const frameOuter = bonusMode
-    ? 'rgba(167,139,250,0.85)'
-    : anticipation
-      ? P.electricCyan
-      : P.antiqueGold;
-
-  const frameGlowStyle = useAnimatedStyle(() => ({
-    opacity: 0.35 + framePulse.value * 0.55,
-    shadowOpacity: 0.25 + framePulse.value * 0.55,
-  }));
-
   return (
     <View style={styles.wrap}>
-      <Animated.View
-        style={[
-          styles.frameOuter,
-          { borderColor: frameOuter, shadowColor: frameOuter },
-          frameGlowStyle,
-        ]}
-      >
-        <View style={[styles.frameMid, { borderColor: 'rgba(255,224,138,0.35)' }]}>
-          <LinearGradient
-            colors={
-              bonusMode
-                ? (['#1A0A2E', '#120818', '#0B0614'] as const)
-                : (['#16122A', '#0E1220', '#0A0C16'] as const)
-            }
-            style={[
-              styles.board,
-              {
-                width: boardW,
-                borderColor: bonusMode
-                  ? 'rgba(167,139,250,0.4)'
-                  : 'rgba(201,162,74,0.4)',
-              },
-            ]}
-          >
+      <View style={[styles.board, { width: boardW }]}>
             <View style={styles.reels}>
               {columns.map((colCells, col) => {
                 const colMax = colCells.reduce(
@@ -256,28 +200,6 @@ function GameBoardInner({
                     },
                   ]}
                 >
-                  <LinearGradient
-                    colors={
-                      col % 2 === 0
-                        ? (['rgba(255,224,138,0.03)', 'rgba(0,0,0,0.12)'] as const)
-                        : (['rgba(255,224,138,0.015)', 'rgba(0,0,0,0.16)'] as const)
-                    }
-                    style={StyleSheet.absoluteFill}
-                    pointerEvents="none"
-                  />
-                  {Array.from({ length: GRID_ROWS }, (_, r) => (
-                    <View
-                      key={`slot-${col}-${r}`}
-                      pointerEvents="none"
-                      style={[
-                        styles.slot,
-                        {
-                          top: r * cell,
-                          height: cell,
-                        },
-                      ]}
-                    />
-                  ))}
                   {colCells.map((cellData) => {
                     let visual: SymbolVisualState = 'normal';
                     if (destroyingIds?.has(cellData.instanceId)) visual = 'destroy';
@@ -303,14 +225,6 @@ function GameBoardInner({
                       />
                     );
                   })}
-                  <View
-                    pointerEvents="none"
-                    style={[styles.reelRail, styles.reelRailLeft]}
-                  />
-                  <View
-                    pointerEvents="none"
-                    style={[styles.reelRail, styles.reelRailRight]}
-                  />
                 </View>
                 );
               })}
@@ -327,9 +241,7 @@ function GameBoardInner({
                 />
               ))}
             </View>
-          </LinearGradient>
-        </View>
-      </Animated.View>
+      </View>
     </View>
   );
 }
@@ -341,25 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  frameOuter: {
-    borderRadius: 20,
-    borderWidth: 2.5,
-    padding: 4,
-    backgroundColor: '#0A0C16',
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 4,
-  },
-  frameMid: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 2,
-    overflow: 'hidden',
-    backgroundColor: '#070910',
-  },
   board: {
-    borderRadius: 14,
-    borderWidth: 1,
     padding: BOARD_PAD,
   },
   reels: {
@@ -369,23 +263,6 @@ const styles = StyleSheet.create({
   },
   reel: {
     overflow: 'hidden',
-    borderRadius: 8,
-    backgroundColor: '#05070F',
+    backgroundColor: 'transparent',
   },
-  slot: {
-    position: 'absolute',
-    left: 3,
-    right: 3,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(201,162,74,0.16)',
-  },
-  reelRail: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 1.5,
-    backgroundColor: 'rgba(255,224,138,0.38)',
-  },
-  reelRailLeft: { left: 0 },
-  reelRailRight: { right: 0 },
 });

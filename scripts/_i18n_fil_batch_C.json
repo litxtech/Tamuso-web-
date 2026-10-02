@@ -1,0 +1,492 @@
+[
+  {
+    "key": "mesajSohbet.engelliComposer",
+    "en": "Communication with this user is blocked. Messages, calls, and gifts are closed.",
+    "tr": "Bu kullanıcıyla iletişim engellenmiş. Mesaj, arama ve hediye kapalı."
+  },
+  {
+    "key": "mesajSohbet.engellenenleriYonet",
+    "en": "Manage blocked users",
+    "tr": "Engellenenleri yönet"
+  },
+  {
+    "key": "mesajSohbet.misafirArama",
+    "en": "Complete your account to place calls.",
+    "tr": "Arama için hesabını tamamla."
+  },
+  {
+    "key": "mesajSohbet.misafirMedya",
+    "en": "Complete your account to send media.",
+    "tr": "Medya için hesabını tamamla."
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoYok",
+    "en": "Wallet number not found.",
+    "tr": "Cüzdan no bulunamadı."
+  },
+  {
+    "key": "mesajSohbet.cuzdanNoPaylasMetin",
+    "en": "MUTA PAY wallet no: {{no}}",
+    "tr": "MUTA PAY cüzdan no: {{no}}"
+  },
+  {
+    "key": "mesajSohbet.idYok",
+    "en": "User ID is not ready yet.",
+    "tr": "Kullanıcı ID henüz yok."
+  },
+  {
+    "key": "mesajSohbet.idPaylasMetin",
+    "en": "User ID: {{id}}",
+    "tr": "Kullanıcı ID: {{id}}"
+  },
+  {
+    "key": "mesajSohbet.bendenSil",
+    "en": "Delete for me",
+    "tr": "Benden sil"
+  },
+  {
+    "key": "mesajSohbet.herkestenSil",
+    "en": "Delete for everyone",
+    "tr": "Herkesten sil"
+  },
+  {
+    "key": "mesajSohbet.paylasilanGonderi",
+    "en": "Shared a post",
+    "tr": "Bir gönderi paylaştı"
+  },
+  {
+    "key": "mesajSohbet.platformHesaplari",
+    "en": "Platform accounts (blue check)",
+    "tr": "Platform hesapları (mavi tik)"
+  },
+  {
+    "key": "mesajSohbet.karaAcSoru",
+    "en": "Blacklist will open for {{ad}}.\\nThe account may be suspended / closed. Confirm?",
+    "tr": "{{ad}} için kara açılacak.\\nHesap askıya alınır / kapatma yolu başlar. Onaylıyor musun?"
+  },
+  {
+    "key": "mesajSohbet.karaAcildiBody",
+    "en": "The decision was posted to the court group.",
+    "tr": "Karar mahkeme grubuna bildirildi."
+  },
+  {
+    "key": "mesajSohbet.karaSebep",
+    "en": "Court decision: misconduct / fraud / no response",
+    "tr": "Mahkeme kararı: usulsüzlük / dolandırıcılık / cevap vermeme"
+  },
+  {
+    "key": "mesajSohbet.mahkemeyiKapatSoru",
+    "en": "The group will close; no new messages. Confirm?",
+    "tr": "Grup kapanır; yeni mesaj yazılamaz. Onaylıyor musun?"
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapatNot",
+    "en": "Court closed by the platform.",
+    "tr": "Mahkeme platform tarafından kapatıldı."
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapali",
+    "en": "This court is closed.",
+    "tr": "Bu mahkeme kapalı."
+  },
+  {
+    "key": "mesajSohbet.yargicPanel",
+    "en": "Judge panel · defenses in this group",
+    "tr": "Yargıç paneli · savunmalar bu grupta"
+  },
+  {
+    "key": "mesajSohbet.hediyeGonderdi",
+    "en": "{{emoji}} {{ad}}{{adet}} sent a gift",
+    "tr": "{{emoji}} {{ad}}{{adet}} hediye gönderdi"
+  },
+  {
+    "key": "mesajSohbet.arsivlendiBody",
+    "en": "Chat moved to archive.",
+    "tr": "Sohbet arşive taşındı."
+  },
+  {
+    "key": "mesajSohbet.sohbetiSilBody",
+    "en": "This chat is removed for you. History clears; the other person is unaffected.",
+    "tr": "Bu sohbet senden tamamen silinir. Geçmiş temizlenir; karşı taraf etkilenmez."
+  },
+  {
+    "key": "mesajSohbet.sohbetAcilamadi",
+    "en": "Could not open chat",
+    "tr": "Sohbet açılamadı"
+  },
+  {
+    "key": "mesajSohbet.sohbetBulunamadi",
+    "en": "Chat not found",
+    "tr": "Sohbet bulunamadı"
+  },
+  {
+    "key": "mesajSohbet.sohbetBulunamadiAlt",
+    "en": "Go back and try again",
+    "tr": "Geri dönüp tekrar dene"
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapaliFisilti",
+    "en": "court closed · judge",
+    "tr": "mahkeme kapalı · yargıç"
+  },
+  {
+    "key": "mesajSohbet.yargicFisilti",
+    "en": "judge · blue check · tap",
+    "tr": "yargıç · mavi tik · dokun"
+  },
+  {
+    "key": "mesajSohbet.ajansFisilti",
+    "en": "agency · tap for profile",
+    "tr": "ajans · dokunarak profil"
+  },
+  {
+    "key": "mesajSohbet.cevrimiciFisilti",
+    "en": "online · tap for menu",
+    "tr": "çevrimiçi · dokunarak menü"
+  },
+  {
+    "key": "mesajSohbet.bosChatAlt",
+    "en": "Send text, photo, or video — it arrives instantly.",
+    "tr": "Metin, fotoğraf veya video gönder — anında ulaşır."
+  },
+  {
+    "key": "mesajSohbet.mahkemeKapaliComposer",
+    "en": "This court is closed. No new messages.",
+    "tr": "Bu mahkeme kapalı. Yeni mesaj yazılamaz."
+  },
+  {
+    "key": "mesajSohbet.yazPlaceholder",
+    "en": "Write a message…",
+    "tr": "Mesaj yaz…"
+  },
+  {
+    "key": "mesajSohbet.medyaGonderA11y",
+    "en": "Send photo or video",
+    "tr": "Fotoğraf veya video gönder"
+  },
+  {
+    "key": "gorusme.karsiBekleniyor",
+    "en": "Waiting for the other person…",
+    "tr": "Karşı taraf bekleniyor…"
+  },
+  {
+    "key": "gorusme.gorusmeyiSilBody",
+    "en": "This record is removed only for you. Their history is unaffected.",
+    "tr": "Bu kayıt yalnızca senden silinir. Karşı tarafın geçmişi etkilenmez."
+  },
+  {
+    "key": "gorusme.gorusmeYok",
+    "en": "No calls yet",
+    "tr": "Henüz görüşme yok"
+  },
+  {
+    "key": "gorusme.coinAzaliyor",
+    "en": "Your coin balance is running low",
+    "tr": "Coin bakiyen azalıyor"
+  },
+  {
+    "key": "gorusme.baglanilamadi",
+    "en": "Could not connect",
+    "tr": "Bağlanılamadı"
+  },
+  {
+    "key": "gorusme.demoSesYok",
+    "en": "Demo — no audio/video",
+    "tr": "Demo — ses/görüntü yok"
+  },
+  {
+    "key": "gorusme.gecmisHesapGerekli",
+    "en": "Complete your account to see call history",
+    "tr": "Görüşme geçmişi için hesabını tamamla"
+  },
+  {
+    "key": "gorusme.demoNativeGerekli",
+    "en": "Live audio/video needs a native build with LiveKit. You are in demo mode.",
+    "tr": "Canlı ses/görüntü için LiveKit’li native build gerekir. Şu an demo moddasın."
+  },
+  {
+    "key": "hediye.coinYukleAlt",
+    "en": "1 coin = ₺0.10 · instant top-up",
+    "tr": "1 coin = 0,10 ₺ · anında yükle"
+  },
+  {
+    "key": "hediye.hediyeyeDon",
+    "en": "Back to gifts",
+    "tr": "Hediyeye dön"
+  },
+  {
+    "key": "hediye.aliciBulunamadi",
+    "en": "Recipient not found.",
+    "tr": "Alıcı bulunamadı."
+  },
+  {
+    "key": "hediye.kendineGonderemezsin",
+    "en": "You cannot send a gift to yourself.",
+    "tr": "Kendine hediye gönderemezsin."
+  },
+  {
+    "key": "hediye.katalogYukleniyor",
+    "en": "Catalog loading — try again shortly.",
+    "tr": "Katalog yükleniyor — biraz sonra dene."
+  },
+  {
+    "key": "hediye.yetersizCoin",
+    "en": "Not enough coins",
+    "tr": "Yetersiz coin"
+  },
+  {
+    "key": "hediye.yetersizCoinBody",
+    "en": "Top up coins to continue.",
+    "tr": "Coin yükle ile bakiye ekle."
+  },
+  {
+    "key": "hediye.gonderilemedi",
+    "en": "Gift could not be sent",
+    "tr": "Hediye gönderilemedi"
+  },
+  {
+    "key": "hediye.gonderimKapali",
+    "en": "Gift sending is temporarily disabled.",
+    "tr": "Hediye gönderimi geçici olarak kapalı."
+  },
+  {
+    "key": "hediye.ozellikKapali",
+    "en": "Gifts are disabled.",
+    "tr": "Hediye özelliği kapalı."
+  },
+  {
+    "key": "canliYayin.a11yCanliYayin",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "auth.appleGirisi",
+    "en": "Apple sign-in",
+    "tr": "Apple girişi"
+  },
+  {
+    "key": "auth.spotifyGirisi",
+    "en": "Spotify sign-in",
+    "tr": "Spotify girişi"
+  },
+  {
+    "key": "auth.twitchGirisi",
+    "en": "Twitch sign-in",
+    "tr": "Twitch girişi"
+  },
+  {
+    "key": "auth.xGirisi",
+    "en": "X sign-in",
+    "tr": "X girişi"
+  },
+  {
+    "key": "auth.googleGirisi",
+    "en": "Google sign-in",
+    "tr": "Google girişi"
+  },
+  {
+    "key": "auth.misafirGirisi",
+    "en": "Guest sign-in",
+    "tr": "Misafir girişi"
+  },
+  {
+    "key": "auth.destek",
+    "en": "Support: support@litxtech.com",
+    "tr": "Destek: support@litxtech.com"
+  },
+  {
+    "key": "auth.spotifyKaydi",
+    "en": "Spotify sign-up",
+    "tr": "Spotify kaydı"
+  },
+  {
+    "key": "auth.twitchKaydi",
+    "en": "Twitch sign-up",
+    "tr": "Twitch kaydı"
+  },
+  {
+    "key": "auth.xKaydi",
+    "en": "X sign-up",
+    "tr": "X kaydı"
+  },
+  {
+    "key": "auth.googleKaydi",
+    "en": "Google sign-up",
+    "tr": "Google kaydı"
+  },
+  {
+    "key": "auth.epostaPlaceholder",
+    "en": "you@mail.com",
+    "tr": "sen@mail.com"
+  },
+  {
+    "key": "auth.kodHanesi",
+    "en": "Verification code, digit {{n}}",
+    "tr": "Doğrulama kodu, hane {{n}}"
+  },
+  {
+    "key": "anaSayfa.menuAiMuzik",
+    "en": "AI Music Studio",
+    "tr": "AI Müzik Stüdyosu"
+  },
+  {
+    "key": "anaSayfa.bolumCountryLeague",
+    "en": "World Country League",
+    "tr": "Dünya Ülke Ligi"
+  },
+  {
+    "key": "anaSayfa.canliA11y",
+    "en": "{{baslik}}, live stream",
+    "tr": "{{baslik}}, canlı yayın"
+  },
+  {
+    "key": "anaSayfa.sesA11y",
+    "en": "{{baslik}}, voice room",
+    "tr": "{{baslik}}, ses odası"
+  },
+  {
+    "key": "anaSayfa.sesOdasiA11y",
+    "en": "Voice room {{baslik}}",
+    "tr": "Ses odası {{baslik}}"
+  },
+  {
+    "key": "anaSayfa.mailKonu",
+    "en": "Tamuso support / report",
+    "tr": "Tamuso şikayet / destek"
+  },
+  {
+    "key": "ajans.phEposta",
+    "en": "agency@example.com",
+    "tr": "ajans@ornek.com"
+  },
+  {
+    "key": "ajans.hostBasvuruFormu",
+    "en": "Host application form",
+    "tr": "Host Başvuru Formu"
+  },
+  {
+    "key": "ajans.coinYukleme",
+    "en": "Coin top-up",
+    "tr": "Coin yükleme"
+  },
+  {
+    "key": "ajans.basvuruSatir",
+    "en": "@{{user}} · {{zaman}}\\nStatus: {{status}}",
+    "tr": "@{{user}} · {{zaman}}\nDurum: {{status}}"
+  },
+  {
+    "key": "ajans.davetlerAlt",
+    "en": "Code · QR · analytics",
+    "tr": "Kod · QR · analitika"
+  },
+  {
+    "key": "aiMuzik.ornekPrompt2",
+    "en": "Energetic Black Sea, kemençe + electronic",
+    "tr": "Enerjik Karadeniz, kemençe + elektronik"
+  },
+  {
+    "key": "aiMuzik.kanalAndroid",
+    "en": "Google Play / card",
+    "tr": "Google Play / kart"
+  },
+  {
+    "key": "profil.ayarlarAlt",
+    "en": "Account · privacy · app",
+    "tr": "Hesap · gizlilik · uygulama"
+  },
+  {
+    "key": "profilTab.misafirBio",
+    "en": "Guest account — complete your account for a full profile.",
+    "tr": "Misafir hesabın — tam profil için hesabını tamamla."
+  },
+  {
+    "key": "profilTab.varsayilanBio",
+    "en": "Voice, gifts, and live streams on Tamuso.",
+    "tr": "Tamuso’da ses, hediye ve canlı yayın."
+  },
+  {
+    "key": "profilTab.cuzdanAlt",
+    "en": "Your coin and diamond balance",
+    "tr": "Coin ve elmas bakiyen"
+  },
+  {
+    "key": "profilTab.oyunAlt",
+    "en": "{{lig}} · your profile card",
+    "tr": "{{lig}} · profil kartın"
+  },
+  {
+    "key": "profilTab.galibiyetOrani",
+    "en": "Win rate {{oran}}%",
+    "tr": "Galibiyet oranı %{{oran}}"
+  },
+  {
+    "key": "profilTab.oyunIpucu",
+    "en": "Play games in voice rooms — earn XP and trophies.",
+    "tr": "Ses odasında oyun oyna — XP ve kupa kazan."
+  },
+  {
+    "key": "profilTab.misafirPaylasimBos",
+    "en": "Complete your account to post.",
+    "tr": "Paylaşım için hesabını tamamla."
+  },
+  {
+    "key": "profilTab.paylasimBos",
+    "en": "No posts yet — add your first status.",
+    "tr": "Henüz paylaşımın yok — ilk durumunu ekle."
+  },
+  {
+    "key": "cihazlar.altBaslik",
+    "en": "Sign out of one device or all of them",
+    "tr": "Tek cihaz veya tüm cihazlardan çıkış"
+  },
+  {
+    "key": "cihazlar.migrationHint",
+    "en": "Make sure migration 003 has been run.",
+    "tr": "003 migration calistirildigindan emin ol."
+  },
+  {
+    "key": "cihazlar.kapatilamadi",
+    "en": "Could not close",
+    "tr": "Kapatılamadı"
+  },
+  {
+    "key": "cihazlar.digerCikisYapildi",
+    "en": "Signed out of other devices.",
+    "tr": "Diğer cihazlardan çıkış yapıldı."
+  },
+  {
+    "key": "cihazlar.kayitliCihazYok",
+    "en": "No devices yet",
+    "tr": "Kayıtlı cihaz yok"
+  },
+  {
+    "key": "cihazlar.kayitliCihazYokBody",
+    "en": "Devices you sign in on are listed here.",
+    "tr": "Oturum açtığın cihazlar burada listelenir."
+  },
+  {
+    "key": "cihazlar.tumCihazlardanCikis",
+    "en": "Sign out of all other devices",
+    "tr": "Diğer tüm cihazlardan çıkış"
+  },
+  {
+    "key": "sehir.gucDestekci",
+    "en": "Power {{guc}} · {{count}} supporters",
+    "tr": "Güç {{guc}} · {{count}} destekçi"
+  },
+  {
+    "key": "ayarlar.pip",
+    "en": "Picture-in-picture (PiP)",
+    "tr": "Küçük ekran (PiP)"
+  },
+  {
+    "key": "sertifikasyon.altBaslik",
+    "en": "Store / pre-release control hub",
+    "tr": "Mağaza / yayın öncesi kontrol merkezi"
+  },
+  {
+    "key": "sertifikasyon.hediyeStresAlt",
+    "en": "40-gift queue · drop rate",
+    "tr": "40 hediye kuyruğu · düşürme oranı"
+  }
+]

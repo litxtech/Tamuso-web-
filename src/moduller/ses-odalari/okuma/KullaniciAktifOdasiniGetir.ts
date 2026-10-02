@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type KullaniciAktifOda = {
   roomId: string;
@@ -71,7 +72,7 @@ export async function KullaniciAktifOdasiniGetir(
     if (!oda?.id) return null;
     return {
       roomId: oda.id,
-      title: (oda.title ?? '').trim() || 'Ses odası',
+      title: (oda.title ?? '').trim() || i18n.t('sesOda.sesOdasi'),
       coverUrl: oda.cover_url ?? null,
       listenerCount: Number(oda.listener_count) || 0,
       isLive: oda.is_live !== false,

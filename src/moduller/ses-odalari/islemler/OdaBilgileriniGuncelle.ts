@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 
 export type OdaBilgiGuncelleGirdi = {
   roomId: string;
@@ -6,6 +7,7 @@ export type OdaBilgiGuncelleGirdi = {
   topic?: string | null;
   coverUrl?: string | null;
   themeCode?: string | null;
+  layoutCode?: string | null;
 };
 
 /**
@@ -18,8 +20,8 @@ export async function OdaBilgileriniGuncelle(
 ): Promise<{ ok: true } | { ok: false; hata: string }> {
   if (girdi.title !== undefined) {
     const t = girdi.title.trim();
-    if (!t) return { ok: false, hata: 'Başlık boş olamaz' };
-    if (t.length > 40) return { ok: false, hata: 'Başlık en fazla 40 karakter' };
+    if (!t) return { ok: false, hata: i18n.t('sesOda.baslikBosOlmaz') };
+    if (t.length > 40) return { ok: false, hata: i18n.t('sesOda.baslikMax40') };
     const { error } = await supabase.rpc('oda_basligini_guncelle', {
       p_room_id: girdi.roomId,
       p_title: t,
@@ -31,7 +33,7 @@ export async function OdaBilgileriniGuncelle(
   if (girdi.topic !== undefined) {
     const topic = girdi.topic?.trim() || null;
     if (topic && topic.length > 120) {
-      return { ok: false, hata: 'Açıklama en fazla 120 karakter' };
+      return { ok: false, hata: i18n.t('sesOda.aciklamaMax120') };
     }
     patch.topic = topic;
   }
@@ -41,14 +43,21 @@ export async function OdaBilgileriniGuncelle(
   if (girdi.themeCode !== undefined) {
     const kod = girdi.themeCode?.trim() || null;
     if (kod && kod.length > 40) {
-      return { ok: false, hata: 'Tema kodu geçersiz' };
+      return { ok: false, hata: i18n.t('sesOda.temaKoduGecersiz') };
     }
     patch.theme_code = kod;
+  }
+  if (girdi.layoutCode !== undefined) {
+    const kod = girdi.layoutCode?.trim() || null;
+    if (kod && kod.length > 40) {
+      return { ok: false, hata: i18n.t('sesOda.duzenKoduGecersiz') };
+    }
+    patch.layout_code = kod;
   }
 
   if (Object.keys(patch).length === 0) {
     if (girdi.title !== undefined) return { ok: true };
-    return { ok: false, hata: 'Güncellenecek alan yok' };
+    return { ok: false, hata: i18n.t('sesOda.guncellenecekAlanYok') };
   }
 
   const { error } = await supabase

@@ -19,6 +19,7 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   davet: PkDavet | null;
@@ -31,6 +32,7 @@ type Props = {
 
 /** Gelen PK daveti — kabul / red (TikTok tarzı) */
 export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
+  const { t } = useCeviri();
   const [busy, setBusy] = useState(false);
   const [kalan, setKalan] = useState(0);
 
@@ -73,7 +75,7 @@ export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
         <LinearGradient colors={[...RenkTokenlari.gradientCard]} style={styles.kart}>
           <View style={styles.badge}>
             <Ionicons name="flash" size={16} color="#F0B429" />
-            <Text style={styles.badgeYazi}>PK DAVETİ</Text>
+            <Text style={styles.badgeYazi}>{t('pk.davetBadge')}</Text>
           </View>
 
           {MedyaUriGuvenli(davet.from_avatar) ? (
@@ -84,14 +86,17 @@ export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
             </View>
           )}
 
-          <Text style={styles.ad}>{davet.from_host_name ?? 'Yayıncı'}</Text>
+          <Text style={styles.ad}>{davet.from_host_name ?? t('pk.yayinci')}</Text>
           <Text style={styles.alt}>
             {davet.from_title
-              ? `“${davet.from_title}” seni PK'ye davet etti`
-              : 'Seni canlı PK’ye davet etti'}
+              ? t('pk.davetEttiBaslikli', { baslik: davet.from_title })
+              : t('pk.davetEtti')}
           </Text>
           <Text style={styles.sure}>
-            {Math.floor(davet.sure_saniye / 60)} dk maç · {kalan}s
+            {t('pk.macDk', {
+              dk: Math.floor(davet.sure_saniye / 60),
+              sn: kalan,
+            })}
           </Text>
 
           <View style={styles.aksiyonlar}>
@@ -103,7 +108,7 @@ export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
               {busy ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.btnYazi}>Reddet</Text>
+                <Text style={styles.btnYazi}>{t('ortak.reddet')}</Text>
               )}
             </Pressable>
             <Pressable
@@ -114,7 +119,9 @@ export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
               {busy ? (
                 <ActivityIndicator color="#1A1208" />
               ) : (
-                <Text style={[styles.btnYazi, { color: '#1A1208' }]}>Kabul</Text>
+                <Text style={[styles.btnYazi, { color: '#1A1208' }]}>
+                  {t('ortak.kabul')}
+                </Text>
               )}
             </Pressable>
           </View>

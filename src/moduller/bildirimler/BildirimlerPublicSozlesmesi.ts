@@ -33,6 +33,10 @@ export {
   BildirimleriHepsiniSil,
 } from './okuma/BildirimKuyrugumuGetir';
 export { BildirimHedefYolu, BildirimTarihSaat } from './islemler/BildirimHedefYolu';
+export {
+  BildirimVerisindenHedef,
+  BildirimHedefineGit,
+} from './islemler/BildirimPushYonlendirme';
 export { BildirimSaglayici, useBildirimler } from './baglam/BildirimSaglayici';
 export { BildirimZiliDugmesi } from './bilesenler/BildirimZiliDugmesi';
 

@@ -1,6 +1,6 @@
 /**
- * Realm of Storms — semboller önce decode; karakter/UI/bg arka planda.
- * Böylece tahta açılırken simgeler “sonradan” gelmez.
+ * Realm of Storms — semboller önce decode; karakter/UI/bg oyunu kilitlemez.
+ * Tahta, slot görselleri hazır olunca açılır.
  */
 
 import type { ImageSourcePropType } from 'react-native';
@@ -17,7 +17,7 @@ import {
 
 let visualCache: Promise<void> | null = null;
 let visualsReady = false;
-let bgCache: Promise<void> | null = null;
+let restCache: Promise<void> | null = null;
 
 export function kaskadVisualsCached(): boolean {
   return visualsReady;
@@ -28,11 +28,25 @@ export function warmKaskadAssetsEarly(): void {
   void preloadKaskadAssets();
 }
 
+function loadRestInBackground(): void {
+  if (restCache) return;
+  restCache = oyunGorselleriniYukle(
+    oyunGorselModulIdleri([
+      CharacterImages.stormKeeper,
+      UiImages.spinButton,
+      BackgroundImages.stormSky,
+    ]),
+    undefined,
+    { wave: 2 },
+  ).catch(() => undefined);
+}
+
 export async function preloadKaskadAssets(
   onProgress?: (progress01: number) => void,
 ): Promise<void> {
   if (visualsReady) {
     onProgress?.(1);
+    loadRestInBackground();
     return;
   }
   if (!visualCache) {
@@ -40,27 +54,17 @@ export async function preloadKaskadAssets(
       const symbolIds = oyunGorselModulIdleri(
         Object.values(SymbolImages) as ImageSourcePropType[],
       );
-      const restIds = oyunGorselModulIdleri([
-        CharacterImages.stormKeeper,
-        UiImages.spinButton,
-      ]);
 
-      await oyunGorselleriniYukle(symbolIds, (done, total) => {
-        onProgress?.(0.75 * (done / Math.max(1, total)));
-      });
+      await oyunGorselleriniYukle(
+        symbolIds,
+        (done, total) => {
+          onProgress?.(done / Math.max(1, total));
+        },
+        { wave: symbolIds.length },
+      );
       visualsReady = true;
-      onProgress?.(0.82);
-
-      await oyunGorselleriniYukle(restIds, (done, total) => {
-        onProgress?.(0.82 + 0.15 * (done / Math.max(1, total)));
-      });
       onProgress?.(1);
-
-      if (!bgCache) {
-        bgCache = oyunGorselleriniYukle(
-          oyunGorselModulIdleri([BackgroundImages.stormSky]),
-        ).catch(() => undefined);
-      }
+      loadRestInBackground();
     })().catch(() => {
       visualCache = null;
       visualsReady = true;

@@ -1,4 +1,6 @@
-/** Toplam saniyeyi okunaklı Türkçe süreye çevirir */
+/** Toplam saniyeyi okunaklı süreye çevirir */
+import i18n from '../../../i18n';
+
 export function KullanimSuresiniFormatla(
   totalSeconds: number,
   opts?: { kisa?: boolean },
@@ -9,15 +11,21 @@ export function KullanimSuresiniFormatla(
   const dk = Math.floor((s % 3600) / 60);
 
   if (opts?.kisa) {
-    if (gun > 0) return `${gun}g ${saat}s`;
-    if (saat > 0) return `${saat}s ${dk}dk`;
-    if (dk > 0) return `${dk} dk`;
-    return `${s} sn`;
+    if (gun > 0) {
+      return i18n.t('kullanimSuresiFmt.gunSaatKisa', { gun, saat });
+    }
+    if (saat > 0) {
+      return i18n.t('kullanimSuresiFmt.saatDkKisa', { saat, dk });
+    }
+    if (dk > 0) return i18n.t('kullanimSuresiFmt.dkKisa', { dk });
+    return i18n.t('kullanimSuresiFmt.snKisa', { sn: s });
   }
 
   const parcalar: string[] = [];
-  if (gun > 0) parcalar.push(`${gun} gün`);
-  if (saat > 0) parcalar.push(`${saat} sa`);
-  if (dk > 0 || parcalar.length === 0) parcalar.push(`${dk} dk`);
+  if (gun > 0) parcalar.push(i18n.t('kullanimSuresiFmt.gun', { n: gun }));
+  if (saat > 0) parcalar.push(i18n.t('kullanimSuresiFmt.saat', { n: saat }));
+  if (dk > 0 || parcalar.length === 0) {
+    parcalar.push(i18n.t('kullanimSuresiFmt.dk', { n: dk }));
+  }
   return parcalar.join(' ');
 }

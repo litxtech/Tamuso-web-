@@ -22,6 +22,9 @@ import {
   SymbolImages as NoxSymbols,
   UiImages as NoxUi,
 } from '../../slot/assets/VisualAssets';
+import { GAME_DISPLAY_NAME as FAIR_SPIN_NAME } from '../../fair-spin/sabitler/FairSpinSabitleri';
+import { GAME_DISPLAY_NAME as FRUIT_WHEEL_NAME, FRUIT_COVER, FRUIT_IMAGES } from '../../fruit-wheel/sabitler/FruitWheelSabitleri';
+import { GAME_DISPLAY_NAME as ASTRAL_FALLS_NAME } from '../../astral-falls/sabitler/AstralFallsSabitleri';
 import type { GameCode } from '../tipler/OyunTipleri';
 
 export type OyunKartKimligi = {
@@ -51,8 +54,12 @@ export type OyunKartKimligi = {
   href: string;
 };
 
+const FAIR_SPIN_COVER = require('../../../../../assets/oyunlar/fair-spin/ui/cover.png');
+/** Referans kapak henüz PNG değil — marka kartı için geçici astral tonlu kapak */
+const ASTRAL_COVER = FAIR_SPIN_COVER;
+
 export const OYUN_KART_KATALOGU: Record<
-  'zeus' | 'kozmik_kaskad' | 'nox_reels',
+  'zeus' | 'kozmik_kaskad' | 'nox_reels' | 'fair_spin' | 'astral_falls' | 'fruit_wheel',
   OyunKartKimligi
 > = {
   zeus: {
@@ -106,22 +113,69 @@ export const OYUN_KART_KATALOGU: Record<
     cta: ['#7C3AED', '#1E1B4B'],
     href: '/oyun/nox',
   },
+  fair_spin: {
+    kod: 'fair_spin',
+    baslik: FAIR_SPIN_NAME,
+    eyebrow: 'FAIR WHEEL',
+    slogan: '8 dilim · sunucu RNG · coin bahis',
+    kapak: FAIR_SPIN_COVER,
+    karakter: FAIR_SPIN_COVER,
+    semboller: [
+      FAIR_SPIN_COVER,
+      FAIR_SPIN_COVER,
+      FAIR_SPIN_COVER,
+      FAIR_SPIN_COVER,
+    ],
+    aura: ['#E6CE92', '#22D3EE', '#8A733F'],
+    cta: ['#E6CE92', '#8A733F'],
+    href: '/oyun/fair-spin',
+  },
+  fruit_wheel: {
+    kod: 'fruit_wheel',
+    baslik: FRUIT_WHEEL_NAME,
+    eyebrow: '8 MEYVE',
+    slogan: '8 meyve · canlı çark',
+    kapak: FRUIT_COVER,
+    karakter: FRUIT_IMAGES.kiwi,
+    semboller: [
+      FRUIT_IMAGES.cherry,
+      FRUIT_IMAGES.watermelon,
+      FRUIT_IMAGES.pineapple,
+      FRUIT_IMAGES.kiwi,
+    ],
+    aura: ['#C6A15A', '#7A45C4', '#1A1030'],
+    cta: ['#E6CE92', '#5B3A8C'],
+    href: '/oyun/fruit-wheel',
+  },
+  astral_falls: {
+    kod: 'astral_falls',
+    baslik: ASTRAL_FALLS_NAME,
+    eyebrow: 'ASTRAL',
+    slogan: '6×5 kozmik kristal · zincir düşüş · 15 ücretsiz tur',
+    kapak: ASTRAL_COVER,
+    karakter: ASTRAL_COVER,
+    semboller: [ASTRAL_COVER, ASTRAL_COVER, ASTRAL_COVER, ASTRAL_COVER],
+    aura: ['#E8C691', '#7BDBED', '#B594F3'],
+    cta: ['#E8C691', '#1C5B6B'],
+    href: '/oyun/astral-falls',
+  },
 };
 
 export function oyunKartKimligi(kod: GameCode): OyunKartKimligi | null {
   if (kod === 'zeus') return OYUN_KART_KATALOGU.zeus;
   if (kod === 'kozmik_kaskad') return OYUN_KART_KATALOGU.kozmik_kaskad;
   if (kod === 'nox_reels') return OYUN_KART_KATALOGU.nox_reels;
+  if (kod === 'fair_spin') return OYUN_KART_KATALOGU.fair_spin;
+  if (kod === 'astral_falls') return OYUN_KART_KATALOGU.astral_falls;
+  if (kod === 'fruit_wheel') return OYUN_KART_KATALOGU.fruit_wheel;
   return null;
 }
 
-/** Feed sırası — Zeus, NOX, Kaskad; bilinmeyen kodlar atlanır */
+/** Feed sırası — Zeus, Astral, NOX, Fair Spin, Kaskad; bilinmeyen kodlar atlanır */
 export function feedOyunKartlari(kodlar: readonly GameCode[]): OyunKartKimligi[] {
-  const sira: Array<'zeus' | 'nox_reels' | 'kozmik_kaskad'> = [
-    'zeus',
-    'nox_reels',
-    'kozmik_kaskad',
-  ];
+  const sira: Array<
+    'zeus' | 'fruit_wheel' | 'astral_falls' | 'nox_reels' | 'fair_spin' | 'kozmik_kaskad'
+  > = ['zeus', 'fruit_wheel', 'astral_falls', 'nox_reels', 'fair_spin', 'kozmik_kaskad'];
   return sira
     .filter((k) => kodlar.includes(k))
     .map((k) => OYUN_KART_KATALOGU[k]);

@@ -39,6 +39,9 @@ import { IslemHacmiGorunurlukSheet } from '../../src/moduller/islem-hacmi/bilese
 import { useIslemHacmi } from '../../src/moduller/islem-hacmi/kancalar/useIslemHacmi';
 import { IslemHacmiAyarlariniKaydet } from '../../src/moduller/islem-hacmi/islemler/IslemHacmiApi';
 import type { IslemHacmiGorunurluk } from '../../src/moduller/islem-hacmi/tipler';
+import { UlkeKatkisiKart } from '../../src/moduller/ulke-ligi/bilesenler/UlkeKatkisiKart';
+import { BenimUlkeKatkiGetir } from '../../src/moduller/ulke-ligi/islemler/UlkeLigiApi';
+import type { BenimUlkeKatkisi } from '../../src/moduller/ulke-ligi/tipler';
 import { useAjansUyeligi } from '../../src/moduller/ajanslar/kancalar/useAjansUyeligi';
 import { AjansProfilRozeti } from '../../src/moduller/ajanslar/bilesenler/AjansProfilRozeti';
 import {
@@ -104,6 +107,10 @@ export default function ProfileScreen() {
     userId: user?.id,
     aktif: !isGuest && !!user?.id,
   });
+  const [ulkeKatki, setUlkeKatki] = useState<BenimUlkeKatkisi | null>(null);
+  const ulkeLigiAcik =
+    OzellikBayragiAktifMi('country_league_enabled') &&
+    !KillSwitchAktifMi('kill_country_league_display');
   const oyunPlatformAcik =
     OzellikBayragiAktifMi('games_enabled') && !KillSwitchAktifMi('kill_games');
   const { anyVisible: oyunGorunur } = useGorunurOyunKodlari({
@@ -136,6 +143,13 @@ export default function ProfileScreen() {
       if (!isGuest) {
         void GizlilikAyarlariniGetir().then(setPrivacy);
       }
+      if (!isGuest && ulkeLigiAcik) {
+        void BenimUlkeKatkiGetir()
+          .then(setUlkeKatki)
+          .catch(() => setUlkeKatki(null));
+      } else {
+        setUlkeKatki(null);
+      }
       ProfilIstatistikleriniGetir(user.id)
         .then(setStats)
         .catch(() => setStats(null));
@@ -151,7 +165,7 @@ export default function ProfileScreen() {
         .then(setDurumlar)
         .catch(() => setDurumlar([]))
         .finally(() => setDurumYukleniyor(false));
-    }, [user?.id, refreshProfile, oyunProfiliAcik, isGuest]),
+    }, [user?.id, refreshProfile, oyunProfiliAcik, isGuest, ulkeLigiAcik]),
   );
 
   const medyaTikla = (tur: 'avatar' | 'cover') => {
@@ -222,6 +236,11 @@ export default function ProfileScreen() {
             username={username}
             bio={bio}
             verified={!!profile?.is_verified}
+            titleId={
+              privacy.hide_prestige
+                ? null
+                : profile?.selected_title_id ?? null
+            }
             createdAt={profile?.created_at}
             country={profile?.country}
             publicUserId={profile?.public_user_id}
@@ -304,6 +323,16 @@ export default function ProfileScreen() {
                   charmLevel={Number(stats.charm_level) || 0}
                   rechargeLevel={stats.recharge_rank}
                 />
+              ) : null}
+              {ulkeLigiAcik && ulkeKatki?.show_on_profile && ulkeKatki.country_code ? (
+                <View style={{ marginTop: BoslukTokenlari.sm }}>
+                  <UlkeKatkisiKart
+                    veri={ulkeKatki}
+                    onPress={() =>
+                      router.push(`/ulke/${ulkeKatki.country_code}` as never)
+                    }
+                  />
+                </View>
               ) : null}
             </View>
 
@@ -597,6 +626,7 @@ function OyunProfilKartModal({
       tint: RenkTokenlari.accent,
     },
     {
+      id: 'combo',
       etiket: t('profilTab.combo'),
       deger: `×${stats?.highestCombo ?? 0}`,
       tint: RenkTokenlari.violet,

@@ -43,12 +43,14 @@ export function OdaDuzenSecimKarti({ duzen, secili, onPress }: Props) {
           ) : null}
         </View>
         <Text style={styles.ad}>{duzen.ad}</Text>
+        <Text style={styles.metaYazi} numberOfLines={2}>
+          {duzen.alt}
+        </Text>
         <View style={styles.meta}>
           <Text style={styles.metaYazi}>{duzen.kolon} kolon</Text>
           {duzen.halo ? <Text style={styles.metaYazi}>halo</Text> : null}
           {duzen.sahneOdakli ? <Text style={styles.metaYazi}>sahne</Text> : null}
         </View>
-        <Text style={styles.kod}>{duzen.kod}</Text>
       </LinearGradient>
     </Pressable>
   );

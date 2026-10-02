@@ -1,15 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { colors } from '../../../theme/colors';
 import { useCeviri } from '../../../i18n/useCeviri';
 
@@ -23,24 +15,6 @@ type Props = {
  */
 export function OdaOyunDockButonu({ aktif, onPress }: Props) {
   const { t } = useCeviri();
-  const pulse = useSharedValue(1);
-
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withSequence(
-        withTiming(1.06, { duration: 900, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1,
-      false,
-    );
-  }, [pulse]);
-
-  const auraStil = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
-    opacity: 0.28 + (pulse.value - 1) * 3,
-  }));
-
   const iconSize = Platform.OS === 'android' ? 18 : 20;
   const gradient = aktif
     ? ([...colors.gradientGold] as [string, string])
@@ -48,10 +22,7 @@ export function OdaOyunDockButonu({ aktif, onPress }: Props) {
 
   return (
     <View style={styles.btnSlot}>
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.aura, aktif && styles.auraAktif, auraStil]}
-      />
+      <View pointerEvents="none" style={[styles.aura, aktif && styles.auraAktif]} />
       <Pressable
         onPress={onPress}
         style={[styles.btn, aktif && styles.btnAktif]}

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
 import {
   DepoyaMedyaYukle,
   MedyaUzantisiCoz,
@@ -14,6 +15,7 @@ import { GirisLobisiOnbellegeYaz } from '../onbellek/GirisLobisiOnbellek';
 
 function parsePublic(data: unknown): GirisLobisiPublic {
   const payload = (data ?? {}) as { ayar?: GirisLobisiAyar; medya?: unknown };
+  const giris = i18n.t('lobi.formBaslik') as string;
   const sonuc: GirisLobisiPublic = {
     ayar: {
       logo_goster: Boolean(payload.ayar?.logo_goster),
@@ -23,9 +25,11 @@ function parsePublic(data: unknown): GirisLobisiPublic {
       marka_adi: payload.ayar?.marka_adi ?? null,
       slogan_goster: Boolean(payload.ayar?.slogan_goster),
       slogan: payload.ayar?.slogan ?? null,
-      form_baslik: (payload.ayar?.form_baslik ?? 'Giriş').trim() || 'Giriş',
+      form_baslik: (payload.ayar?.form_baslik ?? giris).trim() || giris,
       form_alt: payload.ayar?.form_alt ?? null,
       ust_metin: payload.ayar?.ust_metin ?? null,
+      sosyal_medya_gizle: Boolean(payload.ayar?.sosyal_medya_gizle),
+      tum_butonlar_gizle: Boolean(payload.ayar?.tum_butonlar_gizle),
       updated_at: payload.ayar?.updated_at,
     },
     medya: Array.isArray(payload.medya)

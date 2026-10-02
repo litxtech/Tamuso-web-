@@ -5,6 +5,8 @@ import type { PkCanliMacDetay } from '../skor/PkCanliMaciniGetir';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { AktifSayiLocale } from '../../../i18n/diller';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   mac: PkCanliMacDetay;
@@ -18,6 +20,8 @@ function kalanSaniye(endsAt: string | null): number | null {
 
 /** Canlı yayın üstünde PK skor çubuğu */
 export function PkSkorSeridi({ mac, selfLiveId }: Props) {
+  const { dil } = useCeviri();
+  const sayiLocale = AktifSayiLocale(dil);
   const [kalan, setKalan] = useState(() => kalanSaniye(mac.ends_at));
 
   useEffect(() => {
@@ -60,8 +64,12 @@ export function PkSkorSeridi({ mac, selfLiveId }: Props) {
           </Text>
         </View>
         <View style={styles.skorlar}>
-          <Text style={styles.skorA}>{mac.score_a.toLocaleString('tr-TR')}</Text>
-          <Text style={styles.skorB}>{mac.score_b.toLocaleString('tr-TR')}</Text>
+          <Text style={styles.skorA}>
+            {mac.score_a.toLocaleString(sayiLocale)}
+          </Text>
+          <Text style={styles.skorB}>
+            {mac.score_b.toLocaleString(sayiLocale)}
+          </Text>
         </View>
         <View style={styles.bar}>
           <View style={[styles.barA, { width: `${oranA}%` as `${number}%` }]} />

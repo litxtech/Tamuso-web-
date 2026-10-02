@@ -23,6 +23,7 @@ export const PROFIL_SELECT = [
   'is_guest',
   'is_admin',
   'is_verified',
+  'selected_title_id',
   'level',
   'xp',
   'primary_city_id',
@@ -33,6 +34,7 @@ export const PROFIL_SELECT = [
   'deletion_requested_at',
   'child_protection_consent_status',
   'child_protection_consent_at',
+  'selected_title_id',
 ].join(', ');
 
 export async function ProfilGetir(userId: string): Promise<Profile | null> {

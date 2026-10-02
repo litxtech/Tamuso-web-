@@ -1,5 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TamusoModal } from '../../../bilesenler/yuzey/TamusoModal';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -12,15 +19,18 @@ import type { ProfilMedyaTuru } from '../islemler/ProfilMedyasiYukle';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { yonluIkon } from '../../../i18n/rtl';
 
+/** Modal slide kapanmadan native picker açılırsa iOS/Android gecikir / takılır */
+const MODAL_SONRASI_MS = Platform.OS === 'ios' ? 320 : 280;
+
 type Props = {
   visible: boolean;
   tur: ProfilMedyaTuru | null;
   varMi: boolean;
   busy: boolean;
   onKapat: () => void;
-  onGoruntule: () => void;
-  onEkleVeyaDegistir: () => void;
-  onSil: () => void;
+  onGoruntule: (tur: ProfilMedyaTuru) => void;
+  onEkleVeyaDegistir: (tur: ProfilMedyaTuru) => void;
+  onSil: (tur: ProfilMedyaTuru) => void;
 };
 
 /** Kapak / profil fotoğrafı: görüntüle · ekle/değiştir · sil */
@@ -37,6 +47,21 @@ export function ProfilMedyaSecenekleri({
   const { t } = useCeviri();
   const baslik =
     tur === 'cover' ? t('profil.kapakFotografi') : t('profil.profilFotografi');
+
+  const hemen = (fn: (secilen: ProfilMedyaTuru) => void) => {
+    if (!tur) return;
+    const secilen = tur;
+    onKapat();
+    fn(secilen);
+  };
+
+  /** Native galeri: Modal kapanmadan açılırsa iOS/Android’de belirgin gecikme */
+  const galeriIcin = (fn: (secilen: ProfilMedyaTuru) => void) => {
+    if (!tur) return;
+    const secilen = tur;
+    onKapat();
+    setTimeout(() => fn(secilen), MODAL_SONRASI_MS);
+  };
 
   return (
     <TamusoModal
@@ -61,20 +86,20 @@ export function ProfilMedyaSecenekleri({
               <Secenek
                 icon="expand-outline"
                 label={t('profil.buyut')}
-                onPress={onGoruntule}
+                onPress={() => hemen(onGoruntule)}
               />
             ) : null}
             <Secenek
               icon={varMi ? 'image-outline' : 'add-circle-outline'}
               label={varMi ? t('ortak.degistir') : t('ortak.ekle')}
-              onPress={onEkleVeyaDegistir}
+              onPress={() => galeriIcin(onEkleVeyaDegistir)}
             />
             {varMi ? (
               <Secenek
                 icon="trash-outline"
                 label={t('ortak.sil')}
                 danger
-                onPress={onSil}
+                onPress={() => hemen(onSil)}
               />
             ) : null}
           </View>

@@ -147,7 +147,19 @@ export function OdaDinleyiciPaneli({
       return;
     }
     try {
-      setUyeler(await OdaUyeleriniGetir(roomId));
+      const gelen = await OdaUyeleriniGetir(roomId);
+      setUyeler((prev) => {
+        if (
+          prev.length === gelen.length &&
+          prev.every(
+            (p, i) =>
+              p.user_id === gelen[i]?.user_id && p.role === gelen[i]?.role,
+          )
+        ) {
+          return prev;
+        }
+        return gelen;
+      });
     } catch {
       setUyeler([]);
     }
@@ -157,7 +169,7 @@ export function OdaDinleyiciPaneli({
     useCallback(() => {
       void yukle();
       if (demoMi) return;
-      const t = setInterval(() => void yukle(), 5000);
+      const t = setInterval(() => void yukle(), 20_000);
       return () => clearInterval(t);
     }, [yukle, demoMi]),
   );

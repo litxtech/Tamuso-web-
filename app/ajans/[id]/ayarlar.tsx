@@ -28,12 +28,15 @@ import {
   AjansOdulTanimla,
   AjansStaffListesi,
   AjansStaffYetkiAyarla,
+  AjansYoneticiAta,
+  AjansYoneticiIptal,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
 import {
   AjansMedyaYukle,
   AjansProfilGuncelle,
 } from '../../../src/moduller/ajanslar/okuma/AjansProfilGetir';
 import { MedyaUriGuvenli } from '../../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { AjansRolEtiket } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { useCeviri } from '../../../src/i18n/useCeviri';
 import type { CeviriAnahtari } from '../../../src/i18n/useCeviri';
@@ -47,6 +50,10 @@ const YONETICI_TOGGLE_KODLARI: Array<{ code: string; labelKey: CeviriAnahtari }>
   { code: 'agency.view_analytics', labelKey: 'ajans.izinAnalitikGor' },
   { code: 'agency.view_finance', labelKey: 'ajans.izinIslemleriGor' },
   { code: 'agency.manage_coin_operations', labelKey: 'ajans.izinCoinIslemi' },
+  { code: 'agency.manage_sale_links', labelKey: 'ajans.izinSatisLink' },
+  { code: 'agency.view_sales', labelKey: 'ajans.izinSatisGor' },
+  { code: 'agency.review_sales', labelKey: 'ajans.izinSatisIncele' },
+  { code: 'agency.manage_invoices', labelKey: 'ajans.izinFaturaYonet' },
   { code: 'agency.manage_profile', labelKey: 'ajans.izinProfilDegistir' },
   { code: 'agency.manage_support', labelKey: 'ajans.izinDestekGor' },
 ];
@@ -67,6 +74,7 @@ export default function AjansAyarlarEkrani() {
   const [odemeNot, setOdemeNot] = useState('');
   const [staff, setStaff] = useState<Array<Record<string, unknown>>>([]);
   const [seciliStaff, setSeciliStaff] = useState<string | null>(null);
+  const [yoneticiAd, setYoneticiAd] = useState('');
   const [akademi, setAkademi] = useState<Array<Record<string, unknown>>>([]);
   const [akademiBaslik, setAkademiBaslik] = useState('');
   const [kanallar, setKanallar] = useState<Array<Record<string, unknown>>>([]);
@@ -189,6 +197,73 @@ export default function AjansAyarlarEkrani() {
         />
       </AjansKart>
 
+      <AjansBolumBaslik>{t('ajans.yoneticiAtaBaslik')}</AjansBolumBaslik>
+      <AjansKart>
+        <AjansInput
+          value={yoneticiAd}
+          onChangeText={setYoneticiAd}
+          placeholder={t('ajans.yoneticiAtaPh')}
+          autoCapitalize="none"
+        />
+        <AjansCta
+          label={t('ajans.yoneticiAta')}
+          onPress={() => {
+            const ad = yoneticiAd.trim().replace(/^@/, '');
+            if (!id || ad.length < 2) return;
+            void (async () => {
+              setBusy(true);
+              const r = await AjansYoneticiAta({ agencyId: id, username: ad });
+              setBusy(false);
+              if (!r.ok) Alert.alert(t('ajans.alertYetki'), r.hata);
+              else {
+                setYoneticiAd('');
+                Alert.alert(t('ajans.tamam'), t('ajans.yoneticiAtandi'));
+                await yukle();
+              }
+            })();
+          }}
+        />
+        <AjansBolumBaslik>{t('ajans.yoneticiler')}</AjansBolumBaslik>
+        {staff.filter((s) => String(s.role_code) === 'MANAGER').length === 0 ? (
+          <AjansHint>{t('ajans.staffYok')}</AjansHint>
+        ) : (
+          staff
+            .filter((s) => String(s.role_code) === 'MANAGER')
+            .map((s) => (
+              <AjansListeSatir
+                key={String(s.user_id)}
+                title={`${s.display_name || s.username}`}
+                subtitle={`@${s.username ?? ''}`}
+                onPress={() => {
+                  Alert.alert(t('ajans.yoneticiIptal'), t('ajans.yoneticiIptalOnay'), [
+                    { text: t('ortak.iptal'), style: 'cancel' },
+                    {
+                      text: t('ajans.yoneticiIptal'),
+                      style: 'destructive',
+                      onPress: () => {
+                        if (!id) return;
+                        void (async () => {
+                          setBusy(true);
+                          const r = await AjansYoneticiIptal({
+                            agencyId: id,
+                            userId: String(s.user_id),
+                          });
+                          setBusy(false);
+                          if (!r.ok) Alert.alert(t('ajans.alertYetki'), r.hata);
+                          else {
+                            Alert.alert(t('ajans.tamam'), t('ajans.yoneticiKaldirildi'));
+                            await yukle();
+                          }
+                        })();
+                      },
+                    },
+                  ]);
+                }}
+              />
+            ))
+        )}
+      </AjansKart>
+
       <AjansBolumBaslik>{t('ajans.yoneticiYetkileri')}</AjansBolumBaslik>
       <AjansKart>
         {staff.length === 0 ? (
@@ -197,7 +272,7 @@ export default function AjansAyarlarEkrani() {
           staff.map((s) => (
             <AjansListeSatir
               key={String(s.user_id)}
-              title={`${s.display_name || s.username} · ${s.role_code}`}
+              title={`${s.display_name || s.username} · ${AjansRolEtiket(String(s.role_code), t)}`}
               subtitle={t('ajans.yetkiToggleSec')}
               onPress={() => setSeciliStaff(String(s.user_id))}
             />

@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { UlkeKodunaNormalizeEt } from '../../../ortak/ulke/UlkeKodunaNormalizeEt';
 
@@ -51,17 +52,20 @@ function yasHesapla(isoDate: string): number {
  */
 export async function ProfilGuncelle(
   girdi: ProfilGuncelleGirdi,
-): Promise<{ ok: true } | { ok: false; hata: string }> {
+): Promise<
+  | { ok: true; cooldown_message?: string | null }
+  | { ok: false; hata: string }
+> {
   const uid = (await supabase.auth.getUser()).data.user?.id;
-  if (!uid) return { ok: false, hata: 'Oturum yok' };
+  if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
   let displayName = girdi.display_name?.trim();
   if (displayName !== undefined) {
     if (displayName.length < 2) {
-      return { ok: false, hata: 'Ad soyad en az 2 karakter olmalı.' };
+      return { ok: false, hata: i18n.t('profilDuzenle.adSoyadMin') };
     }
     if (displayName.length > 60) {
-      return { ok: false, hata: 'Ad soyad çok uzun.' };
+      return { ok: false, hata: i18n.t('profilDuzenle.adSoyadUzun') };
     }
   }
 
@@ -71,7 +75,7 @@ export async function ProfilGuncelle(
     if (!/^[a-z0-9_]{3,24}$/.test(username)) {
       return {
         ok: false,
-        hata: 'Kullanıcı adı 3–24 karakter; harf, rakam, alt çizgi.',
+        hata: i18n.t('profilDuzenle.kullaniciAdiKural'),
       };
     }
   }
@@ -79,7 +83,9 @@ export async function ProfilGuncelle(
   let bio: string | undefined;
   if (girdi.bio !== undefined) {
     bio = girdi.bio.trim();
-    if (bio.length > 280) return { ok: false, hata: 'Hakkında en fazla 280 karakter.' };
+    if (bio.length > 280) {
+      return { ok: false, hata: i18n.t('profilDuzenle.hakkindaMax') };
+    }
   }
 
   let phone: string | null | undefined = undefined;
@@ -91,7 +97,7 @@ export async function ProfilGuncelle(
     } else {
       phone = telefonNormalize(girdi.phone_e164);
       if (!phone || phone.length < 10 || phone.length > 20) {
-        return { ok: false, hata: 'Geçerli bir telefon gir (örn. 05xx…).' };
+        return { ok: false, hata: i18n.t('profilDuzenle.telefonOrnek') };
       }
     }
   }
@@ -103,7 +109,7 @@ export async function ProfilGuncelle(
     } else {
       gender = girdi.gender;
       if (!['female', 'male', 'other', 'prefer_not'].includes(gender)) {
-        return { ok: false, hata: 'Geçersiz cinsiyet.' };
+        return { ok: false, hata: i18n.t('profilDuzenle.gecersizCinsiyet') };
       }
     }
   }
@@ -117,10 +123,10 @@ export async function ProfilGuncelle(
     } else {
       birthDate = girdi.birth_date.trim().slice(0, 10);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
-        return { ok: false, hata: 'Doğum tarihi YYYY-AA-GG olmalı.' };
+        return { ok: false, hata: i18n.t('profilDuzenle.dogumYyyyAaGg') };
       }
       if (yasHesapla(birthDate) < 18) {
-        return { ok: false, hata: 'Platform 18 yaş ve üzeri içindir.' };
+        return { ok: false, hata: i18n.t('profilDuzenle.yasHint') };
       }
     }
   }
@@ -134,7 +140,7 @@ export async function ProfilGuncelle(
       if (!countryCode) {
         return {
           ok: false,
-          hata: 'Geçersiz ülke. ISO kodu kullan (örn. TR); Türkiye/Turkey kabul edilir.',
+          hata: i18n.t('profilDuzenle.ulkeGecersiz'),
         };
       }
     }
@@ -167,17 +173,60 @@ export async function ProfilGuncelle(
 
   if (rpcError) {
     const msg = rpcError.message;
-    if (msg.includes('18')) return { ok: false, hata: 'Platform 18 yaş ve üzeri içindir.' };
+    if (msg.includes('18')) return { ok: false, hata: i18n.t('profilDuzenle.yasHint') };
+    if (
+      msg.includes('cooldown') ||
+      msg.includes('bekleme') ||
+      msg.includes('ülke değiş') ||
+      msg.includes('ulke degis')
+    ) {
+      return {
+        ok: false,
+        hata: i18n.t('ulkeLigi.ulkeDegisimCooldown', { mesaj: msg }),
+      };
+    }
     if (msg.includes('ulke') || msg.includes('ülke')) {
-      return { ok: false, hata: 'Bu ülke şu an seçilemez.' };
+      return { ok: false, hata: i18n.t('profilDuzenle.ulkeSecilemez') };
     }
     if (msg.includes('unique') || rpcError.code === '23505') {
-      return { ok: false, hata: 'Bu kullanıcı adı veya telefon alınmış.' };
+      return {
+        ok: false,
+        hata: i18n.t('profilDuzenle.kullaniciAdiVeyaTelefonAlinmis'),
+      };
     }
     return { ok: false, hata: msg };
   }
-  if (!rpcData) return { ok: false, hata: 'Profil güncellenemedi.' };
-  return { ok: true };
+  if (!rpcData) return { ok: false, hata: i18n.t('profilDuzenle.profilGuncellenemedi') };
+  const root =
+    rpcData && typeof rpcData === 'object'
+      ? (rpcData as Record<string, unknown>)
+      : {};
+  if (root.ok === false) {
+    const errMsg =
+      typeof root.error === 'string'
+        ? root.error
+        : typeof root.message === 'string'
+          ? root.message
+          : i18n.t('profilDuzenle.profilGuncellenemedi');
+    if (
+      errMsg.includes('cooldown') ||
+      errMsg.includes('bekleme') ||
+      typeof root.cooldown_until === 'string'
+    ) {
+      return {
+        ok: false,
+        hata: i18n.t('ulkeLigi.ulkeDegisimCooldown', { mesaj: errMsg }),
+      };
+    }
+    return { ok: false, hata: errMsg };
+  }
+  const cooldownMsg =
+    typeof root.cooldown_message === 'string'
+      ? root.cooldown_message
+      : typeof root.country_cooldown_message === 'string'
+        ? root.country_cooldown_message
+        : null;
+  return { ok: true, cooldown_message: cooldownMsg };
 }
 
 export async function EpostaGuncelle(
@@ -185,12 +234,12 @@ export async function EpostaGuncelle(
 ): Promise<{ ok: true; mesaj: string } | { ok: false; hata: string }> {
   const temiz = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temiz)) {
-    return { ok: false, hata: 'Geçerli bir e-posta gir.' };
+    return { ok: false, hata: i18n.t('profilDuzenle.epostaGecerli') };
   }
   const { error } = await supabase.auth.updateUser({ email: temiz });
   if (error) return { ok: false, hata: error.message };
   return {
     ok: true,
-    mesaj: 'Onay linki yeni e-postana gönderildi. Onaylayınca adres güncellenir.',
+    mesaj: i18n.t('profilDuzenle.epostaOnayLink'),
   };
 }

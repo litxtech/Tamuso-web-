@@ -3,7 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { FIKIR_DURUM_ETIKET, type FikirDurum } from '../tipler';
+import { useCeviri } from '../../../i18n/useCeviri';
+import type { CeviriAnahtari } from '../../../i18n/useCeviri';
+import {
+  FIKIR_DURUM_ETIKET_ANAHTAR,
+  type FikirDurum,
+} from '../tipler';
 
 export function fikirDurumRenk(st: string): string {
   switch (st) {
@@ -29,11 +34,12 @@ export function FikirDurumRozeti({
   status: FikirDurum | string;
   label?: string;
 }) {
+  const { t } = useCeviri();
   const renk = fikirDurumRenk(status);
-  const yazi =
-    label ??
-    FIKIR_DURUM_ETIKET[status as FikirDurum] ??
-    status;
+  const key = FIKIR_DURUM_ETIKET_ANAHTAR[status as FikirDurum] as
+    | CeviriAnahtari
+    | undefined;
+  const yazi = label ?? (key ? t(key) : status);
 
   return (
     <View style={[styles.chip, { borderColor: renk + '55', backgroundColor: renk + '18' }]}>

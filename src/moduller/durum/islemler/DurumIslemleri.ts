@@ -18,7 +18,7 @@ export type DurumOyunKazanciPayload = {
 export type DurumOggesi = {
   id: string;
   user_id: string;
-  media_type: 'image' | 'video' | 'card' | 'text';
+  media_type: 'image' | 'video' | 'card' | 'text' | 'audio';
   /** Boş string olabilir (metin / oyun kartı) — UI null uri ile Image açmaz */
   media_url: string;
   caption: string | null;
@@ -35,6 +35,7 @@ export type DurumOggesi = {
   avatar_url: string | null;
   public_user_id: string | null;
   is_verified?: boolean;
+  selected_title_id?: string | null;
   liked_by_me: boolean;
   is_mine: boolean;
 };
@@ -71,6 +72,15 @@ export function DurumMuzikPayloadAl(oge: DurumOggesi): DurumMuzikPayload | null 
   };
 }
 
+export function DurumSesPayloadAl(
+  oge: Pick<DurumOggesi, 'media_type' | 'payload'>,
+): { duration_ms: number } | null {
+  if (oge.media_type !== 'audio') return null;
+  const p = (oge.payload ?? {}) as { duration_ms?: number };
+  const ms = Number(p.duration_ms ?? 0);
+  return { duration_ms: Number.isFinite(ms) ? Math.max(0, ms) : 0 };
+}
+
 export function DurumOyunKazanciPayloadAl(
   oge: DurumOggesi,
 ): DurumOyunKazanciPayload | null {
@@ -100,6 +110,7 @@ export function DurumMedyaHttpsMi(url: string | null | undefined): boolean {
 export function DurumMetinGonderisiMi(oge: DurumOggesi): boolean {
   if (DurumOyunKazanciPayloadAl(oge)) return false;
   if (DurumMuzikPayloadAl(oge)) return false;
+  if (oge.media_type === 'audio') return false;
   if ((oge.media_type as string) === 'text') return true;
   return !DurumMedyaHttpsMi(oge.media_url);
 }
@@ -118,6 +129,7 @@ export type DurumYorum = {
   avatar_url: string | null;
   public_user_id: string | null;
   is_verified?: boolean;
+  selected_title_id?: string | null;
   is_mine: boolean;
 };
 
@@ -177,14 +189,17 @@ export async function DurumMuzikOlustur(
 }
 
 export async function DurumOlustur(input: {
-  mediaType: 'image' | 'video' | 'text';
+  mediaType: 'image' | 'video' | 'text' | 'audio';
   mediaUrl?: string | null;
   caption?: string;
+  durationMs?: number | null;
 }): Promise<{ ok: boolean; id?: string; hata?: string }> {
   const { data, error } = await supabase.rpc('durum_olustur', {
     p_media_type: input.mediaType,
     p_media_url: input.mediaUrl ?? null,
     p_caption: input.caption ?? null,
+    p_duration_ms:
+      input.mediaType === 'audio' ? Math.round(input.durationMs ?? 0) : null,
   });
   if (error) return { ok: false, hata: error.message };
   const row = data as { ok?: boolean; id?: string };

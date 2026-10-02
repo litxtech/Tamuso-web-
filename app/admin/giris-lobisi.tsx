@@ -93,6 +93,24 @@ export default function AdminGirisLobisiEkrani() {
     }
   };
 
+  /** Gizleme anahtarları — switch ile anında canlıya */
+  const gizleAnindaKaydet = async (
+    alan: 'sosyal_medya_gizle' | 'tum_butonlar_gizle',
+    deger: boolean,
+  ) => {
+    const onceki = ayar;
+    const sonraki = { ...ayar, [alan]: deger };
+    setAyar(sonraki);
+    try {
+      const d = await AdminGirisLobisiIslemleri.ayarGuncelle({ [alan]: deger });
+      setData(d);
+      setAyar(d.ayar);
+    } catch (e) {
+      setAyar(onceki);
+      Alert.alert('Hata', e instanceof Error ? e.message : 'Güncellenemedi');
+    }
+  };
+
   const medyaSec = async (tur: 'video' | 'image') => {
     const secim = await GaleriAc({
       mediaTypes: tur === 'video' ? ['videos'] : ['images'],
@@ -305,6 +323,25 @@ export default function AdminGirisLobisiEkrani() {
           onDegis={(t) => setAyar((a) => ({ ...a, form_alt: t || null }))}
         />
 
+        <Text style={styles.bolum}>Buton görünürlüğü</Text>
+        <Text style={styles.ipucu}>
+          Anahtarlar anında kaydedilir; lobideki cihazlar realtime ile güncellenir.
+          Build gerekmez.
+        </Text>
+
+        <SatirSwitch
+          etiket="Sosyal medya giriş butonlarını gizle"
+          aciklama="Spotify, Twitch, X, Google, Apple"
+          deger={ayar.sosyal_medya_gizle}
+          onDegis={(v) => void gizleAnindaKaydet('sosyal_medya_gizle', v)}
+        />
+        <SatirSwitch
+          etiket="Lobideki tüm butonları gizle"
+          aciklama="Form, sosyal, kayıt, misafir, oturum geçmişi"
+          deger={ayar.tum_butonlar_gizle}
+          onDegis={(v) => void gizleAnindaKaydet('tum_butonlar_gizle', v)}
+        />
+
         <GradientButton
           title={kaydediyor ? 'Kaydediliyor…' : 'Metinleri kaydet'}
           onPress={() => void kaydet()}
@@ -321,16 +358,23 @@ export default function AdminGirisLobisiEkrani() {
 
 function SatirSwitch({
   etiket,
+  aciklama,
   deger,
   onDegis,
 }: {
   etiket: string;
+  aciklama?: string;
   deger: boolean;
   onDegis: (v: boolean) => void;
 }) {
   return (
     <View style={styles.switchRow}>
-      <Text style={styles.switchEtiket}>{etiket}</Text>
+      <View style={styles.switchMetin}>
+        <Text style={styles.switchEtiket}>{etiket}</Text>
+        {aciklama ? (
+          <Text style={styles.switchAciklama}>{aciklama}</Text>
+        ) : null}
+      </View>
       <Switch
         value={deger}
         onValueChange={onDegis}
@@ -445,11 +489,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 6,
+    gap: 12,
   },
+  switchMetin: { flex: 1, gap: 2 },
   switchEtiket: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
-    flex: 1,
+  },
+  switchAciklama: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textMuted,
   },
   alan: { gap: 6 },
   alanEtiket: {

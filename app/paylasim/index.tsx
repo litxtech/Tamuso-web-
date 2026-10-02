@@ -37,7 +37,10 @@ const LOCALE_MAP: Record<string, string> = {
   tr: 'tr-TR',
   en: 'en-US',
   es: 'es-ES',
+  pt: 'pt-BR',
   ar: 'ar',
+  fr: 'fr-FR',
+  fil: 'fil-PH',
 };
 
 /** Kullanıcı: kişisel davet linki oluştur / kopyala / paylaş */

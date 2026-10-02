@@ -44,6 +44,7 @@ function oauthRedirectUri(): string {
 function queryParamsAl(url: string): {
   params: Record<string, string>;
   errorCode?: string;
+  errorDescription?: string;
 } {
   const params: Record<string, string> = {};
   try {
@@ -69,13 +70,37 @@ function queryParamsAl(url: string): {
     /* bozuk URL */
   }
   const errorCode = params.error || params.error_code || undefined;
-  return { params, errorCode };
+  const errorDescription =
+    params.error_description || params.error_message || undefined;
+  return { params, errorCode, errorDescription };
+}
+
+function spotifyOauthHataMesaji(
+  errorCode?: string,
+  errorDescription?: string,
+): string {
+  const raw = `${errorCode ?? ''} ${errorDescription ?? ''}`.toLowerCase();
+  if (
+    raw.includes('premium subscription') ||
+    raw.includes('active premium') ||
+    raw.includes('owner of the app') ||
+    raw.includes('getting user profile from external provider')
+  ) {
+    return i18n.t('auth.spotifyPremiumGerekli');
+  }
+  if (raw.includes('redirect')) {
+    return i18n.t('auth.spotifyYonlendirme');
+  }
+  if (errorDescription?.trim()) {
+    return errorDescription.trim();
+  }
+  return i18n.t('auth.spotifyBasarisiz');
 }
 
 async function oturumuUrlDenOlustur(url: string): Promise<void> {
-  const { params, errorCode } = queryParamsAl(url);
+  const { params, errorCode, errorDescription } = queryParamsAl(url);
   if (errorCode) {
-    throw new Error(errorCode);
+    throw new Error(spotifyOauthHataMesaji(errorCode, errorDescription));
   }
 
   const code = params.code;
@@ -168,13 +193,10 @@ export async function SpotifyIleGirisYap(): Promise<SpotifyGirisSonuc> {
         hata: i18n.t('auth.spotifyBuildGerekli'),
       };
     }
-    const msg = e instanceof Error ? e.message : i18n.t('auth.spotifyBasarisiz');
+    const msg = e instanceof Error ? e.message : '';
     return {
       ok: false,
-      hata:
-        msg.includes('redirect') || msg.includes('Redirect')
-          ? i18n.t('auth.spotifyYonlendirme')
-          : i18n.t('auth.spotifyBasarisiz'),
+      hata: spotifyOauthHataMesaji(undefined, msg || undefined),
     };
   }
 }

@@ -218,4 +218,47 @@ export type AdminHediye = {
   diamond_value: number;
   rarity: string;
   is_active: boolean;
+  sort_order?: number | null;
+  platform_coins?: number | null;
+};
+
+/** Küresel ekonomi dial'ları (platform_economy_config) */
+export type PlatformEkonomiConfig = {
+  coin_try: number;
+  diamond_try: number;
+  gift_host_share: number;
+  default_agency_share: number;
+  iap_store_fee_estimate: number;
+  updated_at?: string | null;
+};
+
+/** Ajans bazlı hediye komisyon dağılımı */
+export type AjansKomisyonOrani = {
+  agency_id: string;
+  name: string;
+  agency_public_id?: string | null;
+  logo_url?: string | null;
+  owner_id?: string | null;
+  agency_share: number;
+  host_share: number;
+  platform_share: number;
+  updated_at?: string | null;
+};
+
+export type EkonomiSimulasyon = {
+  brut_try: number;
+  store_fee_try: number;
+  platform_iap_net_try: number;
+  approx_coins: number;
+  if_all_gifted: {
+    host_diamonds_gross: number;
+    agency_diamonds: number;
+    host_diamonds_net: number;
+    platform_gift_coins: number;
+    host_cashout_try: number;
+    agency_cashout_try: number;
+    platform_gift_face_try: number;
+    platform_net_after_cashout_try: number;
+  };
+  rates?: PlatformEkonomiConfig;
 };

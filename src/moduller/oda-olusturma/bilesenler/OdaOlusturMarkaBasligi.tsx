@@ -6,6 +6,7 @@ import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari'
 import {
   BoslukTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   ozet?: string;
@@ -19,9 +20,13 @@ export function OdaOlusturMarkaBasligi({
   ozet,
   geriMi,
   onGeri,
-  baslik = 'Canlıya geç',
-  fisilti = 'OLUŞTUR',
+  baslik,
+  fisilti,
 }: Props) {
+  const { t } = useCeviri();
+  const baslikMetin = baslik ?? t('canli.gecBaslik');
+  const fisiltiMetin = fisilti ?? t('canli.gecFisilti');
+
   return (
     <View style={styles.wrap}>
       <View style={styles.ust}>
@@ -29,15 +34,15 @@ export function OdaOlusturMarkaBasligi({
           <Pressable
             onPress={onGeri}
             style={({ pressed }) => [styles.geriBtn, pressed && styles.geriPressed]}
-            accessibilityLabel="Geri"
+            accessibilityLabel={t('ortak.geri')}
             hitSlop={8}
           >
             <Ionicons name="chevron-back" size={22} color={RenkTokenlari.text} />
           </Pressable>
         ) : null}
         <View style={styles.markaBlok}>
-          <Text style={styles.fisilti}>{fisilti}</Text>
-          <Text style={styles.baslik}>{baslik}</Text>
+          <Text style={styles.fisilti}>{fisiltiMetin}</Text>
+          <Text style={styles.baslik}>{baslikMetin}</Text>
           {ozet ? <Text style={styles.alt}>{ozet}</Text> : null}
         </View>
       </View>

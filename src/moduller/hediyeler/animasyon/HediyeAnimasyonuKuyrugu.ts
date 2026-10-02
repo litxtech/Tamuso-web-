@@ -13,6 +13,10 @@ export type HediyeAnimasyonIslemi = {
   emoji: string;
   name: string;
   senderName?: string | null;
+  /** Ses odasında hediyenin gittiği konuk veya oda sahibi */
+  receiverName?: string | null;
+  /** Sırada kayan alıcı avatarları */
+  alicilar?: { ad: string; avatarUrl?: string | null }[];
   animationUrl?: string | null;
   animationType?: string | null;
   durationMs: number;
@@ -168,7 +172,11 @@ class HediyeAnimasyonuKuyruguImpl {
     const adet = Math.max(1, islem.quantity ?? 1);
     const isim = temizIsim(islem.name);
     const comboKey =
-      islem.comboKey ?? comboAnahtar(islem.giftId, islem.senderName);
+      islem.comboKey ??
+      comboAnahtar(
+        islem.giftId,
+        `${islem.senderName ?? ''}|${islem.receiverName ?? ''}`,
+      );
 
     // TikTok: pencere içinde aynı hediye → sol ×patlat, ayrı balon yok
     const birlesen = this.comboBirlesir(comboKey, adet, isim);
@@ -209,7 +217,7 @@ class HediyeAnimasyonuKuyruguImpl {
       comboKey,
       comboTick: 1,
       durationMs: Math.min(
-        islem.durationMs || (adet > 1 ? 2600 : 2200),
+        islem.durationMs || (adet >= 77 ? 3200 : adet > 1 ? 2800 : 2500),
         sinir.maxDurationMs,
       ),
       fullScreen,

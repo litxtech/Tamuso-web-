@@ -4,7 +4,14 @@
  */
 
 import i18n from '../../../i18n';
-import { MedyaOdasiBaglan, MedyaOdasiKes } from '../../livekit/MedyaBaglantisi';
+import {
+  AktifRtcSaglayici,
+  MedyaKameraAcVeBekle,
+  MedyaOdasiBaglan,
+  MedyaOdasiKes,
+} from '../../livekit/MedyaBaglantisi';
+import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
+import { KameraOnizlemeSerbestBirak } from '../../livekit/kamera/KameraOnizlemeKilidi';
 import { MedyaIzinleriniIste } from '../../livekit/izin/MedyaIzinleriniIste';
 import {
   CanliYayinBaslat,
@@ -150,8 +157,9 @@ export async function CanliYayinBaslatMotoru(input: {
     progress({ durum: 'preparing', asama: 'permissions', mesaj: i18n.t('canliYayin.hazirlaniyor') });
     log('permissions_ready');
 
-    // Önceki yarım bağlantıyı temizle
+    // Önceki yarım bağlantıyı temizle + stüdyo kamerasını serbest bırak
     await MedyaOdasiKes().catch(() => undefined);
+    await KameraOnizlemeSerbestBirak(2_800).catch(() => undefined);
 
     const izin = await MedyaIzinleriniIste({
       mikrofon: true,
@@ -280,7 +288,24 @@ export async function CanliYayinBaslatMotoru(input: {
       asama: 'publish',
       mesaj: i18n.t('canliYayin.yayinAciliyor'),
     });
-    log('camera_published');
+
+    // Video açıksa track attach olana kadar bekle (RN SDP gecikmesi)
+    if (input.videoEnabled && AktifRtcSaglayici() === 'agora') {
+      await MedyaKameraAcVeBekle(8_000);
+    } else if (input.videoEnabled) {
+      await KameraOnizlemeSerbestBirak(1_500).catch(() => undefined);
+      const camOk = await LiveKitBaglantiYoneticisi.kameraAcVeBekle(8_000);
+      if (!camOk && !LiveKitBaglantiYoneticisi.localVideoYayindaMi()) {
+        // Yayın düşmesin — sesle CANLI'ya al, kamera arka planda bağlansın
+        log('camera_pending_background_retry');
+        LiveKitBaglantiYoneticisi.kameraArkaPlandaDene(8);
+      } else if (!LiveKitBaglantiYoneticisi.localVideoTrack()) {
+        log('camera_pending_attach');
+        LiveKitBaglantiYoneticisi.kameraArkaPlandaDene(4);
+      } else {
+        log('camera_published');
+      }
+    }
     log('microphone_published');
 
     const aktif = await CanliYayinAktifEt(session.id);

@@ -1,0 +1,22 @@
+{
+  "bildir": {
+    "baslik": "Report",
+    "altBaslik": "Search user · pick a reason · explain",
+    "raporlarim": "My reports",
+    "kullaniciAra": "Search user",
+    "araPlaceholder": "Name, username, or ID",
+    "sonucYok": "No results",
+    "araBos": "Search for the person you want to report",
+    "kullaniciDegistir": "Change user",
+    "sebepSec": "Choose a reason",
+    "sebepDegistir": "Change reason",
+    "aciklama": "Details",
+    "aciklamaPlaceholder": "What happened? Keep it short and clear…",
+    "gonderiliyor": "Sending…",
+    "bildirimiGonder": "Submit report",
+    "kullaniciVeSebepSec": "Select a user and a reason.",
+    "aciklamaKisa": "Write a short description (at least a few words).",
+    "gonderilemedi": "Could not send",
+    "bildirimAlindi": "Report received"
+  }
+}

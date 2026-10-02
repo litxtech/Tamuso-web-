@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import i18n from '../../i18n';
 
 type DocumentPickerModul = typeof import('expo-document-picker');
 
@@ -28,7 +29,7 @@ async function modulYukle(): Promise<
   if (!DocumentPickerNativeHazirMi()) {
     return {
       ok: false,
-      hata: 'Dosya seçici bu build’de yok. Yeni development build kur.',
+      hata: i18n.t('medyaYukle.dosyaSeciciBuildYok'),
     };
   }
   try {
@@ -38,7 +39,7 @@ async function modulYukle(): Promise<
   } catch {
     return {
       ok: false,
-      hata: 'expo-document-picker yüklenemedi. Development build yenile.',
+      hata: i18n.t('medyaYukle.documentPickerYok'),
     };
   }
 }
@@ -89,7 +90,7 @@ export async function SesDosyasiSec(): Promise<SesDosyasiSecim> {
   } catch (e) {
     return {
       ok: false,
-      hata: e instanceof Error ? e.message : 'Dosya seçilemedi',
+      hata: e instanceof Error ? e.message : i18n.t('medyaYukle.dosyaSecilemedi'),
     };
   }
 }

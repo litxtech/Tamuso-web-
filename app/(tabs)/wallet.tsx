@@ -14,6 +14,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
+import { YonluIkon } from '../../src/components/YonluIkon';
 import { TextField } from '../../src/components/TextField';
 import { KlavyeKapatan } from '../../src/components/KlavyeKapatan';
 import {
@@ -30,6 +31,7 @@ import {
 } from '../../src/moduller/cuzdan/bilesenler/CoinPaketMagaza';
 import { PaketFiyatYazi } from '../../src/moduller/cuzdan/katalog/CoinPaketFiyat';
 import {
+  MagazaFiyatCacheTazeMi,
   MagazaFiyatlariniYukle,
   PaketlereMagazaFiyatiUygula,
 } from '../../src/moduller/cuzdan/katalog/MagazaFiyatlariniYukle';
@@ -42,6 +44,7 @@ import {
   type LedgerSatiri,
 } from '../../src/moduller/cuzdan/okuma/CuzdanLedgeriniGetir';
 import { CoinPaketiSatinAl } from '../../src/moduller/iap/islemler/CoinPaketiSatinAl';
+import { IapBaglantisiniIsit } from '../../src/moduller/iap/oturum/IapOturum';
 import { KillSwitchAktifMiSunucu } from '../../src/moduller/ozellik-bayraklari/okuma/KillSwitchAktifMiSunucu';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
@@ -94,6 +97,7 @@ import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
   BoslukTokenlari,
+  HeaderTokenlari,
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import {
@@ -109,6 +113,7 @@ import {
 import { CuzdanDinamikSimge } from '../../src/moduller/cuzdan/bilesenler/CuzdanDinamikSimge';
 import { CuzdanDinamikAksiyonGrid } from '../../src/moduller/cuzdan/bilesenler/CuzdanDinamikAksiyonGrid';
 import type { CuzdanUiAction } from '../../src/moduller/cuzdan/ui-config/CuzdanUiTipleri';
+import { DIL_LOCALE_MAP } from '../../src/i18n/diller';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 type CekimTalebi = {
@@ -120,10 +125,11 @@ type CekimTalebi = {
 };
 
 type Sekme = 'hareket' | 'hediye' | 'yukle' | 'cekim';
+type YonFiltre = 'tumu' | 'alinan' | 'verilen';
 
-function formatTarih(iso: string): string {
+function formatTarih(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleString('tr-TR', {
+    return new Date(iso).toLocaleString(locale, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -135,6 +141,63 @@ function formatTarih(iso: string): string {
   }
 }
 
+/** GG.AA.YYYY veya YYYY-MM-DD → gün başı/sonu ms */
+function tarihMetinCoz(
+  ham: string,
+  uc: 'bas' | 'bit',
+): number | null {
+  const s = ham.trim();
+  if (!s) return null;
+  let y = 0;
+  let m = 0;
+  let d = 0;
+  const tr = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/.exec(s);
+  const iso = /^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/.exec(s);
+  if (tr) {
+    d = Number(tr[1]);
+    m = Number(tr[2]);
+    y = Number(tr[3]);
+  } else if (iso) {
+    y = Number(iso[1]);
+    m = Number(iso[2]);
+    d = Number(iso[3]);
+  } else {
+    return null;
+  }
+  if (!y || !m || !d || m > 12 || d > 31) return null;
+  if (uc === 'bas') return new Date(y, m - 1, d, 0, 0, 0, 0).getTime();
+  return new Date(y, m - 1, d, 23, 59, 59, 999).getTime();
+}
+
+function gunAraligiYazi(gunOnce: number): {
+  bas: string;
+  bit: string;
+} {
+  const bit = new Date();
+  const bas = new Date();
+  bas.setHours(0, 0, 0, 0);
+  if (gunOnce > 0) bas.setDate(bas.getDate() - (gunOnce - 1));
+  const fmt = (dt: Date) => {
+    const dd = String(dt.getDate()).padStart(2, '0');
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    return `${dd}.${mm}.${dt.getFullYear()}`;
+  };
+  return { bas: fmt(bas), bit: fmt(bit) };
+}
+
+function tarihAraliktaMi(
+  iso: string,
+  basMs: number | null,
+  bitMs: number | null,
+): boolean {
+  if (basMs == null && bitMs == null) return true;
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return false;
+  if (basMs != null && t < basMs) return false;
+  if (bitMs != null && t > bitMs) return false;
+  return true;
+}
+
 function sekmeParamCoz(v: unknown): Sekme | null {
   const s = Array.isArray(v) ? v[0] : v;
   if (s === 'hareket' || s === 'hediye' || s === 'yukle' || s === 'cekim') {
@@ -144,7 +207,8 @@ function sekmeParamCoz(v: unknown): Sekme | null {
 }
 
 export default function WalletScreen() {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
+  const sayiLocale = DIL_LOCALE_MAP[dil];
   const { wallet, refreshWallet, adjustWallet, isGuest, refreshProfile, user, profile } =
     useAuth();
   const { config: cuzdanUi } = useCuzdanUiConfig();
@@ -171,6 +235,9 @@ export default function WalletScreen() {
     null,
   );
   const [belgeBusy, setBelgeBusy] = useState(false);
+  const [yonFiltre, setYonFiltre] = useState<YonFiltre>('tumu');
+  const [tarihBas, setTarihBas] = useState('');
+  const [tarihBit, setTarihBit] = useState('');
   const [mutaHesap, setMutaHesap] = useState<WalletAccount | null>(null);
   const [kartPaylasAcik, setKartPaylasAcik] = useState(false);
   const [kartPaylasBusy, setKartPaylasBusy] = useState(false);
@@ -208,11 +275,18 @@ export default function WalletScreen() {
       if (!iptal()) setCekimAcik(a || b);
     });
 
-    // Paketler: sadece boşsa veya IAP fiyatı yoksa yükle (her focus IAP = jank)
+    // Paketler hemen; mağaza fiyatı cache'li (her focus IAP init yok)
+    IapBaglantisiniIsit();
     CoinPaketleriniGetir()
       .then(async (data) => {
         if (iptal() || !data.length) return;
-        setPackages((onceki) => (onceki.length ? onceki : data));
+        // Önce katalog — kartlar anında görünsün
+        setPackages((onceki) => {
+          if (onceki.some((p) => !!p.store_display_price) && MagazaFiyatCacheTazeMi(data)) {
+            return onceki;
+          }
+          return data;
+        });
         try {
           const fiyatlar = await MagazaFiyatlariniYukle(data);
           if (iptal()) return;
@@ -225,7 +299,7 @@ export default function WalletScreen() {
       })
       .catch(() => undefined);
 
-    CuzdanLedgeriniGetir(80)
+    CuzdanLedgeriniGetir(200)
       .then((rows) => {
         if (!iptal()) setLedger(rows);
       })
@@ -305,6 +379,8 @@ export default function WalletScreen() {
   const hesapOzetiniAc = useCallback(async () => {
     setBelgeBusy(true);
     try {
+      const basMs = tarihMetinCoz(tarihBas, 'bas');
+      const bitMs = tarihMetinCoz(tarihBit, 'bit');
       const [ledgerBuyuk, hediyeBuyuk, cekimler, oyunBuyuk, oyunOzet] =
         await Promise.all([
           CuzdanLedgeriniGetir(250).catch(() => ledger),
@@ -320,13 +396,26 @@ export default function WalletScreen() {
             : Promise.resolve(oyunStats),
         ]);
 
+      const ledgerFiltre = ledgerBuyuk.filter((r) => {
+        if (!tarihAraliktaMi(r.created_at, basMs, bitMs)) return false;
+        if (yonFiltre === 'alinan') return r.delta > 0;
+        if (yonFiltre === 'verilen') return r.delta < 0;
+        return true;
+      });
+      const hediyeFiltre = hediyeBuyuk.filter((h) => {
+        if (!tarihAraliktaMi(h.created_at, basMs, bitMs)) return false;
+        if (yonFiltre === 'alinan') return h.yon === 'alinan';
+        if (yonFiltre === 'verilen') return h.yon === 'gonderilen';
+        return true;
+      });
+
       const girdi: HesapHareketleriBelgeGirdi = {
         sahipAdi: profile?.display_name ?? profile?.username,
         hesapKodu: profile?.public_user_id ?? user?.id,
         coins: wallet?.coins ?? 0,
         diamonds: wallet?.diamonds ?? 0,
-        ledger: ledgerBuyuk,
-        hediyeler: hediyeBuyuk,
+        ledger: ledgerFiltre,
+        hediyeler: hediyeFiltre,
         cekimler: (cekimler as CekimTalebi[]).map((w) => ({
           ...w,
           durumEtiket: cekimDurum[w.status] ?? w.status,
@@ -352,7 +441,37 @@ export default function WalletScreen() {
     wallet?.coins,
     wallet?.diamonds,
     cekimDurum,
+    yonFiltre,
+    tarihBas,
+    tarihBit,
   ]);
+
+  const tarihBasMs = useMemo(
+    () => tarihMetinCoz(tarihBas, 'bas'),
+    [tarihBas],
+  );
+  const tarihBitMs = useMemo(
+    () => tarihMetinCoz(tarihBit, 'bit'),
+    [tarihBit],
+  );
+
+  const filtrelenmisLedger = useMemo(() => {
+    return ledger.filter((r) => {
+      if (!tarihAraliktaMi(r.created_at, tarihBasMs, tarihBitMs)) return false;
+      if (yonFiltre === 'alinan') return r.delta > 0;
+      if (yonFiltre === 'verilen') return r.delta < 0;
+      return true;
+    });
+  }, [ledger, yonFiltre, tarihBasMs, tarihBitMs]);
+
+  const filtrelenmisHediyeler = useMemo(() => {
+    return hediyeler.filter((h) => {
+      if (!tarihAraliktaMi(h.created_at, tarihBasMs, tarihBitMs)) return false;
+      if (yonFiltre === 'alinan') return h.yon === 'alinan';
+      if (yonFiltre === 'verilen') return h.yon === 'gonderilen';
+      return true;
+    });
+  }, [hediyeler, yonFiltre, tarihBasMs, tarihBitMs]);
 
   const yuklemeler = useMemo(
     () => ledger.filter((r) => r.delta > 0 && (r.currency === 'coin' || r.currency === 'coins')),
@@ -366,6 +485,17 @@ export default function WalletScreen() {
     () => hediyeler.filter((h) => h.yon === 'alinan'),
     [hediyeler],
   );
+
+  const hizliTarihUygula = useCallback((gun: number | null) => {
+    if (gun == null) {
+      setTarihBas('');
+      setTarihBit('');
+      return;
+    }
+    const a = gunAraligiYazi(gun);
+    setTarihBas(a.bas);
+    setTarihBit(a.bit);
+  }, []);
 
   const onBuy = (pkg: CoinPackage) => {
     islemiDene('coin_satinal', () => {
@@ -383,11 +513,11 @@ export default function WalletScreen() {
             : 'Stripe';
       const bonusSatir =
         pkg.bonus_coins > 0
-          ? `\n${pkg.coins.toLocaleString('tr-TR')} + ${pkg.bonus_coins.toLocaleString('tr-TR')} ${t('cuzdanX.bonus')}`
+          ? `\n${pkg.coins.toLocaleString(sayiLocale)} + ${pkg.bonus_coins.toLocaleString(sayiLocale)} ${t('cuzdanX.bonus')}`
           : '';
       Alert.alert(
         t('cuzdanX.coinYukle'),
-        `${pkg.title}${bonusSatir}\n${t('cuzdanX.toplamCoin', { toplam: toplam.toLocaleString('tr-TR') })}\n${fiyatYazi}\n${t('cuzdanX.odemeKanali', { kanal })}`,
+        `${pkg.title}${bonusSatir}\n${t('cuzdanX.toplamCoin', { toplam: toplam.toLocaleString(sayiLocale) })}\n${fiyatYazi}\n${t('cuzdanX.odemeKanali', { kanal })}`,
         [
           { text: t('ortak.iptal'), style: 'cancel' },
             {
@@ -403,16 +533,15 @@ export default function WalletScreen() {
                     await Linking.openURL(sonuc.url);
                     return;
                   }
-                  if (sonuc.coinsAdded != null && sonuc.coinsAdded > 0) {
-                    adjustWallet({ coins: sonuc.coinsAdded });
-                  }
-                  // IAP bağlantısı kapandıktan sonra mağaza/yenile yarışmasın
-                  await new Promise((r) => setTimeout(r, 350));
+                  // Önce sunucu bakiyesi — çift credit / eski txn yanıltmasın
                   try {
-                    await yenileHepsi();
+                    await refreshWallet();
                   } catch {
-                    void refreshWallet().catch(() => undefined);
+                    if (sonuc.coinsAdded != null && sonuc.coinsAdded > 0) {
+                      adjustWallet({ coins: sonuc.coinsAdded });
+                    }
                   }
+                  void yenileHepsi().catch(() => undefined);
                   Alert.alert(
                     t('ortak.basarili'),
                     sonuc.coinsAdded != null
@@ -589,11 +718,15 @@ export default function WalletScreen() {
             style={styles.geri}
             hitSlop={8}
           >
-            <Ionicons name="chevron-back" size={22} color={tema.primaryText} />
+            <YonluIkon yon="chevron-back" size={22} color={tema.primaryText} />
           </Pressable>
           <View style={styles.baslikCopy}>
             {cuzdanUi.general.eyebrow ? (
-              <Text style={[styles.baslikFisilti, { color: tema.secondaryText }]}>
+              <Text
+                style={[styles.baslikFisilti, { color: tema.secondaryText }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {cuzdanUi.general.eyebrow}
               </Text>
             ) : null}
@@ -604,12 +737,20 @@ export default function WalletScreen() {
                   fallbackIonicon="wallet-outline"
                 />
               ) : null}
-              <Text style={[styles.baslik, { color: tema.primaryText }]}>
+              <Text
+                style={[styles.baslik, { color: tema.primaryText }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {cuzdanUi.general.screen_name || t('cuzdan.baslik')}
               </Text>
             </View>
             {cuzdanUi.general.subtitle ? (
-              <Text style={[styles.baslikAlt, { color: tema.secondaryText }]}>
+              <Text
+                style={[styles.baslikAlt, { color: tema.secondaryText }]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
                 {cuzdanUi.general.subtitle}
               </Text>
             ) : null}
@@ -693,7 +834,7 @@ export default function WalletScreen() {
                   {CuzdanMetinAl(
                     cuzdanUi,
                     'purchase_locked',
-                    'tr',
+                    dil,
                     t('cuzdanX.satinAlmaKapali'),
                   )}
                 </Text>
@@ -701,12 +842,12 @@ export default function WalletScreen() {
 
               {goster('coin_info') ? (
                 <Text style={[styles.coinInfo, { color: tema.secondaryText }]}>
-                  {CuzdanMetinAl(cuzdanUi, 'coin_info', 'tr')}
+                  {CuzdanMetinAl(cuzdanUi, 'coin_info', dil)}
                 </Text>
               ) : null}
-              {CuzdanMetinAl(cuzdanUi, 'hero_note', 'tr') ? (
+              {CuzdanMetinAl(cuzdanUi, 'hero_note', dil) ? (
                 <Text style={[styles.coinInfo, { color: tema.secondaryText, marginTop: 4 }]}>
-                  {CuzdanMetinAl(cuzdanUi, 'hero_note', 'tr')}
+                  {CuzdanMetinAl(cuzdanUi, 'hero_note', dil)}
                 </Text>
               ) : null}
             </View>
@@ -714,26 +855,40 @@ export default function WalletScreen() {
             {goster('summary') ? (
             <View style={styles.ozetBolum}>
               <Text style={[styles.bolumEtiket, { color: tema.secondaryText }]}>
-                {CuzdanMetinAl(cuzdanUi, 'summary_title', 'tr', t('cuzdan.ozet'))}
+                {CuzdanMetinAl(cuzdanUi, 'summary_title', dil, t('cuzdan.ozet'))}
               </Text>
               <View style={styles.summaryRow}>
                 <OzetKutu
                   icon="arrow-up-circle"
                   tint={RenkTokenlari.danger}
-                  label={t('cuzdan.gonderilen')}
+                  label={t('cuzdanXExtra.verilen')}
                   value={String(stats?.total_gifts_sent ?? gonderilen.length)}
+                  aktif={yonFiltre === 'verilen'}
+                  onPress={() => {
+                    setYonFiltre((p) => (p === 'verilen' ? 'tumu' : 'verilen'));
+                    setSekme('hediye');
+                  }}
                 />
                 <OzetKutu
                   icon="arrow-down-circle"
                   tint={RenkTokenlari.mint}
                   label={t('cuzdan.alinan')}
                   value={String(stats?.total_gifts_received ?? alinan.length)}
+                  aktif={yonFiltre === 'alinan'}
+                  onPress={() => {
+                    setYonFiltre((p) => (p === 'alinan' ? 'tumu' : 'alinan'));
+                    setSekme('hediye');
+                  }}
                 />
                 <OzetKutu
                   icon="trending-up"
                   tint={tema.accent}
                   label={t('cuzdan.yukleme')}
                   value={String(yuklemeler.length)}
+                  onPress={() => {
+                    setYonFiltre('alinan');
+                    setSekme('hareket');
+                  }}
                 />
               </View>
             </View>
@@ -801,6 +956,73 @@ export default function WalletScreen() {
                     label={belgeBusy ? t('cuzdanX.hazirlaniyor') : t('cuzdanXExtra.pdfExcel')}
                   />
                 </View>
+
+                <View style={styles.yonFiltreSatir}>
+                  {(
+                    [
+                      { id: 'tumu' as const, label: t('cuzdanXExtra.filtreTumu') },
+                      { id: 'alinan' as const, label: t('cuzdan.alinan') },
+                      { id: 'verilen' as const, label: t('cuzdanXExtra.verilen') },
+                    ] as const
+                  ).map((f) => {
+                    const aktif = yonFiltre === f.id;
+                    return (
+                      <Pressable
+                        key={f.id}
+                        onPress={() => setYonFiltre(f.id)}
+                        style={[styles.yonChip, aktif && styles.yonChipAktif]}
+                      >
+                        <Text
+                          style={[
+                            styles.yonChipYazi,
+                            aktif && styles.yonChipYaziAktif,
+                          ]}
+                        >
+                          {f.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                <Text style={styles.filtreEtiket}>{t('cuzdanXExtra.tarihAra')}</Text>
+                <View style={styles.hizliTarihSatir}>
+                  {(
+                    [
+                      { gun: 1, label: t('cuzdanXExtra.hizliBugun') },
+                      { gun: 7, label: t('cuzdanXExtra.hizli7gun') },
+                      { gun: 30, label: t('cuzdanXExtra.hizli30gun') },
+                      { gun: null, label: t('cuzdanXExtra.hizliTemizle') },
+                    ] as const
+                  ).map((h) => (
+                    <Pressable
+                      key={String(h.gun)}
+                      onPress={() => hizliTarihUygula(h.gun)}
+                      style={styles.hizliTarihChip}
+                    >
+                      <Text style={styles.hizliTarihYazi}>{h.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View style={styles.tarihAlanSatir}>
+                  <View style={{ flex: 1 }}>
+                    <TextField
+                      value={tarihBas}
+                      onChangeText={setTarihBas}
+                      placeholder={t('cuzdanXExtra.tarihBaslangicPh')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <TextField
+                      value={tarihBit}
+                      onChangeText={setTarihBit}
+                      placeholder={t('cuzdanXExtra.tarihBitisPh')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                </View>
+
                 {oyunStats && oyunStats.totalGames > 0 ? (
                   <Text style={styles.oyunOzetSatir}>
                     {t('cuzdanX.oyunOzet', {
@@ -811,10 +1033,16 @@ export default function WalletScreen() {
                     })}
                   </Text>
                 ) : null}
-                {ledger.length === 0 ? (
-                  <Empty text={t('cuzdanX.hareketYok')} />
+                {filtrelenmisLedger.length === 0 ? (
+                  <Empty
+                    text={
+                      ledger.length === 0
+                        ? t('cuzdanX.hareketYok')
+                        : t('cuzdanXExtra.filtreSonucYok')
+                    }
+                  />
                 ) : (
-                  ledger.map((row) => (
+                  filtrelenmisLedger.map((row) => (
                     <Pressable
                       key={row.id}
                       onPress={() => setDetay({ tur: 'ledger', veri: row })}
@@ -833,7 +1061,7 @@ export default function WalletScreen() {
                       >
                         <Ionicons
                           name={row.delta >= 0 ? 'add' : 'remove'}
-                          size={14}
+                          size={12}
                           color={
                             row.delta >= 0 ? RenkTokenlari.mint : RenkTokenlari.danger
                           }
@@ -844,7 +1072,7 @@ export default function WalletScreen() {
                           {LedgerAnlasilirOzet(row)}
                         </Text>
                         <Text style={styles.lineMeta}>
-                          {formatTarih(row.created_at)}
+                          {formatTarih(row.created_at, sayiLocale)}
                           {' · '}
                           {row.delta >= 0
                             ? t('cuzdanX.giris')
@@ -863,7 +1091,7 @@ export default function WalletScreen() {
                         ]}
                       >
                         {row.delta >= 0 ? '+' : ''}
-                        {row.delta.toLocaleString('tr-TR')}{' '}
+                        {row.delta.toLocaleString(sayiLocale)}{' '}
                         {LedgerBirimEtiketi(row.currency)}
                       </Text>
                       <Ionicons
@@ -881,10 +1109,79 @@ export default function WalletScreen() {
               <View style={styles.panel}>
                 <Text style={styles.panelTitle}>{t('cuzdanX.hediyeGecmisi')}</Text>
                 <Text style={styles.panelSub}>{t('cuzdanX.hediyeAlt')}</Text>
-                {hediyeler.length === 0 ? (
-                  <Empty text={t('cuzdanX.hediyeYok')} />
+                <View style={styles.yonFiltreSatir}>
+                  {(
+                    [
+                      { id: 'tumu' as const, label: t('cuzdanXExtra.filtreTumu') },
+                      { id: 'alinan' as const, label: t('cuzdan.alinan') },
+                      { id: 'verilen' as const, label: t('cuzdanXExtra.verilen') },
+                    ] as const
+                  ).map((f) => {
+                    const aktif = yonFiltre === f.id;
+                    return (
+                      <Pressable
+                        key={f.id}
+                        onPress={() => setYonFiltre(f.id)}
+                        style={[styles.yonChip, aktif && styles.yonChipAktif]}
+                      >
+                        <Text
+                          style={[
+                            styles.yonChipYazi,
+                            aktif && styles.yonChipYaziAktif,
+                          ]}
+                        >
+                          {f.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View style={styles.hizliTarihSatir}>
+                  {(
+                    [
+                      { gun: 1, label: t('cuzdanXExtra.hizliBugun') },
+                      { gun: 7, label: t('cuzdanXExtra.hizli7gun') },
+                      { gun: 30, label: t('cuzdanXExtra.hizli30gun') },
+                      { gun: null, label: t('cuzdanXExtra.hizliTemizle') },
+                    ] as const
+                  ).map((h) => (
+                    <Pressable
+                      key={`h-${String(h.gun)}`}
+                      onPress={() => hizliTarihUygula(h.gun)}
+                      style={styles.hizliTarihChip}
+                    >
+                      <Text style={styles.hizliTarihYazi}>{h.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View style={styles.tarihAlanSatir}>
+                  <View style={{ flex: 1 }}>
+                    <TextField
+                      value={tarihBas}
+                      onChangeText={setTarihBas}
+                      placeholder={t('cuzdanXExtra.tarihBaslangicPh')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <TextField
+                      value={tarihBit}
+                      onChangeText={setTarihBit}
+                      placeholder={t('cuzdanXExtra.tarihBitisPh')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                </View>
+                {filtrelenmisHediyeler.length === 0 ? (
+                  <Empty
+                    text={
+                      hediyeler.length === 0
+                        ? t('cuzdanX.hediyeYok')
+                        : t('cuzdanXExtra.hediyeFiltreSonucYok')
+                    }
+                  />
                 ) : (
-                  hediyeler.map((h, i) => {
+                  filtrelenmisHediyeler.map((h, i) => {
                     const kim =
                       h.karsi_profil?.display_name ??
                       h.karsi_profil?.username ??
@@ -900,7 +1197,7 @@ export default function WalletScreen() {
                         <View style={styles.hediyeIkon}>
                           <CanliHediyeSimgesi
                             emoji={h.gift?.emoji ?? '🎁'}
-                            size={22}
+                            size={18}
                             delayMs={(i % 6) * 80}
                           />
                         </View>
@@ -912,7 +1209,7 @@ export default function WalletScreen() {
                           <Text style={styles.lineMeta} numberOfLines={2}>
                             {gonderildi ? `→ ${kim}` : `← ${kim}`}
                             {h.oda?.title ? ` · ${h.oda.title}` : ''}
-                            {` · ${formatTarih(h.created_at)}`}
+                            {` · ${formatTarih(h.created_at, sayiLocale)}`}
                           </Text>
                           {!gonderildi ? (
                             <Text style={styles.lineTry}>
@@ -1043,7 +1340,7 @@ export default function WalletScreen() {
                             yontem: w.method,
                           })}
                         </Text>
-                        <Text style={styles.lineMeta}>{formatTarih(w.created_at)}</Text>
+                        <Text style={styles.lineMeta}>{formatTarih(w.created_at, sayiLocale)}</Text>
                       </View>
                       <Text style={styles.status}>
                         {cekimDurum[w.status] ?? w.status}
@@ -1080,7 +1377,7 @@ export default function WalletScreen() {
         <View
           style={[
             styles.paylasModal,
-            { paddingTop: Math.max(insets.top, 12) },
+            { paddingTop: Math.max(insets.top, BoslukTokenlari.md) },
           ]}
         >
           <View style={styles.paylasModalUst}>
@@ -1162,21 +1459,39 @@ function OzetKutu({
   tint,
   label,
   value,
+  aktif,
+  onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   tint: string;
   label: string;
   value: string;
+  aktif?: boolean;
+  onPress?: () => void;
 }) {
-  return (
-    <View style={styles.summary}>
+  const icerik = (
+    <>
       <View style={[styles.summaryIkon, { backgroundColor: `${tint}22` }]}>
-        <Ionicons name={icon} size={16} color={tint} />
+        <Ionicons name={icon} size={13} color={tint} />
       </View>
       <Text style={styles.summaryVal}>{value}</Text>
       <Text style={styles.summaryLbl}>{label}</Text>
-    </View>
+    </>
   );
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        style={[
+          styles.summary,
+          aktif && { borderColor: tint, borderWidth: 1.5 },
+        ]}
+      >
+        {icerik}
+      </Pressable>
+    );
+  }
+  return <View style={styles.summary}>{icerik}</View>;
 }
 
 function Empty({ text }: { text: string }) {
@@ -1187,38 +1502,47 @@ const styles = StyleSheet.create({
   baslikBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: BoslukTokenlari.lg,
-    paddingBottom: BoslukTokenlari.md,
-    gap: BoslukTokenlari.sm,
+    paddingHorizontal: HeaderTokenlari.horizontal,
+    paddingTop: HeaderTokenlari.paddingTop,
+    paddingBottom: HeaderTokenlari.paddingBottom,
+    gap: HeaderTokenlari.titleGapAfterBack,
   },
   geri: {
-    width: 40,
-    height: 40,
+    width: HeaderTokenlari.touchTarget,
+    height: HeaderTokenlari.touchTarget,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  baslikCopy: { flex: 1, alignItems: 'center', gap: 4 },
+  baslikCopy: { flex: 1, minWidth: 0, alignItems: 'stretch', gap: 4 },
   baslikFisilti: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.primarySoft,
     letterSpacing: 1.4,
     fontSize: 9,
     lineHeight: 12,
+    textAlign: 'center',
   },
   baslik: {
     ...TipografiTokenlari.h1,
     color: RenkTokenlari.text,
     lineHeight: 28,
+    flexShrink: 1,
+    minWidth: 0,
+    textAlign: 'center',
+    letterSpacing: 0,
   },
   baslikSatir: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'stretch',
+    minWidth: 0,
     gap: 8,
   },
   baslikAlt: {
     ...TipografiTokenlari.micro,
     textAlign: 'center',
+    letterSpacing: 0,
   },
   coinInfo: {
     ...TipografiTokenlari.micro,
@@ -1286,33 +1610,34 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: BoslukTokenlari.lg,
-    paddingHorizontal: BoslukTokenlari.sm,
-    borderRadius: YaricapTokenlari.lg,
-    backgroundColor: RenkTokenlari.bgCard,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.border,
+    gap: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    backgroundColor: 'rgba(18,20,32,0.72)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   summaryIkon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
   },
   summaryVal: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
     fontWeight: '800',
-    fontSize: 16,
+    fontSize: 14,
+    lineHeight: 18,
   },
   summaryLbl: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textDim,
-    fontSize: 10,
+    fontSize: 9,
     textAlign: 'center',
+    letterSpacing: 0.2,
   },
   tabs: {
     flexDirection: 'row',
@@ -1363,6 +1688,57 @@ const styles = StyleSheet.create({
     gap: BoslukTokenlari.sm,
     marginBottom: 2,
   },
+  yonFiltreSatir: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  yonChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: RenkTokenlari.bgCard,
+    borderWidth: 1,
+    borderColor: RenkTokenlari.border,
+  },
+  yonChipAktif: {
+    backgroundColor: 'rgba(61,207,176,0.16)',
+    borderColor: RenkTokenlari.mint,
+  },
+  yonChipYazi: {
+    ...TipografiTokenlari.caption,
+    color: RenkTokenlari.textMuted,
+    fontWeight: '600',
+  },
+  yonChipYaziAktif: {
+    color: RenkTokenlari.mint,
+    fontWeight: '800',
+  },
+  filtreEtiket: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textDim,
+    marginTop: 4,
+  },
+  hizliTarihSatir: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  hizliTarihChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: YaricapTokenlari.sm,
+    backgroundColor: RenkTokenlari.surface,
+  },
+  hizliTarihYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textMuted,
+    fontWeight: '600',
+  },
+  tarihAlanSatir: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   panelTitle: { ...TipografiTokenlari.h2, color: RenkTokenlari.text },
   panelSub: {
     ...TipografiTokenlari.micro,
@@ -1404,44 +1780,52 @@ const styles = StyleSheet.create({
   line: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: BoslukTokenlari.sm,
-    paddingVertical: BoslukTokenlari.md,
-    paddingHorizontal: BoslukTokenlari.md,
-    borderRadius: YaricapTokenlari.md,
-    backgroundColor: RenkTokenlari.bgCard,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.border,
-    marginBottom: 6,
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(18,20,32,0.72)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
+    marginBottom: 4,
   },
   linePressed: { opacity: 0.88 },
   lineIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   hediyeIkon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: RenkTokenlari.pressFill,
     flexShrink: 0,
   },
-  lineCopy: { flex: 1, gap: 2, minWidth: 0 },
+  lineCopy: { flex: 1, gap: 1, minWidth: 0 },
   lineTitle: {
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.text,
     fontWeight: '700',
+    fontSize: 13,
+    lineHeight: 17,
   },
-  lineMeta: { ...TipografiTokenlari.micro, color: RenkTokenlari.textDim },
+  lineMeta: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textDim,
+    fontSize: 10,
+    lineHeight: 13,
+  },
   lineTry: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.mint,
     fontWeight: '700',
+    fontSize: 10,
   },
   lineTryMuted: {
     ...TipografiTokenlari.micro,
@@ -1452,11 +1836,13 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.caption,
     fontWeight: '800',
     flexShrink: 0,
+    fontSize: 13,
   },
   lineTryDelta: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.mint,
     fontWeight: '700',
+    fontSize: 10,
   },
   pkg: { marginBottom: 8 },
   pkgInner: {

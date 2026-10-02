@@ -1,0 +1,20 @@
+{
+  "webview": {
+    "gecersizUrl": "Invalid URL",
+    "baglantiAcilamadi": "Could not open link",
+    "sayfaAcilamadi": "Could not open page",
+    "baglantiAciliyor": "Opening link…",
+    "webviewYok": "WebView unavailable",
+    "webviewYokBody": "WebView / WebBrowser is not available in this development build. Take a new native build or open the link externally.",
+    "disaridaAc": "Open externally",
+    "sistemTarayici": "System browser",
+    "yuklemeHatasi": "Load error",
+    "sayfaYuklenemediHttp": "Could not load page (HTTP error)",
+    "urlBos": "URL is empty",
+    "engellenenSema": "Blocked scheme: {{scheme}}",
+    "sadeceHttps": "Only HTTPS is allowed",
+    "bosHost": "Missing or invalid address (e.g. https://example.com)",
+    "kimlikEngellendi": "URL credentials are blocked",
+    "gecersizKarakter": "Invalid character"
+  }
+}

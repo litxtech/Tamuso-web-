@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -20,6 +20,7 @@ import {
   AjansYonetimAjanslarim,
   type AjansYonetimOzet,
 } from '../../../src/moduller/ajanslar/islemler/AjansPanelIslemleri';
+import { AjansKayitDurum } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
 import { SahipOlunanAjanslariGetir } from '../../../src/moduller/ajanslar/okuma/AjanslariGetir';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
@@ -39,6 +40,8 @@ export default function AjansYonetimHubEkrani() {
   useTemayaAboneOl();
   const [liste, setListe] = useState<AjansYonetimOzet[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
+  /** Tek ajansa otomatik geçiş yalnızca ilk hub girişinde — geri döngüsünü önler */
+  const tekAjansYonlendirildi = useRef(false);
 
   const yukle = useCallback(async () => {
     setYukleniyor(true);
@@ -58,7 +61,8 @@ export default function AjansYonetimHubEkrani() {
         }));
       }
       setListe(a);
-      if (a.length === 1) {
+      if (a.length === 1 && !tekAjansYonlendirildi.current) {
+        tekAjansYonlendirildi.current = true;
         router.replace(`/ajans/${a[0].id}` as any);
       }
     } catch {
@@ -75,7 +79,8 @@ export default function AjansYonetimHubEkrani() {
           level_code: x.level_code,
         }));
         setListe(a);
-        if (a.length === 1) {
+        if (a.length === 1 && !tekAjansYonlendirildi.current) {
+          tekAjansYonlendirildi.current = true;
           router.replace(`/ajans/${a[0].id}` as any);
         }
       } catch {
@@ -155,11 +160,13 @@ export default function AjansYonetimHubEkrani() {
                         </View>
                         {item.is_coin_distributor ? (
                           <View style={[styles.chip, styles.chipCoin]}>
-                            <Text style={styles.chipYazi}>Coin</Text>
+                            <Text style={styles.chipYazi}>{t('ajans.chipCoin')}</Text>
                           </View>
                         ) : null}
                         <View style={styles.chip}>
-                          <Text style={styles.chipYazi}>{item.status}</Text>
+                          <Text style={styles.chipYazi}>
+                            {AjansKayitDurum(String(item.status), t)}
+                          </Text>
                         </View>
                       </View>
                     </View>

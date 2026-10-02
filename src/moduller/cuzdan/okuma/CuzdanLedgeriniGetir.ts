@@ -111,13 +111,22 @@ export function LedgerAnlasilirOzet(row: LedgerSatiri): string {
 
 export function LedgerTutarYazi(row: LedgerSatiri): string {
   const isaret = row.delta >= 0 ? '+' : '';
-  const dil = i18n.language?.startsWith('en')
-    ? 'en-US'
-    : i18n.language?.startsWith('es')
-      ? 'es-ES'
-      : i18n.language?.startsWith('ar')
-        ? 'ar'
-        : 'tr-TR';
+  const lng = (i18n.language ?? 'en').toLowerCase();
+  const dil = lng.startsWith('pt')
+    ? 'pt-BR'
+    : lng.startsWith('en')
+      ? 'en-US'
+      : lng.startsWith('es')
+        ? 'es-ES'
+        : lng.startsWith('ar')
+          ? 'ar'
+          : lng.startsWith('fr')
+            ? 'fr-FR'
+            : lng.startsWith('fil') || lng.startsWith('tl')
+              ? 'fil-PH'
+              : lng.startsWith('tr')
+                ? 'tr-TR'
+                : 'en-US';
   return `${isaret}${row.delta.toLocaleString(dil)} ${LedgerBirimEtiketi(row.currency)}`;
 }
 

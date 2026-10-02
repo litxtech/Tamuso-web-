@@ -1,0 +1,29 @@
+{
+  "paylasim": {
+    "baslik": "Partager",
+    "altBaslik": "Télécharger via un lien · code d’invitation",
+    "davet": "INVITATION",
+    "aciklama": "Lorsque vos amis appuient sur votre lien, ils vont vers la page de téléchargement App Store / Play. Vous gérez les URL des stores depuis le panneau d’administration.",
+    "hesabiTamamla": "Finalisez votre compte pour partager",
+    "davetKodun": "Votre code d’invitation",
+    "tiklama": "{{count}} clics",
+    "paylasimLinki": "Lien de partage",
+    "kopyalandiBaslik": "Copié",
+    "kopyalandiBody": "Lien copié dans le presse-papiers.",
+    "kopyalaBasarisiz": "Impossible de copier dans le presse-papiers. Un nouveau build est requis.",
+    "paylasimHata": "Partage",
+    "whatsappPaylas": "WhatsApp / partager",
+    "aciliyor": "Ouverture…",
+    "derinLinkKopyala": "Copier le lien in-app",
+    "admin": {
+      "kodMin": "Le code doit contenir au moins 2 caractères",
+      "baslikGerekli": "Le titre est obligatoire",
+      "urlHttps": "L’URL doit commencer par http(s)"
+    },
+    "kodAlinamadi": "Impossible d’obtenir le code d’invitation. La migration 020 a-t-elle été appliquée ?",
+    "mesajKatil": "Rejoignez {{ad}} — salles vocales, scènes et lives vous attendent.{{kodSatiri}}\n\nTélécharger : {{url}}",
+    "davetKoduSatiri": "\nCode d’invitation : {{kod}}",
+    "indirBaslik": "Télécharger {{ad}}",
+    "basarisiz": "Échec du partage"
+  }
+}

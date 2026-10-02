@@ -2,7 +2,10 @@ import { router } from 'expo-router';
 import type { BannerActionType } from '../core/BannerTypes';
 import { OrtamDegiskenleri } from '../../yapilandirma/OrtamDegiskenleri';
 import { isGameVisible } from '../../moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
+import { oyunKartKimligi } from '../../moduller/oyunlar/ortak/katalog/OyunKartKatalogu';
 import type { GameCode } from '../../moduller/oyunlar/ortak/tipler/OyunTipleri';
+import i18n from '../../i18n';
+import { SesOdasinaGit } from '../../moduller/ses-odalari/navigasyon/SesOdasinaGit';
 
 /**
  * Deep link standardı:
@@ -33,7 +36,7 @@ export function handleInternalLink(
   type: BannerActionType | 'CUSTOM_DEEP_LINK',
   target?: string | null,
 ): { ok: boolean; error?: string } {
-  if (!target) return { ok: false, error: 'Hedef id yok' };
+  if (!target) return { ok: false, error: i18n.t('banner.hedefIdYok') };
 
   if (
     type === 'CUSTOM_DEEP_LINK' ||
@@ -42,7 +45,7 @@ export function handleInternalLink(
     target.startsWith('muta:')
   ) {
     const parsed = parseTamusoDeepLink(target);
-    if (!parsed) return { ok: false, error: 'Geçersiz deep link' };
+    if (!parsed) return { ok: false, error: i18n.t('banner.gecersizDeepLink') };
     return navigateByKind(parsed.kind, parsed.id);
   }
 
@@ -71,7 +74,7 @@ function navigateByKind(kind: string, id: string): { ok: boolean; error?: string
       return { ok: true };
     case 'room':
     case 'oda':
-      router.push(`/lobi/${id}` as never);
+      void SesOdasinaGit({ roomId: id });
       return { ok: true };
     case 'live':
     case 'canli':
@@ -83,6 +86,11 @@ function navigateByKind(kind: string, id: string): { ok: boolean; error?: string
       void (async () => {
         const acik = await isGameVisible(id as GameCode);
         if (!acik) return;
+        const kart = oyunKartKimligi(id as GameCode);
+        if (kart?.href) {
+          router.push(kart.href as never);
+          return;
+        }
         router.push({ pathname: '/platform', params: { gameId: id } } as never);
       })();
       return { ok: true };

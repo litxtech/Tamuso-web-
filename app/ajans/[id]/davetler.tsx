@@ -17,10 +17,13 @@ import {
   AjansDavetListesi,
   AjansDavetOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
+import { AjansKayitDurum } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
+import { useCeviri } from '../../../src/i18n/useCeviri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
 
 export default function AjansDavetlerEkrani() {
+  const { t } = useCeviri();
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [analitik, setAnalitik] = useState<Record<string, unknown> | null>(null);
@@ -50,24 +53,28 @@ export default function AjansDavetlerEkrani() {
   return (
     <AjansAltEkranKabuk
       agencyId={id}
-      title="Davetler"
-      subtitle="Kod · QR · analitika"
+      title={t('ajans.davetler')}
+      subtitle={t('ajans.davetlerAlt')}
       aktif="davetler"
       yukleniyor={yukleniyor && liste.length === 0}
       refreshing={yukleniyor && liste.length > 0}
       onRefresh={() => void yukle()}
     >
-      <AjansBolumBaslik>Yeni davet</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.yeniDavet')}</AjansBolumBaslik>
       <AjansKart>
-        <AjansInput value={label} onChangeText={setLabel} placeholder="Etiket (opsiyonel)" />
+        <AjansInput
+          value={label}
+          onChangeText={setLabel}
+          placeholder={t('ajans.phEtiketOpsiyonel')}
+        />
         <AjansInput
           value={maxUses}
           onChangeText={setMaxUses}
-          placeholder="Max kullanım (boş=sınırsız, 1=tek)"
+          placeholder={t('ajans.phMaxKullanim')}
           keyboardType="number-pad"
         />
         <AjansCta
-          label="Davet Oluştur"
+          label={t('ajans.davetOlustur')}
           onPress={() => {
             void (async () => {
               const n = maxUses.trim() === '' ? null : Math.max(1, Number(maxUses) || 1);
@@ -76,40 +83,38 @@ export default function AjansDavetlerEkrani() {
                 maxUses: n,
                 label: label.trim() || undefined,
               });
-              if (!r.ok) Alert.alert('Davet', r.hata);
+              if (!r.ok) Alert.alert(t('ajans.alertDavet'), r.hata);
               else {
-                Alert.alert('Kod', r.invite_code ?? '');
+                Alert.alert(t('ajans.alertKod'), r.invite_code ?? '');
                 await Share.share({
-                  message: `Tamuso ajans davet kodu: ${r.invite_code}`,
+                  message: t('ajans.davetPaylasMetin', { kod: r.invite_code }),
                 }).catch(() => undefined);
                 await yukle();
               }
             })();
           }}
         />
-        <Text style={styles.hint}>
-          QR türleri: AJANS PROFİLİ / BAŞVUR / ETKİNLİK — deep link mevcut navigasyon ile açılır.
-        </Text>
+        <Text style={styles.hint}>{t('ajans.qrTurleriHint')}</Text>
       </AjansKart>
 
-      <AjansBolumBaslik>Aktif davetler</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.aktifDavetler')}</AjansBolumBaslik>
       <AjansKart>
         {liste.length === 0 ? (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         ) : (
           liste.map((d) => (
             <View key={String(d.id)}>
               <AjansListeSatir
                 title={String(d.invite_code)}
-                subtitle={`${d.status} · ${d.used_count ?? 0}/${d.max_uses ?? '∞'} · ${d.label ?? ''}`}
+                subtitle={`${AjansKayitDurum(String(d.status), t)} · ${d.used_count ?? 0}/${d.max_uses ?? '∞'}${d.label ? ` · ${d.label}` : ''}`}
               />
               <AjansCta
                 ghost
-                label="İptal"
+                label={t('ortak.iptal')}
                 onPress={() => {
                   void (async () => {
                     const r = await AjansDavetIptal(String(d.id));
-                    if (!r.ok) Alert.alert('Davet', r.hata);
+                    if (!r.ok) Alert.alert(t('ajans.alertDavet'), r.hata);
                     else await yukle();
                   })();
                 }}
@@ -119,18 +124,18 @@ export default function AjansDavetlerEkrani() {
         )}
       </AjansKart>
 
-      <AjansBolumBaslik>Davet analitiği</AjansBolumBaslik>
+      <AjansBolumBaslik>{t('ajans.davetAnalitik')}</AjansBolumBaslik>
       <AjansKart>
         {analitik ? (
           <Text style={styles.hint}>
-            Toplam olay: {String(analitik.toplam ?? 0)}
+            {t('ajans.toplamOlay', { n: String(analitik.toplam ?? 0) })}
             {'\n'}
-            Tipler: {JSON.stringify(analitik.by_type ?? {})}
+            {t('ajans.tiplerJson', { json: JSON.stringify(analitik.by_type ?? {}) })}
             {'\n'}
-            Kaynak: {JSON.stringify(analitik.by_source ?? {})}
+            {t('ajans.kaynakJson', { json: JSON.stringify(analitik.by_source ?? {}) })}
           </Text>
         ) : (
-          <AjansHint>Henüz veri yok</AjansHint>
+          <AjansHint>{t('ajans.henuzVeriYok')}</AjansHint>
         )}
       </AjansKart>
     </AjansAltEkranKabuk>

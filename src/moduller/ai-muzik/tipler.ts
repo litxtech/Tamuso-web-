@@ -177,6 +177,8 @@ export type AiMuzikRoomLibraryItem = {
 
 export type AiMuzikLyricsMode = 'ai' | 'user' | 'instrumental';
 
+export type AiMuzikSes = 'female' | 'male' | 'choir';
+
 export type AiMuzikOlusturIstek = {
   prompt: string;
   duration_seconds: number;
@@ -189,6 +191,7 @@ export type AiMuzikOlusturIstek = {
   structure_hint?: string | null;
   lyrics_mode?: AiMuzikLyricsMode;
   lyrics?: string | null;
+  voice_gender?: AiMuzikSes | null;
   idempotency_key: string;
   /** Mevcut parçayı yeni talimatla güncelle */
   revise_track_id?: string | null;

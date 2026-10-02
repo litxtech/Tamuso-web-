@@ -8,7 +8,7 @@ import type { ZeusMathConfig, ZeusSymbolType, ZeusWinTier } from '../tipler/Zeus
 export const GAME_CODE = 'zeus' as const;
 export const GAME_DISPLAY_NAME = 'ZEUS' as const;
 export const GAME_SUBTITLE = 'Olympus Cascade' as const;
-export const GAME_VERSION = 'zeus-v1.0.0' as const;
+export const GAME_VERSION = 'zeus-v1.1.3' as const;
 
 export const GRID_COLUMNS = 6;
 export const GRID_ROWS = 5;
@@ -60,27 +60,29 @@ export const SYMBOL_LABELS: Record<ZeusSymbolType, string> = {
 };
 
 export const DROP_MS_PER_CELL = {
-  1: 120,
-  2: 160,
-  3: 200,
-  4: 230,
-  5: 260,
+  1: 72,
+  2: 96,
+  3: 120,
+  4: 140,
+  5: 160,
 } as const;
 
-export const LANDING_BOUNCE_MS = 70;
-export const DESTROY_MS = 240;
-export const MATCH_GLOW_MS = 220;
-export const MULTIPLIER_COLLECT_MS = 420;
-export const ANTICIPATION_MS = 1600;
-export const SCATTER_SILENCE_MS = 100;
-export const WIN_HOLD_MS = 1000;
+export const LANDING_BOUNCE_MS = 32;
+export const DESTROY_MS = 90;
+export const MATCH_GLOW_MS = 70;
+export const MULTIPLIER_COLLECT_MS = 180;
+export const ANTICIPATION_MS = 520;
+export const SCATTER_SILENCE_MS = 40;
+export const WIN_HOLD_MS = 700;
+/** Round sonu kazanç paneli görünür kalsın */
+export const ROUND_END_HOLD_MS = 380;
 
 export const WIN_COUNT_MS = {
-  normal: 400,
-  nice: 700,
-  big: 1800,
-  mega: 2800,
-  sensational: 3600,
+  normal: 320,
+  nice: 480,
+  big: 900,
+  mega: 1300,
+  sensational: 1700,
 } as const;
 
 export function winCountDurationMs(tier: ZeusWinTier): number {
@@ -105,7 +107,7 @@ export const CHANNEL_VOLUMES = {
 
 export const VOICE_DUCK_FACTOR = 0.55;
 export const MUSIC_DUCK_VOLUME = 0.12;
-export const FAST_SPEED_FACTOR = 0.55;
+export const FAST_SPEED_FACTOR = 0.48;
 export const AUTOPLAY_OPTIONS = [10, 25, 50, 100, 250, 500] as const;
 
 export function maxAffordableAutoplayTours(balance: number, bet: number): number {
@@ -120,10 +122,11 @@ export function clampAutoplayTours(requested: number, maxTours: number): number 
 
 /**
  * Olympus-style tumble math (pay-anywhere 8+, sequence-end multiplier sum).
- * Kalibre hedef: hit ~%28–34, RTP ~%94–96, max 5000x.
+ * Kalibre hedef (balanced): hit ~%28–34, RTP ~%94–96, max 5000x.
+ * Max bahis: 200 coin.
  */
-export const MATH_OLYMPUS_V1: ZeusMathConfig = {
-  mathVersion: 'olympus-v1',
+export const MATH_OLYMPUS_BALANCED_V1: ZeusMathConfig = {
+  mathVersion: 'olympus-balanced-v1',
   paytableVersion: 'zeus-pay-v1',
   configVersion: 'zeus-cfg-v1',
   columns: GRID_COLUMNS,
@@ -183,18 +186,94 @@ export const MATH_OLYMPUS_V1: ZeusMathConfig = {
     mega: 40,
     sensational: 80,
   },
-  betPresets: [20, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+  betPresets: [20, 50, 100, 150, 200],
   minBet: 20,
-  maxBet: 50000,
+  maxBet: 200,
   autoplayEnabled: true,
   turboEnabled: true,
 };
 
-export const DEFAULT_MATH_CONFIG: ZeusMathConfig = MATH_OLYMPUS_V1;
+/** Kazandırıcı — daha sık yüksek sembol / scatter / çarpan */
+export const MATH_OLYMPUS_GENEROUS_V1: ZeusMathConfig = {
+  ...MATH_OLYMPUS_BALANCED_V1,
+  mathVersion: 'olympus-generous-v1',
+  paytableVersion: 'zeus-pay-generous-v1',
+  configVersion: 'zeus-cfg-generous-v1',
+  symbolWeights: {
+    blueDiamond: 14,
+    greenEmerald: 14,
+    purpleGem: 13,
+    redRuby: 13,
+    goldCrown: 11,
+    goldRing: 9.5,
+    goldGoblet: 8.5,
+    lyre: 7,
+    pegasus: 5.5,
+  },
+  multiplierSpawnChance: 0.038,
+  scatterSpawnChance: 0.0155,
+  bonus: {
+    persistentMultiplier: true,
+    multiplierSpawnChance: 0.065,
+  },
+};
+
+/** Kaybettirici — düşük ağırlık, seyrek bonus */
+export const MATH_OLYMPUS_TIGHT_V1: ZeusMathConfig = {
+  ...MATH_OLYMPUS_BALANCED_V1,
+  mathVersion: 'olympus-tight-v1',
+  paytableVersion: 'zeus-pay-tight-v1',
+  configVersion: 'zeus-cfg-tight-v1',
+  symbolWeights: {
+    blueDiamond: 22,
+    greenEmerald: 22,
+    purpleGem: 16,
+    redRuby: 16,
+    goldCrown: 7,
+    goldRing: 5.5,
+    goldGoblet: 4.5,
+    lyre: 3.5,
+    pegasus: 2.2,
+  },
+  multiplierSpawnChance: 0.018,
+  scatterSpawnChance: 0.0085,
+  bonus: {
+    persistentMultiplier: true,
+    multiplierSpawnChance: 0.032,
+  },
+  multiplierWeights: [
+    { value: 2, weight: 48 },
+    { value: 3, weight: 26 },
+    { value: 4, weight: 12 },
+    { value: 5, weight: 8 },
+    { value: 10, weight: 3.5 },
+    { value: 15, weight: 1.5 },
+    { value: 25, weight: 0.7 },
+    { value: 50, weight: 0.25 },
+    { value: 100, weight: 0.04 },
+    { value: 250, weight: 0.01 },
+    { value: 500, weight: 0.005 },
+  ],
+};
+
+/** @deprecated alias — balanced */
+export const MATH_OLYMPUS_V1 = MATH_OLYMPUS_BALANCED_V1;
+
+export const DEFAULT_MATH_CONFIG: ZeusMathConfig = MATH_OLYMPUS_BALANCED_V1;
 
 export const MATH_PROFILES = {
-  'olympus-v1': MATH_OLYMPUS_V1,
+  'olympus-balanced-v1': MATH_OLYMPUS_BALANCED_V1,
+  'olympus-generous-v1': MATH_OLYMPUS_GENEROUS_V1,
+  'olympus-tight-v1': MATH_OLYMPUS_TIGHT_V1,
+  'olympus-v1': MATH_OLYMPUS_BALANCED_V1,
 } as const;
+
+export const RTP_PROFILE_LABELS: Record<string, string> = {
+  'olympus-balanced-v1': 'Dengeli',
+  'olympus-generous-v1': 'Kazandırıcı',
+  'olympus-tight-v1': 'Kaybettirici',
+  'olympus-v1': 'Dengeli (eski)',
+};
 
 export const WIN_TIER_LABELS: Record<ZeusWinTier, string> = {
   NONE: '',

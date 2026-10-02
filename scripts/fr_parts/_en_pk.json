@@ -1,0 +1,30 @@
+{
+  "pk": {
+    "baslik": "PK",
+    "alt": "Clear aura · 3s delayed preview",
+    "kapali": "PK is turned off right now.",
+    "onizlemeEtiket": "Preview · 3 seconds behind",
+    "skorMeta": "Live score is shown with a 3s delay",
+    "canliOnizlemeler": "Live PK previews",
+    "bosBaslik": "No live PK",
+    "bosBody": "When new matches start, clear-aura cards appear here.",
+    "skorOlaylari": "Score events",
+    "skorBosBaslik": "No score yet",
+    "skorBosBody": "Gifts and actions are listed here.",
+    "skorVarsayilan": "score",
+    "yayinci": "Host",
+    "davetEtti": "Invited you to a live PK",
+    "davetEttiBaslikli": "“{{baslik}}” invited you to PK",
+    "macDk": "{{dk}} min match · {{sn}}s",
+    "takimA": "Team A",
+    "takimB": "Team B",
+    "canli": "Live",
+    "davetBadge": "PK INVITE",
+    "davetYanitlanamadi": "Could not respond to invite",
+    "davetBaslik": "PK invite",
+    "davetSecAlt": "Pick a live streamer — PK starts for 5 min once they accept",
+    "baskaCanliYok": "No other live streams",
+    "davetBtn": "Invite",
+    "macOlusturulamadi": "Could not create match"
+  }
+}

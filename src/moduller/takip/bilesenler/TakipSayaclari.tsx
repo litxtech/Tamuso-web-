@@ -8,6 +8,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { TakipSayaciniFormatla } from '../TakipSayacFormat';
+import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   /** null = gizli (—) */
@@ -22,13 +23,15 @@ type Props = {
 function Hucre({
   n,
   label,
+  locale,
   onPress,
 }: {
   n: number | null;
   label: string;
+  locale: string;
   onPress?: () => void;
 }) {
-  const yazi = n == null ? '—' : TakipSayaciniFormatla(n);
+  const yazi = n == null ? '—' : TakipSayaciniFormatla(n, locale);
   const tiklanabilir = n != null && !!onPress;
   return (
     <Pressable
@@ -55,13 +58,14 @@ export function TakipSayaclari({
   onFollowers,
   onFollowing,
 }: Props) {
+  const { t, dil } = useCeviri();
   return (
     <View style={styles.row}>
-      <Hucre n={posts} label="Gönderi" onPress={onPosts} />
+      <Hucre n={posts} label={t('takip.gonderi')} locale={dil} onPress={onPosts} />
       <View style={styles.div} />
-      <Hucre n={followers} label="Takipçi" onPress={onFollowers} />
+      <Hucre n={followers} label={t('takip.takipci')} locale={dil} onPress={onFollowers} />
       <View style={styles.div} />
-      <Hucre n={following} label="Takip" onPress={onFollowing} />
+      <Hucre n={following} label={t('takip.takip')} locale={dil} onPress={onFollowing} />
     </View>
   );
 }

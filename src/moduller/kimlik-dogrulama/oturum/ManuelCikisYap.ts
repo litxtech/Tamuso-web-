@@ -8,6 +8,8 @@ import {
   MisafirCihazOturumuKaydet,
   MisafirCihazOturumuTemizle,
 } from '../../misafir-hesabi/islemler/MisafirCihazOturumDepolama';
+import { MesajTaslakBellekTemizle } from '../../mesajlasma/depolama/MesajTaslakDepolama';
+import { MesajOutboxBellekTemizle } from '../../mesajlasma/depolama/MesajOutboxDepolama';
 
 export type CikisNedeni = 'manual' | 'ban' | 'account_deleted' | 'device_revoke';
 
@@ -56,6 +58,10 @@ export async function ManuelCikisYap(neden: CikisNedeni = 'manual'): Promise<voi
 
   // Auth bitmeden once: ses odasi + canli yayin + LiveKit
   await CikisCanliIcerikleriKapat();
+
+  // Mesaj taslak bellegi — disk userId namespaceli kalir; baska hesaba sizmasin
+  MesajTaslakBellekTemizle();
+  MesajOutboxBellekTemizle();
 
   try {
     if (neden === 'manual') {
