@@ -44,6 +44,25 @@ function uygula(html, sayfa) {
     `$1${attr(sayfa.description)}$2`,
   );
   out = out.replace(/href="https:\/\/www\.tamuso\.com\/" hreflang=/g, `href="${url}" hreflang=`);
+  const webPage = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: sayfa.title,
+    description: sayfa.description,
+    url,
+    inLanguage: 'tr',
+    isPartOf: { '@type': 'WebSite', name: 'Tamuso', url: `${ORIGIN}/` },
+  });
+  if (!out.includes('"@type":"WebPage"') && !out.includes('"@type": "WebPage"')) {
+    out = out.replace(
+      '</head>',
+      `    <script type="application/ld+json">${webPage}</script>\n  </head>`,
+    );
+  }
+  out = out.replace(
+    /<noscript>[\s\S]*?<\/noscript>/,
+    `<noscript><h1>${attr(sayfa.title)}</h1><p>${attr(sayfa.description)}</p></noscript>`,
+  );
   if (!out.includes('rel="sitemap"')) {
     out = out.replace(
       '<link rel="canonical"',
@@ -58,7 +77,15 @@ if (!fs.existsSync(sablonYol)) {
   process.exit(1);
 }
 
-const sablon = fs.readFileSync(sablonYol, 'utf8');
+const acikYollar = sayfalar.map((s) => (s.yol === '/' ? '/' : s.yol.replace(/\/+$/, '')));
+const indexScript = `<script id="tamuso-index">(function(){var acik=${JSON.stringify(acikYollar)};var yol=(location.pathname||"/").replace(/\\/+$/,"")||"/";if(acik.indexOf(yol)!==-1)return;var m=document.querySelector('meta[name="robots"]');if(m)m.setAttribute("content","noindex, nofollow");})();</script>`;
+
+let sablon = fs.readFileSync(sablonYol, 'utf8');
+if (sablon.includes('id="tamuso-index"')) {
+  sablon = sablon.replace(/<script id="tamuso-index">[\s\S]*?<\/script>/, indexScript);
+} else {
+  sablon = sablon.replace('</head>', `    ${indexScript}\n  </head>`);
+}
 for (const sayfa of sayfalar) {
   const html = uygula(sablon, sayfa);
   if (!html.includes(`<title>${attr(sayfa.title)}</title>`)) {

@@ -164,13 +164,13 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
             <Pressable onPress={() => git('/politika' as Href)}>
               <Text style={styles.altLink}>{m.navPolitika}</Text>
             </Pressable>
-            <Pressable onPress={() => disAc(UygulamaKimligi.LEGAL_TERMS_URL)}>
+            <Pressable onPress={() => git('/politika/tos' as Href)}>
               <Text style={styles.altLink}>{m.sartlar}</Text>
             </Pressable>
-            <Pressable onPress={() => disAc(UygulamaKimligi.LEGAL_PRIVACY_URL)}>
+            <Pressable onPress={() => git('/politika/privacy' as Href)}>
               <Text style={styles.altLink}>{m.gizlilik}</Text>
             </Pressable>
-            <Pressable onPress={() => disAc(UygulamaKimligi.LEGAL_CHILD_SAFETY_URL)}>
+            <Pressable onPress={() => git('/politika/child_safety' as Href)}>
               <Text style={styles.altLink}>{m.cocuk}</Text>
             </Pressable>
           </View>

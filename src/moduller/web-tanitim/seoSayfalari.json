@@ -2,46 +2,79 @@
   {
     "yol": "/",
     "title": "Tamuso — Görüntülü sohbet, canlı yayın ve arkadaş bul",
-    "description": "Tamuso ile görüntülü görüş, canlı yayın aç, mesajlaş ve yeni arkadaşlar bul. Ses odaları, coin ve meyve oyunu aynı uygulamada. 18 yaş ve üzeri."
+    "description": "Tamuso ile görüntülü görüş, canlı yayın aç, mesajlaş ve yeni arkadaşlar bul. Ses odaları, coin ve meyve oyunu aynı uygulamada. 18 yaş ve üzeri.",
+    "kaynak": "app/index.tsx"
   },
   {
     "yol": "/tanitim",
     "title": "Tamuso | Canlı yayın, görüntülü sohbet ve mesajlaşma",
-    "description": "Tamuso tanıtımı: görüntülü görüşme, canlı yayın, mesajlaşma ve arkadaş bulma. Uygulamanın açık sayfası."
+    "description": "Tamuso tanıtımı: görüntülü görüşme, canlı yayın, mesajlaşma ve arkadaş bulma. Uygulamanın açık sayfası.",
+    "kaynak": "app/tanitim/index.tsx"
   },
   {
     "yol": "/tanitim/ozellikler",
     "title": "Tamuso özellikleri | Yayın, mesaj, ses odası ve oyunlar",
-    "description": "Görüntülü görüşme, canlı yayın, PK, ses odaları, hikaye, keşfet, coin ve meyve çarkı. Tamuso özelliklerinin listesi."
+    "description": "Görüntülü görüşme, canlı yayın, PK, ses odaları, hikaye, keşfet, coin ve meyve çarkı. Tamuso özelliklerinin listesi.",
+    "kaynak": "app/tanitim/ozellikler.tsx"
   },
   {
     "yol": "/tanitim/coinler",
     "title": "Tamuso coin | Uygulama içi bakiye",
-    "description": "Coin, Tamuso içindeki bakiyedir. Hediye, görüntülü görüşme ve oyunlarda kullanılır. Güncel tutar uygulama içinde görünür."
+    "description": "Coin, Tamuso içindeki bakiyedir. Hediye, görüntülü görüşme ve oyunlarda kullanılır. Güncel tutar uygulama içinde görünür.",
+    "kaynak": "app/tanitim/coinler.tsx"
   },
   {
     "yol": "/tanitim/meyve",
     "title": "Tamuso meyve oyunu | Fruit Wheel",
-    "description": "Fruit Wheel, sekiz meyveli canlı çarktır. Tur saati ve sonuç sunucuda belirlenir. Bu oyun bir kazanç garantisi değildir."
+    "description": "Fruit Wheel, sekiz meyveli canlı çarktır. Tur saati ve sonuç sunucuda belirlenir. Bu oyun bir kazanç garantisi değildir.",
+    "kaynak": "app/tanitim/meyve.tsx"
   },
   {
     "yol": "/tanitim/hakkinda",
     "title": "Tamuso hakkında | Vizyon ve gelecek",
-    "description": "Tamuso; görüntülü sohbet, canlı yayın, ses odaları ve oyunları bir arada sunan sosyal uygulamadır. Vizyon ve sonraki özellikler."
+    "description": "Tamuso; görüntülü sohbet, canlı yayın, ses odaları ve oyunları bir arada sunan sosyal uygulamadır. Vizyon ve sonraki özellikler.",
+    "kaynak": "app/tanitim/hakkinda.tsx"
   },
   {
     "yol": "/tanitim/yatirim",
     "title": "Tamuso yatırım | support@litxtech.com",
-    "description": "Tamuso yatırım görüşmesi için support@litxtech.com adresine yazın. Bu sayfa bir teklif, getiri veya satış vaadi değildir."
+    "description": "Tamuso yatırım görüşmesi için support@litxtech.com adresine yazın. Bu sayfa bir teklif, getiri veya satış vaadi değildir.",
+    "kaynak": "app/tanitim/yatirim.tsx"
   },
   {
     "yol": "/tanitim/isbirligi",
     "title": "Tamuso işbirliği | Ajans ve marka",
-    "description": "Ajanslar, yayıncılar ve markalar Tamuso ile çalışabilir. İşbirliği için support@litxtech.com adresine yazın."
+    "description": "Ajanslar, yayıncılar ve markalar Tamuso ile çalışabilir. İşbirliği için support@litxtech.com adresine yazın.",
+    "kaynak": "app/tanitim/isbirligi.tsx"
   },
   {
     "yol": "/politika",
     "title": "Tamuso politikalar | Gizlilik ve kullanım şartları",
-    "description": "Tamuso topluluk kuralları, gizlilik, kullanım şartları ve çocuk güvenliği metinleri."
+    "description": "Tamuso topluluk kuralları, gizlilik, kullanım şartları ve çocuk güvenliği metinleri.",
+    "kaynak": "app/politika/index.tsx"
+  },
+  {
+    "yol": "/politika/tos",
+    "title": "Kullanım Şartları | Tamuso",
+    "description": "Platform kuralları ve sorumluluklar.",
+    "kaynak": "app/politika/[kod].tsx"
+  },
+  {
+    "yol": "/politika/privacy",
+    "title": "Gizlilik Politikası | Tamuso",
+    "description": "Kişisel verilerin işlenmesi.",
+    "kaynak": "app/politika/[kod].tsx"
+  },
+  {
+    "yol": "/politika/community_rules",
+    "title": "Topluluk Kuralları | Tamuso",
+    "description": "Kullanıcı içeriği, bildirme ve engelleme kuralları.",
+    "kaynak": "app/politika/[kod].tsx"
+  },
+  {
+    "yol": "/politika/child_safety",
+    "title": "Çocuk Koruma Politikası | Tamuso",
+    "description": "Tamuso 18 yaş ve üzeri içindir. Çocuklara yönelik içerikte sıfır tolerans uygulanır.",
+    "kaynak": "app/politika/[kod].tsx"
   }
 ]
