@@ -162,9 +162,9 @@ export default function LoginScreen() {
 
   const onApple = async () => {
     setAppleLoading(true);
-    const { error, cancelled } = await signInWithApple();
+    const { error, cancelled, redirected } = await signInWithApple();
     setAppleLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.appleGirisi'), error);
       return;
@@ -174,9 +174,9 @@ export default function LoginScreen() {
 
   const onSpotify = async () => {
     setSpotifyLoading(true);
-    const { error, cancelled } = await signInWithSpotify();
+    const { error, cancelled, redirected } = await signInWithSpotify();
     setSpotifyLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.spotifyGirisi'), error);
       return;
@@ -186,9 +186,9 @@ export default function LoginScreen() {
 
   const onTwitch = async () => {
     setTwitchLoading(true);
-    const { error, cancelled } = await signInWithTwitch();
+    const { error, cancelled, redirected } = await signInWithTwitch();
     setTwitchLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.twitchGirisi'), error);
       return;
@@ -198,9 +198,9 @@ export default function LoginScreen() {
 
   const onX = async () => {
     setXLoading(true);
-    const { error, cancelled } = await signInWithX();
+    const { error, cancelled, redirected } = await signInWithX();
     setXLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.xGirisi'), error);
       return;
@@ -210,9 +210,9 @@ export default function LoginScreen() {
 
   const onGoogle = async () => {
     setGoogleLoading(true);
-    const { error, cancelled } = await signInWithGoogle();
+    const { error, cancelled, redirected } = await signInWithGoogle();
     setGoogleLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.googleGirisi'), error);
       return;
@@ -456,6 +456,25 @@ export default function LoginScreen() {
                           {googleLoading
                             ? t('auth.googleBaglaniyor')
                             : t('auth.googleIleDevam')}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    {!sosyalGizli && Platform.OS === 'web' ? (
+                      <Pressable
+                        onPress={() => void onApple()}
+                        disabled={appleLoading}
+                        style={[
+                          styles.appleWebBtn,
+                          appleLoading && styles.appleWebDisabled,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('auth.appleGirisi')}
+                      >
+                        <Ionicons name="logo-apple" size={20} color="#fff" />
+                        <Text style={styles.appleWebText}>
+                          {appleLoading
+                            ? t('auth.appleBaglaniyor')
+                            : t('auth.appleIleDevam')}
                         </Text>
                       </Pressable>
                     ) : null}
@@ -717,6 +736,22 @@ const styles = StyleSheet.create({
   googleText: {
     ...TipografiTokenlari.body,
     color: '#3C4043',
+    fontWeight: '700',
+  },
+  appleWebBtn: {
+    minHeight: 48,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: '#000',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.lg,
+  },
+  appleWebDisabled: { opacity: 0.7 },
+  appleWebText: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
     fontWeight: '700',
   },
   appleWrap: { gap: BoslukTokenlari.sm },

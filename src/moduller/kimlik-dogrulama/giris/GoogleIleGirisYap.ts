@@ -2,6 +2,7 @@ import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
+import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
 type WebBrowserModulu = typeof import('expo-web-browser');
 
@@ -27,7 +28,7 @@ function webBrowserAl(): Promise<WebBrowserModulu> {
 }
 
 export type GoogleGirisSonuc =
-  | { ok: true }
+  | { ok: true; yonlendirildi?: boolean }
   | { ok: false; hata: string; iptal?: boolean };
 
 /** openid + profil + e-posta — Google Cloud Data Access scopes ile uyumlu */
@@ -130,6 +131,13 @@ function nativeModulHatasiMi(e: unknown): boolean {
  * https://<project>.supabase.co/auth/v1/callback
  */
 export async function GoogleIleGirisYap(): Promise<GoogleGirisSonuc> {
+  const web = await WebdeOAuthDene('google', {
+    scopes: GOOGLE_SCOPES,
+    queryParams: { prompt: 'select_account' },
+    hata: i18n.t('auth.googleBaslatilamadi'),
+  });
+  if (web) return web;
+
   const redirectTo = oauthRedirectUri();
 
   let WebBrowser: WebBrowserModulu;

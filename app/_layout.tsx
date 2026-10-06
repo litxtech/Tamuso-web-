@@ -14,6 +14,7 @@ import { AktifSesOdasiMiniBar } from '../src/moduller/ses-odalari/bilesenler/Akt
 import { AktifSesOdasiPipKart } from '../src/moduller/ses-odalari/bilesenler/AktifSesOdasiPipKart';
 import { SesOdasiArkaPlanKurulum } from '../src/moduller/ses-odalari/arka-plan/SesOdasiArkaPlanServisi';
 import { SesOdasiPipKurulum } from '../src/moduller/ses-odalari/pip/useSesOdasiPip';
+import { TamusoActivitySistemKurulum } from '../src/moduller/tamuso-activity/TamusoActivitySistemKurulum';
 import { GorusmeGlobalKatman } from '../src/moduller/gorusme/bilesenler/GorusmeGlobalKatman';
 import { OyunKazancBalonuSaglayici } from '../src/moduller/oyunlar/kazanc-balonu/OyunKazancBalonuSaglayici';
 import { CocukKorumaOnayKarti } from '../src/moduller/cocuk-koruma/bilesenler/CocukKorumaOnayKarti';
@@ -74,6 +75,13 @@ try {
 /** Android FGS + iOS arka plan ses oturumu */
 try {
   SesOdasiArkaPlanKurulum();
+} catch {
+  /* native yok / Expo Go */
+}
+
+/** iOS CallKit / PushKit / Live Activity recovery */
+try {
+  TamusoActivitySistemKurulum();
 } catch {
   /* native yok / Expo Go */
 }
@@ -250,6 +258,18 @@ function KokIcerik() {
           <Stack.Screen
             name="durum/[id]"
             options={{ animation: 'fade', presentation: 'fullScreenModal' }}
+          />
+          <Stack.Screen
+            name="hikaye/olustur"
+            options={{ animation: 'slide_from_bottom', presentation: 'fullScreenModal' }}
+          />
+          <Stack.Screen
+            name="hikaye/[userId]"
+            options={{ animation: 'fade', presentation: 'fullScreenModal' }}
+          />
+          <Stack.Screen
+            name="hikaye/arsiv"
+            options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
             name="bildirim-ayarlari/index"

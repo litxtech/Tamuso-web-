@@ -1,5 +1,6 @@
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
+import { Platform } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { OrtamDegiskenleri } from '../yapilandirma/OrtamDegiskenleri';
 import { GuvenliOturumDepolama } from '../moduller/kimlik-dogrulama/depolama/GuvenliOturumDepolama';
@@ -16,7 +17,7 @@ export const supabase = createClient(
       storage: GuvenliOturumDepolama,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: Platform.OS === 'web',
       flowType: 'pkce',
     },
   },

@@ -4,24 +4,35 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { BildirimIzniIste } from './BildirimIzniIste';
 import {
+  ANDROID_ARAMA_BILDIRIM_KANALI,
   ANDROID_BILDIRIM_KANALI,
   ANDROID_MESAJ_BILDIRIM_KANALI,
+  ARAMA_BILDIRIM_SESI,
   MESAJ_BILDIRIM_SESI,
 } from './BildirimKanallari';
 
 export {
+  ANDROID_ARAMA_BILDIRIM_KANALI,
   ANDROID_BILDIRIM_KANALI,
   ANDROID_MESAJ_BILDIRIM_KANALI,
+  ARAMA_BILDIRIM_SESI,
   MESAJ_BILDIRIM_SESI,
 };
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async (notification) => {
+    const type = String(
+      (notification.request.content.data as { type?: string } | undefined)
+        ?.type ?? '',
+    );
+    const isCall = type === 'incoming_call';
+    return {
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: !isCall,
+    };
+  },
 });
 
 function androidFcmHazirMi(): boolean {

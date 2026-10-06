@@ -379,6 +379,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       GuvenlikOlayiKaydet('login_failed', { provider: 'apple' });
       return { error: sonuc.hata };
     }
+    if (sonuc.yonlendirildi) return { redirected: true };
     // Silinmiş hesap: refreshProfile önce çıkış yaparsa kod no_auth olur — önce kontrol
     const durum = await OturumKorumaDurumunuGetir();
     if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
@@ -419,6 +420,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       GuvenlikOlayiKaydet('login_failed', { provider: 'spotify' });
       return { error: sonuc.hata };
     }
+    if (sonuc.yonlendirildi) return { redirected: true };
     const durum = await OturumKorumaDurumunuGetir();
     if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
       await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
@@ -453,6 +455,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       GuvenlikOlayiKaydet('login_failed', { provider: 'twitch' });
       return { error: sonuc.hata };
     }
+    if (sonuc.yonlendirildi) return { redirected: true };
     const durum = await OturumKorumaDurumunuGetir();
     if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
       await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
@@ -487,6 +490,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       GuvenlikOlayiKaydet('login_failed', { provider: 'x' });
       return { error: sonuc.hata };
     }
+    if (sonuc.yonlendirildi) return { redirected: true };
     const durum = await OturumKorumaDurumunuGetir();
     if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
       await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');
@@ -521,6 +525,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       GuvenlikOlayiKaydet('login_failed', { provider: 'google' });
       return { error: sonuc.hata };
     }
+    if (sonuc.yonlendirildi) return { redirected: true };
     const durum = await OturumKorumaDurumunuGetir();
     if (!durum.ok && (durum.kod === 'banned' || durum.kod === 'deleted')) {
       await ManuelCikisYap(durum.kod === 'banned' ? 'ban' : 'account_deleted');

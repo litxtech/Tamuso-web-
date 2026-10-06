@@ -14,6 +14,7 @@ import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVarMi';
+import { useAdminPermissions } from '../../src/moduller/admin/yetki/useAdminPermissions';
 import { AdminOzetGetir, type AdminOzet } from '../../src/moduller/admin/okuma/AdminOzetGetir';
 import {
   AdminOnayBalonlariGetir,
@@ -33,6 +34,7 @@ import {
   ADMIN_BOLUM_SIRASI,
   ADMIN_MODULLER,
   type AdminAramaSonuc,
+  type AdminModul,
 } from '../../src/moduller/admin/arama/AdminModulKatalogu';
 import { AdminAramaKutusu } from '../../src/moduller/admin/arama/AdminAramaKutusu';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
@@ -42,6 +44,8 @@ import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenl
 export default function AdminHubEkrani() {
   const { profile } = useAuth();
   const admin = AdminYetkisiVarMi(profile);
+  const { has, isSuper, loading: izinYukleniyor, refresh: izinYenile } =
+    useAdminPermissions();
   const [ozet, setOzet] = useState<AdminOzet | null>(null);
   const [balonlar, setBalonlar] = useState<AdminOnayBalonu[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -50,9 +54,16 @@ export default function AdminHubEkrani() {
   const [aramaAktif, setAramaAktif] = useState(false);
   const [aramaSonuc, setAramaSonuc] = useState<AdminAramaSonuc[]>([]);
 
+  const yetkiliModuller = useMemo((): AdminModul[] => {
+    if (isSuper) return ADMIN_MODULLER;
+    if (izinYukleniyor) return [];
+    return ADMIN_MODULLER.filter((m) => has(m.permissionKey));
+  }, [has, isSuper, izinYukleniyor]);
+
   const yukle = useCallback(async () => {
     setYukleniyor(true);
     try {
+      await izinYenile();
       const gelen = await AdminOzetGetir();
       setOzet(gelen);
       setBalonlar(await AdminOnayBalonlariGetir(gelen.platform));
@@ -61,7 +72,7 @@ export default function AdminHubEkrani() {
     } finally {
       setYukleniyor(false);
     }
-  }, []);
+  }, [izinYenile]);
 
   useEffect(() => {
     if (!admin) router.replace('/(tabs)/profile');
@@ -75,11 +86,10 @@ export default function AdminHubEkrani() {
   );
 
   const gosterilecek = useMemo(() => {
-    if (!aramaAktif) return ADMIN_MODULLER;
+    if (!aramaAktif) return yetkiliModuller;
     const hrefSet = new Set(aramaSonuc.map((s) => s.href));
-    return ADMIN_MODULLER.filter((m) => hrefSet.has(m.href));
-  }, [aramaAktif, aramaSonuc]);
-
+    return yetkiliModuller.filter((m) => hrefSet.has(m.href));
+  }, [aramaAktif, aramaSonuc, yetkiliModuller]);
   if (!admin) {
     return (
       <Screen edges={['top']}>
@@ -146,6 +156,7 @@ export default function AdminHubEkrani() {
         }
       >
         <AdminAramaKutusu
+          moduller={yetkiliModuller}
           onSonuc={(sonuclar, sorgu) => {
             const aktif = sorgu.trim().length > 0;
             setAramaAktif(aktif);
@@ -153,7 +164,7 @@ export default function AdminHubEkrani() {
           }}
         />
 
-        {!aramaAktif && yukleniyor && !ozet ? (
+        {!aramaAktif && (yukleniyor || izinYukleniyor) && !ozet ? (
           <ActivityIndicator color={RenkTokenlari.primarySoft} />
         ) : null}
 

@@ -282,6 +282,7 @@ function OyunPosterKart({
   ctaDisabled,
   onPress,
 }: PosterProps) {
+  const { t } = useCeviri();
   return (
     <OyunAuraCerceve
       renkler={[tint[1], '#FFFFFF', tint[1]]}
@@ -310,6 +311,10 @@ function OyunPosterKart({
           style={styles.posterFade}
           pointerEvents="none"
         />
+        <View style={styles.tamusoNot} pointerEvents="none">
+          <Text style={styles.tamusoMark}>TAMUSO</Text>
+          <Text style={styles.tamusoAlt}>{t('oyun.tamusoGelistirdi')}</Text>
+        </View>
         <View style={styles.posterBody}>
           <View style={[styles.avatarRing, { borderColor: tint[1] }]}>
             <Image
@@ -331,7 +336,7 @@ function OyunPosterKart({
           <Pressable
             onPress={ctaDisabled ? undefined : onPress}
             disabled={ctaDisabled}
-            delayPressIn={70}
+            delayPressIn={0}
             hitSlop={6}
             accessibilityRole="button"
             accessibilityLabel={ctaLabel}
@@ -458,6 +463,33 @@ const styles = StyleSheet.create({
   posterFade: {
     ...StyleSheet.absoluteFill,
     zIndex: 1,
+  },
+  tamusoNot: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    zIndex: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(6,8,16,0.55)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+  tamusoMark: {
+    ...TipografiTokenlari.micro,
+    fontSize: 8,
+    letterSpacing: 1.4,
+    fontWeight: '800',
+    color: 'rgba(255,248,236,0.9)',
+  },
+  tamusoAlt: {
+    ...TipografiTokenlari.micro,
+    fontSize: 7,
+    letterSpacing: 0.15,
+    fontWeight: '600',
+    color: 'rgba(232,228,240,0.64)',
+    marginTop: 1,
   },
   posterBody: {
     flex: 1,

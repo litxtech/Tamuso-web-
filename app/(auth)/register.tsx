@@ -166,9 +166,9 @@ export default function RegisterScreen() {
       return;
     }
     setSpotifyLoading(true);
-    const { error, cancelled } = await signInWithSpotify();
+    const { error, cancelled, redirected } = await signInWithSpotify();
     setSpotifyLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.spotifyKaydi'), error);
       return;
@@ -195,9 +195,9 @@ export default function RegisterScreen() {
       return;
     }
     setTwitchLoading(true);
-    const { error, cancelled } = await signInWithTwitch();
+    const { error, cancelled, redirected } = await signInWithTwitch();
     setTwitchLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.twitchKaydi'), error);
       return;
@@ -224,9 +224,9 @@ export default function RegisterScreen() {
       return;
     }
     setXLoading(true);
-    const { error, cancelled } = await signInWithX();
+    const { error, cancelled, redirected } = await signInWithX();
     setXLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.xKaydi'), error);
       return;
@@ -253,9 +253,9 @@ export default function RegisterScreen() {
       return;
     }
     setGoogleLoading(true);
-    const { error, cancelled } = await signInWithGoogle();
+    const { error, cancelled, redirected } = await signInWithGoogle();
     setGoogleLoading(false);
-    if (cancelled) return;
+    if (cancelled || redirected) return;
     if (error) {
       Alert.alert(t('auth.googleKaydi'), error);
       return;

@@ -87,6 +87,7 @@ import {
   AktifSesOdasiGuncelle,
   AktifSesOdasiOneCikar,
 } from '../../src/moduller/ses-odalari/oturum/AktifSesOdasiOturumu';
+import { SesOdasiniKucult } from '../../src/moduller/ses-odalari/navigasyon/SesOdasiniKucult';
 import { useSesOdasiPip } from '../../src/moduller/ses-odalari/pip/useSesOdasiPip';
 import { MikrofonIstegiGonder } from '../../src/moduller/ses-odalari/mikrofon/MikrofonIstegiGonder';
 import { HostTahtaOtur } from '../../src/moduller/ses-odalari/islemler/HostTahtaOtur';
@@ -140,7 +141,7 @@ import { CoinYuklePaneli } from '../../src/moduller/cuzdan/bilesenler/CoinYukleP
 import { useCoinYuklePaneli } from '../../src/moduller/cuzdan/islemler/useCoinYuklePaneli';
 import { HEDIYE_FALLBACK_50 } from '../../src/moduller/hediyeler/katalog/HediyeFallback50';
 import { AnalyticsOlayEkle } from '../../src/moduller/guvenlik/analytics/AnalyticsOlayEkle';
-import { OyunOdaLazyKatmani } from '../../src/moduller/oyunlar/oda/OyunOdaLazyKatmani';
+import { OyunOdaLazyKatmani, oyunOdaKatmaniOnYukle } from '../../src/moduller/oyunlar/oda/OyunOdaLazyKatmani';
 import { useGorunurOyunKodlari } from '../../src/moduller/oyunlar/ortak/hooks/useGorunurOyunKodlari';
 import type { GameCode } from '../../src/moduller/oyunlar/ortak/tipler/OyunTipleri';
 import { useKlavyeYuksekligi } from '../../src/bilesenler/klavye/useKlavyeYuksekligi';
@@ -436,6 +437,10 @@ export default function RoomScreen() {
   });
   const oyunlarAcik = oyunPlatformAcik && herhangiOyunGorunur;
 
+  useEffect(() => {
+    if (oyunlarAcik && !isDemo) oyunOdaKatmaniOnYukle();
+  }, [oyunlarAcik, isDemo]);
+
   useFocusEffect(
     useCallback(() => {
       setOdaOdakli(true);
@@ -522,6 +527,9 @@ export default function RoomScreen() {
                 : prev,
             );
             if (next.title) AktifSesOdasiGuncelle({ title: next.title });
+            if (next.cover_url !== undefined) {
+              AktifSesOdasiGuncelle({ coverUrl: next.cover_url });
+            }
           }
           if (
             next &&
@@ -964,6 +972,24 @@ export default function RoomScreen() {
     AktifSesOdasiArkaPlanaAl();
     router.push(`/kullanici/${userId}` as any);
   }, [isDemo]);
+
+  const odayiKucult = useCallback(() => {
+    if (cikiyor || isDemo || !room?.id) return;
+    // Oturum henüz yoksa (yavaş join) küçültmeden önce oluştur
+    if (!AktifSesOdasiDurumunuAl()) {
+      AktifSesOdasiBaslat({
+        roomId: room.id,
+        title: room.title,
+        coverUrl: room.cover_url ?? room.host?.avatar_url ?? null,
+        micAcik: !muted,
+        dinleyiciSayisi: room.listener_count ?? 0,
+      });
+    }
+    const ok = SesOdasiniKucult();
+    if (!ok) {
+      Alert.alert(t('sesOda.sesOdasi'), t('sesOda.kucultBasarisiz'));
+    }
+  }, [cikiyor, isDemo, room, muted, t]);
 
   const odaSahibi = useMemo(() => {
     if (room?.host?.id && room.host.id === room.host_id) return room.host;
@@ -1604,6 +1630,7 @@ export default function RoomScreen() {
         if (ayniOturum) {
           AktifSesOdasiGuncelle({
             title: r.title,
+            coverUrl: r.cover_url ?? r.host?.avatar_url ?? null,
             dinleyiciSayisi: r.listener_count ?? 0,
             micAcik: micAcikKalacak,
           });
@@ -1611,6 +1638,7 @@ export default function RoomScreen() {
           AktifSesOdasiBaslat({
             roomId: r.id,
             title: r.title,
+            coverUrl: r.cover_url ?? r.host?.avatar_url ?? null,
             micAcik: micAcikKalacak,
             dinleyiciSayisi: r.listener_count ?? 0,
           });
@@ -1939,7 +1967,10 @@ export default function RoomScreen() {
                   }
                 : prev,
             );
-            AktifSesOdasiGuncelle({ title: next.title });
+            AktifSesOdasiGuncelle({
+              title: next.title,
+              coverUrl: next.cover_url,
+            });
             if (next.max_seats != null) {
               void fetchRoomSeats(room.id)
                 .then((s) => {
@@ -2091,6 +2122,17 @@ export default function RoomScreen() {
                   varyant="ikon"
                 />
               ) : null}
+              {!isDemo ? (
+                <Pressable
+                  onPress={odayiKucult}
+                  disabled={cikiyor}
+                  style={styles.ustIconBtn}
+                  accessibilityLabel={t('sesOda.kucultGezin')}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="chevron-down" size={22} color="#F7F2E8" />
+                </Pressable>
+              ) : null}
               <Pressable
                 onPress={odadanCik}
                 disabled={cikiyor}
@@ -2157,8 +2199,8 @@ export default function RoomScreen() {
                   islemiDene('oyun_baslat', () => {
                     Keyboard.dismiss();
                     setGiftOpen(false);
-                    void gorunurOyunlariYenile();
                     setGameOpen(true);
+                    void gorunurOyunlariYenile();
                   })
                 }
               />

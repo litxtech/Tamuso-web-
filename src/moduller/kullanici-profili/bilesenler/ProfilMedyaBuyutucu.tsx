@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   Image,
   Modal,
@@ -10,53 +10,41 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { MedyaUriOnizlemeGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import {
+  MedyaUriKucuk,
+  MedyaUriOnizlemeGuvenli,
+} from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { useCeviri } from '../../../i18n/useCeviri';
 
 type Props = {
   uri: string | null;
   onKapat: () => void;
-  /** Kapak yatay, avatar kare — yalnızca erişilebilirlik / varsayılan oran */
+  /** Kapak yatay, avatar kare — yalnızca erişilebilirlik */
   tur?: 'avatar' | 'cover';
 };
 
 /**
  * Profil / kapak tam ekran önizleme.
- * Boş (siyah) alana basınca kapanır; fotoğraf alanına basınca açık kalır.
+ * getSize beklemeden hemen çizilir — ağ gecikmesi yok.
  */
 export function ProfilMedyaBuyutucu({ uri, onKapat, tur = 'avatar' }: Props) {
   const { t } = useCeviri();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const safeUri = MedyaUriOnizlemeGuvenli(uri);
-  const acik = Boolean(safeUri);
-  const [boyut, setBoyut] = useState({ w: width * 0.92, h: height * 0.55 });
+  const orijinal = MedyaUriOnizlemeGuvenli(uri);
+  const acik = Boolean(orijinal);
 
-  useEffect(() => {
-    if (!safeUri) return;
-    const maxW = width;
-    const maxH = height - insets.top - insets.bottom - 48;
-    Image.getSize(
-      safeUri,
-      (iw, ih) => {
-        if (iw <= 0 || ih <= 0) return;
-        const scale = Math.min(maxW / iw, maxH / ih);
-        setBoyut({
-          w: Math.max(1, Math.round(iw * scale)),
-          h: Math.max(1, Math.round(ih * scale)),
-        });
-      },
-      () => {
-        // Oran bilinmiyorsa türe göre makul kutu
-        if (tur === 'cover') {
-          setBoyut({ w: maxW, h: Math.round(maxW * 0.45) });
-        } else {
-          const side = Math.min(maxW * 0.88, maxH * 0.7);
-          setBoyut({ w: side, h: side });
-        }
-      },
-    );
-  }, [safeUri, width, height, insets.top, insets.bottom, tur]);
+  /** Yerel file:// olduğu gibi; uzak için orta boy render (hızlı) */
+  const gosterUri = useMemo(() => {
+    if (!orijinal) return null;
+    if (/^(file|content|ph|assets-library):/i.test(orijinal)) return orijinal;
+    const w = Math.round(Math.min(1400, width * 2));
+    const h = Math.round(Math.min(1800, height * 2));
+    return MedyaUriKucuk(orijinal, { w, h }) ?? orijinal;
+  }, [orijinal, width, height]);
+
+  const kutuW = width;
+  const kutuH = Math.max(120, height - insets.top - insets.bottom - 56);
 
   return (
     <Modal
@@ -69,7 +57,6 @@ export function ProfilMedyaBuyutucu({ uri, onKapat, tur = 'avatar' }: Props) {
       onRequestClose={onKapat}
     >
       <View style={styles.root} accessibilityViewIsModal>
-        {/* Tüm boşluk — kapat */}
         <Pressable
           style={styles.backdrop}
           onPress={onKapat}
@@ -77,16 +64,16 @@ export function ProfilMedyaBuyutucu({ uri, onKapat, tur = 'avatar' }: Props) {
           accessibilityLabel={t('ortak.kapat')}
         />
 
-        {safeUri ? (
+        {gosterUri ? (
           <View
-            style={[styles.imageWrap, { width: boyut.w, height: boyut.h }]}
+            style={[styles.imageWrap, { width: kutuW, height: kutuH }]}
             pointerEvents="box-none"
           >
-            {/* Fotoğraf — dokunuşu yutar, kapanmaz */}
             <View style={styles.imageHit} pointerEvents="auto">
               <Image
-                source={{ uri: safeUri }}
-                style={{ width: boyut.w, height: boyut.h }}
+                key={gosterUri}
+                source={{ uri: gosterUri }}
+                style={{ width: kutuW, height: kutuH }}
                 resizeMode="contain"
                 accessibilityLabel={
                   tur === 'cover'

@@ -4,9 +4,10 @@ import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { GenelGirisHatasiMesaji } from './GenelGirisHatasiMesaji';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
+import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
 export type AppleGirisSonuc =
-  | { ok: true }
+  | { ok: true; yonlendirildi?: boolean }
   | { ok: false; hata: string; iptal?: boolean };
 
 /**
@@ -14,6 +15,11 @@ export type AppleGirisSonuc =
  * İlk yetkilendirmede Apple adı + e-posta profile yazılır.
  */
 export async function AppleIleGirisYap(): Promise<AppleGirisSonuc> {
+  const web = await WebdeOAuthDene('apple', {
+    hata: i18n.t('auth.appleBasarisiz'),
+  });
+  if (web) return web;
+
   if (Platform.OS !== 'ios') {
     return { ok: false, hata: i18n.t('auth.appleYalnizcaIos') };
   }

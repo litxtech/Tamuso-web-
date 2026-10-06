@@ -55,6 +55,13 @@ export const OzellikBayragiAnahtarlari = [
   'kozmik_kaskad_enabled',
   'zeus_enabled',
   'nox_reels_enabled',
+  'stories_enabled',
+  'story_creation_enabled',
+  'story_video_enabled',
+  'story_links_enabled',
+  'story_gifts_enabled',
+  'story_discovery_enabled',
+  'story_official_promotions_enabled',
   'voice_room_music_enabled',
   'music_ducking_enabled',
   'music_playlists_enabled',
@@ -97,6 +104,15 @@ export const OzellikBayragiAnahtarlari = [
   'elevenlabs_enabled',
   'playcanvas_enabled',
   'creator_rewards_enabled',
+  // iOS Dynamic Island / Live Activities / CallKit
+  'ios_dynamic_island_enabled',
+  'live_activity_enabled',
+  'callkit_enabled',
+  'voice_room_live_activity_enabled',
+  'live_stream_activity_enabled',
+  'upload_activity_enabled',
+  'ai_music_activity_enabled',
+  'tournament_activity_enabled',
 ] as const;
 
 export type OzellikBayragiAnahtari = (typeof OzellikBayragiAnahtarlari)[number];
@@ -122,6 +138,7 @@ export const KillSwitchAnahtarlari = [
   'kill_people_discovery',
   'kill_people_paid_calls',
   'kill_offline_outbox',
+  'kill_stories',
 ] as const;
 
 export type KillSwitchAnahtari = (typeof KillSwitchAnahtarlari)[number];

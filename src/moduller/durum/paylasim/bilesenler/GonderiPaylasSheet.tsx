@@ -28,6 +28,8 @@ import { GonderiPaylasKullaniciListesi } from './GonderiPaylasKullaniciListesi';
 import type { GonderiPaylasAlici } from '../tipler';
 import { useCeviri } from '../../../../i18n/useCeviri';
 import { MesajComposerLinkOnizleme } from '../../../mesajlasma/bilesenler/MesajComposerLinkOnizleme';
+import { OzellikBayragiAktifMi } from '../../../ozellik-bayraklari/OzellikBayragiAktifMi';
+import { router } from 'expo-router';
 
 type Props = {
   visible: boolean;
@@ -234,6 +236,28 @@ export function GonderiPaylasSheet({
           <View style={styles.handle} />
           <Text style={styles.baslik}>{t('durumX.gonderiyiPaylas')}</Text>
 
+          {OzellikBayragiAktifMi('stories_enabled') ? (
+            <Pressable
+              style={styles.hikayeBtn}
+              onPress={() => {
+                onClose();
+                router.push({
+                  pathname: '/hikaye/olustur',
+                  params: { statusId },
+                } as any);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('hikaye.hikayendePaylas')}
+            >
+              <Ionicons
+                name="ellipse-outline"
+                size={20}
+                color={RenkTokenlari.primary}
+              />
+              <Text style={styles.hikayeYazi}>{t('hikaye.hikayendePaylas')}</Text>
+            </Pressable>
+          ) : null}
+
           <View style={styles.aramaKutu}>
             <Ionicons
               name="search"
@@ -335,6 +359,20 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.title,
     color: RenkTokenlari.text,
     fontSize: 18,
+  },
+  hikayeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: YaricapTokenlari.md,
+    backgroundColor: RenkTokenlari.surface,
+  },
+  hikayeYazi: {
+    ...TipografiTokenlari.body,
+    color: RenkTokenlari.text,
+    fontWeight: '600',
   },
   aramaKutu: {
     flexDirection: 'row',

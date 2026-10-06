@@ -42,7 +42,7 @@ export function BosPolitika(platform: SurumPlatformu): AdminSurumPolitikasi {
   return {
     id: '',
     platform,
-    latestVersion: '1.2.4',
+    latestVersion: '1.2.5',
     latestBuild: '0',
     minimumVersion: '1.2.4',
     minimumBuild: '0',

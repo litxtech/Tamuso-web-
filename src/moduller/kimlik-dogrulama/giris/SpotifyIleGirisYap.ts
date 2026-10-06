@@ -2,6 +2,7 @@ import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
+import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
 type WebBrowserModulu = typeof import('expo-web-browser');
 
@@ -31,7 +32,7 @@ function webBrowserAl(): Promise<WebBrowserModulu> {
 }
 
 export type SpotifyGirisSonuc =
-  | { ok: true }
+  | { ok: true; yonlendirildi?: boolean }
   | { ok: false; hata: string; iptal?: boolean };
 
 const SPOTIFY_SCOPES = 'user-read-email user-read-private';
@@ -142,6 +143,12 @@ function nativeModulHatasiMi(e: unknown): boolean {
  * Native expo-web-browser yoksa kontrollü hata döner (uygulama çökmez).
  */
 export async function SpotifyIleGirisYap(): Promise<SpotifyGirisSonuc> {
+  const web = await WebdeOAuthDene('spotify', {
+    scopes: SPOTIFY_SCOPES,
+    hata: i18n.t('auth.spotifyBaslatilamadi'),
+  });
+  if (web) return web;
+
   const redirectTo = oauthRedirectUri();
 
   let WebBrowser: WebBrowserModulu;

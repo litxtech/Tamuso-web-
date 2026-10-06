@@ -38,6 +38,7 @@ import {
   DurumSil,
   type DurumOggesi,
 } from '../../src/moduller/durum/islemler/DurumIslemleri';
+import { useHikayeProfilOzet } from '../../src/moduller/hikaye/kancalar/useHikayeProfilOzet';
 import type { Profile } from '../../src/types/models';
 import { AjansUyelikGetir, type AjansUyelik } from '../../src/moduller/ajanslar/okuma/AjansUyelikGetir';
 import { AjansProfilRozeti } from '../../src/moduller/ajanslar/bilesenler/AjansProfilRozeti';
@@ -126,6 +127,7 @@ export default function KullaniciProfilEkrani() {
     aktif: !!id && !isGuest,
   });
   const magaza = useHediyeMagaza();
+  const hikayeOzet = useHikayeProfilOzet(id);
   const sesOdasiArka = !!useAktifSesOdasi()?.arkaPlanda;
   const ustInset = Math.max(
     insets.top,
@@ -204,6 +206,14 @@ export default function KullaniciProfilEkrani() {
   const medyaTikla = (tur: 'avatar' | 'cover') => {
     const uri = tur === 'cover' ? coverUri : avatarUri;
     if (uri) setBuyut({ uri, tur });
+  };
+
+  const avatarTikla = () => {
+    if (hikayeOzet.hasActive && id) {
+      router.push(`/hikaye/${id}` as any);
+      return;
+    }
+    medyaTikla('avatar');
   };
 
   const gosterPrestige = kendi || !privacy.hide_prestige;
@@ -375,7 +385,11 @@ export default function KullaniciProfilEkrani() {
                     : undefined
                 }
                 onCoverPress={() => medyaTikla('cover')}
-                onAvatarPress={() => medyaTikla('avatar')}
+                onAvatarPress={avatarTikla}
+                onAvatarLongPress={() => medyaTikla('avatar')}
+                hasStory={hikayeOzet.hasActive}
+                hasUnseenStory={hikayeOzet.hasUnseen}
+                storyPreviewUri={hikayeOzet.previewUrl}
                 ustSol={
                   <Pressable
                     style={profilXOverlayBtnStyle}

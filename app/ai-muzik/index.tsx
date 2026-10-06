@@ -335,6 +335,20 @@ export default function AiMuzikStudioEkrani() {
       router.push(`/ai-muzik/${sonuc.track_id}` as Href);
       return;
     }
+    if (sonuc.job_id) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { AiMuzikActivityBaslat } = require('../../src/moduller/tamuso-activity/entegrasyon/AiMuzikActivityBagla') as {
+          AiMuzikActivityBaslat: (i: { jobId: string; title?: string }) => Promise<void>;
+        };
+        void AiMuzikActivityBaslat({
+          jobId: sonuc.job_id,
+          title: sonuc.title || t('aiMuzik.yeniParca', { defaultValue: 'Yeni Parça' }),
+        });
+      } catch {
+        /* Live Activity yok */
+      }
+    }
     Alert.alert(t('aiMuzik.uretimBasladiBaslik'), t('aiMuzik.uretimBasladiBody'), [
       { text: t('ortak.tamam'), onPress: () => router.push('/ai-muzik/kutuphane' as Href) },
     ]);

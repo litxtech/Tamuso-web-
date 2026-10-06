@@ -27,6 +27,8 @@ export {
   CuzdanHareketBelgesiOlustur,
 } from './BelgeIcerikDonustur';
 
+export { FinanceBelgesiOlustur } from '../admin/finance/FinanceBelgesiOlustur';
+
 export {
   HesapHareketleriBelgesiOlustur,
   HesapHareketExcelCsvOlustur,

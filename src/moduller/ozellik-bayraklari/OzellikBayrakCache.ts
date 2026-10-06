@@ -22,6 +22,9 @@ export const YEREL_BAYRAKLAR: Record<OzellikBayragiAnahtari, boolean> = {
   gifts_enabled: true,
   pk_enabled: true,
   agency_enabled: true,
+  agency_verification_v2_enabled: false,
+  agency_verification_financial_locks: false,
+  agency_verification_sync_wallet_kyc: false,
   withdrawals_enabled: false,
   wallet_exchange_enabled: false,
   wallet_sell_enabled: false,
@@ -65,6 +68,13 @@ export const YEREL_BAYRAKLAR: Record<OzellikBayragiAnahtari, boolean> = {
   kozmik_kaskad_enabled: true,
   zeus_enabled: true,
   nox_reels_enabled: true,
+  stories_enabled: false,
+  story_creation_enabled: false,
+  story_video_enabled: false,
+  story_links_enabled: false,
+  story_gifts_enabled: false,
+  story_discovery_enabled: false,
+  story_official_promotions_enabled: false,
   voice_room_music_enabled: true,
   music_ducking_enabled: true,
   music_playlists_enabled: true,
@@ -107,6 +117,14 @@ export const YEREL_BAYRAKLAR: Record<OzellikBayragiAnahtari, boolean> = {
   elevenlabs_enabled: false,
   playcanvas_enabled: false,
   creator_rewards_enabled: false,
+  ios_dynamic_island_enabled: true,
+  live_activity_enabled: true,
+  callkit_enabled: true,
+  voice_room_live_activity_enabled: true,
+  live_stream_activity_enabled: true,
+  upload_activity_enabled: true,
+  ai_music_activity_enabled: true,
+  tournament_activity_enabled: false,
 };
 
 export const YEREL_KILL: Record<KillSwitchAnahtari, boolean> = {
@@ -129,6 +147,7 @@ export const YEREL_KILL: Record<KillSwitchAnahtari, boolean> = {
   kill_people_discovery: false,
   kill_people_paid_calls: false,
   kill_offline_outbox: false,
+  kill_stories: false,
 };
 
 type Snapshot = {

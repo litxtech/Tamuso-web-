@@ -2,6 +2,7 @@ import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
+import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
 type WebBrowserModulu = typeof import('expo-web-browser');
 
@@ -27,7 +28,7 @@ function webBrowserAl(): Promise<WebBrowserModulu> {
 }
 
 export type TwitchGirisSonuc =
-  | { ok: true }
+  | { ok: true; yonlendirildi?: boolean }
   | { ok: false; hata: string; iptal?: boolean };
 
 /** E-posta + temel profil — Twitch Developer Console’da da aynı scope’lar olmalı */
@@ -129,6 +130,12 @@ function nativeModulHatasiMi(e: unknown): boolean {
  * Native expo-web-browser yoksa kontrollü hata döner.
  */
 export async function TwitchIleGirisYap(): Promise<TwitchGirisSonuc> {
+  const web = await WebdeOAuthDene('twitch', {
+    scopes: TWITCH_SCOPES,
+    hata: i18n.t('auth.twitchBaslatilamadi'),
+  });
+  if (web) return web;
+
   const redirectTo = oauthRedirectUri();
 
   let WebBrowser: WebBrowserModulu;

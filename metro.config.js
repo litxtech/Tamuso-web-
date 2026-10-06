@@ -53,4 +53,30 @@ config.watcher = {
 config.projectRoot = __dirname;
 config.watchFolders = [__dirname];
 
+const WEB_NATIVE_STUB = path.resolve(__dirname, 'src/web/native-modul-bos.js');
+const WEB_NATIVE_PAKETLER = [
+  'react-native-agora',
+  '@livekit/react-native',
+  '@livekit/react-native-webrtc',
+  'react-native-webrtc',
+  '@stripe/stripe-react-native',
+  'expo-iap',
+  '@supersami/rn-foreground-service',
+  'react-native-compressor',
+  'react-native-nitro-modules',
+  'expo-widgets',
+];
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (
+    platform === 'web' &&
+    WEB_NATIVE_PAKETLER.some(
+      (paket) => moduleName === paket || moduleName.startsWith(`${paket}/`),
+    )
+  ) {
+    return { type: 'sourceFile', filePath: WEB_NATIVE_STUB };
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;

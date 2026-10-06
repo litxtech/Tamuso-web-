@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Platform,
   Pressable,
   StyleSheet,
@@ -41,10 +40,8 @@ import {
   ImagePickerModuluYukle,
   ImagePickerOnIsit,
 } from '../../src/ortak/medya/ImagePickerHazirMi';
-import {
-  MedyaUriGuvenli,
-  MedyaUriOnizlemeGuvenli,
-} from '../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { MedyaUriOnizlemeGuvenli } from '../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
+import { ProfilOnizlemeGorseli } from '../../src/moduller/kullanici-profili/bilesenler/ProfilOnizlemeGorseli';
 import {
   BolgeleriUlkeyeGore,
   ProfilKonumKatalogunuGetir,
@@ -530,15 +527,23 @@ export default function ProfilDuzenleEkrani() {
             accessibilityLabel={t('profil.kapakFotografi')}
           >
             {coverGoster ? (
-              <Image
-                key={coverGoster}
-                source={{ uri: coverGoster }}
+              <ProfilOnizlemeGorseli
+                uri={coverGoster}
                 style={styles.cover}
+                genislik={900}
+                yukseklik={400}
+                accessibilityLabel={t('profil.kapakFotografi')}
               />
             ) : (
               <LinearGradient colors={[...RenkTokenlari.gradientPlaceholder]} style={styles.cover} />
             )}
-            <View style={styles.coverOverlay} pointerEvents="none">
+            <View
+              style={[
+                styles.coverOverlay,
+                coverGoster ? styles.coverOverlayHafif : null,
+              ]}
+              pointerEvents="none"
+            >
               {!coverGoster ? (
                 <>
                   <Ionicons name="image-outline" size={18} color="#fff" />
@@ -576,10 +581,12 @@ export default function ProfilDuzenleEkrani() {
               accessibilityLabel={t('profil.profilFotografi')}
             >
               {avatarGoster ? (
-                <Image
-                  key={avatarGoster}
-                  source={{ uri: avatarGoster }}
+                <ProfilOnizlemeGorseli
+                  uri={avatarGoster}
                   style={styles.avatar}
+                  genislik={216}
+                  yukseklik={216}
+                  accessibilityLabel={t('profil.profilFotografi')}
                 />
               ) : (
                 <LinearGradient
@@ -908,6 +915,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
+  },
+  coverOverlayHafif: {
+    backgroundColor: 'transparent',
   },
   coverHint: { ...TipografiTokenlari.caption, color: '#fff', fontWeight: '600' },
   coverEditBtn: {

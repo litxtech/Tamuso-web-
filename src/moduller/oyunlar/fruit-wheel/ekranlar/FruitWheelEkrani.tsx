@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useCeviri } from '../../../../i18n/useCeviri';
 import { supabase } from '../../../../lib/supabase';
 import { fruitWheelOlay } from '../analitik/FruitWheelAnalitik';
@@ -34,7 +33,7 @@ import {
   fruitWheelSync,
   newFruitWheelIdempotencyKey,
 } from '../servisler/FruitWheelApi';
-import { fruitWheelSes, fruitWheelSesKapat } from '../ses/FruitWheelAudio';
+import { fruitWheelSes, fruitWheelSesKapat, preloadFruitWheelAudio, setFruitWheelSoundEnabled } from '../ses/FruitWheelAudio';
 import type { FruitWheelState, PublicFruit, RoundStatus } from '../tipler/FruitWheelTipleri';
 import { FruitWheelCarki } from '../ui/FruitWheelCarki';
 import { FruitWheelKazanan } from '../ui/FruitWheelKazanan';
@@ -63,19 +62,34 @@ function KalanSure({
   offset,
   style,
   prefix,
+  active,
+  onTick,
 }: {
   locksAt: number;
   offset: React.RefObject<number>;
   style: object;
   prefix: string;
+  active: boolean;
+  onTick?: (remainSec: number) => void;
 }) {
   const [now, setNow] = useState(() => Date.now());
+  const lastSec = useRef<number | null>(null);
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    if (!active || !locksAt) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
-  }, []);
-  if (!locksAt) return <Text style={style} numberOfLines={1}>{prefix}</Text>;
-  const remainSec = Math.max(0, Math.ceil((locksAt - (now + offset.current)) / 1000));
+  }, [active, locksAt]);
+  const remainSec =
+    active && locksAt ? Math.max(0, Math.ceil((locksAt - (now + offset.current)) / 1000)) : null;
+  useEffect(() => {
+    if (remainSec == null) return;
+    if (lastSec.current === remainSec) return;
+    lastSec.current = remainSec;
+    onTick?.(remainSec);
+  }, [remainSec, onTick]);
+  if (!active || !locksAt || remainSec == null) {
+    return <Text style={style} numberOfLines={1}>{prefix}</Text>;
+  }
   return <Text style={style} numberOfLines={1}>{prefix}{`  ·  ${clockText(remainSec)}`}</Text>;
 }
 
@@ -125,9 +139,36 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
   const [shownBalance, setShownBalance] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [spinDone, setSpinDone] = useState(false);
+  const [spinArmed, setSpinArmed] = useState(false);
+  const [armedWin, setArmedWin] = useState<FruitId | null>(null);
+  const [spinRoundNo, setSpinRoundNo] = useState(1);
+  const [stageH, setStageH] = useState(220);
+  const [chip, setChip] = useState(10);
+  const [kazancKarti, setKazancKarti] = useState(false);
+  const armedRoundId = useRef<string | null>(null);
+  const armedRoundNo = useRef<number | null>(null);
+  const armedLocksAt = useRef<number>(0);
+  const pendingWinId = useRef<FruitId | null>(null);
+  const spinDoneRef = useRef(false);
+  const spinningRef = useRef(false);
+  const spinArmedRef = useRef(false);
+  const frozenSpin = useRef<{ roundNo: number; fruitId: FruitId } | null>(null);
+  const sealedStakes = useRef<Record<string, number>>({});
+  const lastSettlement = useRef<{ fruitId: string; matched: boolean; payout: number; multiplier: number }[]>([]);
+  const [winPayout, setWinPayout] = useState<{ payout: number; multiplier: number } | null>(null);
+  const [akis, setAkis] = useState<
+    { id: string; kind: 'play' | 'win' | 'lose'; text: string; fruitId?: FruitId }[]
+  >([]);
+  const akisScroll = useRef<ScrollView>(null);
   const idem = useRef<string | null>(null);
   const offset = useRef(0);
   const seenRound = useRef<string | null>(null);
+  const kartTur = useRef<string | null>(null);
+  const kartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCountdownSec = useRef<number | null>(null);
+  const autoConfirmRound = useRef<string | null>(null);
+  const confirmRef = useRef<() => Promise<void>>(async () => undefined);
+  const selecting = Object.keys(draft).length > 0;
 
   const names = useMemo(
     () => ({
@@ -151,33 +192,109 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
       return;
     }
     offset.current = new Date(res.serverNow).getTime() - Date.now();
-    setState(res);
     const roundId = res.round?.id ?? null;
+    const win = (res.round?.winningFruitId ?? null) as FruitId | null;
+
+    // Settlement bir an görünüp sonraki OPEN'da silinmesin diye önbellekle
+    if ((res.mySettlement?.length ?? 0) > 0) {
+      lastSettlement.current = res.mySettlement.map((s) => ({
+        fruitId: s.fruitId,
+        matched: Boolean(s.matched),
+        payout: Number(s.payout) || 0,
+        multiplier: Number(s.multiplier) || 0,
+      }));
+    }
+
+    // Silahlı tur sonucu: aynı turda veya recent'ten kurtar
+    if (armedRoundId.current && !spinDoneRef.current) {
+      if (win && roundId === armedRoundId.current) {
+        pendingWinId.current = win;
+        setArmedWin(win);
+      } else if (!pendingWinId.current && armedRoundNo.current != null) {
+        const hit = res.recent?.find((r) => r.roundNo === armedRoundNo.current);
+        if (hit?.fruitId) {
+          pendingWinId.current = hit.fruitId as FruitId;
+          setArmedWin(hit.fruitId as FruitId);
+        }
+      }
+    }
+
+    setState(res);
     if (roundId && roundId !== seenRound.current) {
+      // Sonuç kaçtıysa recent'ten kurtar (yeni tur gelmeden önce / hemen sonra)
+      if (
+        armedRoundId.current &&
+        !spinDoneRef.current &&
+        !pendingWinId.current &&
+        armedRoundNo.current != null
+      ) {
+        const hit = res.recent?.find((r) => r.roundNo === armedRoundNo.current);
+        if (hit?.fruitId) {
+          pendingWinId.current = hit.fruitId as FruitId;
+          setArmedWin(hit.fruitId as FruitId);
+        }
+      }
+
+      let keepForSpin =
+        Boolean(armedRoundId.current) &&
+        !spinDoneRef.current &&
+        (spinningRef.current || spinArmedRef.current || Boolean(pendingWinId.current));
+
+      // Silahlı tur recent penceresinden düştüyse vazgeç
+      if (
+        keepForSpin &&
+        !pendingWinId.current &&
+        !spinningRef.current &&
+        armedRoundNo.current != null &&
+        (res.recent?.length ?? 0) > 0
+      ) {
+        const oldest = Math.min(...res.recent.map((r) => r.roundNo));
+        if (armedRoundNo.current < oldest) keepForSpin = false;
+      }
+
       seenRound.current = roundId;
       const next: Record<string, number> = {};
       for (const line of res.mySelections) next[line.fruitId] = line.amount;
       setDraft(next);
-      setSpinning(false);
-      setSpinDone(false);
+      if (!keepForSpin) {
+        spinningRef.current = false;
+        spinArmedRef.current = false;
+        setSpinning(false);
+        setSpinDone(false);
+        setSpinArmed(false);
+        armedRoundId.current = null;
+        armedRoundNo.current = null;
+        pendingWinId.current = null;
+        frozenSpin.current = null;
+        setArmedWin(null);
+      }
       fruitWheelOlay('round_view', { roundId });
-      fruitWheelSes('round-open');
+      if (!spinningRef.current) fruitWheelSes('round-open');
     }
-    setShownBalance((prev) => (prev === 0 ? res.balance : prev));
+    setShownBalance(res.balance);
   }, [t]);
+
+  useEffect(() => {
+    void preloadFruitWheelAudio();
+    setFruitWheelSoundEnabled(soundOn);
+  }, [soundOn]);
 
   useEffect(() => {
     fruitWheelOlay('fruit_wheel_open');
     void pull();
     void fruitWheelHeartbeat();
-    const syncTimer = setInterval(() => void pull(), 4000);
-    const beat = setInterval(() => void fruitWheelHeartbeat(), 8000);
+    const syncTimer = setInterval(() => void pull(), 8000);
+    const beat = setInterval(() => void fruitWheelHeartbeat(), 15000);
+    let livePull: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
       .channel('fruit-wheel-live')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'fruit_wheel_live' },
-        () => { void pull(); },
+        () => {
+          if (livePull) clearTimeout(livePull);
+          livePull = setTimeout(() => void pull(), 500);
+        },
       )
       .subscribe();
     const sub = AppState.addEventListener('change', (s) => {
@@ -189,6 +306,7 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
     return () => {
       clearInterval(syncTimer);
       clearInterval(beat);
+      if (livePull) clearTimeout(livePull);
       void supabase.removeChannel(channel);
       sub.remove();
       fruitWheelSesKapat();
@@ -196,45 +314,99 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
     };
   }, [pull]);
 
+  // Bakiye count-up yok — ısı / JS yükü
   useEffect(() => {
-    if (!state) return;
-    const target = state.balance;
-    if (shownBalance === target) return;
-    if (Math.abs(target - shownBalance) < 80) {
-      setShownBalance(target);
-      return;
-    }
-    const step = Math.max(1, Math.round(Math.abs(target - shownBalance) / 8));
-    const timer = setTimeout(() => {
-      setShownBalance((v) => (v < target ? Math.min(target, v + step) : Math.max(target, v - step)));
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [shownBalance, state]);
+    if (state) setShownBalance(state.balance);
+  }, [state?.balance]);
 
-  const [stageH, setStageH] = useState(220);
-  const [chip, setChip] = useState(10);
-  const [kazancKarti, setKazancKarti] = useState(false);
-  const kartTur = useRef<string | null>(null);
-  const kartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onWheelSettled = useCallback(() => {
+    spinningRef.current = false;
     setSpinning(false);
     setSpinDone(true);
+    spinDoneRef.current = true;
+    spinArmedRef.current = false;
+    setSpinArmed(false);
+    armedRoundId.current = null;
+    // armedWin / frozenSpin sonucu göstermek için tut — yeni turda silinir
+    setNote('');
     fruitWheelSes('wheel-stop');
-  }, []);
+    void pull();
+  }, [pull]);
 
   const status = state?.round?.status ?? 'OPEN';
   const openForBets = status === 'OPEN' || status === 'LOCKING';
   const locksAt = state?.round ? new Date(state.round.locksAt).getTime() : 0;
-  const reveal = Boolean(state?.round?.winningFruitId);
-  const winId = reveal ? state?.round?.winningFruitId ?? null : null;
 
+  // Sunucu SPINNING olduktan sonra kazananı al — erken dönmesin
   useEffect(() => {
-    if (status === 'SPINNING' && winId && !spinning && !spinDone) {
-      setSpinning(true);
-      fruitWheelOlay('spin_started', { fruitId: winId });
+    const serverWin = state?.round?.winningFruitId as FruitId | null | undefined;
+    if (!serverWin || spinDoneRef.current || spinningRef.current) return;
+    const spinPhase =
+      status === 'SPINNING' || status === 'SETTLING' || status === 'RESULT';
+    if (!spinPhase) return;
+
+    pendingWinId.current = serverWin;
+    setArmedWin(serverWin);
+    if (!armedRoundId.current && state?.round) {
+      armedRoundId.current = state.round.id;
+      armedRoundNo.current = state.round.roundNo;
+      armedLocksAt.current = new Date(state.round.locksAt).getTime();
     }
-    if (status === 'LOCKED') fruitWheelOlay('round_locked');
-  }, [status, winId, spinning, spinDone]);
+    if (!spinArmedRef.current) {
+      if (Object.keys(sealedStakes.current).length === 0 && (state?.mySelections?.length ?? 0) > 0) {
+        const seal: Record<string, number> = {};
+        for (const line of state!.mySelections) seal[line.fruitId] = line.amount;
+        sealedStakes.current = seal;
+      }
+      spinDoneRef.current = false;
+      spinArmedRef.current = true;
+      setSpinDone(false);
+      setSpinArmed(true);
+    }
+  }, [status, state?.round?.id, state?.round?.roundNo, state?.round?.winningFruitId, state?.mySelections, state?.round?.locksAt]);
+
+  const winId = frozenSpin.current?.fruitId ?? armedWin ?? pendingWinId.current ?? null;
+
+  // Hazırlık: silahlıyken sık sync (gecikmeyi kısalt)
+  useEffect(() => {
+    if (!spinArmed || spinning || spinDone) return;
+    void pull();
+    const id = setInterval(() => void pull(), 220);
+    return () => clearInterval(id);
+  }, [spinArmed, spinning, spinDone, pull]);
+
+  // Kilit / spin fazında sık sync
+  useEffect(() => {
+    if (spinning || spinDone) return;
+    if (status !== 'LOCKING' && status !== 'LOCKED' && status !== 'SPINNING' && status !== 'SETTLING') {
+      return;
+    }
+    void pull();
+    const id = setInterval(() => void pull(), 200);
+    return () => clearInterval(id);
+  }, [status, spinning, spinDone, pull]);
+
+  // Silahlı + kazanan + SPINNING → hemen dön (saat kayması yüzünden ekstra bekletme)
+  useEffect(() => {
+    if (!spinArmed || spinning || spinDone) return;
+    const fruit = armedWin ?? pendingWinId.current;
+    if (!fruit) return;
+    const spinPhase =
+      status === 'SPINNING' || status === 'SETTLING' || status === 'RESULT';
+    if (!spinPhase) {
+      // Faz henüz gelmediyse sadece kilit saati geçtiyse dene
+      const lockTs = armedLocksAt.current || locksAt;
+      if (!(lockTs > 0 && Date.now() + offset.current >= lockTs)) return;
+    }
+    const rNo = armedRoundNo.current ?? state?.round?.roundNo ?? 1;
+    frozenSpin.current = { roundNo: rNo, fruitId: fruit };
+    setSpinRoundNo(rNo);
+    setArmedWin(fruit);
+    spinningRef.current = true;
+    setSpinning(true);
+    setNote('');
+    fruitWheelOlay('spin_started', { fruitId: fruit });
+  }, [spinArmed, armedWin, spinning, spinDone, status, locksAt, state?.round?.roundNo]);
 
   const total = Object.values(draft).reduce((s, n) => s + n, 0);
   const balance = readAuthoritativeBalance(state?.balance ?? 0, state?.economyMode ?? 'TEST_BALANCE');
@@ -253,7 +425,6 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
       if (next <= 0) return prev;
       fruitWheelOlay('selection_add', { fruitId: fruit, amount: next });
       fruitWheelSes('selection-add');
-      void Haptics.selectionAsync().catch(() => undefined);
       return { ...prev, [fruit]: cur + next };
     });
     setActiveFruit(fruit);
@@ -271,15 +442,25 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
     });
   };
 
-  const confirm = async () => {
+  const pushAkis = useCallback(
+    (kind: 'play' | 'win' | 'lose', text: string, fruitId?: FruitId) => {
+      const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      setAkis((prev) => [{ id, kind, text, fruitId }, ...prev].slice(0, 24));
+      requestAnimationFrame(() => akisScroll.current?.scrollTo({ x: 0, animated: true }));
+    },
+    [],
+  );
+
+  const confirm = useCallback(async () => {
     if (!state?.round || busy || !openForBets) return;
     if (!idem.current) idem.current = newFruitWheelIdempotencyKey();
-    setBusy(true);
-    setNote(t('oyun.fwChecking'));
     const items = FRUIT_ORDER.filter((id) => (draft[id] ?? 0) > 0).map((id) => ({
       fruitId: id,
-      amount: draft[id],
+      amount: draft[id]!,
     }));
+    if (items.length === 0) return;
+    setBusy(true);
+    setNote(t('oyun.fwChecking'));
     const res = await fruitWheelConfirm(state.round.id, idem.current, items);
     setBusy(false);
     if (!res.ok) {
@@ -294,31 +475,153 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
     idem.current = null;
     fruitWheelSes('selection-confirm');
     fruitWheelOlay('selection_confirm', { total: res.total, duplicate: res.duplicate === true });
-    setNote('');
+    setNote(t('oyun.fwPreparing'));
+    sealedStakes.current = { ...draft };
+    lastSettlement.current = [];
+    setWinPayout(null);
+    const playParts = items.map((it) => `${names[it.fruitId as FruitId] ?? it.fruitId} ${coin(it.amount)}`);
+    pushAkis('play', `${t('oyun.fwPlayed')}: ${playParts.join(' · ')}`, items[0]?.fruitId as FruitId);
+    armedRoundId.current = state.round.id;
+    armedRoundNo.current = state.round.roundNo;
+    armedLocksAt.current = new Date(state.round.locksAt).getTime();
+    pendingWinId.current = null;
+    frozenSpin.current = null;
+    spinDoneRef.current = false;
+    spinningRef.current = false;
+    spinArmedRef.current = true;
+    setArmedWin(null);
+    setSpinDone(false);
+    setSpinning(false);
+    setSpinArmed(true);
     if (typeof res.balance === 'number') {
       setState((prev) => (prev ? { ...prev, balance: res.balance! } : prev));
     }
     void pull();
-  };
+  }, [state, busy, openForBets, draft, t, pull, names, pushAkis]);
 
-  const matched = (state?.mySettlement ?? []).find((s) => s.matched && s.payout > 0);
-  const showResult = (status === 'RESULT' || status === 'NEXT_ROUND' || spinDone) && Boolean(winId);
+  confirmRef.current = () => confirm();
 
+  const settleLines =
+    (state?.mySettlement?.length ?? 0) > 0 ? state!.mySettlement : lastSettlement.current;
+  const matchedFromServer = settleLines.find((s) => s.matched && Number(s.payout) > 0);
+  const stakeOnWin = winId ? Number(sealedStakes.current[winId] ?? 0) : 0;
+  const fruitMult = winId
+    ? Number(
+        state?.fruits?.find((f) => f.id === winId)?.multiplier ??
+          state?.round?.multiplier ??
+          matchedFromServer?.multiplier ??
+          0,
+      )
+    : 0;
+  // Sunucu settlement OPEN'da silinse bile: seçtiğin meyve = kazanan → eşleşme
+  const didMatch = Boolean(matchedFromServer) || stakeOnWin > 0;
+  const matched = didMatch
+    ? matchedFromServer ?? {
+        fruitId: winId!,
+        stake: stakeOnWin,
+        matched: true,
+        multiplier: fruitMult,
+        payout: Math.max(0, Math.floor(stakeOnWin * (fruitMult || 1))),
+      }
+    : undefined;
+  const showResult = spinDone && Boolean(winId);
+  const countdownActive = selecting && openForBets && !spinArmed && !spinning;
+
+  // Süre bitmek üzere — seçim varsa otomatik onay (LOCKING başında değil, son anda)
   useEffect(() => {
-    const tur = state?.round?.id ?? null;
-    if (!tur || status === 'OPEN' || status === 'LOCKING' || status === 'LOCKED') {
-      if (kartTimer.current) clearTimeout(kartTimer.current);
-      setKazancKarti(false);
-      if (status === 'OPEN' || status === 'LOCKING') kartTur.current = null;
+    if (!state?.round || busy || spinArmed || spinning || spinDone) return;
+    if (total <= 0 || !openForBets || !locksAt) return;
+    const tick = () => {
+      const remainMs = locksAt - (Date.now() + offset.current);
+      // En erken ~0.6 sn kala onayla — 3-4 sn kala çarkı tetikleme
+      if (remainMs > 600) return;
+      const rid = state.round!.id;
+      if (autoConfirmRound.current === rid) return;
+      autoConfirmRound.current = rid;
+      void confirmRef.current();
+    };
+    tick();
+    const id = setInterval(tick, 150);
+    return () => clearInterval(id);
+  }, [status, total, busy, spinArmed, spinning, spinDone, openForBets, locksAt, state?.round?.id]);
+
+  // Animasyon bitti — yerel seçim + settlement ile kazan/kaybet (OPEN settlement silinse bile)
+  useEffect(() => {
+    if (!spinDone || !winId) {
+      if (status === 'OPEN' || status === 'LOCKING') {
+        if (kartTimer.current) clearTimeout(kartTimer.current);
+        setKazancKarti(false);
+        kartTur.current = null;
+        lastCountdownSec.current = null;
+      }
       return;
     }
-    if (!winId || (!spinDone && status !== 'RESULT' && status !== 'NEXT_ROUND')) return;
-    if (kartTur.current === tur) return;
-    kartTur.current = tur;
-    setKazancKarti(true);
+    const key = `r${spinRoundNo}:${winId}`;
+    if (kartTur.current === key) return;
+    kartTur.current = key;
+
+    const stake = Number(sealedStakes.current[winId] ?? 0);
+    const fromServer = (lastSettlement.current.length
+      ? lastSettlement.current
+      : state?.mySettlement ?? []
+    ).find((s) => s.matched && Number(s.payout) > 0);
+    const won = Boolean(fromServer) || stake > 0;
+    const mult = Number(
+      fromServer?.multiplier ??
+        state?.round?.multiplier ??
+        state?.fruits?.find((f) => f.id === winId)?.multiplier ??
+        0,
+    );
+    const payout = Number(fromServer?.payout ?? Math.floor(stake * (mult || 1)));
+
+    if (won) {
+      setWinPayout({ payout, multiplier: mult || 1 });
+      setKazancKarti(true);
+      fruitWheelSes('win');
+      pushAkis(
+        'win',
+        `${t('oyun.fwWinTitle')} ${names[winId] ?? winId} · +${coin(payout)}`,
+        winId,
+      );
+      if (kartTimer.current) clearTimeout(kartTimer.current);
+      kartTimer.current = setTimeout(() => {
+        setKazancKarti(false);
+        setNote('');
+      }, 1700);
+      return;
+    }
+
+    setWinPayout(null);
+    setKazancKarti(false);
+    fruitWheelSes('lose');
+    const lostTotal = Object.values(sealedStakes.current).reduce((s, n) => s + n, 0);
+    pushAkis(
+      'lose',
+      `${t('oyun.fwLostShort')} · −${coin(lostTotal)}`,
+      winId,
+    );
     if (kartTimer.current) clearTimeout(kartTimer.current);
-    kartTimer.current = setTimeout(() => setKazancKarti(false), 2200);
-  }, [state?.round?.id, status, winId, spinDone]);
+    kartTimer.current = setTimeout(() => {
+      spinningRef.current = false;
+      spinArmedRef.current = false;
+      setSpinning(false);
+      setSpinArmed(false);
+      setSpinDone(false);
+      frozenSpin.current = null;
+      pendingWinId.current = null;
+      setArmedWin(null);
+      setNote(t('oyun.fwPreparing'));
+      void pull();
+    }, 280);
+  }, [spinDone, winId, spinRoundNo, status, state?.mySettlement, state?.fruits, state?.round?.multiplier, pull, t, names, pushAkis]);
+
+  // Spin bitti, settlement yoksa sık sync (payout güncellemek için)
+  useEffect(() => {
+    if (!spinDone || !didMatch) return;
+    if (matchedFromServer) return;
+    const id = setInterval(() => void pull(), 400);
+    return () => clearInterval(id);
+  }, [spinDone, didMatch, matchedFromServer, pull]);
 
   useEffect(() => {
     if (showResult && winId) {
@@ -326,6 +629,22 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
       if (matched) fruitWheelOlay('settlement_displayed', { payout: matched.payout });
     }
   }, [showResult, winId, matched]);
+
+  // Settlement sonradan gelirse kart payout'unu güncelle
+  useEffect(() => {
+    if (!kazancKarti || !matchedFromServer) return;
+    setWinPayout({
+      payout: Number(matchedFromServer.payout),
+      multiplier: Number(matchedFromServer.multiplier) || fruitMult || 1,
+    });
+  }, [kazancKarti, matchedFromServer, fruitMult]);
+
+  const onCountdownTick = useCallback((remainSec: number) => {
+    if (!countdownActive) return;
+    if (remainSec <= 5 && remainSec > 0) fruitWheelSes('countdown');
+    if (remainSec === 0 && lastCountdownSec.current !== 0) fruitWheelSes('lock');
+    lastCountdownSec.current = remainSec;
+  }, [countdownActive]);
 
   const quick = state?.limits.quickAmounts ?? [10, 50, 100, 500, 1000, 5000];
   useEffect(() => {
@@ -355,6 +674,8 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
             offset={offset}
             style={styles.sub}
             prefix={state?.round ? `#${state.round.roundNo}  ·  ${statusText(status, t)}` : '—'}
+            active={countdownActive}
+            onTick={onCountdownTick}
           />
         </View>
         <Pressable onPress={onHistory} hitSlop={6} style={styles.iconBtn}>
@@ -363,7 +684,17 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
         <Pressable onPress={onRules} hitSlop={6} style={styles.iconBtn}>
           <Ionicons name="information-circle-outline" size={18} color="#E8E4F0" />
         </Pressable>
-        <Pressable onPress={() => setSoundOn((v) => !v)} hitSlop={6} style={styles.iconBtn}>
+        <Pressable
+          onPress={() => {
+            setSoundOn((v) => {
+              const next = !v;
+              setFruitWheelSoundEnabled(next);
+              return next;
+            });
+          }}
+          hitSlop={6}
+          style={styles.iconBtn}
+        >
           <Ionicons name={soundOn ? 'volume-high-outline' : 'volume-mute-outline'} size={18} color="#E8E4F0" />
         </Pressable>
       </View>
@@ -409,13 +740,13 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
           fruits={fruits}
           stakes={draft}
           spinning={spinning}
-          targetFruitId={status === 'SPINNING' || spinning ? winId : null}
-          winnerFruitId={showResult ? winId : null}
-          roundNo={state?.round?.roundNo ?? 1}
+          targetFruitId={spinning ? (frozenSpin.current?.fruitId ?? winId) : null}
+          winnerFruitId={showResult ? (frozenSpin.current?.fruitId ?? winId) : null}
+          roundNo={spinning || spinDone ? spinRoundNo : (state?.round?.roundNo ?? 1)}
           names={names}
           size={wheelSize}
           mode={wheelMode}
-          interactive={openForBets && !spinning}
+          interactive={openForBets && !spinning && !spinArmed}
           selectedFruitId={activeFruit}
           onFruitPress={(id) => {
             if (!openForBets) return;
@@ -425,7 +756,7 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
         />
       </View>
 
-      <View style={[styles.footer, { opacity: focusWheel ? 0.45 : 1 }]} pointerEvents={focusWheel ? 'none' : 'auto'}>
+      <View style={[styles.footer, { opacity: focusWheel || spinArmed ? 0.45 : 1 }]} pointerEvents={focusWheel || spinArmed ? 'none' : 'auto'}>
         {openForBets && active ? (
           <>
             <View style={styles.activeRow}>
@@ -450,9 +781,17 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
                 </Pressable>
               ))}
             </View>
+            <Pressable
+              style={styles.customBtn}
+              onPress={() => setCustomOpen(true)}
+            >
+              <Ionicons name="create-outline" size={18} color="#1A1208" />
+              <Text style={styles.customBtnText}>{t('oyun.fwCustom')}</Text>
+            </Pressable>
             <View style={styles.sideRow}>
-              <Pressable onPress={() => setCustomOpen(true)}><Text style={styles.sideText}>{t('oyun.fwCustom')}</Text></Pressable>
-              <Pressable onPress={() => setDraft({})}><Text style={styles.sideText}>{t('oyun.fwClearAll')}</Text></Pressable>
+              <Pressable onPress={() => setDraft({})}>
+                <Text style={styles.sideText}>{t('oyun.fwClearAll')}</Text>
+              </Pressable>
             </View>
           </>
         ) : (
@@ -462,28 +801,66 @@ export function FruitWheelEkrani({ onClose, onHistory, onRules }: Props) {
 
       <Text style={styles.note} numberOfLines={1}>{note || ' '}</Text>
 
+      {akis.length > 0 ? (
+        <ScrollView
+          ref={akisScroll}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.akisBar}
+          contentContainerStyle={styles.akisRow}
+        >
+          {akis.map((item) => (
+            <View
+              key={item.id}
+              style={[
+                styles.akisChip,
+                item.kind === 'win' && styles.akisWin,
+                item.kind === 'lose' && styles.akisLose,
+                item.kind === 'play' && styles.akisPlay,
+              ]}
+            >
+              {item.fruitId ? (
+                <Image source={FRUIT_IMAGES[item.fruitId]} style={styles.akisArt} resizeMode="contain" />
+              ) : null}
+              <Text
+                style={[
+                  styles.akisText,
+                  item.kind === 'win' && styles.akisTextWin,
+                  item.kind === 'lose' && styles.akisTextLose,
+                ]}
+                numberOfLines={1}
+              >
+                {item.text}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      ) : null}
+
       <Pressable
-        style={[styles.cta, (total <= 0 || !openForBets || busy) && styles.ctaOff]}
-        disabled={total <= 0 || !openForBets || busy}
+        style={[styles.cta, (total <= 0 || !openForBets || busy || spinArmed) && styles.ctaOff]}
+        disabled={total <= 0 || !openForBets || busy || spinArmed}
         onPress={() => void confirm()}
       >
         <Text style={[styles.ctaText, (total <= 0 || !openForBets) && styles.ctaTextOff]} numberOfLines={1}>
           {busy
             ? t('oyun.fwChecking')
-            : total > 0
-              ? `${t('oyun.fwConfirm')} · ${coin(total)}`
-              : t('oyun.fwChooseCta')}
+            : spinArmed && !spinDone
+              ? t('oyun.fwPreparing')
+              : total > 0
+                ? `${t('oyun.fwConfirm')} · ${coin(total)}`
+                : t('oyun.fwChooseCta')}
         </Text>
       </Pressable>
 
-      {kazancKarti && showResult && winId ? (
+      {kazancKarti && showResult && winId && didMatch ? (
         <FruitWheelKazanan
           fruitId={winId}
           name={names[winId]}
-          multiplier={Number(state?.round?.multiplier ?? 0)}
-          matched={Boolean(matched)}
-          payoutText={matched ? `+${coin(matched.payout)}` : null}
-          title={matched ? t('oyun.fwWinTitle') : t('oyun.fwNoMatch')}
+          multiplier={Number(winPayout?.multiplier ?? matched?.multiplier ?? fruitMult ?? 0)}
+          matched
+          payoutText={`+${coin(winPayout?.payout ?? matched?.payout ?? 0)}`}
+          title={t('oyun.fwWinTitle')}
         />
       ) : null}
 
@@ -569,14 +946,13 @@ const styles = StyleSheet.create({
   chipOn: { opacity: 1, borderWidth: 1, borderColor: '#F4D47A', width: 36, height: 36 },
   chipArt: { width: 26, height: 26 },
   stage: { flex: 1, minHeight: 0, alignItems: 'center', justifyContent: 'center' },
-  footer: { height: 92, justifyContent: 'center' },
   activeRow: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 14, gap: 8 },
   activeArt: { width: 22, height: 22 },
   activeText: { flex: 1, color: '#E8E4F0', fontSize: 12, fontWeight: '700' },
   coinGrid: { flexDirection: 'row', paddingHorizontal: 10, marginTop: 4, gap: 4 },
   coinBtn: {
     flex: 1,
-    height: 30,
+    height: 32,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -585,12 +961,49 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(139,92,246,0.45)',
   },
   coinBtnOn: { borderColor: '#F4D47A', backgroundColor: 'rgba(215,174,85,0.22)' },
-  coinText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
+  coinText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
   coinTextOn: { color: '#F4D47A' },
-  sideRow: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 2 },
+  customBtn: {
+    marginHorizontal: 10,
+    marginTop: 6,
+    minHeight: 40,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E6CE92',
+    borderWidth: 1,
+    borderColor: '#F4D47A',
+    paddingHorizontal: 14,
+  },
+  customBtnText: { color: '#1A1208', fontSize: 14, fontWeight: '800' },
+  footer: { minHeight: 124, justifyContent: 'center', paddingBottom: 2 },
+  sideRow: { flexDirection: 'row', justifyContent: 'flex-end', marginHorizontal: 16, marginTop: 4 },
   sideText: { color: '#9B95A8', fontSize: 12, fontWeight: '700' },
   lock: { color: '#F4D47A', textAlign: 'center', fontWeight: '700' },
   note: { color: '#E8E4F0', textAlign: 'center', height: 16, fontSize: 12 },
+  akisBar: { maxHeight: 36, marginBottom: 4 },
+  akisRow: { paddingHorizontal: 10, gap: 8, alignItems: 'center' },
+  akisChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(28,20,44,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(232,228,240,0.18)',
+    maxWidth: 280,
+  },
+  akisWin: { borderColor: 'rgba(158,240,180,0.55)', backgroundColor: 'rgba(20,48,32,0.92)' },
+  akisLose: { borderColor: 'rgba(255,120,120,0.4)', backgroundColor: 'rgba(48,18,24,0.9)' },
+  akisPlay: { borderColor: 'rgba(244,212,122,0.4)' },
+  akisArt: { width: 18, height: 18 },
+  akisText: { color: '#E8E4F0', fontSize: 11, fontWeight: '700' },
+  akisTextWin: { color: '#9EF0B4' },
+  akisTextLose: { color: '#FFB4B4' },
   cta: { marginHorizontal: 12, marginTop: 2, marginBottom: 2, backgroundColor: '#D7AE55', borderRadius: 14, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   ctaOff: { backgroundColor: '#241C33', opacity: 0.9 },
   ctaText: { color: '#1A1208', fontWeight: '800', fontSize: 15 },

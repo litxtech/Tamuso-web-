@@ -38,22 +38,24 @@ export function OyunOdaAltKart({
   const bottom = useSharedValue(bottomGap);
 
   useEffect(() => {
+    // Kısa mesafe + hızlı easing — kart hemen hissedilsin
+    slide.value = height * 0.28;
     slide.value = withTiming(0, {
-      duration: 380,
+      duration: 200,
       easing: Easing.out(Easing.cubic),
     });
   }, [height, slide]);
 
   useEffect(() => {
     gap.value = withTiming(topGap, {
-      duration: 280,
+      duration: 160,
       easing: Easing.out(Easing.cubic),
     });
   }, [gap, topGap]);
 
   useEffect(() => {
     bottom.value = withTiming(bottomGap, {
-      duration: 280,
+      duration: 160,
       easing: Easing.out(Easing.cubic),
     });
   }, [bottom, bottomGap]);

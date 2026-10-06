@@ -2,6 +2,7 @@ import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
+import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
 type WebBrowserModulu = typeof import('expo-web-browser');
 
@@ -27,7 +28,7 @@ function webBrowserAl(): Promise<WebBrowserModulu> {
 }
 
 export type XGirisSonuc =
-  | { ok: true }
+  | { ok: true; yonlendirildi?: boolean }
   | { ok: false; hata: string; iptal?: boolean };
 
 /**
@@ -132,6 +133,12 @@ function nativeModulHatasiMi(e: unknown): boolean {
  * provider: 'x' (OAuth 1.0a 'twitter' değil).
  */
 export async function XIleGirisYap(): Promise<XGirisSonuc> {
+  const web = await WebdeOAuthDene('x', {
+    scopes: X_SCOPES,
+    hata: i18n.t('auth.xBaslatilamadi'),
+  });
+  if (web) return web;
+
   const redirectTo = oauthRedirectUri();
 
   let WebBrowser: WebBrowserModulu;

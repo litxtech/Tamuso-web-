@@ -20,7 +20,7 @@ export async function DurumMedyasiSecVeYukle(
   try {
     const secim = await GaleriAc({
       mediaTypes: tur === 'video' ? ['videos'] : ['images'],
-      videoMaxDuration: 90,
+      // Süre limiti yok — 1080p sıkıştırma
     });
     if (!secim.ok) return secim;
 
@@ -52,6 +52,7 @@ export async function DurumMedyasiSecVeYukle(
       mime: asset.mimeType,
       tur,
       upsert: false,
+      // video → DepoyaMedyaYukle içinde 1080p
     });
 
     if (!up.ok) return { ok: false, hata: up.hata };

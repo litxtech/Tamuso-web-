@@ -209,6 +209,26 @@ export async function GorusmeOturumTamamenBitir(opts?: {
       /* DB fail olsa bile medyayı kes */
     }
   }
+  if (callId) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { GorusmeActivityBitir } = require('../../tamuso-activity/entegrasyon/GorusmeActivityBagla') as {
+        GorusmeActivityBitir: (
+          id: string,
+          reason?: 'ended' | 'missed' | 'failed' | 'declined',
+        ) => Promise<void>;
+      };
+      const mapped =
+        reason === 'ring_timeout'
+          ? 'missed'
+          : reason === 'start_error'
+            ? 'failed'
+            : 'ended';
+      void GorusmeActivityBitir(callId, mapped);
+    } catch {
+      /* ignore */
+    }
+  }
   await MedyaOdasiKes();
 }
 
@@ -223,6 +243,15 @@ export function GorusmeOturumMuteAyarla(muted: boolean): void {
   if (!durum) return;
   patch({ muted });
   MedyaMikrofonAyarla(!muted);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { TamusoCallKitSetMuted } = require('../../tamuso-activity/callkit/TamusoCallKitBridge') as {
+      TamusoCallKitSetMuted: (id: string, muted: boolean) => void;
+    };
+    TamusoCallKitSetMuted(durum.callId, muted);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function GorusmeOturumSpeakerAyarla(speaker: boolean): void {
@@ -267,6 +296,27 @@ function realtimeKur(callId: string) {
           MedyaMikrofonAyarla(!GorusmeOturumAl()?.muted);
           if (next.is_paid) {
             billingHeartbeatBaslat(callId);
+          }
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const { GorusmeActivityBaglandi } = require('../../tamuso-activity/entegrasyon/GorusmeActivityBagla') as {
+              GorusmeActivityBaglandi: (i: {
+                callId: string;
+                peerName: string;
+                video: boolean;
+              }) => Promise<void>;
+            };
+            const peer = GorusmeOturumAl()?.peer;
+            void GorusmeActivityBaglandi({
+              callId,
+              peerName:
+                peer?.display_name?.trim() ||
+                peer?.username?.trim() ||
+                i18n.t('gorusme.arayan'),
+              video: next.call_type === 'video',
+            });
+          } catch {
+            /* ignore */
           }
         }
         if (['ended', 'rejected', 'missed', 'cancelled'].includes(next.status)) {
@@ -359,6 +409,23 @@ export async function GorusmeOturumEkranAc(input: {
       ringTimer = setTimeout(() => {
         void GorusmeOturumTamamenBitir({ reason: 'ring_timeout' });
       }, 55_000);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { TamusoCallKitStartOutgoing } = require('../../tamuso-activity/callkit/TamusoCallKitBridge') as {
+          TamusoCallKitStartOutgoing: (i: {
+            callId: string;
+            calleeName: string;
+            hasVideo: boolean;
+          }) => Promise<boolean>;
+        };
+        void TamusoCallKitStartOutgoing({
+          callId,
+          calleeName: i18n.t('gorusme.arayan'),
+          hasVideo: isVideo,
+        });
+      } catch {
+        /* CallKit yok */
+      }
     }
 
     if (isVideo) {
@@ -407,6 +474,28 @@ export async function GorusmeOturumEkranAc(input: {
     if (c.status === 'active' || durum.baglandi) {
       patch({ baglandi: true, durumYazi: i18n.t('gorusme.baglandi'), hazir: true, mock: false });
       if (c.is_paid) billingHeartbeatBaslat(callId);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { GorusmeActivityBaglandi } = require('../../tamuso-activity/entegrasyon/GorusmeActivityBagla') as {
+          GorusmeActivityBaglandi: (i: {
+            callId: string;
+            peerName: string;
+            video: boolean;
+            isCaller?: boolean;
+          }) => Promise<void>;
+        };
+        void GorusmeActivityBaglandi({
+          callId,
+          peerName:
+            durum.peer?.display_name?.trim() ||
+            durum.peer?.username?.trim() ||
+            i18n.t('gorusme.arayan'),
+          video: isVideo,
+          isCaller: benArayan,
+        });
+      } catch {
+        /* CallKit / Live Activity yok */
+      }
     } else {
       patch({ hazir: true, mock: false });
     }

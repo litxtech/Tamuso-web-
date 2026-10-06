@@ -1,7 +1,7 @@
 /**
- * Ses odası oyun katmanı — aktif olunca mount.
+ * Ses odası oyun katmanı — oda açılınca önceden yüklenir, tıklanınca beklemez.
  * React.lazy / Metro async chunk burada "unknown module" veriyordu;
- * statik import + aktif kapısı ile güvenilir yükleme.
+ * dinamik import + modül önbelleği ile güvenilir ve hızlı açılış.
  *
  * Wrapper oda flex akışına asla girmez (position absolute).
  */
@@ -28,22 +28,43 @@ export type OyunOdaLazyKatmaniProps = {
   bottomGap?: number;
 };
 
+type KatmanTipi = React.ComponentType<Omit<OyunOdaLazyKatmaniProps, 'aktif'>>;
+
+let cachedKatman: KatmanTipi | null = null;
+let loadPromise: Promise<KatmanTipi> | null = null;
+
+function oyunKatmaniYukle(): Promise<KatmanTipi> {
+  if (cachedKatman) return Promise.resolve(cachedKatman);
+  if (!loadPromise) {
+    loadPromise = import('./OyunOdaKatmani').then((mod) => {
+      cachedKatman = mod.OyunOdaKatmani;
+      return mod.OyunOdaKatmani;
+    });
+  }
+  return loadPromise;
+}
+
+/** Oda mount olur olmaz çağır — ilk tıklamada import beklemesin. */
+export function oyunOdaKatmaniOnYukle(): void {
+  void oyunKatmaniYukle();
+}
+
 export function OyunOdaLazyKatmani({
   aktif,
   ...props
 }: OyunOdaLazyKatmaniProps) {
-  const [Katman, setKatman] = useState<React.ComponentType<Omit<OyunOdaLazyKatmaniProps, 'aktif'>> | null>(null);
+  const [Katman, setKatman] = useState<KatmanTipi | null>(() => cachedKatman);
 
+  // Oda açıkken her zaman ön-yükle (aktif olmayı bekleme)
   useEffect(() => {
-    if (!aktif || Katman) return;
     let iptal = false;
-    void import('./OyunOdaKatmani').then((mod) => {
-      if (!iptal) setKatman(() => mod.OyunOdaKatmani);
+    void oyunKatmaniYukle().then((mod) => {
+      if (!iptal) setKatman(() => mod);
     });
     return () => {
       iptal = true;
     };
-  }, [aktif, Katman]);
+  }, []);
 
   if (!aktif || !Katman) return null;
   return (

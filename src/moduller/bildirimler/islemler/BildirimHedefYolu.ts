@@ -138,6 +138,22 @@ export function BildirimHedefYolu(input: {
   const status = str('status_id');
   if (status) return `/durum/${status}`;
 
+  const storyOwner = str('owner_id') || str('story_owner_id');
+  const storyId = str('story_id');
+  if (
+    storyOwner &&
+    (type === 'story_reaction' ||
+      type === 'story_mention' ||
+      type === 'story_view' ||
+      storyId)
+  ) {
+    return `/hikaye/${storyOwner}`;
+  }
+  if (storyId && !storyOwner) {
+    // Deeplink coz route yoksa profil yerine hikaye deeplink RPC ile açılabilir;
+    // şimdilik owner_id yoksa deep_link alanına güven.
+  }
+
   const room = str('room_id');
   if (room) return `/lobi/${room}`;
 

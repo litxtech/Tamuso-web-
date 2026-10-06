@@ -63,6 +63,15 @@ export async function CanliYayinBitir(
     const fallback = await q;
     if (fallback.error) return { ok: false, hata: error.message };
   }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { CanliYayinActivityBitir } = require('../../tamuso-activity/entegrasyon/CanliYayinActivityBagla') as {
+      CanliYayinActivityBitir: (id?: string) => Promise<void>;
+    };
+    void CanliYayinActivityBitir(sessionId ?? undefined);
+  } catch {
+    /* ignore */
+  }
   return { ok: true };
 }
 

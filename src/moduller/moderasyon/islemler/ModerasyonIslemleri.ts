@@ -58,6 +58,8 @@ export async function KullaniciBildir(input: {
     | 'profile'
     | 'status_post'
     | 'status_comment'
+    | 'story'
+    | 'story_item'
     | 'other';
   contentId?: string;
   context?: Record<string, unknown>;

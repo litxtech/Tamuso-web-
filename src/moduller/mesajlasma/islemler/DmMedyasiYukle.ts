@@ -85,7 +85,7 @@ export async function DmMedyalariSec(
         | 'images'
         | 'videos'
       )[],
-      videoMaxDuration: 120,
+      // Süre limiti yok — 1080p sıkıştırma
     };
 
     if (kaynak === 'kamera') {

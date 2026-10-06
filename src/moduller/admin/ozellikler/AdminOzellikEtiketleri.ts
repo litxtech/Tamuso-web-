@@ -132,6 +132,19 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
     ],
   },
   {
+    id: 'sosyal',
+    baslik: 'Sosyal / Hikaye',
+    flagKeys: [
+      'stories_enabled',
+      'story_creation_enabled',
+      'story_video_enabled',
+      'story_links_enabled',
+      'story_gifts_enabled',
+      'story_discovery_enabled',
+      'story_official_promotions_enabled',
+    ],
+  },
+  {
     id: 'banner',
     baslik: 'Banner / Duyuru',
     flagKeys: [
@@ -198,6 +211,7 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
       'kill_people_discovery',
       'kill_people_paid_calls',
       'kill_offline_outbox',
+      'kill_stories',
     ],
   },
 ];
@@ -461,6 +475,35 @@ const OZELLIK_METINLERI: Record<string, AdminOzellikMetni> = {
     baslik: 'NOX REELS',
     aciklama: 'NOX REELS slot oyununu açar veya kapatır.',
   },
+  stories_enabled: {
+    baslik: 'Hikayeler',
+    aciklama:
+      'Instagram tarzı 24s hikaye tepsi, oluşturma ve izleyiciyi açar. Kapalıyken ana sayfa tepsi gizlenir.',
+  },
+  story_creation_enabled: {
+    baslik: 'Hikaye oluşturma',
+    aciklama: 'Yeni hikaye yayınlamayı açar veya kapatır (stories_enabled gerekir).',
+  },
+  story_video_enabled: {
+    baslik: 'Hikaye videosu',
+    aciklama: 'Hikayede video medya yüklemeyi açar.',
+  },
+  story_links_enabled: {
+    baslik: 'Hikaye linkleri',
+    aciklama: 'Hikaye attachment tipinde link eklemeyi açar.',
+  },
+  story_gifts_enabled: {
+    baslik: 'Hikaye hediyeleri',
+    aciklama: 'Hikaye izleyicide mevcut hediye mağazası girişini açar (ayrı cüzdan yok).',
+  },
+  story_discovery_enabled: {
+    baslik: 'Hikaye keşfi',
+    aciklama: 'Takip dışı herkese açık keşif hikayelerini tepside gösterir (varsayılan kapalı).',
+  },
+  story_official_promotions_enabled: {
+    baslik: 'Resmi hikaye promosyonu',
+    aciklama: 'Admin resmi hikaye tepsi önceliğini açar.',
+  },
   voice_room_music_enabled: {
     baslik: 'Ses odası müziği',
     aciklama: 'Ses odalarında arka plan müziği kütüphanesi ve mini oynatıcıyı açar.',
@@ -664,6 +707,10 @@ const KILL_METINLERI: Record<string, AdminOzellikMetni> = {
   kill_offline_outbox: {
     baslik: 'Offline kuyruğu durdur',
     aciklama: 'Acil durumda offline mesaj outbox flush’unu keser.',
+  },
+  kill_stories: {
+    baslik: 'Hikayeler kapat',
+    aciklama: 'Hikaye tepsi/oluşturma/izleyiciyi acil kapatır.',
   },
 };
 

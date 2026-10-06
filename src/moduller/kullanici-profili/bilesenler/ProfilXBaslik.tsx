@@ -1,10 +1,10 @@
 import React, { type ReactNode } from 'react';
 import {
-  Image,
   Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,14 +16,18 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { TakipSayaciniFormatla } from '../../takip/TakipSayacFormat';
 import { DogrulanmisTik } from './DogrulanmisTik';
 import { ProfilAvatarCerceve } from './ProfilAvatarCerceve';
+import { ProfilOnizlemeGorseli } from './ProfilOnizlemeGorseli';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { UserTitleBadge } from '../../unvanlar/bilesenler/UserTitleBadge';
 import { UnvanSunumunuCoz } from '../../unvanlar/okuma/UnvanSunumunuCoz';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { useUnvanKatalog } from '../../unvanlar/kancalar/useUnvanKatalog';
+import { HikayeCanliHalka } from '../../hikaye/bilesenler/HikayeCanliHalka';
+import { HikayeOnizlemeGorselMi } from '../../hikaye/yardimcilar/HikayeAvatarDaireUri';
 
 export const PROFIL_X_COVER_H = 150;
 export const PROFIL_X_AVATAR = 76;
@@ -84,6 +88,11 @@ export function ProfilXBaslik({
   onIstekPress,
   onCoverPress,
   onAvatarPress,
+  onAvatarLongPress,
+  hasStory = false,
+  hasUnseenStory = false,
+  /** Story varken avatar yerine gösterilecek önizleme */
+  storyPreviewUri = null,
   children,
 }: {
   coverUri: string | null;
@@ -119,10 +128,17 @@ export function ProfilXBaslik({
   onIstekPress?: () => void;
   onCoverPress?: () => void;
   onAvatarPress?: () => void;
+  /** Instagram: story varken uzun bas = foto büyüt */
+  onAvatarLongPress?: () => void;
+  /** Aktif hikaye varsa halka çiz */
+  hasStory?: boolean;
+  hasUnseenStory?: boolean;
+  storyPreviewUri?: string | null;
   children?: ReactNode;
 }) {
   const { t, i18n, dil } = useCeviri();
   const insets = useSafeAreaInsets();
+  const { width: ekranW } = useWindowDimensions();
   useUnvanKatalog();
   const title =
     OzellikBayragiAktifMi('user_titles_enabled') && titleId
@@ -132,61 +148,112 @@ export function ProfilXBaslik({
   const top = overlayTop ?? insets.top + BoslukTokenlari.sm;
   const katildi = katilmaMetni(createdAt, i18n.language, t);
   const avatarHarf = (displayName.trim().slice(0, 1) || '?').toUpperCase();
+  const safeCoverUri = MedyaUriGuvenli(coverUri);
+  const safeAvatarUri = MedyaUriGuvenli(avatarUri);
+  const storyOnizleme = HikayeOnizlemeGorselMi(storyPreviewUri)
+    ? MedyaUriGuvenli(storyPreviewUri)
+    : null;
+  /** Story varken kare önizleme; yoksa / video ise profil resmi */
+  const avatarGosterUri =
+    hasStory && storyOnizleme ? storyOnizleme : safeAvatarUri;
+  const avatarPx = Math.round(PROFIL_X_AVATAR * 3);
+
+  const avatarPlaceholder = (
+    <LinearGradient
+      colors={[...RenkTokenlari.gradientPrimary]}
+      style={StyleSheet.absoluteFillObject}
+    >
+      <View style={styles.avatarHarfWrap}>
+        <Text style={styles.avatarHarf}>{avatarHarf}</Text>
+      </View>
+    </LinearGradient>
+  );
 
   const avatarIcerik = (
     <Pressable
       onPress={onAvatarPress}
-      style={styles.avatarWrap}
-      accessibilityLabel={t('profil.profilFotografi')}
-      disabled={!avatarUri || !onAvatarPress}
+      onLongPress={onAvatarLongPress}
+      delayLongPress={280}
+      style={[styles.avatarWrap, !hasStory && styles.avatarWrapKenar]}
+      accessibilityLabel={
+        hasStory
+          ? t('hikaye.kullaniciHikayeA11y', { ad: displayName })
+          : t('profil.profilFotografi')
+      }
+      disabled={!onAvatarPress}
+      collapsable={false}
     >
-      {avatarUri ? (
-        <Image key={avatarUri} source={{ uri: avatarUri }} style={styles.avatar} />
-      ) : (
-        <LinearGradient
-          colors={[...RenkTokenlari.gradientPrimary]}
-          style={styles.avatar}
+      {hasStory ? (
+        <HikayeCanliHalka
+          size={PROFIL_X_AVATAR}
+          hasUnseen={hasUnseenStory}
+          thickness={3}
         >
-          <Text style={styles.avatarHarf}>{avatarHarf}</Text>
-        </LinearGradient>
+          <ProfilOnizlemeGorseli
+            uri={avatarGosterUri}
+            style={styles.avatarImgDaire}
+            genislik={avatarPx}
+            yukseklik={avatarPx}
+            accessibilityLabel={t('profil.profilFotografi')}
+          >
+            {avatarPlaceholder}
+          </ProfilOnizlemeGorseli>
+        </HikayeCanliHalka>
+      ) : (
+        <ProfilOnizlemeGorseli
+          uri={safeAvatarUri}
+          style={styles.avatarImgDaire}
+          genislik={avatarPx}
+          yukseklik={avatarPx}
+          accessibilityLabel={t('profil.profilFotografi')}
+        >
+          {avatarPlaceholder}
+        </ProfilOnizlemeGorseli>
       )}
     </Pressable>
   );
 
   return (
     <View style={styles.root}>
-      <View style={[styles.coverWrap, { height: coverH }]}>
+      <View
+        style={[styles.coverWrap, { width: ekranW, height: coverH }]}
+        collapsable={false}
+      >
+        <ProfilOnizlemeGorseli
+          uri={safeCoverUri}
+          style={{ width: ekranW, height: coverH }}
+          genislik={Math.round(ekranW * 2)}
+          yukseklik={Math.round(coverH * 2)}
+          accessibilityLabel={t('profil.kapakFotografi')}
+        >
+          <LinearGradient
+            colors={[...RenkTokenlari.gradientPlaceholder]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ width: ekranW, height: coverH }}
+          />
+        </ProfilOnizlemeGorseli>
+        <LinearGradient
+          colors={['transparent', RenkTokenlari.bg]}
+          style={styles.coverFade}
+          pointerEvents="none"
+        />
         <Pressable
           onPress={onCoverPress}
-          style={styles.coverPress}
+          style={StyleSheet.absoluteFillObject}
           accessibilityLabel={t('profil.kapakFotografi')}
-          disabled={!coverUri || !onCoverPress}
-        >
-          {coverUri ? (
-            <Image
-              key={coverUri}
-              source={{ uri: coverUri }}
-              style={[styles.cover, { height: coverH }]}
-            />
-          ) : (
-            <LinearGradient
-              colors={[...RenkTokenlari.gradientPlaceholder]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.cover, { height: coverH }]}
-            />
-          )}
-          <LinearGradient
-            colors={['transparent', RenkTokenlari.bg]}
-            style={styles.coverFade}
-          />
-        </Pressable>
+          disabled={!safeCoverUri || !onCoverPress}
+        />
 
         {ustSol ? (
-          <View style={[styles.ustSol, { top }]}>{ustSol}</View>
+          <View style={[styles.ustSol, { top }]} pointerEvents="box-none">
+            {ustSol}
+          </View>
         ) : null}
         {ustSag ? (
-          <View style={[styles.ustSag, { top }]}>{ustSag}</View>
+          <View style={[styles.ustSag, { top }]} pointerEvents="box-none">
+            {ustSag}
+          </View>
         ) : null}
       </View>
 
@@ -364,12 +431,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  coverPress: {
-    ...StyleSheet.absoluteFill,
-  },
-  cover: {
-    width: '100%',
-  },
   coverFade: {
     position: 'absolute',
     left: 0,
@@ -407,17 +468,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarWrap: {
-    width: PROFIL_X_AVATAR,
-    height: PROFIL_X_AVATAR,
+    width: '100%',
+    height: '100%',
     borderRadius: PROFIL_X_AVATAR / 2,
     overflow: 'hidden',
     backgroundColor: RenkTokenlari.surface,
-    borderWidth: 3,
+  },
+  avatarWrapKenar: {
+    borderWidth: 2.5,
     borderColor: RenkTokenlari.bg,
   },
-  avatar: {
+  avatarImgDaire: {
     width: '100%',
     height: '100%',
+  },
+  avatarImgFill: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  avatarHarfWrap: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },

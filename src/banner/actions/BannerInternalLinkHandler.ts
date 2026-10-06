@@ -14,6 +14,10 @@ import { SesOdasinaGit } from '../../moduller/ses-odalari/navigasyon/SesOdasinaG
  * tamuso://game/GAME_ID
  * tamuso://post/POST_ID
  * tamuso://live/LIVE_ID
+ * tamuso://call/CALL_ID
+ * tamuso://music/JOB_ID
+ * tamuso://upload/UPLOAD_ID
+ * tamuso://tournament/TOURNAMENT_ID
  * (şema: muta veya EXPO_PUBLIC_APP_SCHEME)
  */
 export function parseTamusoDeepLink(raw: string): {
@@ -79,6 +83,25 @@ function navigateByKind(kind: string, id: string): { ok: boolean; error?: string
     case 'live':
     case 'canli':
       router.push(`/canli/${id}` as never);
+      return { ok: true };
+    case 'call':
+    case 'gorusme':
+      if (!id) return { ok: false, error: i18n.t('banner.hedefIdYok') };
+      router.push(`/gorusme/${id}` as never);
+      return { ok: true };
+    case 'music':
+    case 'muzik':
+      if (!id) return { ok: false, error: i18n.t('banner.hedefIdYok') };
+      // jobId veya trackId — detay ekranı track bekler; islemler listesine düş
+      router.push(`/ai-muzik/islemler` as never);
+      return { ok: true };
+    case 'upload':
+      // Upload activity → hikaye besteci / profil; entity yoksa güvenli fallback
+      router.push('/hikaye/olustur' as never);
+      return { ok: true };
+    case 'tournament':
+    case 'turnuva':
+      router.push({ pathname: '/platform', params: { gameId: id } } as never);
       return { ok: true };
     case 'game':
     case 'oyun':

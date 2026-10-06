@@ -1,11 +1,12 @@
 /**
- * Aktif ses odası oturumu — profil ziyaretinde medya bağlantısını canlı tutar.
+ * Aktif ses odası oturumu — küçültülünce medya bağlantısını canlı tutar.
  * Normal çıkışta bitirilir; arka planda iken MedyaOdasiKes çağrılmaz.
  */
 
 export type AktifSesOdasiDurum = {
   roomId: string;
   title: string;
+  coverUrl?: string | null;
   /** true: oda ekranı blur olsa bile LiveKit açık kalsın */
   arkaPlanda: boolean;
   micAcik: boolean;
@@ -44,20 +45,39 @@ export function AktifSesOdasiDinle(fn: Dinleyici): () => void {
 export function AktifSesOdasiBaslat(input: {
   roomId: string;
   title: string;
+  coverUrl?: string | null;
   micAcik?: boolean;
   dinleyiciSayisi?: number;
 }): void {
   durum = {
     roomId: input.roomId,
     title: input.title,
+    coverUrl: input.coverUrl ?? null,
     arkaPlanda: false,
     micAcik: input.micAcik ?? false,
     dinleyiciSayisi: input.dinleyiciSayisi ?? 0,
   };
   yayinla();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { SesOdasiActivityBaslat } = require('../../tamuso-activity/entegrasyon/SesOdasiActivityBagla') as {
+      SesOdasiActivityBaslat: (i: {
+        roomId: string;
+        roomName: string;
+        participantCount?: number;
+      }) => Promise<void>;
+    };
+    void SesOdasiActivityBaslat({
+      roomId: input.roomId,
+      roomName: input.title,
+      participantCount: input.dinleyiciSayisi ?? 0,
+    });
+  } catch {
+    /* Live Activity native yok */
+  }
 }
 
-/** Profil vb. — oda ekranı blur olur ama ses devam eder */
+/** Küçült / profil — oda ekranı blur olur ama ses devam eder */
 export function AktifSesOdasiArkaPlanaAl(): void {
   if (!durum) return;
   durum = { ...durum, arkaPlanda: true };
@@ -73,6 +93,7 @@ export function AktifSesOdasiOneCikar(): void {
 
 export function AktifSesOdasiGuncelle(patch: {
   title?: string;
+  coverUrl?: string | null;
   micAcik?: boolean;
   dinleyiciSayisi?: number;
 }): void {
@@ -80,17 +101,45 @@ export function AktifSesOdasiGuncelle(patch: {
   durum = {
     ...durum,
     ...(patch.title != null ? { title: patch.title } : null),
+    ...(patch.coverUrl !== undefined ? { coverUrl: patch.coverUrl } : null),
     ...(patch.micAcik != null ? { micAcik: patch.micAcik } : null),
     ...(patch.dinleyiciSayisi != null
       ? { dinleyiciSayisi: patch.dinleyiciSayisi }
       : null),
   };
   yayinla();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { SesOdasiActivityGuncelle } = require('../../tamuso-activity/entegrasyon/SesOdasiActivityBagla') as {
+      SesOdasiActivityGuncelle: (i: {
+        roomId: string;
+        roomName?: string;
+        participantCount?: number;
+      }) => Promise<void>;
+    };
+    void SesOdasiActivityGuncelle({
+      roomId: durum.roomId,
+      roomName: durum.title,
+      participantCount: durum.dinleyiciSayisi,
+    });
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Normal çıkış / oda kapandı — oturum state temizlenir (medya ayrı kesilir) */
 export function AktifSesOdasiBitir(): void {
   if (!durum) return;
+  const roomId = durum.roomId;
   durum = null;
   yayinla();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { SesOdasiActivityBitir } = require('../../tamuso-activity/entegrasyon/SesOdasiActivityBagla') as {
+      SesOdasiActivityBitir: (id?: string) => Promise<void>;
+    };
+    void SesOdasiActivityBitir(roomId);
+  } catch {
+    /* ignore */
+  }
 }

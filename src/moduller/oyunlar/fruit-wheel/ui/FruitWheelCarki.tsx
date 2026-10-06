@@ -12,7 +12,6 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
 import {
   FRUIT_ACCENT,
   FRUIT_IMAGES,
@@ -225,14 +224,12 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
     return FRUIT_ORDER.map((id) => byId.get(id)).filter((f): f is PublicFruit => Boolean(f));
   }, [fruits]);
 
-  const tick = (strong: boolean) => {
+  const tick = (_strong: boolean) => {
     const now = Date.now();
-    if (now - lastTick.current < (strong ? 80 : 110)) return;
+    // Çok seyrek ses — ısı / titreşim yükü yok
+    if (now - lastTick.current < 280) return;
     lastTick.current = now;
     fruitWheelSes('pointer-tick');
-    void Haptics.impactAsync(
-      strong ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
-    ).catch(() => undefined);
   };
 
   useEffect(() => {
@@ -257,25 +254,31 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
   );
 
   useEffect(() => {
-    if (!spinning || !targetFruitId) return;
-    const key = `${roundNo}:${targetFruitId}`;
-    if (spunKey.current === key) return;
-    spunKey.current = key;
+    if (!spinning) {
+      spunKey.current = null;
+      return;
+    }
+    if (!targetFruitId) return;
+    // Tur no değişse bile aynı hedef için animasyonu yeniden başlatma (atlama/tilt)
+    const lock = `spin:${targetFruitId}`;
+    if (spunKey.current === lock) return;
+    spunKey.current = lock;
     const index = fruitIndex(targetFruitId);
     const plan = wheelSpinPlan(index, roundNo);
     const current = rotation.value;
     const currentMod = ((current % 360) + 360) % 360;
     const slot = ((plan.rest % 360) + 360) % 360;
     const forward = (slot - currentMod + 360) % 360;
-    const target = current + plan.turns * 360 + forward;
+    const turns = Math.max(4, Math.min(plan.turns, 5));
+    const target = current + turns * 360 + forward;
     fruitWheelSes('wheel-start');
     rotation.value = withSequence(
-      withTiming(current - 12, { duration: 200, easing: Easing.out(Easing.quad) }),
+      withTiming(current - 6, { duration: 70, easing: Easing.out(Easing.quad) }),
       withTiming(target + plan.overshoot, {
-        duration: 4300,
-        easing: Easing.bezier(0.08, 0.72, 0.12, 1),
+        duration: 2200,
+        easing: Easing.bezier(0.05, 0.85, 0.12, 1),
       }),
-      withTiming(target, { duration: 360, easing: Easing.out(Easing.cubic) }, (done) => {
+      withTiming(target, { duration: 220, easing: Easing.out(Easing.cubic) }, (done) => {
         if (done) runOnJS(onSettledRef.current)();
       }),
     );
@@ -316,11 +319,13 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <View pointerEvents="none" style={[styles.halo, { width: size, height: size, borderRadius: size / 2 }]} />
-      <View pointerEvents="none" style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }]}>
-        {Array.from({ length: LIGHTS }, (_, i) => (
-          <Light key={i} index={i} radius={size / 2} />
-        ))}
-      </View>
+      {!spinning ? (
+        <View pointerEvents="none" style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }]}>
+          {Array.from({ length: LIGHTS }, (_, i) => (
+            <Light key={i} index={i} radius={size / 2} />
+          ))}
+        </View>
+      ) : null}
       <Animated.View
         style={[
           styles.disc,
@@ -423,7 +428,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(244,212,122,0.18)',
   },
   badge: {
-    marginTop: 2,
+    marginTop: 3,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
@@ -435,12 +440,15 @@ const styles = StyleSheet.create({
   badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
   badgeTextHigh: { color: '#FFE6A3' },
   stake: {
-    marginTop: 2,
-    paddingHorizontal: 5,
-    borderRadius: 6,
-    backgroundColor: 'rgba(109,59,245,0.55)',
+    marginTop: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: 'rgba(109,59,245,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,230,163,0.55)',
   },
-  stakeText: { color: '#FFE6A3', fontSize: 10, fontWeight: '800' },
+  stakeText: { color: '#FFE6A3', fontSize: 11, fontWeight: '900', letterSpacing: 0.2 },
   light: {
     position: 'absolute',
     width: 6,

@@ -333,6 +333,24 @@ export async function CanliYayinBaslatMotoru(input: {
       mesaj: 'CANLI',
     });
 
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { CanliYayinActivityBaslat } = require('../../tamuso-activity/entegrasyon/CanliYayinActivityBagla') as {
+        CanliYayinActivityBaslat: (i: {
+          liveId: string;
+          hostName: string;
+          viewerCount?: number;
+        }) => Promise<void>;
+      };
+      void CanliYayinActivityBaslat({
+        liveId: session.id,
+        hostName: input.title?.trim() || 'Tamuso',
+        viewerCount: 0,
+      });
+    } catch {
+      /* Live Activity yok */
+    }
+
     return {
       ok: true,
       session,

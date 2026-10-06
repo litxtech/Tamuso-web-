@@ -3,11 +3,11 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,12 +20,14 @@ import {
   ProfilIstatistikleriniGetir,
   type KullaniciProfilIstatistikleri,
 } from '../../src/moduller/kullanici-profili/istatistik/ProfilIstatistikleriniGetir';
+import { ProfilGetir } from '../../src/moduller/kullanici-profili/okuma/ProfilGetir';
 import { ProfilMedyaBuyutucu } from '../../src/moduller/kullanici-profili/bilesenler/ProfilMedyaBuyutucu';
 import {
   ProfilXBaslik,
   ProfilXGonderiSekme,
   profilXOverlayBtnStyle,
 } from '../../src/moduller/kullanici-profili/bilesenler/ProfilXBaslik';
+import { useHikayeProfilOzet } from '../../src/moduller/hikaye/kancalar/useHikayeProfilOzet';
 import {
   OyunOyuncuIstatistikGetir,
   type OyunOyuncuIstatistik,
@@ -53,6 +55,7 @@ import {
   DurumKullanicisiniGetir,
   type DurumOggesi,
 } from '../../src/moduller/durum/islemler/DurumIslemleri';
+import { MedyaUriGuvenli } from '../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
@@ -88,7 +91,7 @@ const EMPTY_PRIVACY: GizlilikAyarlari = {
 export default function ProfileScreen() {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
-  const { profile, wallet, user, isGuest, refreshProfile, refreshWallet } = useAuth();
+  const { profile, wallet, user, isGuest, refreshProfile, refreshWallet, patchProfile } = useAuth();
   const { uyelik: ajansUyelik, yukleniyor: ajansYukleniyor } = useAjansUyeligi(!isGuest);
   const [upgradeAcik, setUpgradeAcik] = useState(false);
   const [oyunKartAcik, setOyunKartAcik] = useState(false);
@@ -117,6 +120,7 @@ export default function ProfileScreen() {
     enabled: oyunPlatformAcik,
   });
   const oyunProfiliAcik = oyunPlatformAcik && oyunGorunur;
+  const hikayeOzet = useHikayeProfilOzet(user?.id);
 
   const hacimGorunurlukSec = (v: IslemHacmiGorunurluk) => {
     setHacimGorunurlukAcik(false);
@@ -140,6 +144,18 @@ export default function ProfileScreen() {
     useCallback(() => {
       void refreshProfile();
       if (!user?.id) return;
+      // Kendi medya URL'lerini doğrudan DB'den al — Auth cache ile diğer profil farkını kapat
+      void ProfilGetir(user.id)
+        .then((p) => {
+          if (!p) return;
+          if (p.avatar_url || p.cover_url) {
+            patchProfile({
+              ...(p.avatar_url != null ? { avatar_url: p.avatar_url } : {}),
+              ...(p.cover_url != null ? { cover_url: p.cover_url } : {}),
+            });
+          }
+        })
+        .catch(() => undefined);
       if (!isGuest) {
         void GizlilikAyarlariniGetir().then(setPrivacy);
       }
@@ -165,21 +181,23 @@ export default function ProfileScreen() {
         .then(setDurumlar)
         .catch(() => setDurumlar([]))
         .finally(() => setDurumYukleniyor(false));
-    }, [user?.id, refreshProfile, oyunProfiliAcik, isGuest, ulkeLigiAcik]),
+    }, [user?.id, refreshProfile, patchProfile, oyunProfiliAcik, isGuest, ulkeLigiAcik]),
   );
 
   const medyaTikla = (tur: 'avatar' | 'cover') => {
     const url =
       tur === 'cover'
-        ? typeof profile?.cover_url === 'string' &&
-          /^https?:\/\//i.test(profile.cover_url.trim())
-          ? profile.cover_url.trim()
-          : null
-        : typeof profile?.avatar_url === 'string' &&
-            /^https?:\/\//i.test(profile.avatar_url.trim())
-          ? profile.avatar_url.trim()
-          : null;
+        ? MedyaUriGuvenli(profile?.cover_url)
+        : MedyaUriGuvenli(profile?.avatar_url);
     if (url) setBuyut({ uri: url, tur });
+  };
+
+  const avatarTikla = () => {
+    if (hikayeOzet.hasActive && user?.id) {
+      router.push(`/hikaye/${user.id}` as any);
+      return;
+    }
+    medyaTikla('avatar');
   };
 
   const profilDuzenle = () => {
@@ -205,16 +223,8 @@ export default function ProfileScreen() {
   const bio =
     profile?.bio?.trim() ||
     (isGuest ? t('profilTab.misafirBio') : t('profilTab.varsayilanBio'));
-  const coverUri =
-    typeof profile?.cover_url === 'string' &&
-    /^https?:\/\//i.test(profile.cover_url.trim())
-      ? profile.cover_url.trim()
-      : null;
-  const avatarUri =
-    typeof profile?.avatar_url === 'string' &&
-    /^https?:\/\//i.test(profile.avatar_url.trim())
-      ? profile.avatar_url.trim()
-      : null;
+  const coverUri = MedyaUriGuvenli(profile?.cover_url);
+  const avatarUri = MedyaUriGuvenli(profile?.avatar_url);
 
   const paylas = isGuest
     ? () => setUpgradeAcik(true)
@@ -265,7 +275,11 @@ export default function ProfileScreen() {
             }
             onIstekPress={() => router.push('/takip/istekler' as any)}
             onCoverPress={() => medyaTikla('cover')}
-            onAvatarPress={() => medyaTikla('avatar')}
+            onAvatarPress={avatarTikla}
+            onAvatarLongPress={() => medyaTikla('avatar')}
+            hasStory={hikayeOzet.hasActive}
+            hasUnseenStory={hikayeOzet.hasUnseen}
+            storyPreviewUri={hikayeOzet.previewUrl}
             ustSag={
               <Pressable
                 style={profilXOverlayBtnStyle}

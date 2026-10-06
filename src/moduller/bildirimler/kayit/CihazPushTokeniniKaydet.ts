@@ -67,21 +67,21 @@ export async function CihazPushTokeniniKaydet(input?: {
       if (tokenDoluMu(fcm)) {
         const r = await tokenKaydet(deviceId, plat, 'fcm', fcm);
         if (!r.ok) return { ...r, token: fcm };
+        // FCM ana kanal — Expo yedek kayıt etme (çift bildirim)
+        return { ok: true, token: fcm };
       }
 
       const expo = await ExpoPushTokeniniAl();
       if (tokenDoluMu(expo)) {
         await tokenKaydet(deviceId, plat, 'expo', expo);
+        return { ok: true, token: expo };
       }
 
-      if (!tokenDoluMu(fcm) && !tokenDoluMu(expo)) {
-        return {
-          ok: false,
-          hata: 'Bildirim izni veya FCM/Expo token yok',
-          token: null,
-        };
-      }
-      return { ok: true, token: fcm ?? expo };
+      return {
+        ok: false,
+        hata: 'Bildirim izni veya FCM/Expo token yok',
+        token: null,
+      };
     }
 
     // iOS: sadece Expo token — boş apns kaydı yok

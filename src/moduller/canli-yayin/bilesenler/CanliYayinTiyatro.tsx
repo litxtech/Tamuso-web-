@@ -215,6 +215,21 @@ export function CanliYayinTiyatro({
             ),
             title: typeof n.title === 'string' ? n.title : meta.title,
           });
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const { CanliYayinActivityGuncelle } = require('../../tamuso-activity/entegrasyon/CanliYayinActivityBagla') as {
+              CanliYayinActivityGuncelle: (i: {
+                liveId: string;
+                viewerCount?: number;
+              }) => Promise<void>;
+            };
+            void CanliYayinActivityGuncelle({
+              liveId: meta.id,
+              viewerCount: Number(n.viewer_count ?? meta.viewer_count),
+            });
+          } catch {
+            /* ignore */
+          }
         },
       )
       .subscribe();

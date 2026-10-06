@@ -41,6 +41,8 @@ type Props = {
     | 'profile'
     | 'status_post'
     | 'status_comment'
+    | 'story'
+    | 'story_item'
     | 'other';
   contentId?: string | null;
   contentPreview?: string | null;

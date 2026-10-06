@@ -19,7 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: displayName,
   slug: 'muta',
   owner: 'mutaq',
-  version: '1.2.4',
+  version: '1.2.5',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',
@@ -38,8 +38,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       CFBundleDisplayName: displayName,
       CFBundleName: APP_NAME,
       // audio: (1) ses odası LiveKit arka plan, (2) durum/DM video Picture-in-Picture
+      // voip: PushKit incoming call (CallKit) — ActivityKit ayrı (NSSupportsLiveActivities)
       // İncelemede bulunabilir olmalı — bkz. docs/store-review/PIP_ARKA_PLAN_SES.md
-      UIBackgroundModes: ['remote-notification', 'audio'],
+      UIBackgroundModes: ['remote-notification', 'audio', 'voip'],
+      NSSupportsLiveActivities: true,
+      NSSupportsLiveActivitiesFrequentUpdates: false,
       NSCameraUsageDescription:
         'Tamuso uses the camera for profile photos, direct messages, live video calls, and identity verification (KYC). For example, you can take a selfie for KYC or share a photo in chat.',
       NSMicrophoneUsageDescription:
@@ -81,11 +84,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.POST_NOTIFICATIONS',
       'android.permission.VIBRATE',
       'android.permission.RECEIVE_BOOT_COMPLETED',
+      // Gerçek 1:1 arama — Play Console'da Calling app olarak beyan et
+      'android.permission.USE_FULL_SCREEN_INTENT',
     ],
   },
   web: {
     favicon: './assets/favicon.png',
     bundler: 'metro',
+    output: 'single',
   },
   plugins: [
     'expo-router',
@@ -111,6 +117,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-system-ui',
     'expo-sharing',
+    'react-native-compressor',
     [
       '@livekit/react-native-expo-plugin',
       {
@@ -121,6 +128,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/withSesOdasiForegroundService.js',
+    './plugins/withTamusoCallKit.js',
+    './plugins/withAndroidIncomingCall.js',
+    // expo-widgets / App Groups kapalı — Ad Hoc profil App Groups istemiyor.
+    // Live Activity native target yok; JS tarafı soft-fail.
     '@config-plugins/react-native-webrtc',
     [
       'expo-image-picker',
@@ -167,7 +178,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         color: '#E84091',
         defaultChannel: 'genel',
-        sounds: ['./assets/sounds/mesaj_uc_ton.wav'],
+        sounds: [
+          './assets/sounds/mesaj_uc_ton.wav',
+          './assets/sounds/gelen_arama.wav',
+        ],
       },
     ],
     [

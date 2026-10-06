@@ -304,7 +304,9 @@ export function AvatarTacHalkasi({
           height: safeSize,
           borderRadius: safeSize / 2,
           overflow: 'hidden',
+          backgroundColor: '#1A1224',
         }}
+        collapsable={false}
       >
         {children}
       </View>
@@ -403,7 +405,7 @@ export function AvatarTacHalkasi({
         />
       </Animated.View>
 
-      {/* Avatar */}
+      {/* Avatar — çerçeve üstünde kalsın; solid zemin boş/çökmüş Image'de delik bırakmaz */}
       <View
         style={{
           position: 'absolute',
@@ -413,28 +415,16 @@ export function AvatarTacHalkasi({
           height: safeSize,
           borderRadius: safeSize / 2,
           overflow: 'hidden',
-          zIndex: 20,
-          elevation: 8,
-          backgroundColor: 'transparent',
+          zIndex: 30,
+          elevation: 10,
+          backgroundColor: '#1A1224',
+          borderWidth: 1.5,
+          borderColor: 'rgba(255,255,255,0.5)',
         }}
+        collapsable={false}
       >
         {children}
       </View>
-
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          width: safeSize + 2,
-          height: safeSize + 2,
-          borderRadius: (safeSize + 2) / 2,
-          left: cx - (safeSize + 2) / 2,
-          top: cy - (safeSize + 2) / 2,
-          borderWidth: 1.5,
-          borderColor: 'rgba(255,255,255,0.5)',
-          zIndex: 21,
-        }}
-      />
 
       {ucAci.map((deg, i) => {
         const merkezMi = deg === 0;

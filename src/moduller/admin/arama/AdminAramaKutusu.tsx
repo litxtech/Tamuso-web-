@@ -9,8 +9,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import {
+  ADMIN_MODULLER,
   AdminModulleriAra,
   type AdminAramaSonuc,
+  type AdminModul,
 } from './AdminModulKatalogu';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
@@ -22,16 +24,19 @@ import {
 type Props = {
   /** Arama değişince üst ekran grid’i filtreleyebilir */
   onSonuc?: (sonuclar: AdminAramaSonuc[], sorgu: string) => void;
+  /** İzin filtrelenmiş katalog (yoksa tüm modüller) */
+  moduller?: AdminModul[];
 };
 
-export function AdminAramaKutusu({ onSonuc }: Props) {
+export function AdminAramaKutusu({ onSonuc, moduller }: Props) {
   const [sorgu, setSorgu] = useState('');
+  const havuz = moduller ?? ADMIN_MODULLER;
 
-  const sonuclar = useMemo(() => AdminModulleriAra(sorgu, 10), [sorgu]);
+  const sonuclar = useMemo(() => AdminModulleriAra(sorgu, 10, havuz), [sorgu, havuz]);
 
   const guncelle = (t: string) => {
     setSorgu(t);
-    const s = AdminModulleriAra(t, 10);
+    const s = AdminModulleriAra(t, 10, havuz);
     onSonuc?.(s, t);
   };
 

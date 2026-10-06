@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Modal, Keyboard } from 'react-native';
+import { Modal, Keyboard, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
@@ -20,6 +20,24 @@ import { KullanicilarEngelliMi } from '../../moderasyon/islemler/ModerasyonIslem
 import type { DirectCall } from '../tipler';
 import { GorusmeOturumAl } from '../oturum/GorusmeOturumYoneticisi';
 import i18n from '../../../i18n';
+import {
+  TamusoCallKitBootstrap,
+  TamusoCallKitEnabled,
+  TamusoCallKitOnAnswer,
+  TamusoCallKitOnEnd,
+  TamusoCallKitReportIncoming,
+  TamusoCallKitEnd,
+} from '../../tamuso-activity/callkit/TamusoCallKitBridge';
+import {
+  BekleyenGelenAramaAl,
+  BekleyenGelenAramaDinle,
+  BekleyenGelenAramaDirectCallStub,
+  BekleyenGelenAramaTemizle,
+} from '../android/BekleyenGelenArama';
+import {
+  GelenAramaZilBaslat,
+  GelenAramaZilDurdur,
+} from '../android/GelenAramaZil';
 
 /** LiveKit VideoView zincirini app acilisinda yukleme */
 function GorusmeGelenEkraniLazy(
@@ -67,11 +85,58 @@ export function GorusmeGelenSaglayici({
   const [gelen, setGelen] = useState<DirectCall | null>(null);
   const [peerName, setPeerName] = useState(() => i18n.t('gorusme.arayan'));
   const [peerAvatar, setPeerAvatar] = useState<string | null>(null);
+  const [callKitAktif, setCallKitAktif] = useState(false);
   const gelenIdRef = useRef<string | null>(null);
+  const gelenRef = useRef<DirectCall | null>(null);
 
   useEffect(() => {
     gelenIdRef.current = gelen?.id ?? null;
-  }, [gelen?.id]);
+    gelenRef.current = gelen;
+  }, [gelen?.id, gelen]);
+
+  // Android: in-app Modal açıkken zil çal (CallKit yoksa)
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    if (gelen && !callKitAktif) {
+      void GelenAramaZilBaslat();
+    } else {
+      GelenAramaZilDurdur();
+    }
+    return () => {
+      GelenAramaZilDurdur();
+    };
+  }, [gelen?.id, callKitAktif]);
+
+  useEffect(() => {
+    TamusoCallKitBootstrap();
+    TamusoCallKitOnAnswer((callId) => {
+      const c = gelenRef.current;
+      if (!c || c.id !== callId) {
+        // VoIP path — accept by id
+        void (async () => {
+          const r = await GorusmeCevapla(callId);
+          if (!r.ok) return;
+          setGelen(null);
+          router.push(`/gorusme/${callId}` as never);
+        })();
+        return;
+      }
+      void (async () => {
+        Keyboard.dismiss();
+        const r = await GorusmeCevapla(callId);
+        setGelen(null);
+        if (!r.ok) return;
+        router.push(`/gorusme/${callId}` as never);
+      })();
+    });
+    TamusoCallKitOnEnd((callId, reason) => {
+      if (reason === 'declined') {
+        void GorusmeReddet(callId).catch(() => undefined);
+      }
+      setCallKitAktif(false);
+      setGelen((cur) => (cur?.id === callId ? null : cur));
+    });
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -92,6 +157,7 @@ export function GorusmeGelenSaglayici({
       void (async () => {
         if (await KullanicilarEngelliMi(c.caller_id)) {
           await GorusmeReddet(c.id).catch(() => undefined);
+          TamusoCallKitEnd(c.id);
           setGelen((cur) => (cur?.id === c.id ? null : cur));
           return;
         }
@@ -99,8 +165,43 @@ export function GorusmeGelenSaglayici({
         if (gelenIdRef.current !== c.id) return;
         setPeerName(p.name);
         setPeerAvatar(p.avatar);
+
+        // CallKit native incoming UI (app background / terminated via VoIP;
+        // foreground: still report so Dynamic Island / system UI stays consistent)
+        if (TamusoCallKitEnabled()) {
+          const ok = await TamusoCallKitReportIncoming({
+            callId: c.id,
+            callerName: p.name,
+            hasVideo: c.call_type === 'video',
+          });
+          if (gelenIdRef.current === c.id) setCallKitAktif(ok);
+        } else {
+          setCallKitAktif(false);
+        }
       })();
     };
+
+    // Push / cold-start bekleyen arama
+    const unsubBekleyen = BekleyenGelenAramaDinle((b) => {
+      if (!b) return;
+      void (async () => {
+        const { data } = await supabase
+          .from('direct_calls')
+          .select('*')
+          .eq('id', b.callId)
+          .maybeSingle();
+        if (data && (data as DirectCall).status === 'ringing') {
+          await goster(data as DirectCall);
+        } else if (!data || (data as DirectCall).status === 'ringing') {
+          await goster(BekleyenGelenAramaDirectCallStub(b));
+        }
+        BekleyenGelenAramaTemizle();
+      })();
+    });
+    const mevcutBekleyen = BekleyenGelenAramaAl();
+    if (mevcutBekleyen) {
+      // dinleyici zaten tetikler; no-op
+    }
 
     // Kacirilan realtime icin acik ringing cagriyi cek
     void (async () => {
@@ -161,7 +262,10 @@ export function GorusmeGelenSaglayici({
               c.status,
             )
           ) {
-            if (c.status !== 'active') setGelen(null);
+            if (c.status !== 'active') {
+              GelenAramaZilDurdur();
+              setGelen(null);
+            }
           }
         },
       )
@@ -188,6 +292,7 @@ export function GorusmeGelenSaglayici({
       .subscribe();
 
     return () => {
+      unsubBekleyen();
       void supabase.removeChannel(channel);
       void supabase.removeChannel(ringCh);
     };
@@ -196,15 +301,20 @@ export function GorusmeGelenSaglayici({
   const kabul = useCallback(async () => {
     if (!gelen) return;
     Keyboard.dismiss();
+    GelenAramaZilDurdur();
+    BekleyenGelenAramaTemizle();
     const r = await GorusmeCevapla(gelen.id);
     setGelen(null);
     if (!r.ok) return;
-    router.push(`/gorusme/${gelen.id}` as any);
+    router.push(`/gorusme/${gelen.id}` as never);
   }, [gelen]);
 
   const red = useCallback(async () => {
     if (!gelen) return;
     Keyboard.dismiss();
+    GelenAramaZilDurdur();
+    BekleyenGelenAramaTemizle();
+    TamusoCallKitEnd(gelen.id);
     await GorusmeReddet(gelen.id);
     setGelen(null);
   }, [gelen]);
@@ -215,7 +325,7 @@ export function GorusmeGelenSaglayici({
     <GorusmeCtx.Provider value={value}>
       {children}
       <Modal
-        visible={!!gelen}
+        visible={!!gelen && !callKitAktif}
         animationType="fade"
         presentationStyle="fullScreen"
         statusBarTranslucent

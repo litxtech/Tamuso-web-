@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, Platform, type AppStateStatus } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -22,6 +22,12 @@ import {
   BildirimHedefineGecikmeliGit,
   BildirimYanitiniIsle,
 } from '../islemler/BildirimPushYonlendirme';
+import { GelenAramaPushVerisindenIsle } from '../../gorusme/android/BekleyenGelenArama';
+import {
+  GelenAramaZilBaslat,
+  GelenAramaZilDurdur,
+} from '../../gorusme/android/GelenAramaZil';
+import { AndroidBildirimKanallariniKur } from '../kayit/BildirimIzniIste';
 
 type BildirimContextValue = {
   okunmamis: number;
@@ -86,16 +92,46 @@ export function BildirimSaglayici({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (authLoading) return;
 
+    // Kanallar + Yanıtla/Takip kategorileri
+    void AndroidBildirimKanallariniKur().catch(() => undefined);
+
     const yanitSub = Notifications.addNotificationResponseReceivedListener(
       (yanit) => {
+        const data = yanit.notification.request.content.data as
+          | Record<string, unknown>
+          | undefined;
+        if (data && String(data.type ?? '') === 'incoming_call') {
+          GelenAramaPushVerisindenIsle(data);
+          if (Platform.OS === 'android') void GelenAramaZilBaslat();
+        }
         BildirimYanitiniIsle(yanit, {
           oturumVar: !!session,
-          hemenGit: !!session,
+          hemenGit: !!session && String(data?.type ?? '') !== 'incoming_call',
         });
+        // incoming_call: GorusmeGelen Modal açılır — /gorusme'ye zorla gitme
+        if (String(data?.type ?? '') === 'incoming_call' && session) {
+          // Modal bekleyen üzerinden açılır; deep link flush etme
+          return;
+        }
       },
     );
 
-    return () => yanitSub.remove();
+    const alinanSub = Notifications.addNotificationReceivedListener((notif) => {
+      const data = notif.request.content.data as
+        | Record<string, unknown>
+        | undefined;
+      if (!data || String(data.type ?? '') !== 'incoming_call') return;
+      GelenAramaPushVerisindenIsle(data);
+      if (Platform.OS === 'android') {
+        void GelenAramaZilBaslat();
+      }
+    });
+
+    return () => {
+      yanitSub.remove();
+      alinanSub.remove();
+      GelenAramaZilDurdur();
+    };
   }, [authLoading, session]);
 
   // Login sonrası (oturumsuzken tıklanan push) bekleyen hedefi uygula

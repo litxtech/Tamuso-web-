@@ -4,14 +4,20 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  ANDROID_ARAMA_BILDIRIM_KANALI,
   ANDROID_BILDIRIM_KANALI,
   ANDROID_MESAJ_BILDIRIM_KANALI,
+  ARAMA_BILDIRIM_SESI,
   MESAJ_BILDIRIM_SESI,
 } from './BildirimKanallari';
+import { BildirimKategorileriniKur } from './BildirimKategorileri';
 
 const MESAJ_IZIN_SORULDU_KEY = 'tamuso_mesaj_push_izin_soruldu_v1';
 
 export async function AndroidBildirimKanallariniKur(): Promise<void> {
+  // iOS/Android: aksiyon kategorileri (Yanıtla vb.)
+  await BildirimKategorileriniKur();
+
   if (Platform.OS !== 'android') return;
 
   await Notifications.setNotificationChannelAsync(ANDROID_BILDIRIM_KANALI, {
@@ -31,6 +37,26 @@ export async function AndroidBildirimKanallariniKur(): Promise<void> {
     sound: MESAJ_BILDIRIM_SESI,
     enableVibrate: true,
     showBadge: true,
+  });
+
+  // Gelen arama — yalnızca gerçek call push'ları (Play: calling category)
+  await Notifications.setNotificationChannelAsync(ANDROID_ARAMA_BILDIRIM_KANALI, {
+    name: i18n.t('bildirimler.kanalAramalar', {
+      defaultValue: 'Aramalar',
+    }),
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 500, 200, 500, 200, 500, 200, 500],
+    lightColor: '#34C759',
+    sound: ARAMA_BILDIRIM_SESI,
+    enableVibrate: true,
+    showBadge: false,
+    bypassDnd: false,
+    lockscreenVisibility:
+      Notifications.AndroidNotificationVisibility.PUBLIC,
+    audioAttributes: {
+      usage: Notifications.AndroidAudioUsage.NOTIFICATION_RINGTONE,
+      contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+    },
   });
 }
 

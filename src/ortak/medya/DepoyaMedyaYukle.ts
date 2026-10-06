@@ -4,6 +4,8 @@
  */
 
 import i18n from '../../i18n';
+import { VIDEO_SIKISTIRMA_SONRASI_MAX_BYTES } from './VideoPaylasimSabitleri';
+import { Video1080eSikistir } from './VideoSikistir';
 
 const SES_UZANTILARI = [
   'mp3',
@@ -160,11 +162,35 @@ export type DepoyaYukleGirdi = {
   upsert?: boolean;
   /** Aşılırsa yükleme yapılmaz (ör. profile-media 5 MiB) */
   maxBytes?: number;
+  /** false → 1080p sıkıştırmayı atla (varsayılan: video için açık) */
+  sikistir?: boolean;
+  onSikistirma?: (pct: number) => void;
 };
 
 export type DepoyaYukleSonuc =
   | { ok: true; path: string; contentType: string }
   | { ok: false; hata: string };
+
+/** ISO BMFF HEIC/HEIF — uzantı/mime yalan söylese bile yakala */
+function HeicBaytMi(bytes: Uint8Array): boolean {
+  if (bytes.length < 12) return false;
+  const ftyp =
+    String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7]) === 'ftyp';
+  if (!ftyp) return false;
+  const brand = String.fromCharCode(
+    bytes[8],
+    bytes[9],
+    bytes[10],
+    bytes[11],
+  ).toLowerCase();
+  return (
+    brand === 'heic' ||
+    brand === 'heix' ||
+    brand === 'heif' ||
+    brand === 'mif1' ||
+    brand === 'msf1'
+  );
+}
 
 /**
  * Supabase Storage yükleme — doğru Content-Type ile.
@@ -184,23 +210,53 @@ export async function DepoyaMedyaYukle(
   girdi: DepoyaYukleGirdi,
 ): Promise<DepoyaYukleSonuc> {
   const tur = girdi.tur ?? 'image';
-  const ext = MedyaUzantisiCoz(
-    girdi.uri,
-    girdi.mime,
-    tur === 'video' ? 'mp4' : tur === 'audio' ? 'mp3' : 'jpg',
-  );
-  const contentType = GuvenliMimeTipi(girdi.mime, ext, tur);
+  let uri = girdi.uri;
+  let mime = girdi.mime;
 
   try {
-    const bytes = await YerelDosyayiBaytOku(girdi.uri);
+    // Platform geneli: tüm videolar 1080p'ye sıkıştırılır (4K dahil)
+    if (tur === 'video' && girdi.sikistir !== false) {
+      const sik = await Video1080eSikistir(uri, {
+        onProgress: girdi.onSikistirma,
+      });
+      if (sik.ok) {
+        uri = sik.uri;
+        mime = sik.mime;
+      }
+    }
+
+    const ext = MedyaUzantisiCoz(
+      uri,
+      mime,
+      tur === 'video' ? 'mp4' : tur === 'audio' ? 'mp3' : 'jpg',
+    );
+    const contentType = GuvenliMimeTipi(mime, ext, tur);
+
+    const bytes = await YerelDosyayiBaytOku(uri);
     if (bytes.byteLength === 0) {
       return { ok: false, hata: i18n.t('medyaYukle.dosyaBos') };
     }
-    if (girdi.maxBytes != null && bytes.byteLength > girdi.maxBytes) {
-      const mb = Math.max(1, Math.round(girdi.maxBytes / (1024 * 1024)));
+    if (tur === 'image' && HeicBaytMi(bytes)) {
+      return { ok: false, hata: i18n.t('auth.medyaHeicDesteklenmiyor') };
+    }
+    const limitBytes =
+      girdi.maxBytes ??
+      (tur === 'video' ? VIDEO_SIKISTIRMA_SONRASI_MAX_BYTES : undefined);
+    if (limitBytes != null && bytes.byteLength > limitBytes) {
+      const limitMb = Math.max(1, Math.round(limitBytes / (1024 * 1024)));
+      const gercekMb = Math.max(
+        1,
+        Math.round(bytes.byteLength / (1024 * 1024)),
+      );
       return {
         ok: false,
-        hata: i18n.t('auth.medyaCokBuyuk', { mb }),
+        hata:
+          tur === 'video'
+            ? i18n.t('hikaye.videoCokBuyuk', {
+                mb: gercekMb,
+                limit: limitMb,
+              })
+            : i18n.t('auth.medyaCokBuyuk', { mb: limitMb }),
       };
     }
 

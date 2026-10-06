@@ -8,6 +8,8 @@ export type AdminModul = {
   href: string;
   tint: string;
   bolum: string;
+  /** Menu görünürlüğü için view permission */
+  permissionKey: string;
   /** Arama için ek anahtar kelimeler */
   anahtarlar?: string[];
 };
@@ -15,13 +17,34 @@ export type AdminModul = {
 /** Admin hub + arama katalogu (tek kaynak) */
 export const ADMIN_MODULLER: AdminModul[] = [
   {
+    icon: 'shield-outline',
+    label: 'Admin Yönetimi',
+    alt: 'Rol · izin · admin hesapları',
+    href: '/admin/yonetim',
+    tint: RenkTokenlari.danger,
+    bolum: 'Operasyon',
+    permissionKey: 'admin.management.view',
+    anahtarlar: ['rbac', 'izin', 'rol', 'yetki', 'admin', 'permission'],
+  },
+  {
     icon: 'cloud-download-outline',
     label: 'Sürüm ve güncelleme',
     alt: 'iOS · Android · zorunlu güncelleme',
     href: '/admin/surum-guncelleme',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Uygulama Yönetimi',
+    permissionKey: 'app.version.view',
     anahtarlar: ['sürüm', 'version', 'force', 'app store', 'play', 'güncelleme'],
+  },
+  {
+    icon: 'stats-chart-outline',
+    label: 'Finans Merkezi',
+    alt: 'Coin · gelir · borç · kâr · rapor',
+    href: '/admin/finance',
+    tint: RenkTokenlari.mint,
+    bolum: 'Finans Merkezi',
+    permissionKey: 'finance.view',
+    anahtarlar: ['finance', 'kontrol', 'treasury', 'pnl', 'finans', 'ciro'],
   },
   {
     icon: 'people-outline',
@@ -30,6 +53,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/kullanicilar',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'users.view',
     anahtarlar: ['user', 'ban', 'ihtar', 'profil', 'hesap'],
   },
   {
@@ -39,6 +63,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/rehber',
     tint: RenkTokenlari.mint,
     bolum: 'İnsanlar',
+    permissionKey: 'directory.view',
     anahtarlar: ['telefon', 'email', 'whatsapp', 'iletişim'],
   },
   {
@@ -48,6 +73,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/finans',
     tint: RenkTokenlari.primarySoft,
     bolum: 'İnsanlar',
+    permissionKey: 'finance.view',
     anahtarlar: ['para', 'çekim', 'yükleme', 'harcama'],
   },
   {
@@ -57,6 +83,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/kyc',
     tint: RenkTokenlari.mint,
     bolum: 'İnsanlar',
+    permissionKey: 'kyc.view',
     anahtarlar: ['kyc', 'kimlik', 'belge', 'doğrulama'],
   },
   {
@@ -66,6 +93,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/dogrulama',
     tint: RenkTokenlari.violet,
     bolum: 'Güvenlik',
+    permissionKey: 'verification.view',
     anahtarlar: ['kyb', 'verification', 'inceleme'],
   },
   {
@@ -75,6 +103,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/takas',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'wallet.exchange.view',
     anahtarlar: ['takas', 'transfer', 'exchange'],
   },
   {
@@ -84,6 +113,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/coin',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'coins.view',
     anahtarlar: ['topup', 'yukle', 'bakiye'],
   },
   {
@@ -93,6 +123,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/coin-paketleri',
     tint: RenkTokenlari.primarySoft,
     bolum: 'İnsanlar',
+    permissionKey: 'coins.sales.view',
     anahtarlar: ['iap', 'paket', 'store', 'ürün'],
   },
   {
@@ -102,6 +133,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ajans-paketleri',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'agencies.packages.view',
     anahtarlar: ['ajans paket', 'liste fiyat'],
   },
   {
@@ -111,6 +143,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/satin-alma-itirazlar',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'wallet.iap.disputes.view',
     anahtarlar: ['itiraz', 'refund', 'chargeback', 'iap'],
   },
   {
@@ -120,6 +153,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/cuzdan-yonetimi',
     tint: RenkTokenlari.primarySoft,
     bolum: 'İnsanlar',
+    permissionKey: 'wallet.ui.manage',
     anahtarlar: ['wallet ui', 'tema', 'simge'],
   },
   {
@@ -129,6 +163,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ciro',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'finance.revenue.view',
     anahtarlar: ['gelir', 'rapor', 'pdf'],
   },
   {
@@ -138,6 +173,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/islem-hacmi',
     tint: RenkTokenlari.violet,
     bolum: 'İnsanlar',
+    permissionKey: 'finance.volume.view',
     anahtarlar: ['volume', 'kademe', 'hacim'],
   },
   {
@@ -147,6 +183,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ulke-ligi',
     tint: RenkTokenlari.magenta,
     bolum: 'İnsanlar',
+    permissionKey: 'finance.league.view',
     anahtarlar: ['ülke', 'lig', 'country'],
   },
   {
@@ -156,6 +193,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ajanslar',
     tint: RenkTokenlari.accent,
     bolum: 'İnsanlar',
+    permissionKey: 'agencies.view',
     anahtarlar: [
       'ajans',
       'agency',
@@ -174,6 +212,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/moderasyon',
     tint: RenkTokenlari.danger,
     bolum: 'Güvenlik',
+    permissionKey: 'moderation.view',
     anahtarlar: ['rapor', 'şikayet', 'mod'],
   },
   {
@@ -183,6 +222,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/gorusme-guvenlik',
     tint: RenkTokenlari.danger,
     bolum: 'Güvenlik',
+    permissionKey: 'security.call.view',
     anahtarlar: ['görüşme', 'call', 'ekran'],
   },
   {
@@ -192,6 +232,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/rtc-altyapi',
     tint: RenkTokenlari.accent,
     bolum: 'Güvenlik',
+    permissionKey: 'security.rtc.view',
     anahtarlar: ['livekit', 'agora', 'rtc', 'ses', 'yayın'],
   },
   {
@@ -201,6 +242,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/studio',
     tint: RenkTokenlari.violet,
     bolum: 'Oyunlar',
+    permissionKey: 'studio.view',
     anahtarlar: ['studio', 'oyun', 'creator'],
   },
   {
@@ -210,6 +252,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/platform-guvenlik',
     tint: RenkTokenlari.danger,
     bolum: 'Güvenlik',
+    permissionKey: 'security.platform.view',
     anahtarlar: ['cihaz', 'ban', 'güvenlik'],
   },
   {
@@ -219,6 +262,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/cocuk-koruma',
     tint: RenkTokenlari.danger,
     bolum: 'Güvenlik',
+    permissionKey: 'security.child.view',
     anahtarlar: ['çocuk', '18', 'consent'],
   },
   {
@@ -228,6 +272,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/destek',
     tint: RenkTokenlari.mint,
     bolum: 'Güvenlik',
+    permissionKey: 'support.view',
     anahtarlar: ['destek', 'support', 'ticket'],
   },
   {
@@ -237,6 +282,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/fikirler',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'content.feedback.view',
     anahtarlar: ['öneri', 'feedback', 'fikir'],
   },
   {
@@ -246,6 +292,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/odalar',
     tint: RenkTokenlari.live,
     bolum: 'Güvenlik',
+    permissionKey: 'live.view',
     anahtarlar: ['oda', 'ses', 'room', 'yayın'],
   },
   {
@@ -255,6 +302,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/unvanlar',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'content.titles.view',
     anahtarlar: ['ünvan', 'title', 'rozet'],
   },
   {
@@ -264,6 +312,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/muzik',
     tint: RenkTokenlari.violet,
     bolum: 'Ürün',
+    permissionKey: 'content.music.view',
     anahtarlar: ['bgm', 'müzik', 'ses'],
   },
   {
@@ -273,6 +322,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ai-muzik',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Ürün',
+    permissionKey: 'content.ai_music.view',
     anahtarlar: ['ai', 'yapay', 'müzik'],
   },
   {
@@ -282,6 +332,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/kisiler-aramalar',
     tint: RenkTokenlari.magenta,
     bolum: 'Ürün',
+    permissionKey: 'content.discovery.view',
     anahtarlar: ['kişi', 'arama', 'keşif'],
   },
   {
@@ -291,6 +342,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ekonomi',
     tint: RenkTokenlari.violet,
     bolum: 'Ürün',
+    permissionKey: 'economy.view',
     anahtarlar: ['ekonomi', 'hediye', 'rtp', 'oran'],
   },
   {
@@ -300,6 +352,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/komisyonlar',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'finance.view',
     anahtarlar: ['komisyon', 'pay', 'elmas'],
   },
   {
@@ -309,6 +362,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/fruit-wheel',
     tint: '#E6CE92',
     bolum: 'Ürün',
+    permissionKey: 'games.fruit_wheel.view',
     anahtarlar: ['fruit', 'çark', 'meyve'],
   },
   {
@@ -318,6 +372,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/oyunlar',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'games.view',
     anahtarlar: ['oyun', 'zeus', 'kaskad', 'slot'],
   },
   {
@@ -327,6 +382,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/oyun-test',
     tint: RenkTokenlari.violet,
     bolum: 'Ürün',
+    permissionKey: 'games.test.view',
     anahtarlar: ['test', 'sim', 'rtp'],
   },
   {
@@ -336,6 +392,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/oyun-algoritma',
     tint: RenkTokenlari.magenta,
     bolum: 'Ürün',
+    permissionKey: 'games.algorithm.view',
     anahtarlar: ['algoritma', 'ağırlık'],
   },
   {
@@ -345,6 +402,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/kaskad-yonetim',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'games.kaskad.view',
     anahtarlar: ['kaskad', 'cascade'],
   },
   {
@@ -354,6 +412,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/sehir-secim',
     tint: RenkTokenlari.mint,
     bolum: 'Ürün',
+    permissionKey: 'content.city.view',
     anahtarlar: ['şehir', 'seçim', 'il'],
   },
   {
@@ -363,6 +422,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/ozellikler',
     tint: RenkTokenlari.mint,
     bolum: 'Ürün',
+    permissionKey: 'features.view',
     anahtarlar: ['flag', 'kill', 'bayrak', 'duyuru'],
   },
   {
@@ -372,6 +432,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/duyurular',
     tint: RenkTokenlari.accent,
     bolum: 'Ürün',
+    permissionKey: 'announcement.analytics',
     anahtarlar: ['duyuru', 'announcement', 'yayın'],
   },
   {
@@ -381,6 +442,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/hamburger-menu',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Ürün',
+    permissionKey: 'content.menu.view',
     anahtarlar: ['menü', 'hamburger', 'drawer'],
   },
   {
@@ -390,6 +452,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/bannerlar',
     tint: RenkTokenlari.magenta,
     bolum: 'Büyüme',
+    permissionKey: 'content.banners.view',
     anahtarlar: ['banner', 'kampanya', 'slider'],
   },
   {
@@ -399,6 +462,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/bannerlar/otomatik',
     tint: RenkTokenlari.accent,
     bolum: 'Büyüme',
+    permissionKey: 'content.banners.view',
     anahtarlar: ['otomatik', 'eşik', 'yağmur'],
   },
   {
@@ -408,6 +472,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/iletisim',
     tint: RenkTokenlari.mint,
     bolum: 'Büyüme',
+    permissionKey: 'content.contact.view',
     anahtarlar: ['iletişim', 'mail', 'whatsapp'],
   },
   {
@@ -417,6 +482,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/giris-lobisi',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Büyüme',
+    permissionKey: 'content.lobby.view',
     anahtarlar: ['lobi', 'splash', 'giriş'],
   },
   {
@@ -426,6 +492,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/kayit-alanlari',
     tint: RenkTokenlari.mint,
     bolum: 'Büyüme',
+    permissionKey: 'content.register.view',
     anahtarlar: ['kayıt', 'register', 'form'],
   },
   {
@@ -435,6 +502,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/politikalar',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Büyüme',
+    permissionKey: 'content.policies.view',
     anahtarlar: ['kvkk', 'gizlilik', 'şart', 'policy'],
   },
   {
@@ -444,6 +512,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/admin/paylasim-linkleri',
     tint: RenkTokenlari.primarySoft,
     bolum: 'Büyüme',
+    permissionKey: 'content.share.view',
     anahtarlar: ['link', 'indir', 'store'],
   },
   {
@@ -453,6 +522,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/bildirimler',
     tint: RenkTokenlari.violet,
     bolum: 'Büyüme',
+    permissionKey: 'notifications.view',
     anahtarlar: ['push', 'bildirim', 'notification'],
   },
   {
@@ -462,6 +532,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/sertifikasyon',
     tint: RenkTokenlari.accent,
     bolum: 'Operasyon',
+    permissionKey: 'ops.cert.view',
     anahtarlar: ['sertifika', 'test', 'ağ'],
   },
   {
@@ -471,6 +542,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/platform',
     tint: RenkTokenlari.mint,
     bolum: 'Operasyon',
+    permissionKey: 'ops.platform.view',
     anahtarlar: ['platform', 'görev', 'etkinlik'],
   },
   {
@@ -480,6 +552,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     href: '/guvenlik',
     tint: RenkTokenlari.danger,
     bolum: 'Operasyon',
+    permissionKey: 'ops.security.view',
     anahtarlar: ['koruma', 'olay', 'güvenlik merkezi'],
   },
 ];
@@ -487,10 +560,12 @@ export const ADMIN_MODULLER: AdminModul[] = [
 export const ADMIN_BOLUM_SIRASI = [
   'Uygulama Yönetimi',
   'İnsanlar',
+  'Finans Merkezi',
   'Güvenlik',
   'Ürün',
   'Büyüme',
   'Operasyon',
+  'Oyunlar',
 ] as const;
 
 function normalize(s: string): string {
@@ -513,6 +588,7 @@ export type AdminAramaSonuc = AdminModul & { skor: number };
 export function AdminModulleriAra(
   sorgu: string,
   limit = 12,
+  moduller: AdminModul[] = ADMIN_MODULLER,
 ): AdminAramaSonuc[] {
   const q = normalize(sorgu);
   if (!q) return [];
@@ -520,9 +596,9 @@ export function AdminModulleriAra(
   const parcalar = q.split(/\s+/).filter(Boolean);
   const sonuclar: AdminAramaSonuc[] = [];
 
-  for (const m of ADMIN_MODULLER) {
+  for (const m of moduller) {
     const havuz = normalize(
-      [m.label, m.alt, m.bolum, m.href, ...(m.anahtarlar ?? [])].join(' '),
+      [m.label, m.alt, m.bolum, m.href, m.permissionKey, ...(m.anahtarlar ?? [])].join(' '),
     );
     let skor = 0;
     const labelN = normalize(m.label);
@@ -543,7 +619,6 @@ export function AdminModulleriAra(
     }
     if (!tumParca && parcalar.length > 1) continue;
 
-    // href path parçaları
     if (normalize(m.href).includes(q)) skor += 15;
 
     if (skor > 0) sonuclar.push({ ...m, skor });

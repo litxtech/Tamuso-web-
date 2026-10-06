@@ -51,6 +51,9 @@
 --      muta-test://reset-password
 --      exp://127.0.0.1:8081/--/reset-password
 --      exp://localhost:8081/--/reset-password
+--      https://tamuso.com/**
+--      https://www.tamuso.com/**
+--      https://admin.tamuso.com/**
 
 -- 3) Authentication → Emails → SMTP Settings
 --    Custom SMTP: ON (zorunlu — built-in mailer güvenilir değil)

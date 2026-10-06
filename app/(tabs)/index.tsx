@@ -82,6 +82,7 @@ import {
   buildFeedBannerRows,
   FeedBannerRowView,
 } from '../../src/banner/components/FeedBannerRows';
+import { HikayeTepsi } from '../../src/moduller/hikaye/bilesenler/HikayeTepsi';
 import { useTemayaAboneOl } from '../../src/tasarim-sistemi/tema/useTemayaAboneOl';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
@@ -146,10 +147,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const isAdmin = AdminYetkisiVarMi(profile);
   const { okunmamis, yenile: bildirimYenile } = useBildirimler();
-  const { yonetimHref, ajanslar } = useAjansYonetim();
-  const ajansHedef =
-    ajanslar.find((a) => a.my_role === 'OWNER' || a.my_role === 'MANAGER')?.id ??
-    null;
+  const { yonetimHref } = useAjansYonetim();
   const { surum: bayrakSurum } = useOzellikBayraklari();
   const [menuSurum, setMenuSurum] = useState(HamburgerMenuCacheSurum);
   const [feed, setFeed] = useState<FeedOggesi[]>([]);
@@ -669,29 +667,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {ajansHedef ? (
-          <View style={styles.ajansCipSatir}>
-            {(
-              [
-                { path: 'cuzdan', ikon: 'wallet-outline' as const, etiket: t('ajans.feedCuzdan') },
-                { path: 'satis-linkleri', ikon: 'link-outline' as const, etiket: t('ajans.feedSatis') },
-                { path: 'paketler', ikon: 'pricetags-outline' as const, etiket: t('ajans.feedPaket') },
-              ] as const
-            ).map((oge) => (
-              <Pressable
-                key={oge.path}
-                onPress={() => router.push(`/ajans/${ajansHedef}/${oge.path}` as any)}
-                style={styles.ajansCip}
-                accessibilityRole="button"
-                accessibilityLabel={oge.etiket}
-              >
-                <Ionicons name={oge.ikon} size={14} color={RenkTokenlari.text} />
-                <Text style={styles.ajansCipYazi}>{oge.etiket}</Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
-
         <TamusoBanner placement="HOME_TOP" screen="HOME" compact />
       </View>
     );
@@ -722,6 +697,7 @@ export default function HomeScreen() {
     return (
       <View>
         {ustChrome}
+        <HikayeTepsi enabled={OzellikBayragiAktifMi('stories_enabled')} />
         {sonGezilenGorunum.length > 0 ? (
           <AnaSayfaSonGezilenSeridi
             ogeler={sonGezilenGorunum}
@@ -762,6 +738,7 @@ export default function HomeScreen() {
     sesOgeler,
     feedOgeAc,
     izgara.length,
+    bayrakSurum,
   ]);
 
   return (
@@ -977,29 +954,6 @@ const styles = StyleSheet.create({
   kisilerCipYazi: {
     ...TipografiTokenlari.micro,
     color: '#fff',
-    fontWeight: '700',
-  },
-  ajansCipSatir: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: BoslukTokenlari.lg,
-    paddingTop: 8,
-  },
-  ajansCip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: YaricapTokenlari.pill,
-    backgroundColor: RenkTokenlari.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: RenkTokenlari.border,
-  },
-  ajansCipYazi: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.text,
     fontWeight: '700',
   },
   list: {

@@ -205,7 +205,13 @@ export async function KameraAc(opts: {
       mediaTypes: opts.mediaTypes,
       allowsEditing: false,
       quality: opts.quality ?? 1,
-      videoMaxDuration: opts.videoMaxDuration ?? (videoVar ? 120 : undefined),
+      // Galeri: süre limiti yok. Kamera: pratik tavan (1 saat) veya çağıranın değeri.
+      ...(opts.videoMaxDuration != null || videoVar
+        ? {
+            videoMaxDuration:
+              opts.videoMaxDuration ?? (videoVar ? 3600 : undefined),
+          }
+        : {}),
       ...(cameraType != null ? { cameraType } : {}),
     });
     if (result.canceled || !result.assets?.[0]) {

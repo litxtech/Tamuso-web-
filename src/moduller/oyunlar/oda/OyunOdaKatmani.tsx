@@ -120,21 +120,28 @@ export function OyunOdaKatmani({
   const visibilityReady = visibleGameCodesProp != null || !gorunurHook.loading;
 
   useEffect(() => {
-    if (startModalVisible && visibleGameCodes.includes('fruit_wheel')) meyveYukle();
+    if (startModalVisible && visibleGameCodes.includes('fruit_wheel')) {
+      const id = setTimeout(() => meyveYukle(), 0);
+      return () => clearTimeout(id);
+    }
   }, [meyveYukle, startModalVisible, visibleGameCodes]);
   const yenileGorunur = gorunurHook.yenile;
 
   useEffect(() => {
     if (startModalVisible && visibleGameCodesProp == null) {
-      void yenileGorunur();
+      const id = setTimeout(() => void yenileGorunur(), 0);
+      return () => clearTimeout(id);
     }
   }, [startModalVisible, visibleGameCodesProp, yenileGorunur]);
 
   useEffect(() => {
     if (!startModalVisible) return;
-    void StudioV2Yayindaki().then((sonuc) => {
-      if (sonuc.ok && sonuc.games) setStudioOyunlar(sonuc.games);
-    });
+    const id = setTimeout(() => {
+      void StudioV2Yayindaki().then((sonuc) => {
+        if (sonuc.ok && sonuc.games) setStudioOyunlar(sonuc.games);
+      });
+    }, 120);
+    return () => clearTimeout(id);
   }, [startModalVisible]);
 
   const canliOyunAc = useCallback((id: string) => {

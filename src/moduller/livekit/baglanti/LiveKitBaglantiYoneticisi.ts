@@ -451,6 +451,35 @@ class LiveKitBaglantiYoneticisiImpl {
     })();
   }
 
+  /**
+   * Ses odası: mic publish gecikirse odayı düşürme — arka planda birkaç kez dene.
+   * Kullanıcı başkalarını duymaya devam eder; mic gelince yayınlanır.
+   */
+  mikrofonArkaPlandaDene(deneme = 6): void {
+    if (!this.micIstenenAcik || !this.asPublisher) return;
+    const nesil = this.baglantiNesil;
+    void (async () => {
+      for (let i = 0; i < deneme; i++) {
+        if (nesil !== this.baglantiNesil) return;
+        if (!this.micIstenenAcik || !this.asPublisher) return;
+        if (this.room?.state !== ConnectionState.Connected) return;
+        const pub = this.room?.localParticipant?.getTrackPublication(
+          Track.Source.Microphone,
+        );
+        if (pub?.track && !pub.isMuted) return;
+        await new Promise((r) => setTimeout(r, 600 + i * 400));
+        if (nesil !== this.baglantiNesil) return;
+        const ok = await this.mikrofonGucluAc().catch(() => false);
+        if (ok) {
+          this.yayinla('mic-recovered');
+          return;
+        }
+      }
+      console.warn('[LiveKit] mikrofon arka plan denemeleri bitti');
+      this.yayinla('mic-failed-soft');
+    })();
+  }
+
   remoteVideoTrack(): RemoteVideoTrack | null {
     if (!this.room) return null;
     for (const p of this.room.remoteParticipants.values()) {
@@ -870,19 +899,11 @@ class LiveKitBaglantiYoneticisiImpl {
           if (nesil === this.baglantiNesil) {
             const tekrar = await this.mikrofonGucluAc();
             if (!tekrar) {
-              // Video yayındaysa mic hatası yayını tamamen düşürmesin
-              if (!input.publishVideo) {
-                await this.odayiGuvenliKes(room);
-                if (this.room === room) this.room = null;
-                this.durum = 'error';
-                this.yayinla('mic-failed');
-                return {
-                  ok: false,
-                  hata:
-                    'Mikrofon yayınlanamadı. İzinleri kontrol et ve tekrar dene.',
-                };
-              }
-              console.warn('[LiveKit] mikrofon açılamadı — video devam');
+              // Ses odası / canlı: odayı düşürme — dinleme açık kalsın, mic arka planda
+              console.warn(
+                '[LiveKit] mikrofon ilk denemede yayınlanamadı — arka plan retry',
+              );
+              this.mikrofonArkaPlandaDene(6);
             }
           }
         }
@@ -941,11 +962,13 @@ class LiveKitBaglantiYoneticisiImpl {
             'WebRTC/LiveKit native hatası. Yeni development build al (Expo Go yeterli değil).',
         };
       }
-      const hata = /invalid api key|unauthorized|Could not fetch region/i.test(
-        msg,
-      )
+      const hata = /invalid api key|unauthorized|403|Forbidden/i.test(msg)
         ? 'LiveKit API anahtari gecersiz — Cloud Keys yenile'
-        : msg;
+        : /Could not fetch region|network|timeout|ECONNRESET|Failed to fetch|Load failed/i.test(
+              msg,
+            )
+          ? 'Ses sunucusuna ulaşılamadı. İnterneti kontrol edip tekrar dene.'
+          : msg;
       this.durum = 'error';
       this.yayinla(hata);
       return { ok: false, hata };

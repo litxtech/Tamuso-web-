@@ -242,14 +242,15 @@ export function AnaSayfaOyunKarti({ oyun, onPress, index = 0, aktif = true }: Pr
           </Animated.View>
 
           <View style={styles.ust}>
+            <View style={styles.tamusoNot} pointerEvents="none">
+              <Text style={styles.tamusoMark}>TAMUSO</Text>
+              <Text style={styles.tamusoAlt}>{t('oyun.tamusoGelistirdi')}</Text>
+            </View>
             <View style={[styles.rozet, { borderColor: `${oyun.aura[0]}88` }]}>
               <Ionicons name="game-controller" size={10} color={oyun.aura[0]} />
               <Text style={[styles.rozetYazi, { color: oyun.aura[0] }]}>{t('anaSayfa.oyunRozet')}</Text>
               {aktif ? <AnaSayfaSesCubuklari yukseklik={9} renk={oyun.aura[1]} /> : null}
             </View>
-            <Text style={[styles.eyebrow, { color: oyun.aura[1] }]} numberOfLines={1}>
-              {oyun.eyebrow}
-            </Text>
           </View>
 
           <View style={styles.alt}>
@@ -327,11 +328,35 @@ const styles = StyleSheet.create({
   },
   ust: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: BoslukTokenlari.sm + 2,
     paddingTop: BoslukTokenlari.sm + 2,
     gap: 6,
+  },
+  tamusoNot: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(6,8,16,0.55)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.14)',
+    maxWidth: '58%',
+  },
+  tamusoMark: {
+    ...TipografiTokenlari.micro,
+    fontSize: 8,
+    letterSpacing: 1.4,
+    fontWeight: '800',
+    color: 'rgba(255,248,236,0.9)',
+  },
+  tamusoAlt: {
+    ...TipografiTokenlari.micro,
+    fontSize: 7,
+    letterSpacing: 0.15,
+    fontWeight: '600',
+    color: 'rgba(232,228,240,0.64)',
+    marginTop: 1,
   },
   rozet: {
     flexDirection: 'row',

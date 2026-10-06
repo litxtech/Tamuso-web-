@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { SesOdasinaHrefIleGit } from '../../ses-odalari/navigasyon/SesOdasinaGit';
 import { BildirimHedefYolu } from './BildirimHedefYolu';
+import { BildirimAksiyonIsle } from './BildirimAksiyonIsle';
 import {
   BekleyenPushHedefiAyarla,
   PushNavigasyonKapisiAcikMi,
@@ -88,11 +89,17 @@ export function BildirimYanitiniIsle(
   opts?: { oturumVar: boolean; hemenGit?: boolean },
 ): string | null {
   if (!yanit) return null;
-  if (yanit.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
-    return null;
-  }
+
   const anahtar = yanitAnahtari(yanit);
   if (PushYanitiIslendiMi(anahtar)) return null;
+
+  // Yanıtla / Okundu / Takip — uygulamayı açmadan işle
+  if (yanit.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
+    if (opts?.oturumVar) {
+      void BildirimAksiyonIsle(yanit);
+    }
+    return null;
+  }
 
   const data = yanit.notification.request.content.data as
     | Record<string, unknown>

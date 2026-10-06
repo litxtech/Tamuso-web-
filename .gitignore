@@ -54,6 +54,9 @@ supabase/.temp/
 
 .env.supabase.local
 
+# Vercel
+.vercel/
+
 # Firebase
 /google-services.json
 /GoogleService-Info.plist
