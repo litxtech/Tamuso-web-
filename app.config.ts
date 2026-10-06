@@ -14,6 +14,17 @@ const googleServicesFile =
   process.env.GOOGLE_SERVICES_JSON ||
   (fs.existsSync('./google-services.json') ? './google-services.json' : undefined);
 
+const bildirimSesleri = [
+  './assets/sounds/mesaj_uc_ton.wav',
+  './assets/sounds/gelen_arama.wav',
+].filter((yol) => fs.existsSync(yol));
+
+const yerelEklentiler = [
+  './plugins/withSesOdasiForegroundService.js',
+  './plugins/withTamusoCallKit.js',
+  './plugins/withAndroidIncomingCall.js',
+].filter((yol) => fs.existsSync(yol));
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: displayName,
@@ -127,9 +138,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
-    './plugins/withSesOdasiForegroundService.js',
-    './plugins/withTamusoCallKit.js',
-    './plugins/withAndroidIncomingCall.js',
+    ...yerelEklentiler,
     // expo-widgets / App Groups kapalı — Ad Hoc profil App Groups istemiyor.
     // Live Activity native target yok; JS tarafı soft-fail.
     '@config-plugins/react-native-webrtc',
@@ -178,10 +187,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         color: '#E84091',
         defaultChannel: 'genel',
-        sounds: [
-          './assets/sounds/mesaj_uc_ton.wav',
-          './assets/sounds/gelen_arama.wav',
-        ],
+        ...(bildirimSesleri.length ? { sounds: bildirimSesleri } : {}),
       },
     ],
     [
