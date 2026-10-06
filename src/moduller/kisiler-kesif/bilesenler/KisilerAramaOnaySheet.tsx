@@ -26,6 +26,7 @@ import {
 import type { KisilerAramaOnizleme } from '../tipler';
 import { saniyeMetni } from '../utils/KisilerYardimcilar';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { useAuth } from '../../../contexts/AuthContext';
 
 type Props = {
   visible: boolean;
@@ -45,9 +46,16 @@ export function KisilerAramaOnaySheet({
   busy,
 }: Props) {
   const { t } = useCeviri();
+  const { wallet, refreshWallet } = useAuth();
   const [onizleme, setOnizleme] = useState<KisilerAramaOnizleme | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const kapaliBildirimRef = useRef<string | null>(null);
+  const istekRef = useRef(0);
+
+  useEffect(() => {
+    if (!visible) return;
+    void refreshWallet();
+  }, [visible, refreshWallet]);
 
   useEffect(() => {
     if (!visible || !calleeId || !callType) {
@@ -55,11 +63,11 @@ export function KisilerAramaOnaySheet({
       kapaliBildirimRef.current = null;
       return;
     }
-    let iptal = false;
+    const istek = ++istekRef.current;
     setYukleniyor(true);
     void KisilerAramaOnizlemeGetir(calleeId, callType)
       .then((r) => {
-        if (iptal) return;
+        if (istek !== istekRef.current) return;
         setOnizleme(r);
         if (r.block_reason === 'calls_closed') {
           const key = `${calleeId}:${callType}`;
@@ -70,18 +78,18 @@ export function KisilerAramaOnaySheet({
         }
       })
       .finally(() => {
-        if (!iptal) setYukleniyor(false);
+        if (istek === istekRef.current) setYukleniyor(false);
       });
-    return () => {
-      iptal = true;
-    };
   }, [visible, calleeId, callType]);
 
   const turLabel = callType === 'video' ? t('kisilerX.goruntuluArama') : t('kisilerX.sesliArama');
   const isim = onizleme?.display_name?.trim() || onizleme?.username || t('ortak.kullanici');
   const canStart = onizleme?.ok === true && onizleme.can_start === true;
+  const bakiye =
+    onizleme?.caller_balance != null ? onizleme.caller_balance : wallet?.coins;
   const uyari =
     onizleme?.message ??
+    onizleme?.error ??
     (onizleme?.block_reason === 'insufficient_coins'
       ? t('kisilerX.yetersizCoin')
       : null);
@@ -128,7 +136,7 @@ export function KisilerAramaOnaySheet({
               <View style={styles.bilgi}>
                 <Satir
                   label={t('kisilerX.bakiyen')}
-                  value={`${onizleme?.caller_balance ?? 0} coin`}
+                  value={bakiye == null ? '…' : `${bakiye} coin`}
                 />
                 {onizleme?.is_paid && onizleme.block_reason !== 'calls_closed' ? (
                   <Satir

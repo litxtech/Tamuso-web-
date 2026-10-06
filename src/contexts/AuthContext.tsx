@@ -38,6 +38,26 @@ import {
   type AuthContextValue,
 } from './AuthContextNesnesi';
 
+function tamSayi(deger: unknown, yedek = 0): number {
+  const n = typeof deger === 'number' ? deger : Number(deger);
+  if (!Number.isFinite(n)) return yedek;
+  return Math.max(0, Math.floor(n));
+}
+
+function cuzdanSatiri(row: {
+  user_id: string;
+  coins: unknown;
+  diamonds: unknown;
+  updated_at?: string | null;
+}): Wallet {
+  return {
+    user_id: row.user_id,
+    coins: tamSayi(row.coins),
+    diamonds: tamSayi(row.diamonds),
+    updated_at: row.updated_at || new Date().toISOString(),
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -171,17 +191,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshWallet = useCallback(async () => {
-    const uid = (await supabase.auth.getUser()).data.user?.id;
+    const { data: oturum } = await supabase.auth.getSession();
+    const uid = oturum.session?.user?.id;
     if (!uid) {
       setWallet(null);
       return;
     }
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('wallets')
       .select('user_id, coins, diamonds, updated_at')
       .eq('user_id', uid)
       .maybeSingle();
-    setWallet((data as unknown as Wallet) ?? null);
+    if (error) return;
+    if (!data) {
+      setWallet({
+        user_id: uid,
+        coins: 0,
+        diamonds: 0,
+        updated_at: new Date().toISOString(),
+      });
+      return;
+    }
+    setWallet(
+      cuzdanSatiri(
+        data as {
+          user_id: string;
+          coins: unknown;
+          diamonds: unknown;
+          updated_at?: string | null;
+        },
+      ),
+    );
   }, []);
 
   const patchWallet = useCallback(
@@ -260,10 +300,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           filter: `user_id=eq.${uid}`,
         },
         (payload) => {
-          const row = payload.new as Wallet | null;
-          if (row && typeof row.coins === 'number') {
-            setWallet(row);
-          }
+          const row = payload.new as {
+            user_id?: string;
+            coins?: unknown;
+            diamonds?: unknown;
+            updated_at?: string | null;
+          } | null;
+          if (!row?.user_id || row.coins == null || row.diamonds == null) return;
+          setWallet(
+            cuzdanSatiri({
+              user_id: row.user_id,
+              coins: row.coins,
+              diamonds: row.diamonds,
+              updated_at: row.updated_at,
+            }),
+          );
         },
       )
       .subscribe();

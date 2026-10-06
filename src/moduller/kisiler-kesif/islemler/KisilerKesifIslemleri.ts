@@ -154,26 +154,50 @@ export async function KisilerAyarlariGuncelle(
   return { ok: true, ayar: data as KisilerAyarlari };
 }
 
+function rpcGovde(data: unknown): Record<string, unknown> {
+  if (typeof data === 'string') {
+    try {
+      const ayrik = JSON.parse(data) as unknown;
+      if (ayrik && typeof ayrik === 'object') return ayrik as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+    return {};
+  }
+  if (data && typeof data === 'object') return data as Record<string, unknown>;
+  return {};
+}
+
+function sayiAlani(deger: unknown): number | undefined {
+  if (deger == null || deger === '') return undefined;
+  const n = Number(deger);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export async function KisilerAramaOnizlemeGetir(
   calleeId: string,
   callType: 'audio' | 'video',
 ): Promise<KisilerAramaOnizleme> {
+  await supabase.auth.getSession();
   const { data, error } = await supabase.rpc('kisiler_arama_onizleme', {
     p_callee_id: calleeId,
     p_call_type: callType,
   });
-  if (error) return { ok: false, error: error.message, can_start: false };
-  const raw = (data ?? { ok: false }) as KisilerAramaOnizleme;
+  if (error) {
+    return {
+      ok: false,
+      error: error.message,
+      message: error.message,
+      can_start: false,
+    };
+  }
+  const raw = rpcGovde(data);
   return {
-    ...raw,
-    caller_balance:
-      raw.caller_balance == null ? 0 : Number(raw.caller_balance),
-    price_per_minute:
-      raw.price_per_minute == null ? undefined : Number(raw.price_per_minute),
-    free_seconds_remaining:
-      raw.free_seconds_remaining == null
-        ? undefined
-        : Number(raw.free_seconds_remaining),
+    ...(raw as KisilerAramaOnizleme),
+    ok: raw.ok !== false,
+    caller_balance: sayiAlani(raw.caller_balance),
+    price_per_minute: sayiAlani(raw.price_per_minute),
+    free_seconds_remaining: sayiAlani(raw.free_seconds_remaining),
     can_start: raw.can_start === true,
   };
 }
