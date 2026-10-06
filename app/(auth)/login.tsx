@@ -10,7 +10,7 @@ import {
   View,
   Platform,
 } from 'react-native';
-import { Link, router, useFocusEffect } from 'expo-router';
+import { type Href, Link, router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -34,6 +34,12 @@ import {
 } from '../../src/moduller/giris-lobisi/tipler';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { useDil } from '../../src/i18n/DilSaglayici';
+import { tanitimMetin } from '../../src/moduller/web-tanitim/tanitimMetin';
+import {
+  TanitimMedyaUri,
+  WebTanitimMedyaGetir,
+} from '../../src/moduller/web-tanitim/WebTanitimMedya';
 import { GirisLobiOturumGecmisi } from '../../src/moduller/kimlik-dogrulama/oturum-gecmisi/bilesenler/GirisLobiOturumGecmisi';
 import type { OturumGecmisiKaydi } from '../../src/moduller/kimlik-dogrulama/oturum-gecmisi/tipler';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
@@ -66,6 +72,8 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { palet } = useTema();
   const { t } = useCeviri();
+  const { dil } = useDil();
+  const sirketSatiri = tanitimMetin(dil).footerSirket;
   const {
     signIn,
     signInWithApple,
@@ -115,13 +123,27 @@ export default function LoginScreen() {
           setAyar(disk.ayar);
           setMedya(disk.medya);
         }
-        const [d, pol] = await Promise.all([
+        const [d, pol, tanitim] = await Promise.all([
           GirisLobisiPublicGet(),
           PolitikalariListele('login').catch(() => [] as PolitikaGorunum[]),
+          WebTanitimMedyaGetir('lobi').catch(() => []),
         ]);
         if (iptal) return;
         setAyar(d.ayar);
-        setMedya(d.medya);
+        const varOlan = new Set(d.medya.map((oge) => oge.public_url));
+        const ek: GirisLobisiMedya[] = tanitim
+          .map((oge) => ({
+            id: oge.id,
+            tur: oge.tur,
+            public_url: TanitimMedyaUri(oge.public_url, true),
+            aktif: true,
+            sira: (oge.sira ?? 0) + 1000,
+          }))
+          .filter(
+            (oge) =>
+              Boolean(MedyaUriGuvenli(oge.public_url)) && !varOlan.has(oge.public_url),
+          );
+        setMedya([...d.medya, ...ek]);
         setGirisPolitikalari(pol);
       })();
 
@@ -276,7 +298,12 @@ export default function LoginScreen() {
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.scroll}
               >
-                <View style={styles.dilSatir}>
+                <View style={[styles.dilSatir, Platform.OS === 'web' && styles.dilSatirWeb]}>
+                  {Platform.OS === 'web' ? (
+                    <Pressable onPress={() => router.push('/tanitim' as Href)}>
+                      <Text style={styles.siteDon}>Tamuso</Text>
+                    </Pressable>
+                  ) : null}
                   <GirisLobiDilSecici />
                 </View>
 
@@ -551,6 +578,7 @@ export default function LoginScreen() {
                     </React.Fragment>
                   ))}
                 </View>
+                <Text style={styles.destekAlt}>{sirketSatiri}</Text>
                 <Text style={styles.destekAlt}>{t('auth.destek')}</Text>
               </ScrollView>
             </KlavyeKapatan>
@@ -589,6 +617,16 @@ const styles = StyleSheet.create({
   dilSatir: {
     alignItems: 'flex-end',
     marginBottom: -BoslukTokenlari.sm,
+  },
+  dilSatirWeb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  siteDon: {
+    color: RenkTokenlari.text,
+    fontWeight: '800',
+    fontSize: 18,
   },
   hero: {
     alignItems: 'center',

@@ -41,6 +41,8 @@ type DilBaglam = {
   desteklenen: readonly UygulamaDili[];
   /** Manuel dil — kalıcı; cihaz/ülke dili değiştirmez */
   dilDegistir: (yeni: UygulamaDili) => Promise<{ reloadGerekli: boolean }>;
+  /** Ülke tahmini — kaydetmez, MANUAL kilidi koymaz */
+  geciciDilUygula: (yeni: UygulamaDili) => Promise<void>;
   /** Sistem / ülke diline dön */
   sistemDiliniKullan: () => Promise<{ reloadGerekli: boolean }>;
   hazir: boolean;
@@ -55,6 +57,7 @@ const DilContext = createContext<DilBaglam>({
   rtlAktif: false,
   desteklenen: DESTEKLENEN_DILLER,
   dilDegistir: async () => ({ reloadGerekli: false }),
+  geciciDilUygula: async () => undefined,
   sistemDiliniKullan: async () => ({ reloadGerekli: false }),
   hazir: false,
 });
@@ -122,6 +125,12 @@ export function DilSaglayici({
     return { reloadGerekli };
   }, []);
 
+  const geciciDilUygula = useCallback(async (yeni: UygulamaDili) => {
+    const kod = DilNormalizeEt(yeni);
+    await diliUygula(kod);
+    setDil(kod);
+  }, []);
+
   const sistemDiliniKullan = useCallback(async () => {
     await DilModunuSistemYap();
     const kod = DilCozumle({ mod: 'SYSTEM', profilUlke });
@@ -142,10 +151,11 @@ export function DilSaglayici({
       rtlAktif: isRtlAktif(),
       desteklenen: DESTEKLENEN_DILLER,
       dilDegistir,
+      geciciDilUygula,
       sistemDiliniKullan,
       hazir,
     }),
-    [dil, dilModu, dilDegistir, sistemDiliniKullan, hazir],
+    [dil, dilModu, dilDegistir, geciciDilUygula, sistemDiliniKullan, hazir],
   );
 
   if (!hazir) {

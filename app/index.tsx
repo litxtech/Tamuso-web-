@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { router } from 'expo-router';
+import { Platform } from 'react-native';
+import { type Href, router } from 'expo-router';
+import { WebTanitimAnasayfa } from '../src/moduller/web-tanitim/WebTanitimAnasayfa';
+import { WebTanitimKabuk } from '../src/moduller/web-tanitim/WebTanitimKabuk';
 import * as Notifications from 'expo-notifications';
 import { useAuth } from '../src/contexts/AuthContext';
 import { AcilisEkrani } from '../src/bilesenler/acilis/AcilisEkrani';
@@ -47,7 +50,8 @@ export default function Index() {
 
       if (!session) {
         PushNavigasyonKapisiAc();
-        router.replace('/(auth)/login');
+        if (Platform.OS === 'web') return;
+        router.replace('/(auth)/login' as Href);
         return;
       }
 
@@ -65,6 +69,14 @@ export default function Index() {
       iptal = true;
     };
   }, [loading, session, hazir]);
+
+  if (Platform.OS === 'web' && !loading && hazir && !session) {
+    return (
+      <WebTanitimKabuk>
+        <WebTanitimAnasayfa />
+      </WebTanitimKabuk>
+    );
+  }
 
   return (
     <AcilisEkrani

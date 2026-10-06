@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { Tabs, router } from 'expo-router';
+import { ActivityIndicator, Platform, View } from 'react-native';
+import { type Href, Tabs, router } from 'expo-router';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -24,7 +24,16 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (loading) return;
-    if (!session) router.replace('/(auth)/login');
+    if (!session) {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const path = window.location.pathname.replace(/\/+$/, '') || '/';
+        if (path === '/' || path.startsWith('/tanitim')) {
+          router.replace((path === '/' ? '/tanitim' : path) as Href);
+          return;
+        }
+      }
+      router.replace('/(auth)/login');
+    }
   }, [loading, session]);
 
   const tabsKoruma = TabsBirKezMountMu() || !!session;

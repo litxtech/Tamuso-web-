@@ -54,6 +54,12 @@ export default function Root({ children }: PropsWithChildren) {
         />
         <ScrollViewStyleReset />
         <style dangerouslySetInnerHTML={{ __html: WEB_KABUK }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var p=location.pathname;if(p.length>1&&p.endsWith('/')){history.replaceState(null,'',p.replace(/\\/+$/,'')+location.search+location.hash);}})();",
+          }}
+        />
         {headNodes}
       </head>
       <body {...bodyAttributes}>

@@ -127,8 +127,11 @@ function KokIcerik() {
   const { palet } = useTema();
   const segments = useSegments();
   const { width } = useWindowDimensions();
-  const telefonKabin =
-    Platform.OS === 'web' && segments[0] !== 'admin' && width >= 520;
+  const tamSite =
+    segments[0] === 'admin' ||
+    segments[0] === 'tanitim' ||
+    (Platform.OS === 'web' && (segments.length === 0 || segments[0] === 'index'));
+  const telefonKabin = Platform.OS === 'web' && !tamSite && width >= 520;
 
   return (
     <GestureHandlerRootView
@@ -138,7 +141,7 @@ function KokIcerik() {
         maxWidth: telefonKabin ? 430 : '100%',
         alignSelf: 'center',
         minHeight: 0,
-        backgroundColor: palet.bg,
+        backgroundColor: segments[0] === 'tanitim' ? '#080811' : palet.bg,
         ...(Platform.OS === 'web'
           ? { height: '100%', overflow: 'hidden' as const }
           : null),
@@ -177,6 +180,7 @@ function KokIcerik() {
             }}
           />
           <Stack.Screen name="index" />
+          <Stack.Screen name="tanitim" options={{ animation: 'fade' }} />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="kesfet" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="mesaj/[id]" options={{ animation: 'slide_from_right' }} />
@@ -383,6 +387,10 @@ function KokIcerik() {
           />
           <Stack.Screen
             name="admin/giris-lobisi"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="admin/tanitim-videolari"
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen

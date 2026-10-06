@@ -496,6 +496,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['lobi', 'splash', 'giriş'],
   },
   {
+    icon: 'videocam-outline',
+    label: 'Tanıtım videoları',
+    alt: 'Anasayfa · giriş lobisi',
+    href: '/admin/tanitim-videolari',
+    tint: RenkTokenlari.primarySoft,
+    bolum: 'Büyüme',
+    permissionKey: 'content.lobby.view',
+    anahtarlar: ['video', 'tanıtım', 'anasayfa', 'lobi', 'web'],
+  },
+  {
     icon: 'clipboard-outline',
     label: 'Kayıt alanları',
     alt: 'Zorunlu · gizli · özel alan',
