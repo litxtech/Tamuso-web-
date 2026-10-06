@@ -1,8 +1,8 @@
 ﻿import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import '../src/tasarim-sistemi/tema/StilYama';
-import { InteractionManager, LogBox } from 'react-native';
-import { Stack } from 'expo-router';
+import { InteractionManager, LogBox, Platform, useWindowDimensions } from 'react-native';
+import { Stack, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { CuzdanUiProvider } from '../src/moduller/cuzdan/ui-config/useCuzdanUiConfig';
@@ -31,8 +31,11 @@ import { DilSaglayici } from '../src/i18n/DilSaglayici';
 import { OzellikBayrakSaglayici } from '../src/moduller/ozellik-bayraklari/OzellikBayrakSaglayici';
 import { RtcYenilemeKatmani } from '../src/moduller/rtc/RtcYenilemeKatmani';
 import { StudioUretimServisi } from '../src/moduller/studio/v2/ui/StudioUretimServisi';
+import { WebAlertKatmani, WebAlertKur } from '../src/ortak/web/WebAlertKatmani';
 import '../src/i18n';
 import '../src/moduller/livekit/polyfill/AbortReasonPolyfill';
+
+WebAlertKur();
 
 // Tab bar AppState/Dimensions kilidi â€” en erken
 try {
@@ -121,9 +124,25 @@ export default function RootLayout() {
 
 function KokIcerik() {
   const { palet } = useTema();
+  const segments = useSegments();
+  const { width } = useWindowDimensions();
+  const telefonKabin =
+    Platform.OS === 'web' && segments[0] !== 'admin' && width >= 520;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: palet.bg }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+        width: '100%',
+        maxWidth: telefonKabin ? 430 : '100%',
+        alignSelf: 'center',
+        minHeight: 0,
+        backgroundColor: palet.bg,
+        ...(Platform.OS === 'web'
+          ? { height: '100%', overflow: 'hidden' as const }
+          : null),
+      }}
+    >
       <UygulamaHataSiniri>
         <SurumPolitikaKapisi>
         <AuthProvider>
@@ -473,6 +492,7 @@ function KokIcerik() {
               <CocukKorumaOnayKarti />
               <KritikDuyuruKapisi />
               <BiyometriKilitKapisi />
+              <WebAlertKatmani />
             </GorusmeGelenSaglayici>
           </ModulHataSiniri>
           </MesajOkunmamisSaglayici>

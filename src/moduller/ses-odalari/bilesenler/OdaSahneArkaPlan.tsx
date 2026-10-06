@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OdaTemasiniCoz } from '../../oda-olusturma/katalog/OdaTemaKatalogu';
 
@@ -29,7 +29,7 @@ export function OdaSahneArkaPlan({ url, themeCode }: Props) {
   const tema = useMemo(() => OdaTemasiniCoz(themeCode), [themeCode]);
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill} collapsable={false}>
+    <View pointerEvents="none" style={styles.kutu} collapsable={false}>
       <LinearGradient
         colors={[...tema.renkler]}
         start={{ x: 0.15, y: 0 }}
@@ -45,7 +45,7 @@ export function OdaSahneArkaPlan({ url, themeCode }: Props) {
       {uri ? (
         <Image
           source={{ uri }}
-          style={StyleSheet.absoluteFill}
+          style={styles.kapak}
           resizeMode="cover"
           accessibilityIgnoresInvertColors
         />
@@ -62,3 +62,24 @@ export function OdaSahneArkaPlan({ url, themeCode }: Props) {
     </View>
   );
 }
+
+const kapakWeb: ViewStyle =
+  Platform.OS === 'web'
+    ? ({
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'center center',
+      } as ViewStyle)
+    : StyleSheet.absoluteFillObject;
+
+const styles = StyleSheet.create({
+  kutu: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  kapak: kapakWeb,
+});

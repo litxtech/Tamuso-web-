@@ -2126,6 +2126,7 @@ export default function RoomScreen() {
                 <Pressable
                   onPress={odayiKucult}
                   disabled={cikiyor}
+                  hitSlop={10}
                   style={styles.ustIconBtn}
                   accessibilityLabel={t('sesOda.kucultGezin')}
                   accessibilityRole="button"
@@ -2136,6 +2137,7 @@ export default function RoomScreen() {
               <Pressable
                 onPress={odadanCik}
                 disabled={cikiyor}
+                hitSlop={10}
                 style={styles.ustIconBtn}
                 accessibilityLabel={t('sesOda.odadanCik')}
                 accessibilityRole="button"
@@ -2505,13 +2507,18 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     minHeight: 0,
-    overflow: 'visible',
+    width: '100%',
+    maxWidth: '100%',
+    overflow: Platform.OS === 'web' ? 'hidden' : 'visible',
     position: 'relative',
   },
   stage: {
     flex: 1,
     minHeight: 0,
+    width: '100%',
+    maxWidth: '100%',
     position: 'relative',
+    overflow: Platform.OS === 'web' ? 'hidden' : 'visible',
   },
   klavyeKapatKatman: {
     position: 'absolute',
@@ -2534,15 +2541,20 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingHorizontal: 10,
+    gap: 6,
     marginBottom: 6,
     flexShrink: 0,
-    zIndex: 3,
+    width: '100%',
+    maxWidth: '100%',
+    zIndex: 30,
+    position: 'relative',
   },
   topBarSol: {
+    flex: 1,
     flexShrink: 1,
-    maxWidth: 180,
+    minWidth: 0,
+    maxWidth: 200,
   },
   topBarSpacer: {
     flex: 1,
@@ -2575,6 +2587,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     flexShrink: 0,
+    zIndex: 31,
   },
   ustIconBtn: {
     width: 36,
@@ -2585,6 +2598,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 32,
   },
   livePill: {
     flexDirection: 'row',
