@@ -32,6 +32,7 @@ import { OzellikBayrakSaglayici } from '../src/moduller/ozellik-bayraklari/Ozell
 import { RtcYenilemeKatmani } from '../src/moduller/rtc/RtcYenilemeKatmani';
 import { StudioUretimServisi } from '../src/moduller/studio/v2/ui/StudioUretimServisi';
 import { WebAlertKatmani, WebAlertKur } from '../src/ortak/web/WebAlertKatmani';
+import { WebZiyaretKaydi } from '../src/moduller/web-ziyaret/WebZiyaretKaydet';
 import '../src/i18n';
 import '../src/moduller/livekit/polyfill/AbortReasonPolyfill';
 
@@ -481,6 +482,10 @@ function KokIcerik() {
             name="admin/cocuk-koruma"
             options={{ animation: 'slide_from_right' }}
           />
+          <Stack.Screen
+            name="admin/ziyaret"
+            options={{ animation: 'slide_from_right' }}
+          />
               </Stack>
               <YuzenTabBar />
               <AktifSesOdasiMiniBar />
@@ -493,6 +498,7 @@ function KokIcerik() {
               <KritikDuyuruKapisi />
               <BiyometriKilitKapisi />
               <WebAlertKatmani />
+              <WebZiyaretKaydi />
             </GorusmeGelenSaglayici>
           </ModulHataSiniri>
           </MesajOkunmamisSaglayici>

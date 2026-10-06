@@ -16,6 +16,7 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVarMi';
 import { useAdminPermissions } from '../../src/moduller/admin/yetki/useAdminPermissions';
 import { AdminOzetGetir, type AdminOzet } from '../../src/moduller/admin/okuma/AdminOzetGetir';
+import { AdminWebZiyaretGetir } from '../../src/moduller/admin/okuma/AdminWebZiyaretGetir';
 import {
   AdminOnayBalonlariGetir,
   type AdminOnayBalonu,
@@ -47,6 +48,7 @@ export default function AdminHubEkrani() {
   const { has, isSuper, loading: izinYukleniyor, refresh: izinYenile } =
     useAdminPermissions();
   const [ozet, setOzet] = useState<AdminOzet | null>(null);
+  const [ziyaret, setZiyaret] = useState<{ gunluk: number; aylik: number } | null>(null);
   const [balonlar, setBalonlar] = useState<AdminOnayBalonu[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [belge, setBelge] = useState<BelgeIcerik | null>(null);
@@ -67,6 +69,7 @@ export default function AdminHubEkrani() {
       const gelen = await AdminOzetGetir();
       setOzet(gelen);
       setBalonlar(await AdminOnayBalonlariGetir(gelen.platform));
+      setZiyaret(await AdminWebZiyaretGetir());
     } catch {
       setOzet(null);
     } finally {
@@ -102,6 +105,18 @@ export default function AdminHubEkrani() {
 
   const p = ozet?.platform;
   const kpis = [
+    {
+      id: 'ziyaret_gun',
+      n: ziyaret ? SayiKisa(ziyaret.gunluk) : '—',
+      l: 'Bugünkü ziyaret',
+      tint: RenkTokenlari.accent,
+    },
+    {
+      id: 'ziyaret_ay',
+      n: ziyaret ? SayiKisa(ziyaret.aylik) : '—',
+      l: 'Aylık ziyaret',
+      tint: RenkTokenlari.mint,
+    },
     {
       id: 'kullanici',
       n: SayiKisa(p?.kullanici.toplam ?? null),

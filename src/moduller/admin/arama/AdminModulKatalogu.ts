@@ -446,6 +446,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['menü', 'hamburger', 'drawer'],
   },
   {
+    icon: 'eye-outline',
+    label: 'Web ziyaretleri',
+    alt: 'Günlük · aylık · tekil IP ve cihaz',
+    href: '/admin/ziyaret',
+    tint: RenkTokenlari.accent,
+    bolum: 'Büyüme',
+    permissionKey: 'dashboard.view',
+    anahtarlar: ['ziyaret', 'trafik', 'günlük', 'aylık', 'ip', 'cihaz'],
+  },
+  {
     icon: 'images-outline',
     label: 'Bannerlar',
     alt: 'Kampanya · yerleştirme · CTR',
