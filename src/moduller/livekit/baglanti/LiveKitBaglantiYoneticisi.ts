@@ -23,6 +23,7 @@ import {
 } from '../polyfill/LiveKitGlobalsKaydet';
 import i18n from '../../../i18n';
 import { KameraOnizlemeSerbestBirak } from '../kamera/KameraOnizlemeKilidi';
+import { SesHataMetni } from './SesHataMetni';
 
 /** 1:1 görüşme — WhatsApp benzeri: düşük gecikme, az kasma */
 const GORUSME_VIDEO = VideoPresets.h360;
@@ -676,28 +677,22 @@ class LiveKitBaglantiYoneticisiImpl {
       this.durum = 'error';
       this.mock = true;
       this.yayinla('mock-rejected');
-      return {
-        ok: false,
-        hata:
-          'Canlı medya yok (mock). LiveKit yapılandırması veya native WebRTC build gerekli.',
-      };
+      return { ok: false, hata: SesHataMetni() };
     }
 
     try {
-      globalsKaydet();
-      const native = livekitNativeAl();
-      if (!native) {
-        this.durum = 'error';
-        this.mock = false;
-        this.yayinla('native-missing');
-        return {
-          ok: false,
-          hata:
-            'WebRTC native modülü yok. Expo Go değil, LiveKit’li development/production build kullan.',
-        };
+      // Web: tarayıcı WebRTC (livekit-client). Native AudioSession yalnız iOS/Android.
+      if (Platform.OS !== 'web') {
+        globalsKaydet();
+        const native = livekitNativeAl();
+        if (!native) {
+          this.durum = 'error';
+          this.mock = false;
+          this.yayinla('native-missing');
+          return { ok: false, hata: SesHataMetni() };
+        }
+        await this.sesOturumuHazirla(native);
       }
-
-      await this.sesOturumuHazirla(native);
 
       if (nesil !== this.baglantiNesil) {
         await this.baglantiyiKesIc();
@@ -767,6 +762,9 @@ class LiveKitBaglantiYoneticisiImpl {
           } catch {
             /* ignore */
           }
+          if (!kendi && Platform.OS === 'web') {
+            this.webUzakSesiBagla(track as RemoteAudioTrack);
+          }
           if (!kendi) {
             // Dinleyici join: track gelince çıkış + hacim — sessiz kalmasın
             void this.hoparlorGucluAc().catch(() => undefined);
@@ -776,7 +774,12 @@ class LiveKitBaglantiYoneticisiImpl {
         }
         yenile();
       });
-      room.on(RoomEvent.TrackUnsubscribed, yenile);
+      room.on(RoomEvent.TrackUnsubscribed, (track) => {
+        if (Platform.OS === 'web' && track.kind === Track.Kind.Audio) {
+          this.webUzakSesiKopar(track as RemoteAudioTrack);
+        }
+        yenile();
+      });
       room.on(RoomEvent.TrackPublished, yenile);
       room.on(RoomEvent.TrackMuted, (pub, participant) => {
         if (pub.kind === Track.Kind.Audio && participant?.identity) {
@@ -866,6 +869,8 @@ class LiveKitBaglantiYoneticisiImpl {
         return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
       }
 
+      await this.tarayiciSesiniAc();
+
       // PC + native audio engine otursun — erken publish "engine not connected" üretir
       await this.motorHazirOlanaKadarBekle(nesil);
 
@@ -947,30 +952,10 @@ class LiveKitBaglantiYoneticisiImpl {
         this.yayinla('left');
         return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
       }
-      // Sadece gerçekten native/modul yok hataları — "null" tek başına yakalanmaz
-      const nativeYok =
-        /Expo Go|Native module not found|WebRTC native module|Cannot find module|registerGlobals is not a function/i.test(
-          msg,
-        );
-      if (nativeYok) {
-        this.durum = 'error';
-        this.mock = false;
-        this.yayinla('native-error:' + msg);
-        return {
-          ok: false,
-          hata:
-            'WebRTC/LiveKit native hatası. Yeni development build al (Expo Go yeterli değil).',
-        };
-      }
-      const hata = /invalid api key|unauthorized|403|Forbidden/i.test(msg)
-        ? 'LiveKit API anahtari gecersiz — Cloud Keys yenile'
-        : /Could not fetch region|network|timeout|ECONNRESET|Failed to fetch|Load failed/i.test(
-              msg,
-            )
-          ? 'Ses sunucusuna ulaşılamadı. İnterneti kontrol edip tekrar dene.'
-          : msg;
+      const hata = SesHataMetni(msg);
       this.durum = 'error';
-      this.yayinla(hata);
+      this.mock = false;
+      this.yayinla('error');
       return { ok: false, hata };
     }
   }
@@ -1091,6 +1076,36 @@ class LiveKitBaglantiYoneticisiImpl {
     }
   }
 
+  /** Tarayıcı otomatik oynatmayı kullanıcı dokunuşundan sonra açar. */
+  private async tarayiciSesiniAc(): Promise<void> {
+    if (Platform.OS !== 'web' || !this.room) return;
+    const oda = this.room as Room & { startAudio?: () => Promise<void> };
+    await oda.startAudio?.().catch(() => undefined);
+  }
+
+  private webUzakSesiBagla(track: RemoteAudioTrack): void {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    try {
+      const el = track.attach();
+      el.autoplay = true;
+      el.setAttribute('playsinline', 'true');
+      el.style.display = 'none';
+      if (!el.parentElement) document.body.appendChild(el);
+      void el.play?.().catch(() => undefined);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private webUzakSesiKopar(track: RemoteAudioTrack): void {
+    if (Platform.OS !== 'web') return;
+    try {
+      track.detach().forEach((el) => el.remove());
+    } catch {
+      /* ignore */
+    }
+  }
+
   private async hoparlorGucluAc(): Promise<void> {
     await this.sesCikisiniUygula('oto');
   }
@@ -1106,6 +1121,10 @@ class LiveKitBaglantiYoneticisiImpl {
   private async sesCikisiniUygula(
     tercih: 'oto' | 'hoparlor' | 'ahize' = 'oto',
   ): Promise<void> {
+    if (Platform.OS === 'web') {
+      await this.tarayiciSesiniAc();
+      return;
+    }
     try {
       const AudioSession = livekitNativeAl()?.AudioSession;
       if (!AudioSession) return;

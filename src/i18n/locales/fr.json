@@ -3607,7 +3607,7 @@
     "sonaErdi": "Appel terminé",
     "medyaBaglantisi": "Connexion média",
     "medya": "Médias",
-    "demoNativeGerekli": "L'audio/vidéo en direct nécessite une compilation native avec LiveKit. Vous êtes en mode démo.",
+    "demoNativeGerekli": "L'appel n'a pas pu se connecter. Réessayez dans un instant.",
     "coinAzaliyorKisa": "Low coins · pack"
   },
   "sesOda": {

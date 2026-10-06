@@ -211,6 +211,19 @@ function koltuklariUygula(
   return koltuklarEsit(prev, birlesik) ? prev : birlesik;
 }
 
+/** Teknik LiveKit / build metinleri oda ekranına çıkmasın. */
+function sadeSesMesaji(hata: string | null | undefined, yedek: string): string {
+  if (!hata) return yedek;
+  if (
+    /webrtc|livekit|expo|native|development|cloud keys|EXPO_PUBLIC|registerGlobals|token|api key|mock/i.test(
+      hata,
+    )
+  ) {
+    return yedek;
+  }
+  return hata;
+}
+
 /** Strict Mode / Fast Refresh ayni topic'e ikinci .on() eklemesin. */
 function odaRealtimeKanaliniTemizle(imza: string) {
   for (const ch of supabase.getChannels()) {
@@ -723,7 +736,10 @@ export default function RoomScreen() {
       } else {
         konusmaciYukseltildi.current = false;
         if (medya.hata !== t('sesOda.baglantiIptalEdildi') && medya.hata !== 'Ba\u011flant\u0131 iptal edildi') {
-          Alert.alert(t('sesOda.mikrofon'), medya.hata ?? t('sesOda.konusmaciBaglantiHatasi'));
+          Alert.alert(
+            t('sesOda.mikrofon'),
+            sadeSesMesaji(medya.hata, t('sesOda.sesSuAnBaglanamadi')),
+          );
         }
       }
     })();
@@ -1645,24 +1661,22 @@ export default function RoomScreen() {
         }
         AktifSesOdasiOneCikar();
       } else {
-        setLkDurum(medya.hata ?? t('ortak.baglantiHatasi'));
+        const sesMesaji = sadeSesMesaji(medya.hata, t('sesOda.sesSuAnBaglanamadi'));
+        setLkDurum(sesMesaji);
         if (
           (hostMu || koltukta) &&
           medya.hata !== t('sesOda.baglantiIptalEdildi') &&
           medya.hata !== 'Ba\u011flant\u0131 iptal edildi'
         ) {
           konusmaciYukseltildi.current = false;
-          Alert.alert(
-            t('sesOda.sesBaglantisi'),
-            medya.hata ?? t('sesOda.sesBaglantisiHata'),
-          );
+          Alert.alert(t('sesOda.sesBaglantisi'), sesMesaji);
         }
       }
     } catch (e) {
       if (loadNesil !== odaLoadNesil.current) return;
       medyaIlkBaglantiBitti.current = true;
       setMedyaHazirTick((n) => n + 1);
-      Alert.alert(t('sesOda.odaYuklenemedi'), e instanceof Error ? e.message : t('ortak.hata'));
+      Alert.alert(t('sesOda.odaYuklenemedi'), t('ortak.birHataOlustu'));
       setLoading(false);
     }
   }, [id, isDemo, user?.id]);

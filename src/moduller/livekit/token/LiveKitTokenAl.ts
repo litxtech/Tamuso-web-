@@ -1,5 +1,7 @@
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { supabase } from '../../../lib/supabase';
+import i18n from '../../../i18n';
+import { SesHataMetni } from '../baglanti/SesHataMetni';
 
 export type LiveKitRol = 'listener' | 'speaker' | 'host' | 'publisher';
 
@@ -32,16 +34,12 @@ export async function LiveKitTokenAl(input: {
     OrtamDegiskenleri.livekitUrl || process.env.EXPO_PUBLIC_LIVEKIT_URL || '';
 
   if (!edgeUrl || !livekitUrl) {
-    return {
-      ok: false,
-      hata:
-        'LiveKit yapılandırması eksik (EXPO_PUBLIC_LIVEKIT_URL / TOKEN_URL). Yeni build gerekli.',
-    };
+    return { ok: false, hata: SesHataMetni() };
   }
 
   const { data: session } = await supabase.auth.getSession();
   const jwt = session.session?.access_token;
-  if (!jwt) return { ok: false, hata: 'Oturum gerekli' };
+  if (!jwt) return { ok: false, hata: i18n.t('sesOda.tekrarGirisGerekli') };
 
   const birKez = async (): Promise<LiveKitTokenSonuc> => {
     try {
@@ -65,23 +63,17 @@ export async function LiveKitTokenAl(input: {
       };
 
       if (!res.ok) {
-        const msg = json.error ?? `Token servisi hata: ${res.status}`;
-        if (/api key|secret|invalid.*key/i.test(msg) && res.status !== 401) {
-          return {
-            ok: false,
-            hata: 'LiveKit API anahtari gecersiz — Cloud Keys yenile',
-          };
-        }
+        const msg = json.error ?? '';
         if (res.status === 401) {
-          return { ok: false, hata: 'Oturum gerekli' };
+          return { ok: false, hata: i18n.t('sesOda.tekrarGirisGerekli') };
         }
-        // 5xx / rate limit — geçici
+        // 5xx / rate limit — geçici; ham metin kullanıcıya gitmez
         if (res.status >= 500 || res.status === 429) {
           return { ok: false, hata: `TOKEN_RETRY:${msg}` };
         }
-        return { ok: false, hata: msg };
+        return { ok: false, hata: SesHataMetni(msg) };
       }
-      if (!json.token) return { ok: false, hata: 'Token bos' };
+      if (!json.token) return { ok: false, hata: SesHataMetni() };
 
       return {
         ok: true,
@@ -104,10 +96,7 @@ export async function LiveKitTokenAl(input: {
   const tekrar = await birKez();
   if (tekrar.ok) return tekrar;
   if (tekrar.hata.startsWith('TOKEN_RETRY:')) {
-    return {
-      ok: false,
-      hata: 'Ses sunucusuna ulaşılamadı. İnterneti kontrol edip tekrar dene.',
-    };
+    return { ok: false, hata: i18n.t('sesOda.sesInternetKontrol') };
   }
   return tekrar;
 }

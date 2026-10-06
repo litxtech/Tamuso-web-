@@ -4035,7 +4035,7 @@ export const tr = {
     sonaErdi: "Görüşme sona erdi",
     medyaBaglantisi: "Medya bağlantısı",
     medya: "Medya",
-    demoNativeGerekli: "Canlı ses/görüntü için LiveKit’li native build gerekir. Şu an demo moddasın."
+    demoNativeGerekli: "Görüşme şu an bağlanamadı. Biraz sonra tekrar dene."
   },
   sesOda: {
     yonetimKapatti: "Yönetim bu ses odasını kapattı.",
@@ -4156,6 +4156,10 @@ export const tr = {
     odaYuklenemedi: "Oda yüklenemedi",
     sesBaglantisi: "Ses bağlantısı",
     sesBaglantisiHata: "Mikrofon yayınlanamadı. İzinleri kontrol edip odadan çıkıp tekrar dene.",
+    sesSuAnBaglanamadi: "Ses şu an bağlanamadı. Biraz sonra tekrar dene.",
+    sesInternetKontrol: "Ses sunucusuna ulaşılamadı. İnternetini kontrol edip tekrar dene.",
+    mikrofonIzniGerekli: "Mikrofon izni gerekli.",
+    tekrarGirisGerekli: "Tekrar giriş yapman gerekiyor.",
     hediye: "Hediye",
     katalogYukleniyor: "Katalog yükleniyor — biraz sonra dene.",
     yetersizCoin: "Yetersiz coin",

@@ -4035,7 +4035,7 @@ export const en: CeviriSozlugu = {
     sonaErdi: "Call ended",
     medyaBaglantisi: "Media connection",
     medya: "Media",
-    demoNativeGerekli: "Live audio/video needs a native build with LiveKit. You are in demo mode."
+    demoNativeGerekli: "The call could not connect. Try again in a moment."
   },
   sesOda: {
     yonetimKapatti: "Management closed this voice room.",
@@ -4156,6 +4156,10 @@ export const en: CeviriSozlugu = {
     odaYuklenemedi: "Could not load room",
     sesBaglantisi: "Audio connection",
     sesBaglantisiHata: "Could not publish mic. Check permissions, leave, and try again.",
+    sesSuAnBaglanamadi: "Audio could not connect. Try again in a moment.",
+    sesInternetKontrol: "Could not reach the audio server. Check your internet and try again.",
+    mikrofonIzniGerekli: "Microphone permission is required.",
+    tekrarGirisGerekli: "Please sign in again.",
     hediye: "Gift",
     katalogYukleniyor: "Catalog loading â€” try again shortly.",
     yetersizCoin: "Not enough coins",

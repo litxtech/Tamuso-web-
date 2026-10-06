@@ -3779,7 +3779,7 @@ export const pt: CeviriSozlugu = {
     sonaErdi: "Chamada encerrada",
     medyaBaglantisi: "Media connection",
     medya: "Media",
-    demoNativeGerekli: "Live audio/video needs a native build with LiveKit. You are in demo mode."
+    demoNativeGerekli: "A chamada nao conectou. Tente de novo daqui a pouco."
   },
   sesOda: {
     yonetimKapatti: "Management closed this voice room.",
@@ -3900,6 +3900,10 @@ export const pt: CeviriSozlugu = {
     odaYuklenemedi: "Could not load room",
     sesBaglantisi: "Audio connection",
     sesBaglantisiHata: "Could not publish mic. Check permissions, leave, and try again.",
+    sesSuAnBaglanamadi: "O audio nao conectou. Tente de novo daqui a pouco.",
+    sesInternetKontrol: "Nao foi possivel chegar ao servidor de audio. Verifique a internet e tente de novo.",
+    mikrofonIzniGerekli: "E preciso permitir o microfone.",
+    tekrarGirisGerekli: "Entre de novo.",
     hediye: "Presente",
     katalogYukleniyor: "Catalog loading â€” try again shortly.",
     yetersizCoin: "Moedas insuficientes",

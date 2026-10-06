@@ -1,6 +1,7 @@
 import { MedyaIzinleriniIste } from './izin/MedyaIzinleriniIste';
 import { LiveKitTokenAl, type LiveKitRol } from './token/LiveKitTokenAl';
 import { LiveKitBaglantiYoneticisi } from './baglanti/LiveKitBaglantiYoneticisi';
+import { SesHataMetni } from './baglanti/SesHataMetni';
 import { RtcAktifSaglayici } from '../rtc/RtcProviderDurumu';
 import {
   AgoraBaglan,
@@ -115,7 +116,7 @@ export async function MedyaOdasiBaglan(input: {
     zorla: input.zorla,
     micAcik: asPublisher ? (input.micAcik ?? !sesOdasi) : false,
   });
-  if (!bag.ok) return { ok: false, hata: bag.hata ?? 'LiveKit baglanti hatasi' };
+  if (!bag.ok) return { ok: false, hata: bag.hata ?? SesHataMetni() };
 
   // Bluetooth / kulaklık varsa onu kullan; yoksa hoparlör
   void LiveKitBaglantiYoneticisi.setSpeakerphone(true);

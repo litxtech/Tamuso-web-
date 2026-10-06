@@ -3779,7 +3779,7 @@ export const es: CeviriSozlugu = {
     sonaErdi: "Llamada finalizada",
     medyaBaglantisi: "Conexi?n de medios",
     medya: "Medios",
-    demoNativeGerekli: "Se necesita un build nativo con LiveKit para audio/v?deo en vivo. Est?s en modo demo."
+    demoNativeGerekli: "La llamada no se pudo conectar. Intentalo de nuevo en un momento."
   },
   sesOda: {
     yonetimKapatti: "La administraci?n cerr? esta sala de voz.",
@@ -3900,6 +3900,10 @@ export const es: CeviriSozlugu = {
     odaYuklenemedi: "No se pudo cargar la sala",
     sesBaglantisi: "Conexi?n de audio",
     sesBaglantisiHata: "No se pudo publicar el mic. Revisa permisos, sal y vuelve a intentar.",
+    sesSuAnBaglanamadi: "No se pudo conectar el audio. Intentalo de nuevo en un momento.",
+    sesInternetKontrol: "No se alcanzo el servidor de audio. Revisa tu internet e intentalo de nuevo.",
+    mikrofonIzniGerekli: "Se necesita permiso del microfono.",
+    tekrarGirisGerekli: "Vuelve a iniciar sesion.",
     hediye: "Regalo",
     katalogYukleniyor: "Cat?logo cargando ? int?ntalo en un momento.",
     yetersizCoin: "Coins insuficientes",

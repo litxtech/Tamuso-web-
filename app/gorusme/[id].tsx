@@ -106,7 +106,14 @@ export default function GorusmeEkrani() {
 
   useEffect(() => {
     if (oturum?.hata) {
-      Alert.alert(t('gorusme.medyaBaglantisi'), oturum.hata);
+      const ham = oturum.hata;
+      const mesaj =
+        /webrtc|livekit|expo|native|development|cloud keys|EXPO_PUBLIC|registerGlobals|token|api key|mock/i.test(
+          ham,
+        )
+          ? t('sesOda.sesSuAnBaglanamadi')
+          : ham;
+      Alert.alert(t('gorusme.medyaBaglantisi'), mesaj);
     }
   }, [oturum?.hata, t]);
 
