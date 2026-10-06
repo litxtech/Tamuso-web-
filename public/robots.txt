@@ -4,4 +4,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 
-Sitemap: https://tamuso.com/sitemap.xml
+Sitemap: https://www.tamuso.com/sitemap.xml
