@@ -9,7 +9,6 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   DeviceEventEmitter,
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -31,6 +30,7 @@ import { kullaniciTemaKodunuAl, temaAcikMi } from '../tasarim-sistemi/tema/TemaD
 import {
   IOS_TAB_FLOAT_GAP,
   IOS_TAB_H_MARGIN,
+  YUZEN_OVAL_TAB,
   YUZEN_TAB_SHELL_H,
   guvenliTabAltInset,
   yuzenTabBarToplamYukseklik,
@@ -84,10 +84,11 @@ const HREF: Record<GorunurTabAdi, string> = {
 /** Ana sekmesine tekrar basınca feed en üste — index dinler */
 export const ANA_TAB_YENIDEN_EVENT = 'tamuso.anaTabYeniden';
 
-const IS_IOS = Platform.OS === 'ios';
-const ICON_SIZE = IS_IOS ? 24 : 26;
-const CREATE_SIZE = IS_IOS ? 26 : 30;
-const AVATAR = IS_IOS ? 24 : 26;
+/** iOS ve web: yüzen oval kapsül. Android: tam genişlik kare kabuk. */
+const OVAL_TAB = YUZEN_OVAL_TAB;
+const ICON_SIZE = OVAL_TAB ? 24 : 26;
+const CREATE_SIZE = OVAL_TAB ? 26 : 30;
+const AVATAR = OVAL_TAB ? 24 : 26;
 const PILL_RADIUS = 28;
 
 function tabsIcindeMi(segments: string[]): boolean {
@@ -170,9 +171,9 @@ function YuzenTabBarIc() {
   const bottomInset = guvenliTabAltInset(insets.bottom);
   const toplamH = yuzenTabBarToplamYukseklik(insets.bottom);
 
-  // iOS: yüzen kapsül genişliği; Android: tam genişlik
-  const barW = IS_IOS
-    ? Math.max(280, ekranW - IOS_TAB_H_MARGIN * 2)
+  // Oval kapsül kenarlardan içeride; Android tam genişlik.
+  const barW = OVAL_TAB
+    ? Math.max(280, Math.min(ekranW, 430) - IOS_TAB_H_MARGIN * 2)
     : ekranW;
 
   if (!gorunur) {
@@ -218,7 +219,7 @@ function YuzenTabBarIc() {
               style={[
                 styles.iconWrap,
                 isCreate && styles.createWrap,
-                IS_IOS && secili && !isCreate && styles.iosSeciliHalka,
+                OVAL_TAB && secili && !isCreate && styles.iosSeciliHalka,
               ]}
             >
               {isCreate ? (
@@ -228,7 +229,7 @@ function YuzenTabBarIc() {
                   end={{ x: 1, y: 1 }}
                   style={[
                     styles.createBtn,
-                    IS_IOS && styles.createBtnIos,
+                    OVAL_TAB && styles.createBtnIos,
                     secili && styles.createBtnAktif,
                   ]}
                 >
@@ -273,7 +274,7 @@ function YuzenTabBarIc() {
     </View>
   );
 
-  if (IS_IOS) {
+  if (OVAL_TAB) {
     return (
       <View
         collapsable={false}
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
     height: YUZEN_TAB_SHELL_H,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: IS_IOS ? 6 : 0,
+    paddingHorizontal: OVAL_TAB ? 6 : 0,
   },
   slot: {
     flex: 1,
@@ -422,9 +423,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232, 64, 145, 0.16)',
   },
   createWrap: {
-    width: IS_IOS ? 44 : 48,
-    height: IS_IOS ? 44 : 48,
-    marginTop: IS_IOS ? 0 : -10,
+    width: OVAL_TAB ? 44 : 48,
+    height: OVAL_TAB ? 44 : 48,
+    marginTop: OVAL_TAB ? 0 : -10,
   },
   createBtn: {
     width: 48,
@@ -456,8 +457,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: IS_IOS ? 0 : -2,
-    right: IS_IOS ? 0 : -6,
+    top: OVAL_TAB ? 0 : -2,
+    right: OVAL_TAB ? 0 : -6,
     minWidth: 18,
     height: 18,
     borderRadius: 9,

@@ -99,16 +99,26 @@ export default function HikayeIzleRoute() {
 
   return (
     <ModulHataSiniri modulAdi="hikaye-route">
-      <HikayeIzleyici
-        grup={grup}
-        baslangicIndex={baslangicIndex}
-        onBitti={bitti}
-      />
+      <View style={styles.sahne}>
+        <HikayeIzleyici
+          grup={grup}
+          baslangicIndex={baslangicIndex}
+          onBitti={bitti}
+        />
+      </View>
     </ModulHataSiniri>
   );
 }
 
 const styles = StyleSheet.create({
+  sahne: {
+    flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    minHeight: 0,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
   orta: {
     flex: 1,
     alignItems: 'center',

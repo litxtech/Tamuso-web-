@@ -139,6 +139,7 @@ export function ProfilXBaslik({
   const { t, i18n, dil } = useCeviri();
   const insets = useSafeAreaInsets();
   const { width: ekranW } = useWindowDimensions();
+  const kapakW = Math.min(ekranW, 430);
   useUnvanKatalog();
   const title =
     OzellikBayragiAktifMi('user_titles_enabled') && titleId
@@ -216,13 +217,13 @@ export function ProfilXBaslik({
   return (
     <View style={styles.root}>
       <View
-        style={[styles.coverWrap, { width: ekranW, height: coverH }]}
+        style={[styles.coverWrap, { height: coverH, maxWidth: kapakW }]}
         collapsable={false}
       >
         <ProfilOnizlemeGorseli
           uri={safeCoverUri}
-          style={{ width: ekranW, height: coverH }}
-          genislik={Math.round(ekranW * 2)}
+          style={StyleSheet.absoluteFill}
+          genislik={Math.round(kapakW * 2)}
           yukseklik={Math.round(coverH * 2)}
           accessibilityLabel={t('profil.kapakFotografi')}
         >
@@ -230,7 +231,7 @@ export function ProfilXBaslik({
             colors={[...RenkTokenlari.gradientPlaceholder]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={{ width: ekranW, height: coverH }}
+            style={StyleSheet.absoluteFill}
           />
         </ProfilOnizlemeGorseli>
         <LinearGradient
@@ -428,6 +429,7 @@ const styles = StyleSheet.create({
   },
   coverWrap: {
     width: '100%',
+    alignSelf: 'center',
     position: 'relative',
     overflow: 'hidden',
   },

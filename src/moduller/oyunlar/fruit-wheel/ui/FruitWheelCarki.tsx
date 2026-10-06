@@ -46,6 +46,43 @@ type Props = {
   onSettled: () => void;
 };
 
+type TikOlayi = {
+  nativeEvent?: {
+    locationX?: number;
+    locationY?: number;
+    offsetX?: number;
+    offsetY?: number;
+    clientX?: number;
+    clientY?: number;
+  };
+  currentTarget?: unknown;
+};
+
+function sayiMi(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n);
+}
+
+/**
+ * Native `locationX` verir. Web tıklamasında nativeEvent bir MouseEvent'tir;
+ * locationX yoktur, offsetX / clientX vardır. Yoksa bahis sessizce düşer.
+ */
+function tikNoktasi(e: TikOlayi, yedek: { getBoundingClientRect?: () => { left: number; top: number } } | null): { x: number; y: number } | null {
+  const ne = e.nativeEvent;
+  if (!ne) return null;
+  if (sayiMi(ne.locationX) && sayiMi(ne.locationY)) {
+    return { x: ne.locationX, y: ne.locationY };
+  }
+  if (sayiMi(ne.offsetX) && sayiMi(ne.offsetY)) {
+    return { x: ne.offsetX, y: ne.offsetY };
+  }
+  const dugum = (e.currentTarget ?? yedek) as { getBoundingClientRect?: () => { left: number; top: number } } | null;
+  const kutu = dugum?.getBoundingClientRect?.();
+  if (kutu && sayiMi(ne.clientX) && sayiMi(ne.clientY)) {
+    return { x: ne.clientX - kutu.left, y: ne.clientY - kutu.top };
+  }
+  return null;
+}
+
 /** Tık: merkezden açı → dilim (dönüş hesaba katılır). */
 function hitFruitId(x: number, y: number, size: number, rotationDeg: number): FruitId | null {
   const cx = size / 2;
@@ -216,6 +253,7 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
   onSettledRef.current = onSettled;
   const onFruitPressRef = useRef(onFruitPress);
   onFruitPressRef.current = onFruitPress;
+  const tikRef = useRef<View>(null);
   const fruitsRef = useRef(fruits);
   fruitsRef.current = fruits;
 
@@ -304,10 +342,11 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
       }));
 
   const onDiscPress = useCallback(
-    (e: { nativeEvent: { locationX: number; locationY: number } }) => {
+    (e: TikOlayi) => {
       if (!interactive || spinning) return;
-      const { locationX, locationY } = e.nativeEvent;
-      const id = hitFruitId(locationX, locationY, size, rotation.value);
+      const nokta = tikNoktasi(e, tikRef.current);
+      if (!nokta) return;
+      const id = hitFruitId(nokta.x, nokta.y, size, rotation.value);
       if (!id) return;
       const fruit = fruitsRef.current.find((f) => f.id === id);
       if (fruit && fruit.enabled === false) return;
@@ -386,6 +425,7 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
       </Animated.View>
       {interactive ? (
         <Pressable
+          ref={tikRef}
           style={StyleSheet.absoluteFill}
           disabled={spinning}
           onPress={onDiscPress}

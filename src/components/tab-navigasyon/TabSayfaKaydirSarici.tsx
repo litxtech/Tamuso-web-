@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, View, type ViewProps } from 'react-native';
+import { Platform, StyleSheet, View, type ViewProps } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { useNavigation, useRoute } from 'expo-router';
@@ -65,7 +65,8 @@ export function TabSayfaKaydirSarici({
       });
   }, [etkin, komsuyaGit, routeAd]);
 
-  if (!etkin) {
+  // Webde üst jest, hikâye ve sekme tıklamasını yutuyor (Safari / Chrome).
+  if (!etkin || Platform.OS === 'web') {
     return (
       <View style={[styles.fill, style]} {...rest}>
         {children}

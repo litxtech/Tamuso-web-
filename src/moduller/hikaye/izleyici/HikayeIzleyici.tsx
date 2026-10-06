@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -685,6 +686,7 @@ export function HikayeIzleyici({
 
   // Çift tık başarısız olunca tek tık (önceki/sonraki)
   const tap = Gesture.Tap()
+    .enabled(Platform.OS !== 'web')
     .maxDistance(16)
     .requireExternalGestureToFail(doubleTap)
     .onEnd((e) => {
@@ -892,6 +894,12 @@ export function HikayeIzleyici({
                   <HikayeMuzikCubugu music={muzik} paused={duraklat} />
                 </View>
               ) : null}
+              {Platform.OS === 'web' ? (
+                <View style={styles.webDokunus} pointerEvents="box-none">
+                  <Pressable style={styles.webSol} onPress={onceki} />
+                  <Pressable style={styles.webSag} onPress={sonraki} />
+                </View>
+              ) : null}
             </Animated.View>
           </GestureDetector>
         </View>
@@ -909,7 +917,10 @@ export function HikayeIzleyici({
             <View style={styles.sahipAlt}>
               <Pressable
                 style={styles.izleyiciBtn}
-                onPress={() => setIzleyicilerAcik(true)}
+                onPress={() => {
+                  setDuraklat(true);
+                  setIzleyicilerAcik(true);
+                }}
               >
                 <Ionicons name="chevron-up" size={16} color="#fff" />
                 <Ionicons name="eye-outline" size={18} color="#fff" />
@@ -1016,12 +1027,29 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#000',
-    width: EKRAN_W,
-    height: EKRAN_H,
+    width: '100%',
+    maxWidth: '100%',
+    minHeight: 0,
+    overflow: 'hidden',
   },
   kartWrap: {
     flex: 1,
+    minHeight: 0,
     paddingHorizontal: 8,
+    position: 'relative',
+  },
+  webDokunus: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    zIndex: 3,
+  },
+  webSol: {
+    width: '35%',
+    height: '100%',
+  },
+  webSag: {
+    flex: 1,
+    height: '100%',
   },
   kart: {
     flex: 1,
