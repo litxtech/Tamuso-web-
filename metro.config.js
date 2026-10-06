@@ -65,6 +65,8 @@ const WEB_NATIVE_PAKETLER = [
   'react-native-compressor',
   'react-native-nitro-modules',
   'expo-widgets',
+  // swift-ui açılışta requireNativeView çağırır; web paketini beyaz ekranda bırakır
+  '@expo/ui',
 ];
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
