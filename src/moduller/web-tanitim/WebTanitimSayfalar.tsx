@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { type Href, router } from 'expo-router';
-import Head from 'expo-router/head';
+import { TanitimSeo } from './TanitimSeo';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDil } from '../../i18n/DilSaglayici';
 import { RenkTokenlariKoyu as C } from '../../tasarim-sistemi/tema/RenkPaletleri';
@@ -21,18 +21,17 @@ const MEYVELER = [
 function Sayfa({
   baslik,
   alt,
+  yol,
   children,
 }: {
   baslik: string;
   alt: string;
+  yol: string;
   children?: React.ReactNode;
 }) {
   return (
     <View style={styles.sayfa}>
-      <Head>
-        <title>{`${baslik} · Tamuso`}</title>
-        <meta name="description" content={alt} />
-      </Head>
+      <TanitimSeo yol={yol} />
       <Text style={styles.baslik}>{baslik}</Text>
       <Text style={styles.alt}>{alt}</Text>
       {children}
@@ -44,7 +43,7 @@ export function WebTanitimOzellikler() {
   const { dil } = useDil();
   const m = tanitimMetin(dil);
   return (
-    <Sayfa baslik={m.ozelliklerBaslik} alt={m.ozelliklerAlt}>
+    <Sayfa yol="/tanitim/ozellikler" baslik={m.ozelliklerBaslik} alt={m.ozelliklerAlt}>
       {m.ozellikler.map((oge, i) => (
         <View key={oge.baslik} style={styles.satir}>
           <Text style={styles.no}>{String(i + 1).padStart(2, '0')}</Text>
@@ -62,7 +61,7 @@ export function WebTanitimCoinler() {
   const { dil } = useDil();
   const m = tanitimMetin(dil);
   return (
-    <Sayfa baslik={m.coinBaslik} alt={m.coinAlt}>
+    <Sayfa yol="/tanitim/coinler" baslik={m.coinBaslik} alt={m.coinAlt}>
       {m.coinMaddeler.map((madde) => (
         <Text key={madde} style={styles.madde}>
           {madde}
@@ -103,7 +102,7 @@ export function WebTanitimMeyve() {
   });
 
   return (
-    <Sayfa baslik={m.meyveBaslik} alt={m.meyveAlt}>
+    <Sayfa yol="/tanitim/meyve" baslik={m.meyveBaslik} alt={m.meyveAlt}>
       <View style={styles.carkAlan}>
         <View style={styles.carkOk} />
         <Animated.View style={[styles.cark, { transform: [{ rotate: aci }] }]}>
@@ -155,7 +154,7 @@ export function WebTanitimHakkinda() {
   const { dil } = useDil();
   const m = tanitimMetin(dil);
   return (
-    <Sayfa baslik={m.hakkindaBaslik} alt={m.hakkindaGovde}>
+    <Sayfa yol="/tanitim/hakkinda" baslik={m.hakkindaBaslik} alt={m.hakkindaGovde}>
       {m.hakkindaMaddeler.map((madde) => (
         <Text key={madde} style={styles.madde}>
           {madde}
@@ -179,18 +178,20 @@ export function WebTanitimHakkinda() {
 }
 
 function YazismaSayfasi({
+  yol,
   baslik,
   govde,
   maddeler,
   mail,
 }: {
+  yol: string;
   baslik: string;
   govde: string;
   maddeler: string[];
   mail: string;
 }) {
   return (
-    <Sayfa baslik={baslik} alt={govde}>
+    <Sayfa yol={yol} baslik={baslik} alt={govde}>
       {maddeler.map((madde) => (
         <Text key={madde} style={styles.madde}>
           {madde}
@@ -211,6 +212,7 @@ export function WebTanitimYatirim() {
   const m = tanitimMetin(dil);
   return (
     <YazismaSayfasi
+      yol="/tanitim/yatirim"
       baslik={m.yatirimBaslik}
       govde={m.yatirimGovde}
       maddeler={m.yatirimMaddeler}
@@ -224,6 +226,7 @@ export function WebTanitimIsbirligi() {
   const m = tanitimMetin(dil);
   return (
     <YazismaSayfasi
+      yol="/tanitim/isbirligi"
       baslik={m.isbirligiBaslik}
       govde={m.isbirligiGovde}
       maddeler={m.isbirligiMaddeler}

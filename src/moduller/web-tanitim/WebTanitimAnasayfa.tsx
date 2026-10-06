@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { type Href, router } from 'expo-router';
-import Head from 'expo-router/head';
+import { TanitimSeo } from './TanitimSeo';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDil } from '../../i18n/DilSaglayici';
 import { RenkTokenlariKoyu as C } from '../../tasarim-sistemi/tema/RenkPaletleri';
@@ -88,10 +88,7 @@ export function WebTanitimAnasayfa() {
 
   return (
     <View>
-      <Head>
-        <title>Tamuso</title>
-        <meta name="description" content={m.heroAlt} />
-      </Head>
+      <TanitimSeo yol="/" />
 
       <View style={styles.hero}>
         <TanitimVideo key={gorusme.url} kaynak={gorusme.url} poster={gorusme.poster} />

@@ -89,7 +89,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "sitemap": "node scripts/sitemap-olustur.mjs",
-    "export:web": "node scripts/sitemap-olustur.mjs && expo export --platform web",
+    "export:web": "node scripts/sitemap-olustur.mjs && expo export --platform web && node scripts/seo-html-yaz.mjs",
     "typecheck": "tsc --noEmit",
     "load:100": "npm --prefix load-tests run load:100",
     "load:500": "npm --prefix load-tests run load:500",

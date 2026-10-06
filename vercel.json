@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web",
+  "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs",
   "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

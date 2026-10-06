@@ -74,7 +74,10 @@ function gitGunleri() {
 }
 
 function oncelik(url) {
-  if (url === '/') return { priority: '1.0', changefreq: 'daily' };
+  if (url === '/' || url === '/tanitim') return { priority: '1.0', changefreq: 'daily' };
+  if (url.startsWith('/tanitim/') || url === '/politika') {
+    return { priority: '0.9', changefreq: 'weekly' };
+  }
   const derinlik = url.split('/').filter(Boolean).length;
   if (derinlik === 1) return { priority: '0.8', changefreq: 'weekly' };
   if (derinlik === 2) return { priority: '0.6', changefreq: 'weekly' };
