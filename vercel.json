@@ -3,5 +3,938 @@
   "framework": null,
   "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/admin/duyurular/:id/izleyiciler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/duyurular/:id/analitik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/reconciliation",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/reports/:jobId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/unvanlar/kullanicilar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/app-launch/published",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/app-launch/scheduled",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/fikirler/kategoriler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/agencies/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/coin-economy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/coin-yonetim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/transactions",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kaskad-animasyon-lab",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/satin-alma-itirazlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/satin-alma-gecmisi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/app-launch/archived",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/liabilities",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/en-cok-alicilar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/fruit-wheel-kurallar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/bannerlar/otomatik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/satis-linkleri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/uyeler/:userId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/kisiler-aramalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/app-launch/drafts",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/simulator",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/users/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/paylasim-linkleri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/platform-guvenlik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/tanitim-videolari",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/profil/:id/uyeler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/engellenen-kullanicilar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/fruit-wheel-gecmis",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/agencies",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/creators",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/expenses",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/forecast",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/gorusme-guvenlik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kisiler-aramalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kullanicilar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/politikalar/:kod",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/surum-guncelleme",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/satis-takibi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ajans-paketleri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/cuzdan-yonetimi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/reports",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/revenue",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/studio-test/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-muzik/pasaport/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/etkinlikler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/takip/takip-edilenler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/bannerlar/yeni",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/coin-paketleri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/alerts",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/hamburger-menu",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kaskad-yonetim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kayit-alanlari",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/moderasyon/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/oyun-algoritma",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/yonetim/roller",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/basvurular",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/bannerlar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/dogrulama/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/duyurular/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/sales",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/users",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/dekontlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/dogrulama",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/duyurular",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/faturalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ajanslar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/cocuk-koruma",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/fikirler/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/giris-lobisi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kullanicilar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/unvanlar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/unvanlar/ata",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/yonetim/yeni",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-muzik/kutuphane",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/analitik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/davetler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/gorevler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/guvenlik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/islemler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/paketler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/unvanlarim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/ozellikler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance/pnl",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/fruit-wheel",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/islem-hacmi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/komisyonlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/politikalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/rtc-altyapi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/sehir-secim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/yonetim/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-muzik/islemler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/ayarlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/ekipler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/program",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/announcements/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/bildirim-ayarlari",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/astral-falls",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/isbirligi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/app-launch",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/destek/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/moderasyon",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ozellikler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/cuzdan",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/destek",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/uyeler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/profil/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/satis/:kod",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/gizlilik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fikirler/olustur",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/fruit-wheel",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/takip/takipciler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/hakkinda",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/bannerlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/dogrulama",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/duyurular",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/oyun-test",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ulke-ligi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/canli",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/teklifler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/gorunum",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/forgot-password",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir/secim/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/coinler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/yatirim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ai-muzik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ajanslar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/fikirler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/iletisim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/sehirler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/unvanlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fikirler/benim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hikaye/:userId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hikaye/olustur",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/odeme-basarili",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/fair-spin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/profil-ayarlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/profil-duzenle",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/raporlarim/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/takip/istekler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ekonomi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finance",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kyc/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/oyunlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/yonetim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ziyaret",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/yonetim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/durum/duzenle",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/durum/olustur",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kullanici/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/sis-spin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sertifikasyon",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim/meyve",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/destek",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/finans",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/odalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/rehber",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/studio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-muzik/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cuzdan/takas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fikirler/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hikaye/arsiv",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/muzik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/takas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar/dil",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/bildirimler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dogrula-kod",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gorusme/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/islem-hacmi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/kaskad",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/paylas/:kod",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir/savas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir/secim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/siralamalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio/dede",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/takip/ortak",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ciro",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/coin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/duyuru/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/raporlarim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ulke/:code",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/kyc",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/uye",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/canli/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/durum/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hesap-sil",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mesaj/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/dede",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/zeus",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir/lig",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-muzik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cihazlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fikirler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/guvenlik",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/lobi/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/messages",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/oyun/nox",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/paylasim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/platform",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/politika",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/room/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/asistan",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ayarlar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kisiler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/profile",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tanitim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/webview",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/bildir",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/create",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/destek",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/duyuru",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kesfet",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/wallet",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/canli",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/durum",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/rooms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sehir",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/host",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ulke",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kyc",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pk",
+      "destination": "/index.html"
+    }
+  ]
 }

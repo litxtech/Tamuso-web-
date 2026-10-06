@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sayfaIcerigi } from './seo-metin.mjs';
 
 const ORIGIN = 'https://www.tamuso.com';
 const kok = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -63,6 +64,17 @@ function uygula(html, sayfa) {
     /<noscript>[\s\S]*?<\/noscript>/,
     `<noscript><h1>${attr(sayfa.title)}</h1><p>${attr(sayfa.description)}</p></noscript>`,
   );
+  const statik = sayfaIcerigi(sayfa.yol);
+  if (statik.length < 400 || !statik.includes('<h1>')) {
+    console.error(`seo: içerik kısa ${sayfa.yol}`);
+    process.exit(1);
+  }
+  const govde = `<style id="tamuso-statik-stil">#root{position:fixed;inset:0;z-index:2}#root:empty{background:transparent;pointer-events:none}#root:not(:empty){background:#07060d}#tamuso-statik{position:relative;z-index:0;max-width:42rem;margin:0 auto;padding:24px 16px 64px;color:#f4f1ea;font:16px/1.55 Georgia,serif}#tamuso-statik a{color:#f4f1ea}#tamuso-statik pre{white-space:pre-wrap;font:16px/1.55 Georgia,serif}</style><main id="tamuso-statik">${statik}</main>`;
+  if (out.includes('id="tamuso-statik"')) {
+    out = out.replace(/<style id="tamuso-statik-stil">[\s\S]*?<\/main>/, govde);
+  } else {
+    out = out.replace('<body>', `<body>${govde}`);
+  }
   if (!out.includes('rel="sitemap"')) {
     out = out.replace(
       '<link rel="canonical"',

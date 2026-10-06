@@ -62,6 +62,15 @@ for (const sayfa of sayfalar) {
   if (!loclar.includes(beklenen)) hata(`haritada yok ${beklenen}`);
 }
 
+if (!fs.existsSync(path.join(kok, 'public', '404.html'))) hata('404.html yok');
+const vercel = JSON.parse(fs.readFileSync(path.join(kok, 'vercel.json'), 'utf8'));
+const rewrites = vercel.rewrites ?? [];
+if (rewrites.some((r) => r.source === '/(.*)' || r.source === '/:path*')) {
+  hata('bilinmeyen yollar ana sayfaya düşüyor');
+}
+if (rewrites.some((r) => r.source === '/politika/:kod')) {
+  hata('bilinmeyen politika kodu uygulamaya düşüyor');
+}
 const dist = path.join(kok, 'dist');
 if (!fs.existsSync(path.join(dist, 'index.html'))) {
   notlar.push('dist/index.html yok; HTML canonical kontrolü atlandı. npm run export:web sonrası tekrar çalıştır.');
@@ -85,7 +94,17 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
     if (!title || !title[1].trim()) hata(`title yok ${sayfa.yol}`);
     if (!desc || !desc[1].trim()) hata(`description yok ${sayfa.yol}`);
     if (robotsMeta && /noindex/i.test(robotsMeta[1])) hata(`public sayfa noindex ${sayfa.yol}`);
-    if (!/<noscript><h1>/.test(html)) hata(`H1 yok ${sayfa.yol}`);
+    if (!/<main id="tamuso-statik">[\s\S]*<h1>/.test(html)) hata(`H1 yok ${sayfa.yol}`);
+    const duz = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (duz.length < 500) hata(`içerik ince ${sayfa.yol} (${duz.length})`);
+    if (sayfa.yol.startsWith('/politika/') && duz.length < 1500) {
+      hata(`yasal metin kısa ${sayfa.yol}`);
+    }
     const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     if (ld.length === 0) hata(`JSON-LD yok ${sayfa.yol}`);
     for (const blok of ld) {
