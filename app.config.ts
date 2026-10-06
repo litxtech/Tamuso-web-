@@ -19,11 +19,20 @@ const bildirimSesleri = [
   './assets/sounds/gelen_arama.wav',
 ].filter((yol) => fs.existsSync(yol));
 
-const yerelEklentiler = [
-  './plugins/withSesOdasiForegroundService.js',
-  './plugins/withTamusoCallKit.js',
-  './plugins/withAndroidIncomingCall.js',
-].filter((yol) => fs.existsSync(yol));
+/** Web export Info.plist / Android manifest eklentilerini çalıştırmaz. */
+const webDerlemesi =
+  process.env.VERCEL === '1' ||
+  process.argv.includes('--platform=web') ||
+  (process.argv.includes('--platform') &&
+    process.argv[process.argv.indexOf('--platform') + 1] === 'web');
+
+const yerelEklentiler = webDerlemesi
+  ? []
+  : [
+      './plugins/withSesOdasiForegroundService.js',
+      './plugins/withTamusoCallKit.js',
+      './plugins/withAndroidIncomingCall.js',
+    ].filter((yol) => fs.existsSync(yol));
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
