@@ -112,6 +112,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/favicon.png',
     bundler: 'metro',
     output: 'single',
+    name: 'Tamuso — Canlı yayın, ses odası ve arkadaşlar',
+    shortName: 'Tamuso',
+    lang: 'tr',
+    themeColor: '#0B0614',
+    backgroundColor: '#0B0614',
+    description:
+      'Tamuso canlı yayın, ses odası, arkadaşlar, mesajlaşma, coin ve sosyal oyunları bir arada sunar. 18 yaş ve üzeri.',
   },
   plugins: [
     'expo-router',
