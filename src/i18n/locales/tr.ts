@@ -3272,7 +3272,7 @@ export const tr = {
     menuCanliYayin: "Canlı yayın",
     menuCanliYayinAlt: "Kamerayla yayına çık",
     menuBlog: "Blog",
-    menuBlogAlt: "Yazılar ve şehir rehberleri",
+    menuBlogAlt: "Yayınlanan yazılar",
     menuAjansimAlt: "Kurallar · ödeme · coin",
     menuHostOl: "Host ol",
     menuHostOlAlt: "Ev sahibi başvurusu",

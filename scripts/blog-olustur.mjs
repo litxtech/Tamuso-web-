@@ -24,6 +24,7 @@ const anahtar = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const dist = path.join(kok, 'dist');
 for (const yol of ['blog', 'en/blog', 'de/blog', 'es/blog', 'ar/blog', 'ru/blog', 'yazar']) {
   fs.rmSync(path.join(dist, ...yol.split('/')), { recursive: true, force: true });
+  fs.rmSync(`${path.join(dist, ...yol.split('/'))}.html`, { force: true });
 }
 
 if (!url || !anahtar) {

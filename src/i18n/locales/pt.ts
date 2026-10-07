@@ -3030,7 +3030,7 @@ export const pt: CeviriSozlugu = {
     menuSisSpin: "SİS Spin",
     menuSisSpinAlt: "Gire com moedas da carteira",
     menuBlog: "Blog",
-    menuBlogAlt: "Artigos e guias de cidades",
+    menuBlogAlt: "Artigos publicados",
     menuDuyurular: "Anúncios",
     menuDuyurularAlt: "Anúncios oficiais",
     menuKisilerAlt: "Discover Â· voice/video calls",

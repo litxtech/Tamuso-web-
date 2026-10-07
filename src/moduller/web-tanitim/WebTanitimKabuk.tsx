@@ -106,10 +106,6 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
     setMenu(false);
     setDiller(false);
     setDestek(false);
-    if (Platform.OS === 'web' && typeof window !== 'undefined' && String(href).startsWith('/blog')) {
-      window.location.assign(String(href));
-      return;
-    }
     router.push(href);
   };
 

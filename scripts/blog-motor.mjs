@@ -196,6 +196,8 @@ header,footer{max-width:46rem;margin:0 auto;padding:20px 16px;display:flex;gap:1
 header a{font-family:system-ui,sans-serif;letter-spacing:.12em;text-decoration:none}
 main{max-width:46rem;margin:0 auto;padding:8px 16px 72px}
 .kartlar{display:grid;gap:16px}
+.serit{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px}
+.serit .kart{flex:0 0 240px}
 .kart{display:block;text-decoration:none;color:inherit;border:1px solid #2a2636;border-radius:16px;overflow:hidden}
 .kart img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
 .kart div,.yazi-ust{padding:14px 16px}
@@ -252,7 +254,6 @@ function kart(yazi) {
 
 export function listeBelgesi({ yazilar, sayfa, sayfaSayisi, baslik, aciklama, canonical, robots, giris }) {
   const hero = yazilar[0];
-  const geri = yazilar.slice(hero ? 1 : 0);
   const kokYol = String(canonical || `${ORIGIN}/blog`).replace(ORIGIN, '') || '/blog';
   const sayfalama = sayfaSayisi > 1
     ? `<nav aria-label="Sayfalar">${Array.from({ length: sayfaSayisi }, (_, i) => {
@@ -263,7 +264,7 @@ export function listeBelgesi({ yazilar, sayfa, sayfaSayisi, baslik, aciklama, ca
     : '';
   const dil = (String(canonical || '').match(/\/(en|de|es|ar|ru)\/blog/) || [])[1] || 'tr';
   const ui = ARAYUZ[dil] || ARAYUZ.tr;
-  const govde = `<h1>${kacis(baslik)}</h1><p>${kacis(giris)}</p>${hero ? kart(hero) : `<p>${kacis(ui.bos)}</p>`}<section class="kartlar">${geri.map(kart).join('')}</section>${sayfalama}`;
+  const govde = `<h1>${kacis(baslik)}</h1><p>${kacis(giris)}</p>${yazilar.length ? `<div class="serit">${yazilar.map(kart).join('')}</div>` : `<p>${kacis(ui.bos)}</p>`}${sayfalama}`;
   return belge({
     title: seoBaslik(baslik, baslik.includes('Tamuso') ? baslik : `${baslik} | Tamuso`),
     description: aciklama,

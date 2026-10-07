@@ -35,7 +35,7 @@ export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = [
     tint: RenkTokenlari.accent,
     baslikKey: 'anaSayfa.menuBlog',
     altKey: 'anaSayfa.menuBlogAlt',
-    href: 'https://www.tamuso.com/blog',
+    href: '/blog',
     defaultGroup: 'kesfet',
     defaultSort: 15,
   },

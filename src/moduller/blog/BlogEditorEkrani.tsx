@@ -18,10 +18,10 @@ import { Screen } from '../../components/Screen';
 import { EkranBasligi } from '../../components/EkranBasligi';
 import { KlavyeGuvenliAlan } from '../../bilesenler/klavye/KlavyeGuvenliAlan';
 import { RenkTokenlari as R } from '../../tasarim-sistemi/RenkTokenlari';
-import { BlogAiKapisi } from './BlogAiKapisi';
+import { BlogAiKapisi, type BlogAiOnizleme } from './BlogAiKapisi';
 import { BlogAltMenu } from './BlogAltMenu';
 import { BlogCeviriSeridi } from './BlogCeviriSeridi';
-import { blogAsistanCevir, blogAsistanDoldur, type BlogAsistanOneri, type BlogGorselAday } from './blogAsistan';
+import { blogAsistanAkim, blogAsistanCevir, blogAsistanDoldur, type BlogAsistanOneri, type BlogGorselAday } from './blogAsistan';
 import {
   aciklamaDurumu,
   aciklamaOlustur,
@@ -143,6 +143,7 @@ export function BlogEditorEkrani({ id }: Props) {
   const [mesgul, setMesgul] = useState(false);
   const [ai, setAi] = useState<{ alan: string; baslik: string } | null>(null);
   const [aiCalisiyor, setAiCalisiyor] = useState(false);
+  const [aiOnizleme, setAiOnizleme] = useState<BlogAiOnizleme | null>(null);
   const [oneriler, setOneriler] = useState<BlogAsistanOneri>({ etiketler: [], sehir_adlari: [], baliklar: [] });
   const [gorseller, setGorseller] = useState<BlogGorselAday[]>([]);
   const [yonler, setYonler] = useState<{ from_slug: string; to_slug: string }[]>([]);
@@ -151,6 +152,8 @@ export function BlogEditorEkrani({ id }: Props) {
   const ceviriSuruyor = useRef(false);
   const oneriDurdu = useRef(false);
   const publishedIso = useRef<string | null>(null);
+  const durumRef = useRef(durum);
+  durumRef.current = durum;
   const ilkKayit = useRef(true);
 
   useEffect(() => {
@@ -206,7 +209,10 @@ export function BlogEditorEkrani({ id }: Props) {
   useEffect(() => {
     if (!hazir || !editorRef.current) return;
     if (typeof document !== 'undefined' && document.activeElement === editorRef.current) return;
-    if (editorRef.current.innerHTML !== html) editorRef.current.innerHTML = html;
+    if (editorRef.current.innerHTML !== html) {
+      editorRef.current.innerHTML = html;
+      editorRef.current.scrollTop = 0;
+    }
   }, [hazir, html]);
 
   function imleciGorunurYap() {
@@ -335,6 +341,10 @@ export function BlogEditorEkrani({ id }: Props) {
       publishedIso.current = published_at;
     }
     if (status === 'taslak' || status === 'cop') published_at = null;
+    if ((status === 'yayinda' || status === 'planlandi') && !published_at) {
+      published_at = new Date().toISOString();
+      publishedIso.current = published_at;
+    }
     let uyarilar: string[] = [];
     if (yayinla) {
       if (await blogSlugBaska(kullanilacakSlug, kayitId, dil)) {
@@ -425,7 +435,9 @@ export function BlogEditorEkrani({ id }: Props) {
     }
     const t = setTimeout(() => {
       if (ceviriSuruyor.current || aiCalisiyor) return;
-      void kaydet(durum === 'yayinda' || durum === 'planlandi' ? durum : 'taslak', false);
+      const guncel = durumRef.current;
+      const acik = guncel === 'yayinda' || guncel === 'planlandi';
+      void kaydet(acik ? guncel : 'taslak', false);
     }, 4000);
     return () => clearTimeout(t);
   }, [title, slug, excerpt, html, cover, coverAlt, kategoriId, etiketMetin, faqs, seoTitle, meta, canonical, hazir]);
@@ -496,17 +508,34 @@ export function BlogEditorEkrani({ id }: Props) {
     }
   }
 
+  function htmlUygula(deger: string) {
+    setHtml(deger);
+    if (editorRef.current) {
+      editorRef.current.innerHTML = deger;
+      editorRef.current.scrollTop = 0;
+    }
+  }
+
+  function aiAc(alan: string, baslik: string) {
+    setAiOnizleme(null);
+    setAi({ alan, baslik });
+  }
+
   async function aiGonder(istek: string) {
     if (!ai) return;
     setAiCalisiyor(true);
+    if (ai.alan !== 'kapak') setAiOnizleme({ baslik: '', html: '', ozet: '' });
     setHata('');
     try {
-      const sonuc = await blogAsistanDoldur({
-        mod: ai.alan === 'kapak' ? 'gorsel' : 'doldur',
+      const paket = {
+        mod: ai.alan === 'kapak' ? 'gorsel' as const : 'doldur' as const,
         alan: ai.alan,
         istek,
         taslak: taslakPaket(),
-      });
+      };
+      const sonuc = paket.mod === 'gorsel'
+        ? await blogAsistanDoldur(paket)
+        : await blogAsistanAkim(paket, setAiOnizleme);
       if (!sonuc.ok) {
         setHata(sonuc.code === 'FORBIDDEN'
           ? 'Bu işlem için yönetici gerekir.'
@@ -518,9 +547,13 @@ export function BlogEditorEkrani({ id }: Props) {
       const t = sonuc.taslak;
       if (t?.title) baslikYaz(t.title);
       if (t?.excerpt) setExcerpt(t.excerpt);
-      if (t?.content_html) {
-        setHtml(t.content_html);
-        if (editorRef.current) editorRef.current.innerHTML = t.content_html;
+      if (t?.content_html) htmlUygula(t.content_html);
+      if (t) {
+        setAiOnizleme({
+          baslik: t.title ?? '',
+          html: t.content_html ?? '',
+          ozet: t.excerpt ?? '',
+        });
       }
       if (t?.seo_title) { seoElle.current = true; setSeoTitle(t.seo_title); }
       if (t?.meta_description) { aciklamaElle.current = true; setMeta(t.meta_description); }
@@ -540,9 +573,11 @@ export function BlogEditorEkrani({ id }: Props) {
         },
         sonuc.gorseller,
       );
-      if (!cover && sonuc.gorseller[0]) kapakSec(sonuc.gorseller[0]);
-      setMesaj('DeepSeek alanları doldurdu.');
-      setAi(null);
+      const zayifKapak = !cover || /wikimedia|commons|pollinations/i.test(`${cover ?? ''} ${coverCredit ?? ''}`);
+      if (sonuc.gorseller[0] && (ai.alan === 'kapak' || ai.alan === 'content_html' || zayifKapak)) {
+        kapakSec(sonuc.gorseller[0]);
+      }
+      setMesaj('Yazı kartta. Tam ekrandan baştan oku.');
     } finally {
       setAiCalisiyor(false);
     }
@@ -582,7 +617,7 @@ export function BlogEditorEkrani({ id }: Props) {
         <Text style={styles.etiket}>{etiket}</Text>
         <View style={styles.satir}>
           {temizle ? <Temizle etiket={etiket} onPress={temizle} /> : null}
-          <Pressable onPress={() => setAi({ alan: anahtar, baslik: etiket })} hitSlop={8} accessibilityLabel={`${etiket} için DeepSeek`}>
+          <Pressable onPress={() => aiAc(anahtar, etiket)} hitSlop={8} accessibilityLabel={`${etiket} için DeepSeek`}>
             <Text style={styles.ai}>DeepSeek</Text>
           </Pressable>
         </View>
@@ -751,7 +786,7 @@ export function BlogEditorEkrani({ id }: Props) {
               }) : (
                 <Pressable onPress={() => void galeridenKapak()} style={styles.arac}><Text style={styles.aracYazi}>Galeriden seç</Text></Pressable>
               )}
-              <Pressable onPress={() => setAi({ alan: 'kapak', baslik: 'Kapak fotoğrafı' })} style={styles.arac}>
+              <Pressable onPress={() => aiAc('kapak', 'Kapak fotoğrafı')} style={styles.arac}>
                 <Text style={styles.aracYazi}>Gerçek fotoğraf bul</Text>
               </Pressable>
             </View>
@@ -857,7 +892,8 @@ export function BlogEditorEkrani({ id }: Props) {
         <BlogAiKapisi
           baslik={ai.baslik}
           calisiyor={aiCalisiyor}
-          kapat={() => setAi(null)}
+          onizleme={aiOnizleme}
+          kapat={() => { setAi(null); setAiOnizleme(null); }}
           gonder={(istek) => void aiGonder(istek)}
         />
       ) : null}

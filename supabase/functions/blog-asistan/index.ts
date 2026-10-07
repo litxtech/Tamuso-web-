@@ -56,6 +56,7 @@ type Body = {
   alan?: string;
   istek?: string;
   dil?: string;
+  akim?: boolean;
   taslak?: Taslak & { sehirler?: string[] };
 };
 
@@ -98,6 +99,43 @@ function sapmaVar(deger: string) {
   return SAPMA.test(deger);
 }
 
+function kismiAlan(ham: string, anahtar: string): string {
+  const im = ham.indexOf(`"${anahtar}"`);
+  if (im < 0) return '';
+  let i = ham.indexOf(':', im + anahtar.length + 2);
+  if (i < 0) return '';
+  i += 1;
+  while (i < ham.length && /\s/.test(ham[i])) i += 1;
+  if (ham[i] !== '"') return '';
+  i += 1;
+  let out = '';
+  while (i < ham.length) {
+    const c = ham[i];
+    if (c === '\\') {
+      if (i + 1 >= ham.length) break;
+      const n = ham[i + 1];
+      if (n === 'n') out += '\n';
+      else if (n === 'r') out += '\r';
+      else if (n === 't') out += '\t';
+      else if (n === '"' || n === '\\' || n === '/') out += n;
+      else if (n === 'u') {
+        if (i + 5 >= ham.length) break;
+        const hex = ham.slice(i + 2, i + 6);
+        if (!/^[0-9a-fA-F]{4}$/.test(hex)) break;
+        out += String.fromCharCode(parseInt(hex, 16));
+        i += 6;
+        continue;
+      } else out += n;
+      i += 2;
+      continue;
+    }
+    if (c === '"') break;
+    out += c;
+    i += 1;
+  }
+  return out;
+}
+
 function modelGovdesi(parsed: Record<string, unknown>) {
   const parcalar = [
     parsed.title,
@@ -116,9 +154,85 @@ function modelGovdesi(parsed: Record<string, unknown>) {
   return parcalar.map((x) => String(x ?? '')).join('\n');
 }
 
+async function deepseekAkim(
+  apiKey: string,
+  system: string,
+  user: string,
+  maxTokens: number,
+  onMetin: (ham: string) => void,
+): Promise<{ ok: true; metin: string } | { ok: false; code: string }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 140_000);
+  try {
+    const res = await fetch(`${DEEPSEEK_BASE}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        temperature: 0.3,
+        max_tokens: maxTokens,
+        stream: true,
+        response_format: { type: 'json_object' },
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok || !res.body) {
+      if (res.status === 429) return { ok: false, code: 'RATE_LIMIT' };
+      if (res.status === 401 || res.status === 403) return { ok: false, code: 'CONFIG_ERROR' };
+      return { ok: false, code: 'PROVIDER_ERROR' };
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let metin = '';
+    let son = 0;
+    while (true) {
+      const parca = await reader.read();
+      if (parca.done) break;
+      buf += decoder.decode(parca.value, { stream: true });
+      const satirlar = buf.split('\n');
+      buf = satirlar.pop() ?? '';
+      for (const satir of satirlar) {
+        const s = satir.trim();
+        if (!s.startsWith('data:')) continue;
+        const data = s.slice(5).trim();
+        if (!data || data === '[DONE]') continue;
+        try {
+          const json = JSON.parse(data) as { choices?: Array<{ delta?: { content?: string } }> };
+          const delta = json.choices?.[0]?.delta?.content ?? '';
+          if (!delta) continue;
+          metin += delta;
+          const simdi = Date.now();
+          if (simdi - son >= 50) {
+            son = simdi;
+            onMetin(metin);
+          }
+        } catch {
+          /* yarım satır bir sonraki parçayla tamamlanır */
+        }
+      }
+    }
+    if (metin) onMetin(metin);
+    if (!metin) return { ok: false, code: 'EMPTY_RESPONSE' };
+    return { ok: true, metin };
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') return { ok: false, code: 'TIMEOUT' };
+    return { ok: false, code: 'PROVIDER_ERROR' };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function deepseekJson(apiKey: string, system: string, user: string, maxTokens: number) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 90_000);
+  const timeout = setTimeout(() => controller.abort(), 140_000);
   try {
     const res = await fetch(`${DEEPSEEK_BASE}/v1/chat/completions`, {
       method: 'POST',
@@ -174,7 +288,7 @@ function faqlar(deger: unknown) {
 }
 
 function taslakCikti(kaynak: Record<string, unknown>) {
-  const html = metin(kaynak.content_html, 48000);
+  const html = metin(kaynak.content_html, 120000);
   return {
     title: metin(kaynak.title, 140) || null,
     excerpt: metin(kaynak.excerpt, 320) || null,
@@ -239,6 +353,58 @@ async function vikiGorseller(sorgular: string[]) {
     if (bulunan.length >= 8) break;
   }
   return bulunan.slice(0, 8);
+}
+
+async function uretilmisFoto(prompt: string): Promise<{ url: string; alt: string; credit: string } | null> {
+  const tarif = `${prompt}. Photorealistic photograph, shot on a full-frame camera, natural light, sharp detail, real skin and materials, no text, no watermark, no logo, no illustration, no cartoon.`;
+  const adres = new URL(`https://image.pollinations.ai/prompt/${encodeURIComponent(tarif)}`);
+  adres.searchParams.set('width', '1280');
+  adres.searchParams.set('height', '720');
+  adres.searchParams.set('nologo', 'true');
+  adres.searchParams.set('model', 'flux');
+  adres.searchParams.set('enhance', 'true');
+  adres.searchParams.set('seed', String(Math.floor(Math.random() * 1_000_000_000)));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45_000);
+  try {
+    const res = await fetch(adres, { signal: controller.signal, headers: { Accept: 'image/jpeg,image/png,image/webp' } });
+    if (!res.ok) return null;
+    const tip = res.headers.get('content-type') || '';
+    if (!/^image\/(jpeg|png|webp)/i.test(tip)) return null;
+    const bayt = new Uint8Array(await res.arrayBuffer());
+    if (bayt.byteLength < 12_000 || bayt.byteLength > 4_500_000) return null;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !service) return null;
+    const admin = createClient(supabaseUrl, service);
+    const uzanti = /png/i.test(tip) ? 'png' : /webp/i.test(tip) ? 'webp' : 'jpg';
+    const yol = `ai/${crypto.randomUUID()}.${uzanti}`;
+    const { error } = await admin.storage.from('blog-gorseller').upload(yol, bayt, {
+      contentType: tip.split(';')[0] || 'image/jpeg',
+      upsert: false,
+    });
+    if (error) return null;
+    const { data } = admin.storage.from('blog-gorseller').getPublicUrl(yol);
+    if (!data.publicUrl) return null;
+    return { url: data.publicUrl, alt: metin(prompt, 160), credit: 'Fotoğraf üretimi' };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function kapakGetir(parsed: Record<string, unknown>, yedekKonu: string, uret: boolean) {
+  if (uret) {
+    const prompt = metin(parsed.foto_prompt, 400) || metin(parsed.title, 180) || yedekKonu;
+    if (prompt) {
+      const foto = await uretilmisFoto(prompt);
+      if (foto) return [foto];
+    }
+  }
+  const sorgular = dizi(parsed.gorsel_sorgulari, 3).map((sorgu) => `${sorgu} photograph`);
+  const yedek = `${yedekKonu} photograph`;
+  return vikiGorseller((sorgular.length ? sorgular : [yedek]).slice(0, 3));
 }
 
 Deno.serve(async (req) => {
@@ -321,29 +487,113 @@ How you work
 - The assignment is the only subject. Obey it, then expand it with structure, steps, examples, SEO, and FAQs that stay on that subject.
 - When assignment_wins is true, ignore any different topic already sitting in the draft. The draft is leftover text, not a new assignment.
 - When assignment_wins is false, expand the draft title and body. If those are empty, explain how to use Tamuso: live streams, voice rooms, stories, messages, and gifts.
-- Write a complete article when asked to fill the post. Do not invent user counts, revenue, awards, rankings, or quotes.
+- Write a long article when asked to fill the post: at least four h2 sections and eight paragraphs. The first paragraph answers the assignment immediately. Do not stop after a short intro.
+- Do not invent user counts, revenue, awards, rankings, or quotes.
 
 Return JSON only.
-Keys: title, excerpt, content_html, seo_title, meta_description, og_title, og_description, keywords, focus_topic, search_intent, cover_alt, slug, etiketler, faqs, gorsel_sorgulari.
+Keys, in this order: title, content_html, excerpt, seo_title, meta_description, og_title, og_description, keywords, focus_topic, search_intent, cover_alt, slug, etiketler, faqs, foto_prompt, gorsel_sorgulari.
 Rules:
 - ${dar ? 'Return null for title, excerpt, content_html and every other prose field. etiketler and gorsel_sorgulari must match the draft subject.' : 'Write every prose field so the post is complete. If focus_field names one box, make that box the strongest, and still complete the empty companion fields (SEO, tags, FAQ) on the same subject.'}
 - Normal sentences with spaces between words. Never glue words together.
 - content_html: several <p> blocks plus <h2>, <h3>, <ul>, <li>. No h1, no script. Turkish unless the assignment asks for another language.
 - seo_title 45-60 characters. meta_description 120-160 characters. excerpt about 140-180 characters.
 - etiketler: short tags in the post language that match the assignment.
-- gorsel_sorgulari: 2 or 3 English Wikimedia search phrases for real photographs of the assignment.
+- foto_prompt: one English sentence describing a single photorealistic photograph of the article subject. Real place, object, or person. No words in the picture.
+- gorsel_sorgulari: 2 or 3 English search phrases for real photographs of the assignment.
 - faqs: 3 or 4 {question, answer} about the same subject.
 - slug: latin kebab-case.`;
+  const kullanici = JSON.stringify({
+    focus_field: ozet.alan || null,
+    assignment: istek,
+    assignment_wins: Boolean(kullaniciIstek),
+    draft: modeleTaslak,
+  });
+
+  if (body.akim === true && !dar) {
+    const encoder = new TextEncoder();
+    const akis = new ReadableStream({
+      async start(controller) {
+        const gonder = (olay: unknown) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(olay)}\n\n`));
+        };
+        const yaz = (ham: string) => {
+          gonder({
+            tur: 'yazi',
+            baslik: kismiAlan(ham, 'title'),
+            html: kismiAlan(ham, 'content_html'),
+            ozet: kismiAlan(ham, 'excerpt'),
+          });
+        };
+        try {
+          let akimSonuc = await deepseekAkim(apiKey, sistem, kullanici, 8000, yaz);
+          if (!akimSonuc.ok) {
+            gonder({ tur: 'hata', code: akimSonuc.code });
+            return;
+          }
+          let parsedAkim = jsonAyikla(akimSonuc.metin);
+          if (!parsedAkim) {
+            gonder({ tur: 'hata', code: 'BAD_JSON' });
+            return;
+          }
+          if (sapmaVar(modelGovdesi(parsedAkim)) && !sapmaVar(konuIzin)) {
+            gonder({ tur: 'sifirla' });
+            akimSonuc = await deepseekAkim(
+              apiKey,
+              `${sistem}\nThe assignment is the only allowed subject. Discard the previous draft completely.`,
+              JSON.stringify({
+                focus_field: ozet.alan || null,
+                assignment: istek,
+                assignment_wins: true,
+                instruction: 'Write a fresh complete article about the assignment. The first paragraph answers it. Stay on that subject.',
+              }),
+              8000,
+              yaz,
+            );
+            if (!akimSonuc.ok) {
+              gonder({ tur: 'hata', code: akimSonuc.code });
+              return;
+            }
+            parsedAkim = jsonAyikla(akimSonuc.metin);
+            if (!parsedAkim || (sapmaVar(modelGovdesi(parsedAkim)) && !sapmaVar(konuIzin))) {
+              gonder({ tur: 'hata', code: 'OFF_TOPIC' });
+              return;
+            }
+          }
+          const konuSerbestAkim = sapmaVar(konuIzin);
+          const onerilerAkim = {
+            etiketler: dizi(parsedAkim.etiketler).filter((ad) => konuSerbestAkim || !sapmaVar(ad)),
+            sehir_adlari: [] as string[],
+            baliklar: [] as string[],
+          };
+          const gorselYedekAkim = [metin(parsedAkim.focus_topic, 80), ozet.title, kullaniciIstek, 'live streaming']
+            .find((sorgu) => sorgu && (konuSerbestAkim || !sapmaVar(sorgu))) ?? 'live streaming';
+          gonder({
+            tur: 'bitti',
+            taslak: taslakCikti(parsedAkim),
+            oneriler: onerilerAkim,
+            gorseller: await kapakGetir(parsedAkim, gorselYedekAkim, true),
+          });
+        } catch {
+          gonder({ tur: 'hata', code: 'PROVIDER_ERROR' });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+    return new Response(akis, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  }
+
   const sonuc = await deepseekJson(
     apiKey,
     sistem,
-    JSON.stringify({
-      focus_field: ozet.alan || null,
-      assignment: istek,
-      assignment_wins: Boolean(kullaniciIstek),
-      draft: modeleTaslak,
-    }),
-    dar ? 1200 : 6000,
+    kullanici,
+    dar ? 1200 : 8000,
   );
   if (!sonuc.ok) return json({ ok: false, code: sonuc.code }, sonuc.code === 'RATE_LIMIT' ? 429 : 502);
 
@@ -358,7 +608,7 @@ Rules:
         assignment_wins: true,
         instruction: 'Write a fresh complete article about the assignment. Stay on that subject. Do not turn Tamuso into a regional tourism or fishing product.',
       }),
-      6000,
+      8000,
     );
     if (!tekrar.ok) return json({ ok: false, code: tekrar.code }, tekrar.code === 'RATE_LIMIT' ? 429 : 502);
     parsed = tekrar.parsed;
@@ -373,10 +623,9 @@ Rules:
     sehir_adlari: [] as string[],
     baliklar: [] as string[],
   };
-  const sorgular = dizi(parsed.gorsel_sorgulari, 3).filter((sorgu) => konuSerbest || !sapmaVar(sorgu));
   const gorselYedek = [metin(parsed.focus_topic, 80), ozet.title, kullaniciIstek, 'live streaming']
     .find((sorgu) => sorgu && (konuSerbest || !sapmaVar(sorgu))) ?? 'live streaming';
-  const gorseller = await vikiGorseller(sorgular.length ? sorgular : [gorselYedek]);
+  const gorseller = dar && mod !== 'gorsel' ? [] : await kapakGetir(parsed, gorselYedek, true);
 
   return json({
     ok: true,

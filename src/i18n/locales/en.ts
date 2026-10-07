@@ -3274,7 +3274,7 @@ export const en: CeviriSozlugu = {
     menuCanliYayin: "Live stream",
     menuCanliYayinAlt: "Go live with your camera",
     menuBlog: "Blog",
-    menuBlogAlt: "Stories and city guides",
+    menuBlogAlt: "Published articles",
     menuAjansimAlt: "Rules · payouts · coins",
     menuHostOl: "Become a host",
     menuHostOlAlt: "Host application",

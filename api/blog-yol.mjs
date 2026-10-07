@@ -45,7 +45,9 @@ function htmlYanit(yanit, kod, govde, robot) {
   yanit.statusCode = kod;
   yanit.setHeader('Content-Type', 'text/html; charset=utf-8');
   yanit.setHeader('X-Robots-Tag', robot);
-  yanit.setHeader('Cache-Control', kod === 200 ? 'public, max-age=0, must-revalidate' : 'no-store');
+  yanit.setHeader('Cache-Control', 'no-store, max-age=0');
+  yanit.setHeader('CDN-Cache-Control', 'no-store');
+  yanit.setHeader('Vercel-CDN-Cache-Control', 'no-store');
   yanit.end(govde);
 }
 

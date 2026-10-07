@@ -7,13 +7,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { Screen } from '../../components/Screen';
 import { RenkTokenlariKoyu as C } from '../../tasarim-sistemi/tema/RenkPaletleri';
+import { BlogBlokOkuyucu } from './BlogBlokOkuyucu';
 import { BlogHtmlGorunum } from './BlogHtmlGorunum';
 import { okumaDakika } from './blogSeo';
 import {
@@ -35,12 +35,6 @@ type Kart = {
   okunma_sayisi?: number;
   blog_categories?: { name?: string; slug?: string } | { name?: string; slug?: string }[] | null;
 };
-
-function katAd(kart: Kart) {
-  const k = kart.blog_categories;
-  if (!k) return '';
-  return Array.isArray(k) ? k[0]?.name ?? '' : k.name ?? '';
-}
 
 function ac(yol: string) {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -79,58 +73,10 @@ function Buton({
   );
 }
 
-export function BlogListeGorunum({ baslik = 'Blog', giris = 'Yazılar tarih sırasıyla. Birini aç, bitince listeye dönüp diğerine geç.' }: { baslik?: string; giris?: string }) {
-  const [satirlar, setSatirlar] = useState<Kart[]>([]);
-  const [arama, setArama] = useState('');
-  const [sayfa, setSayfa] = useState(0);
-  const [toplam, setToplam] = useState(0);
-  const boyut = 24;
-  useEffect(() => {
-    void blogListeHerkese(sayfa, boyut).then((g) => {
-      setSatirlar(g.satirlar as Kart[]);
-      setToplam(g.toplam);
-    });
-  }, [sayfa]);
-  const goster = arama.trim()
-    ? satirlar.filter((s) => `${s.title} ${s.excerpt ?? ''}`.toLocaleLowerCase('tr').includes(arama.trim().toLocaleLowerCase('tr')))
-    : satirlar;
-  const bas = sayfa * boyut;
+export function BlogListeGorunum({ baslik = 'Blog' }: { baslik?: string; giris?: string }) {
   return (
     <View style={styles.sayfa}>
-      <Text style={styles.ust}>BLOG</Text>
-      <Text style={styles.h1}>{baslik}</Text>
-      <Text style={styles.giris}>{giris}</Text>
-      <TextInput
-        value={arama}
-        onChangeText={setArama}
-        placeholder="Yazılarda ara"
-        placeholderTextColor={C.textMuted}
-        style={styles.arama}
-        accessibilityLabel="Blog araması"
-      />
-      <View style={styles.liste}>
-        {goster.map((s, i) => (
-          <Pressable key={s.slug} style={styles.kart} onPress={() => ac(`/blog/${s.slug}`)}>
-            <Text style={styles.sira}>{siraNo(bas + i + 1)}</Text>
-            {s.cover_image_url ? (
-              <Image source={{ uri: s.cover_image_url }} accessibilityLabel={s.title} style={styles.kartKapak} />
-            ) : null}
-            <View style={styles.kartMetin}>
-              <Text style={styles.kucuk}>{[katAd(s), tarih(s.published_at), blogOkunmaYazi(s.okunma_sayisi)].filter(Boolean).join(' · ')}</Text>
-              <Text style={styles.h2}>{s.title}</Text>
-              {s.excerpt ? <Text style={styles.govde}>{s.excerpt}</Text> : null}
-              <Text style={styles.oku}>Yazıyı oku</Text>
-            </View>
-          </Pressable>
-        ))}
-      </View>
-      {goster.length === 0 ? <Text style={styles.govde}>Henüz yayınlanmış yazı yok.</Text> : null}
-      {toplam > boyut && !arama ? (
-        <View style={styles.satir}>
-          {sayfa > 0 ? <Buton yazi="Önceki" onPress={() => setSayfa((n) => Math.max(0, n - 1))} /> : null}
-          {(sayfa + 1) * boyut < toplam ? <Buton yazi="Sonraki" onPress={() => setSayfa((n) => n + 1)} /> : null}
-        </View>
-      ) : null}
+      <BlogBlokOkuyucu baslik={baslik} />
     </View>
   );
 }
@@ -308,16 +254,6 @@ const styles = StyleSheet.create({
   kartMetin: { gap: 6 },
   kartKapak: { width: '100%', aspectRatio: 16 / 9, borderRadius: 12 },
   liste: { gap: 14 },
-  arama: {
-    borderWidth: 1,
-    borderColor: C.border,
-    borderRadius: 14,
-    color: C.text,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: C.surface,
-  },
   satir: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   btn: {
     minHeight: 40,
