@@ -177,6 +177,9 @@ export default function AdminDestekOturumEkrani() {
               <View
                 style={[styles.balon, benim ? styles.balonBen : styles.balonKarsi]}
               >
+                {item.kaynak === 'web' && !benim ? (
+                  <Text style={styles.webEtiket}>Web</Text>
+                ) : null}
                 <Text style={benim ? styles.yaziBen : styles.yazi}>{item.body}</Text>
                 <Text style={benim ? styles.saatBen : styles.saat}>
                   {saat(item.created_at)}
@@ -235,6 +238,11 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
     textAlign: 'center',
+  },
+  webEtiket: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.accent,
+    marginBottom: 2,
   },
   balon: {
     maxWidth: '82%',

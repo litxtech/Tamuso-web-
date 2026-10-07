@@ -980,7 +980,7 @@ export const en: CeviriSozlugu = {
     durumAktif: "Toprak is online",
     durumIdle: "Timed out",
     durumKapandi: "Chat closed",
-    idleKapandi: "Chat closed after 3 minutes of inactivity.",
+    idleKapandi: "Chat closed after 30 minutes of inactivity.",
     gorusmeBitti: "Chat ended.",
     misafirAlt: "Complete your account to talk with the platform live."
   },

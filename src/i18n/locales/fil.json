@@ -854,7 +854,7 @@
     "durumAktif": "Ang Toprak ay online",
     "durumIdle": "Nag-time out",
     "durumKapandi": "Isinara ang chat",
-    "idleKapandi": "Nagsara ang chat pagkatapos ng 3 minutong hindi aktibo.",
+    "idleKapandi": "Nagsara ang chat pagkatapos ng 30 minutong hindi aktibo.",
     "gorusmeBitti": "Natapos ang chat.",
     "misafirAlt": "Kumpletuhin ang iyong account para makipag-usap nang live sa platform."
   },

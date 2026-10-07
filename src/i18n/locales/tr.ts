@@ -978,7 +978,7 @@ export const tr = {
     durumAktif: "Toprak çevrimiçi",
     durumIdle: "Süre doldu",
     durumKapandi: "Görüşme kapandı",
-    idleKapandi: "3 dakika mesaj olmadığı için görüşme kapandı.",
+    idleKapandi: "30 dakika mesaj olmadığı için görüşme kapandı.",
     gorusmeBitti: "Görüşme sona erdi.",
     misafirAlt: "Platformla canlı görüşmek için hesabını tamamla."
   },

@@ -1,6 +1,6 @@
 export const DESTEK_TEMSILCI_ALIAS = 'Toprak';
 /** Mesaj yoksa oturum kapanma suresi (ms) */
-export const DESTEK_IDLE_MS = 3 * 60 * 1000;
+export const DESTEK_IDLE_MS = 30 * 60 * 1000;
 
 export type DestekOturumDurum =
   | 'waiting'
@@ -25,6 +25,7 @@ export type DestekMesaj = {
   sender_id: string | null;
   sender_role: 'user' | 'agent' | 'system';
   body: string;
+  kaynak?: 'web' | 'uygulama' | null;
   created_at: string;
 };
 

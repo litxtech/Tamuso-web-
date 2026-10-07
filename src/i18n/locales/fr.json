@@ -854,7 +854,7 @@
     "durumAktif": "Toprak est en ligne",
     "durumIdle": "Délai dépassé",
     "durumKapandi": "Chat fermé",
-    "idleKapandi": "Chat fermé après 3 minutes d’inactivité.",
+    "idleKapandi": "Chat fermé après 30 minutes d’inactivité.",
     "gorusmeBitti": "Chat terminé.",
     "misafirAlt": "Finalisez votre compte pour parler avec la plateforme en direct."
   },

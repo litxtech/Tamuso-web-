@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import type {
   DestekMesaj,
@@ -32,6 +33,7 @@ export async function DestekMesajGonder(input: {
   const { data, error } = await supabase.rpc('destek_mesaj_gonder', {
     p_session_id: input.sessionId,
     p_body: input.body,
+    p_kaynak: Platform.OS === 'web' ? 'web' : 'uygulama',
   });
   if (error) return { ok: false, hata: error.message };
   return { ok: true, mesaj: data as DestekMesaj };

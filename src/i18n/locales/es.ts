@@ -951,7 +951,7 @@ export const es: CeviriSozlugu = {
     durumAktif: "Toprak en l?nea",
     durumIdle: "Tiempo agotado",
     durumKapandi: "Chat cerrado",
-    idleKapandi: "El chat se cerr? tras 3 minutos sin mensajes.",
+    idleKapandi: "El chat se cerr? tras 30 minutos sin mensajes.",
     gorusmeBitti: "El chat termin?.",
     misafirAlt: "Completa tu cuenta para hablar en vivo con la plataforma."
   },
