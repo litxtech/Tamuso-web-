@@ -802,6 +802,8 @@ export const tr = {
     yayinla: "Hikayene ekle",
     yanitYaz: "Yanıtla…",
     yanitGonderildi: "Yanıt gönderildi",
+    yanitHikayesine: "Hikayesine yanıt",
+    yanitHikayene: "Hikayene yanıt",
     hediye: "Hediye gönder",
     menu: "Diğer",
     goruntuleyenler: "Görüntüleyenler",

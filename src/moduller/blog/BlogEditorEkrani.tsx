@@ -52,6 +52,26 @@ import {
 
 type Props = { id?: string };
 
+function tekilAdlar(liste: string[]): string[] {
+  const gorulen = new Set<string>();
+  const sonuc: string[] = [];
+  for (const ham of liste) {
+    const ad = ham.trim();
+    if (!ad || gorulen.has(ad)) continue;
+    gorulen.add(ad);
+    sonuc.push(ad);
+  }
+  return sonuc;
+}
+
+function onerileriTekille(liste: BlogAsistanOneri): BlogAsistanOneri {
+  return {
+    etiketler: tekilAdlar(liste.etiketler),
+    sehir_adlari: tekilAdlar(liste.sehir_adlari),
+    baliklar: tekilAdlar(liste.baliklar),
+  };
+}
+
 function onay(mesaj: string) {
   if (Platform.OS === 'web' && typeof window !== 'undefined') return Promise.resolve(window.confirm(mesaj));
   return Promise.resolve(true);
@@ -60,6 +80,18 @@ function onay(mesaj: string) {
 function saat(iso: string | null) {
   if (!iso) return '';
   return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function htmlDolu(deger: string) {
+  return deger.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
+}
+
+function Temizle({ etiket, onPress }: { etiket: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={8} accessibilityLabel={`${etiket} temizle`}>
+      <Text style={styles.temizleYazi}>Temizle</Text>
+    </Pressable>
+  );
 }
 
 export function BlogEditorEkrani({ id }: Props) {
@@ -447,7 +479,7 @@ export function BlogEditorEkrani({ id }: Props) {
   }
 
   function oneriUygula(liste: BlogAsistanOneri, adaylar: BlogGorselAday[]) {
-    setOneriler(liste);
+    setOneriler(onerileriTekille(liste));
     if (adaylar.length) setGorseller(adaylar);
     const ek = [...liste.etiketler, ...liste.baliklar];
     if (ek.length) setEtiketMetin(etiketListe(ek).join(', '));
@@ -476,7 +508,11 @@ export function BlogEditorEkrani({ id }: Props) {
         taslak: taslakPaket(),
       });
       if (!sonuc.ok) {
-        setHata(sonuc.code === 'FORBIDDEN' ? 'Bu işlem için yönetici gerekir.' : 'DeepSeek yanıt vermedi.');
+        setHata(sonuc.code === 'FORBIDDEN'
+          ? 'Bu işlem için yönetici gerekir.'
+          : sonuc.code === 'OFF_TOPIC'
+            ? 'Komutun konusu yazıya geçmedi. Komutu netleştirip yeniden dene.'
+            : 'DeepSeek yanıt vermedi.');
         return;
       }
       const t = sonuc.taslak;
@@ -521,7 +557,7 @@ export function BlogEditorEkrani({ id }: Props) {
           oneriDurdu.current = true;
           return;
         }
-        setOneriler(sonuc.oneriler);
+        setOneriler(onerileriTekille(sonuc.oneriler));
         if (sonuc.gorseller.length) setGorseller((eski) => (eski.length ? eski : sonuc.gorseller));
       });
     }, 6000);
@@ -535,13 +571,21 @@ export function BlogEditorEkrani({ id }: Props) {
     if (editorRef.current) setHtml(editorRef.current.innerHTML);
   }
 
-  function aiSatir(etiket: string, anahtar: string) {
+  function icerikTemizle() {
+    setHtml('<p></p>');
+    if (editorRef.current) editorRef.current.innerHTML = '<p></p>';
+  }
+
+  function aiSatir(etiket: string, anahtar: string, temizle?: () => void) {
     return (
       <View style={styles.alanUst}>
         <Text style={styles.etiket}>{etiket}</Text>
-        <Pressable onPress={() => setAi({ alan: anahtar, baslik: etiket })} hitSlop={8} accessibilityLabel={`${etiket} için DeepSeek`}>
-          <Text style={styles.ai}>DeepSeek</Text>
-        </Pressable>
+        <View style={styles.satir}>
+          {temizle ? <Temizle etiket={etiket} onPress={temizle} /> : null}
+          <Pressable onPress={() => setAi({ alan: anahtar, baslik: etiket })} hitSlop={8} accessibilityLabel={`${etiket} için DeepSeek`}>
+            <Text style={styles.ai}>DeepSeek</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
@@ -563,9 +607,9 @@ export function BlogEditorEkrani({ id }: Props) {
         {mesaj ? <Text style={styles.mesaj}>{mesaj}</Text> : null}
         <View style={[styles.kolon, genis && styles.kolonYan]}>
           <View style={styles.sol}>
-            {aiSatir('Başlık', 'title')}
+            {aiSatir('Başlık', 'title', title.trim() ? () => baslikYaz('') : undefined)}
             <TextInput value={title} onChangeText={baslikYaz} style={styles.girdi} placeholder="Yazı başlığı" placeholderTextColor={R.textMuted} />
-            {aiSatir('İçerik', 'content_html')}
+            {aiSatir('İçerik', 'content_html', htmlDolu(html) ? icerikTemizle : undefined)}
             {Platform.OS === 'web' ? (
               <View style={styles.araclar}>
                 {[
@@ -629,6 +673,15 @@ export function BlogEditorEkrani({ id }: Props) {
             {aiSatir('Sık sorulanlar', 'faqs')}
             {faqs.map((f, i) => (
               <View key={i} style={styles.kutu}>
+                <View style={styles.alanUst}>
+                  <Text style={styles.kucuk}>Soru {i + 1}</Text>
+                  {f.question.trim() || f.answer.trim() ? (
+                    <Temizle
+                      etiket={`Soru ${i + 1}`}
+                      onPress={() => setFaqs((liste) => liste.map((x, n) => n === i ? { ...x, question: '', answer: '' } : x))}
+                    />
+                  ) : null}
+                </View>
                 <TextInput value={f.question} placeholder="Soru" placeholderTextColor={R.textMuted} style={styles.girdi} onChangeText={(question) => setFaqs((liste) => liste.map((x, n) => n === i ? { ...x, question } : x))} />
                 <TextInput value={f.answer} placeholder="Cevap" placeholderTextColor={R.textMuted} style={styles.girdi} onChangeText={(answer) => setFaqs((liste) => liste.map((x, n) => n === i ? { ...x, answer } : x))} />
               </View>
@@ -638,9 +691,9 @@ export function BlogEditorEkrani({ id }: Props) {
             </Pressable>
           </View>
           <View style={styles.sag}>
-            {aiSatir('Kısa açıklama', 'excerpt')}
+            {aiSatir('Kısa açıklama', 'excerpt', excerpt.trim() ? () => setExcerpt('') : undefined)}
             <TextInput value={excerpt} onChangeText={setExcerpt} style={styles.girdi} multiline />
-            {aiSatir('Slug', 'slug')}
+            {aiSatir('Slug', 'slug', slug.trim() ? () => { slugElle.current = true; setSlug(''); } : undefined)}
             <TextInput value={slug} onChangeText={(v) => { slugElle.current = true; setSlug(slugYap(v) || v.toLowerCase()); }} style={styles.girdi} autoCapitalize="none" />
             <Text style={styles.etiket}>Kategori</Text>
             <ScrollView horizontal contentContainerStyle={styles.serit}>
@@ -650,22 +703,22 @@ export function BlogEditorEkrani({ id }: Props) {
                 </Pressable>
               ))}
             </ScrollView>
-            {aiSatir('Etiketler', 'etiketler')}
-            <TextInput value={etiketMetin} onChangeText={setEtiketMetin} placeholder="Trabzon, Karadeniz" placeholderTextColor={R.textMuted} style={styles.girdi} />
+            {aiSatir('Etiketler', 'etiketler', etiketMetin.trim() ? () => setEtiketMetin('') : undefined)}
+            <TextInput value={etiketMetin} onChangeText={setEtiketMetin} placeholder="canlı yayın, ses odası, hediye" placeholderTextColor={R.textMuted} style={styles.girdi} />
             {oneriler.etiketler.length || oneriler.baliklar.length || oneriler.sehir_adlari.length ? (
               <View style={styles.oneriSerit}>
-                {oneriler.etiketler.map((ad) => (
-                  <Pressable key={`e-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
+                {oneriler.etiketler.map((ad, i) => (
+                  <Pressable key={`e-${i}-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
                     <Text style={styles.cipYazi}>{ad}</Text>
                   </Pressable>
                 ))}
-                {oneriler.baliklar.map((ad) => (
-                  <Pressable key={`b-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
+                {oneriler.baliklar.map((ad, i) => (
+                  <Pressable key={`b-${i}-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
                     <Text style={styles.cipYazi}>Balık · {ad}</Text>
                   </Pressable>
                 ))}
-                {oneriler.sehir_adlari.map((ad) => (
-                  <Pressable key={`s-${ad}`} onPress={() => { setSehirQ(ad); void blogSehirAdlariEsle([ad]).then((bulunan) => setSehirler((eski) => {
+                {oneriler.sehir_adlari.map((ad, i) => (
+                  <Pressable key={`s-${i}-${ad}`} onPress={() => { setSehirQ(ad); void blogSehirAdlariEsle([ad]).then((bulunan) => setSehirler((eski) => {
                     const sonraki = [...eski];
                     for (const sehir of bulunan) if (!sonraki.some((x) => x.city_id === sehir.city_id)) sonraki.push(sehir);
                     return sonraki;
@@ -675,7 +728,7 @@ export function BlogEditorEkrani({ id }: Props) {
                 ))}
               </View>
             ) : null}
-            {aiSatir('İlgili şehir', 'sehir')}
+            {aiSatir('İlgili şehir', 'sehir', sehirQ.trim() || sehirler.length ? () => { setSehirQ(''); setSehirSonuc([]); setSehirler([]); } : undefined)}
             <TextInput value={sehirQ} onChangeText={(v) => { setSehirQ(v); void blogSehirAra(v).then(setSehirSonuc); }} placeholder="Şehir ara" placeholderTextColor={R.textMuted} style={styles.girdi} />
             {sehirSonuc.map((s) => (
               <Pressable key={s.id} onPress={() => setSehirler((liste) => liste.some((x) => x.city_id === s.id) ? liste : [...liste, { city_id: s.id, city_name: s.name, city_slug: s.slug }])}>
@@ -711,9 +764,16 @@ export function BlogEditorEkrani({ id }: Props) {
                 ))}
               </ScrollView>
             ) : null}
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>Kapak alt metni</Text>
+              {coverAlt.trim() ? <Temizle etiket="Kapak alt metni" onPress={() => setCoverAlt('')} /> : null}
+            </View>
             <TextInput value={coverAlt} onChangeText={setCoverAlt} placeholder="Kapak alt metni" placeholderTextColor={R.textMuted} style={styles.girdi} />
             {coverCredit ? <Text style={styles.kucuk}>{coverCredit}</Text> : null}
-            <Text style={styles.etiket}>Yayın tarihi</Text>
+            <View style={styles.alanUst}>
+              <Text style={styles.etiket}>Yayın tarihi</Text>
+              {yayin.trim() ? <Temizle etiket="Yayın tarihi" onPress={() => setYayin('')} /> : null}
+            </View>
             {Platform.OS === 'web' ? createElement('input', {
               type: 'datetime-local',
               value: yayin,
@@ -726,14 +786,22 @@ export function BlogEditorEkrani({ id }: Props) {
             <Text style={styles.kucuk}>Gelecek tarih planlar. Zamanı gelince yazı kendiliğinden açılır; cron gerekmez.</Text>
             <Pressable onPress={() => setOneCikan((v) => !v)}><Text style={styles.link}>{oneCikan ? 'Öne çıkan' : 'Öne çıkan yap'}</Text></Pressable>
             <Pressable onPress={() => setIndexle((v) => !v)}><Text style={styles.link}>{indexle ? 'Index' : 'Noindex'}</Text></Pressable>
-            {aiSatir(`SEO title · ${[...gorunenBaslik].length} · ${baslikDurumu(gorunenBaslik)}`, 'seo_title')}
+            {aiSatir(`SEO title · ${[...gorunenBaslik].length} · ${baslikDurumu(gorunenBaslik)}`, 'seo_title', seoTitle.trim() ? () => { seoElle.current = false; setSeoTitle(''); } : undefined)}
             <TextInput value={seoTitle} onChangeText={(v) => { seoElle.current = true; setSeoTitle(v); }} placeholder={seoBaslik(title)} placeholderTextColor={R.textMuted} style={styles.girdi} />
-            {aiSatir(`Meta açıklama · ${[...gorunenAciklama].length} · ${aciklamaDurumu(gorunenAciklama)}`, 'meta')}
+            {aiSatir(`Meta açıklama · ${[...gorunenAciklama].length} · ${aciklamaDurumu(gorunenAciklama)}`, 'meta', meta.trim() ? () => { aciklamaElle.current = false; setMeta(''); } : undefined)}
             <TextInput value={meta} onChangeText={(v) => { aciklamaElle.current = true; setMeta(v); }} placeholder={gorunenAciklama} placeholderTextColor={R.textMuted} style={styles.girdi} multiline />
-            {aiSatir('Canonical', 'canonical')}
+            {aiSatir('Canonical', 'canonical', canonical.trim() ? () => { kanonikElle.current = false; setCanonical(''); } : undefined)}
             <TextInput value={canonical} onChangeText={(v) => { kanonikElle.current = true; setCanonical(v); }} placeholder={gorunenKanonik} placeholderTextColor={R.textMuted} style={styles.girdi} autoCapitalize="none" />
-            {aiSatir('OG title / açıklama', 'og')}
+            {aiSatir('OG title / açıklama', 'og', ogTitle.trim() || ogDesc.trim() ? () => { setOgTitle(''); setOgDesc(''); } : undefined)}
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>OG title</Text>
+              {ogTitle.trim() ? <Temizle etiket="OG title" onPress={() => setOgTitle('')} /> : null}
+            </View>
             <TextInput value={ogTitle} onChangeText={setOgTitle} placeholder={gorunenBaslik} placeholderTextColor={R.textMuted} style={styles.girdi} />
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>OG açıklama</Text>
+              {ogDesc.trim() ? <Temizle etiket="OG açıklama" onPress={() => setOgDesc('')} /> : null}
+            </View>
             <TextInput value={ogDesc} onChangeText={setOgDesc} placeholder={gorunenAciklama} placeholderTextColor={R.textMuted} style={styles.girdi} />
             <View style={styles.onizleme}>
               <Text style={styles.kucuk}>Google önizleme</Text>
@@ -754,9 +822,21 @@ export function BlogEditorEkrani({ id }: Props) {
             {kontrol.maddeler.map((m) => (
               <Text key={m.ad} style={styles.kucuk}>{m.tamam ? 'Tamam' : 'Eksik'} · {m.ad}</Text>
             ))}
-            {aiSatir('Editoryal notlar', 'konu')}
+            {aiSatir('Editoryal notlar', 'konu', konu.trim() || niyet.trim() || kelimeler.trim() ? () => { setKonu(''); setNiyet(''); setKelimeler(''); } : undefined)}
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>Anahtar konu</Text>
+              {konu.trim() ? <Temizle etiket="Anahtar konu" onPress={() => setKonu('')} /> : null}
+            </View>
             <TextInput value={konu} onChangeText={setKonu} placeholder="Anahtar konu" placeholderTextColor={R.textMuted} style={styles.girdi} />
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>Arama niyeti</Text>
+              {niyet.trim() ? <Temizle etiket="Arama niyeti" onPress={() => setNiyet('')} /> : null}
+            </View>
             <TextInput value={niyet} onChangeText={setNiyet} placeholder="Arama niyeti" placeholderTextColor={R.textMuted} style={styles.girdi} />
+            <View style={styles.alanUst}>
+              <Text style={styles.kucuk}>İlgili kelimeler</Text>
+              {kelimeler.trim() ? <Temizle etiket="İlgili kelimeler" onPress={() => setKelimeler('')} /> : null}
+            </View>
             <TextInput value={kelimeler} onChangeText={setKelimeler} placeholder="İlgili kelimeler" placeholderTextColor={R.textMuted} style={styles.girdi} />
             <Text style={styles.kucuk}>Bu üç alan sitede gösterilmez.</Text>
             {yonler.length ? (
@@ -857,6 +937,7 @@ const styles = StyleSheet.create({
   kaydir: { flex: 1 },
   alanUst: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ai: { color: R.primarySoft, fontSize: 12, fontWeight: '700' },
+  temizleYazi: { color: R.textMuted, fontSize: 12, fontWeight: '700' },
   kapak: { width: '100%', aspectRatio: 16 / 9, borderRadius: 12 },
   aday: { width: 96, height: 64, borderRadius: 8 },
   altBar: { borderTopWidth: 1, borderTopColor: R.border, padding: 12, gap: 8, backgroundColor: '#100e18' },

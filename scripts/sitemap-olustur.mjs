@@ -88,7 +88,7 @@ if (!tekil.has('/blog')) {
   tekil.set('/blog', {
     yol: '/blog',
     title: 'Blog | Tamuso',
-    description: 'Karadeniz’den sosyal yaşama, şehir rehberlerinden Tamuso dünyasına kadar güncel içerikler.',
+    description: 'Canlı yayın, ses odaları, hikâye ve Tamuso’nun sosyal özelliklerine dair güncel içerikler.',
     gun: '',
   });
 }

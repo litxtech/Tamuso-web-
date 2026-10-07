@@ -6,7 +6,7 @@ import { bulunamadiBelgesi, listeBelgesi, yaziBelgesi } from '../scripts/blog-mo
 import { blogKok, blogYolu, herkeseAcikMi, indexlenebilirMi } from '../scripts/blog-dil.mjs';
 
 const GIRIS = {
-  tr: 'Tamuso blogu, Karadeniz’de yeni insanlarla tanışmayı, şehirlerdeki sosyal hayatı ve uygulamadaki yayın, sohbet ile etkinlik özelliklerini günlük dille anlatır.',
+  tr: 'Tamuso blogu; canlı yayın, ses odaları, hikâye, mesajlaşma, hediye ve uygulamanın sosyal özelliklerini günlük dille anlatır.',
   en: 'The Tamuso blog on meeting people, city life, and the app.',
   de: 'Der Tamuso-Blog über neue Bekanntschaften, Stadtleben und die App.',
   es: 'El blog de Tamuso sobre conocer gente, la vida en la ciudad y la app.',

@@ -34,6 +34,10 @@ import { MesajBaglantiliMetin } from './MesajBaglantiliMetin';
 import { MesajViewOnceKarti } from './MesajViewOnceKarti';
 import { MesajAjansPaketTeklifKarti } from './MesajAjansPaketTeklifKarti';
 import { MesajAjansPaketFisKarti } from './MesajAjansPaketFisKarti';
+import {
+  HikayeYanitCoz,
+  MesajHikayeYanitOnizleme,
+} from './MesajHikayeYanitOnizleme';
 import { MesajKartTokenlari } from '../tasarim/MesajKartTokenlari';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { CeviriMetinKarti } from '../../ai-ceviri/bilesenler/CeviriMetinKarti';
@@ -455,6 +459,90 @@ export function MesajBaloncugu({
         )}
       </Pressable>
     ) : null;
+
+  const hikayeYanit = HikayeYanitCoz(item);
+  if (hikayeYanit) {
+    const videoMu = hikayeYanit.mediaType === 'video';
+    const gorselMu = hikayeYanit.mediaType === 'image';
+    const acUri = videoMu
+      ? safeMediaUri
+      : gorselMu
+        ? safeMediaUri ?? MedyaUriGuvenli(hikayeYanit.thumbnailUrl)
+        : null;
+    const acTur: 'image' | 'video' =
+      videoMu && safeMediaUri ? 'video' : 'image';
+    const metin = item.body?.trim() ?? '';
+    const metinGovde = metin ? (
+      ceviriAcik ? (
+        <CeviriMetinKarti
+          text={metin}
+          context="dm"
+          varyant={mine ? 'bubbleMine' : 'bubble'}
+          linkify
+        />
+      ) : (
+        <MesajBaglantiliMetin
+          text={metin}
+          style={mine ? styles.bodyMine : styles.body}
+          mine={mine}
+        />
+      )
+    ) : null;
+    const balon = metinGovde ? (
+      mine ? (
+        <Pressable
+          onPress={() => ciftTik()}
+          onLongPress={onLongPress}
+          delayLongPress={300}
+        >
+          <LinearGradient
+            colors={[...RenkTokenlari.gradientPrimary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.bubble, styles.mine, sending && styles.sending]}
+          >
+            {metinGovde}
+            {metaSatiri(false)}
+          </LinearGradient>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={() => ciftTik()}
+          onLongPress={onLongPress}
+          delayLongPress={300}
+          style={[styles.bubble, styles.theirs]}
+        >
+          {metinGovde}
+          {metaSatiri(false)}
+        </Pressable>
+      )
+    ) : (
+      metaSatiri(false)
+    );
+
+    return sar(
+      <View style={[styles.kartWrap, hiza, icHiza, sending && styles.sending]}>
+        <MesajHikayeYanitOnizleme
+          mine={mine}
+          mediaType={hikayeYanit.mediaType}
+          mediaUrl={safeMediaUri}
+          thumbnailUrl={hikayeYanit.thumbnailUrl}
+          backgroundColor={hikayeYanit.backgroundColor}
+          storyText={hikayeYanit.storyText}
+          etiket={
+            mine ? t('hikaye.yanitHikayesine') : t('hikaye.yanitHikayene')
+          }
+          onPress={
+            acUri
+              ? () => ciftTik(() => onMedyaAc?.(acUri, acTur))
+              : undefined
+          }
+          onLongPress={onLongPress}
+        />
+        {balon}
+      </View>,
+    );
+  }
 
   if (isViewOnce) {
     return sar(

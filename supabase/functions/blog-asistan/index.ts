@@ -92,9 +92,33 @@ function jsonAyikla(ham: string): Record<string, unknown> | null {
   }
 }
 
+const SAPMA = /karadeniz|black\s*sea|hamsi|anchovy|balıkçılık|balikcilik/i;
+
+function sapmaVar(deger: string) {
+  return SAPMA.test(deger);
+}
+
+function modelGovdesi(parsed: Record<string, unknown>) {
+  const parcalar = [
+    parsed.title,
+    parsed.excerpt,
+    parsed.content_html,
+    parsed.keywords,
+    parsed.focus_topic,
+    parsed.seo_title,
+    parsed.meta_description,
+    parsed.og_title,
+    parsed.og_description,
+  ];
+  if (Array.isArray(parsed.etiketler)) parcalar.push(parsed.etiketler.join(' '));
+  if (Array.isArray(parsed.gorsel_sorgulari)) parcalar.push(parsed.gorsel_sorgulari.join(' '));
+  if (Array.isArray(parsed.faqs)) parcalar.push(JSON.stringify(parsed.faqs));
+  return parcalar.map((x) => String(x ?? '')).join('\n');
+}
+
 async function deepseekJson(apiKey: string, system: string, user: string, maxTokens: number) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55_000);
+  const timeout = setTimeout(() => controller.abort(), 90_000);
   try {
     const res = await fetch(`${DEEPSEEK_BASE}/v1/chat/completions`, {
       method: 'POST',
@@ -108,7 +132,7 @@ async function deepseekJson(apiKey: string, system: string, user: string, maxTok
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        temperature: 0.4,
+        temperature: 0.3,
         max_tokens: maxTokens,
         response_format: { type: 'json_object' },
       }),
@@ -150,7 +174,7 @@ function faqlar(deger: unknown) {
 }
 
 function taslakCikti(kaynak: Record<string, unknown>) {
-  const html = metin(kaynak.content_html, 20000);
+  const html = metin(kaynak.content_html, 48000);
   return {
     title: metin(kaynak.title, 140) || null,
     excerpt: metin(kaynak.excerpt, 320) || null,
@@ -245,67 +269,114 @@ Deno.serve(async (req) => {
 
   const mod = body.mod ?? 'doldur';
   const taslak = body.taslak ?? {};
-  const istek = metin(body.istek, 800) || 'Mevcut yazıyı SEO’ya uygun, okunaklı ve ilgili önerilerle tamamla.';
+  const kullaniciIstek = metin(body.istek, 4000);
+  const istek = kullaniciIstek ||
+    'Taslakta başlık veya metin varsa o konuyu tam bir yazıya genişlet. Taslak boşsa Tamuso’da canlı yayın, ses odası, hikâye, mesaj ve hediye kullanımını anlat.';
   const ozet = {
     alan: metin(body.alan, 40),
     title: metin(taslak.title, 180),
     excerpt: metin(taslak.excerpt, 400),
-    content_html: metin(taslak.content_html, 8000),
+    content_html: metin(taslak.content_html, 16000),
     seo_title: metin(taslak.seo_title, 80),
     meta_description: metin(taslak.meta_description, 200),
     keywords: metin(taslak.keywords, 240),
     focus_topic: metin(taslak.focus_topic, 120),
-    sehirler: dizi(taslak.sehirler, 8),
     etiketler: dizi(taslak.etiketler, 12),
   };
+  const konuIzin = kullaniciIstek || [ozet.title, ozet.excerpt, ozet.focus_topic].join('\n');
+  const modeleTaslak = { ...ozet, etiketler: [...ozet.etiketler] };
+  if (kullaniciIstek && !sapmaVar(kullaniciIstek)) {
+    if (sapmaVar(modeleTaslak.title)) modeleTaslak.title = '';
+    if (sapmaVar(modeleTaslak.excerpt)) modeleTaslak.excerpt = '';
+    if (sapmaVar(modeleTaslak.content_html)) modeleTaslak.content_html = '';
+    if (sapmaVar(modeleTaslak.seo_title)) modeleTaslak.seo_title = '';
+    if (sapmaVar(modeleTaslak.meta_description)) modeleTaslak.meta_description = '';
+    if (sapmaVar(modeleTaslak.keywords)) modeleTaslak.keywords = '';
+    if (sapmaVar(modeleTaslak.focus_topic)) modeleTaslak.focus_topic = '';
+    modeleTaslak.etiketler = modeleTaslak.etiketler.filter((ad) => !sapmaVar(ad));
+  }
 
   if (mod === 'cevir') {
     const dil = metin(body.dil, 8).toLowerCase();
     if (!DILLER.has(dil) || dil === 'tr') return json({ error: 'dil' }, 400);
     const sonuc = await deepseekJson(
       apiKey,
-      `You are the Tamuso blog editor. Translate the Turkish post into ${langLabel(dil)} for search, not word-by-word.
+      `You are Tamuso's blog editor. Translate the Turkish post into ${langLabel(dil)} for search, not word-by-word.
 Return JSON only with keys: title, slug, excerpt, content_html, seo_title, meta_description, og_title, og_description, keywords, focus_topic, search_intent, cover_alt, etiketler, faqs.
-Rules: natural ${langLabel(dil)}; keep facts; do not invent numbers; spaces between every word; content_html uses <p>, <h2>, <h3>, <ul><li> only; slug is latin kebab-case; seo_title 45-60 characters; meta_description 120-160 characters; faqs is an array of {question, answer}.`,
+Rules: keep the same subject; natural ${langLabel(dil)}; do not invent numbers or rename Tamuso; spaces between every word; content_html uses <p>, <h2>, <h3>, <ul><li> only; slug is latin kebab-case; seo_title 45-60 characters; meta_description 120-160 characters; faqs is an array of {question, answer}.`,
       JSON.stringify({ instruction: istek, source: ozet }),
-      3500,
+      5000,
     );
     if (!sonuc.ok) return json({ ok: false, code: sonuc.code }, sonuc.code === 'RATE_LIMIT' ? 429 : 502);
     return json({ ok: true, ceviri: taslakCikti(sonuc.parsed) });
   }
 
   const dar = mod === 'oner' || mod === 'gorsel';
+  const sistem = `You are Tamuso's editorial assistant. You have full authority to write, expand, and finish the blog post the editor asked for.
+
+What Tamuso is
+Tamuso is an 18+ live social app. People open voice rooms, go live, post stories, send direct messages, send gifts, use coins and diamonds, join agencies, play games, compete in leagues, and make AI music. Profiles and follow are part of the app. Explain these product behaviors with concrete steps.
+
+How you work
+- The assignment is the only subject. Obey it, then expand it with structure, steps, examples, SEO, and FAQs that stay on that subject.
+- When assignment_wins is true, ignore any different topic already sitting in the draft. The draft is leftover text, not a new assignment.
+- When assignment_wins is false, expand the draft title and body. If those are empty, explain how to use Tamuso: live streams, voice rooms, stories, messages, and gifts.
+- Write a complete article when asked to fill the post. Do not invent user counts, revenue, awards, rankings, or quotes.
+
+Return JSON only.
+Keys: title, excerpt, content_html, seo_title, meta_description, og_title, og_description, keywords, focus_topic, search_intent, cover_alt, slug, etiketler, faqs, gorsel_sorgulari.
+Rules:
+- ${dar ? 'Return null for title, excerpt, content_html and every other prose field. etiketler and gorsel_sorgulari must match the draft subject.' : 'Write every prose field so the post is complete. If focus_field names one box, make that box the strongest, and still complete the empty companion fields (SEO, tags, FAQ) on the same subject.'}
+- Normal sentences with spaces between words. Never glue words together.
+- content_html: several <p> blocks plus <h2>, <h3>, <ul>, <li>. No h1, no script. Turkish unless the assignment asks for another language.
+- seo_title 45-60 characters. meta_description 120-160 characters. excerpt about 140-180 characters.
+- etiketler: short tags in the post language that match the assignment.
+- gorsel_sorgulari: 2 or 3 English Wikimedia search phrases for real photographs of the assignment.
+- faqs: 3 or 4 {question, answer} about the same subject.
+- slug: latin kebab-case.`;
   const sonuc = await deepseekJson(
     apiKey,
-    `You are the Tamuso blog editor for a Turkish social app about Black Sea cities, fishing, and city life.
-Return JSON only.
-Keys: title, excerpt, content_html, seo_title, meta_description, og_title, og_description, keywords, focus_topic, search_intent, cover_alt, slug, etiketler, faqs, sehir_adlari, baliklar, gorsel_sorgulari.
-Rules:
-- ${dar ? 'Return null for title, excerpt, content_html and other prose fields. Only fill suggestion arrays and gorsel_sorgulari.' : 'Fill every field the instruction touches. Use null for fields that must stay unchanged.'}
-- Normal sentences with spaces between words. Never glue words together.
-- content_html: <p>, <h2>, <h3>, <ul>, <li> only. No h1, no script.
-- seo_title 45-60 characters. meta_description 120-160 characters. excerpt about 140 characters.
-- etiketler: short SEO tags in the post language.
-- sehir_adlari: real Turkish city names relevant to the text (Trabzon, Rize, Samsun…).
-- baliklar: real fish species relevant to the text (hamsi, palamut, lüfer…).
-- gorsel_sorgulari: 2 or 3 English Wikimedia search phrases for real photographs of the subject.
-- faqs: up to 4 {question, answer}. Do not invent statistics or quotes.
-- slug: latin kebab-case.`,
-    JSON.stringify({ field: ozet.alan, instruction: istek, draft: ozet }),
-    dar ? 900 : 3200,
+    sistem,
+    JSON.stringify({
+      focus_field: ozet.alan || null,
+      assignment: istek,
+      assignment_wins: Boolean(kullaniciIstek),
+      draft: modeleTaslak,
+    }),
+    dar ? 1200 : 6000,
   );
   if (!sonuc.ok) return json({ ok: false, code: sonuc.code }, sonuc.code === 'RATE_LIMIT' ? 429 : 502);
 
-  const parsed = sonuc.parsed;
+  let parsed = sonuc.parsed;
+  if (!dar && sapmaVar(modelGovdesi(parsed)) && !sapmaVar(konuIzin)) {
+    const tekrar = await deepseekJson(
+      apiKey,
+      `${sistem}\nThe assignment is the only allowed subject. Discard the previous draft completely.`,
+      JSON.stringify({
+        focus_field: ozet.alan || null,
+        assignment: istek,
+        assignment_wins: true,
+        instruction: 'Write a fresh complete article about the assignment. Stay on that subject. Do not turn Tamuso into a regional tourism or fishing product.',
+      }),
+      6000,
+    );
+    if (!tekrar.ok) return json({ ok: false, code: tekrar.code }, tekrar.code === 'RATE_LIMIT' ? 429 : 502);
+    parsed = tekrar.parsed;
+    if (sapmaVar(modelGovdesi(parsed)) && !sapmaVar(konuIzin)) {
+      return json({ ok: false, code: 'OFF_TOPIC' });
+    }
+  }
+
+  const konuSerbest = sapmaVar(konuIzin);
   const oneriler = {
-    etiketler: dizi(parsed.etiketler),
-    sehir_adlari: dizi(parsed.sehir_adlari),
-    baliklar: dizi(parsed.baliklar),
+    etiketler: dizi(parsed.etiketler).filter((ad) => konuSerbest || !sapmaVar(ad)),
+    sehir_adlari: [] as string[],
+    baliklar: [] as string[],
   };
-  const sorgular = dizi(parsed.gorsel_sorgulari, 3);
-  const gorseller = await vikiGorseller(
-    sorgular.length ? sorgular : [metin(parsed.focus_topic, 80) || ozet.title || istek].filter(Boolean),
-  );
+  const sorgular = dizi(parsed.gorsel_sorgulari, 3).filter((sorgu) => konuSerbest || !sapmaVar(sorgu));
+  const gorselYedek = [metin(parsed.focus_topic, 80), ozet.title, kullaniciIstek, 'live streaming']
+    .find((sorgu) => sorgu && (konuSerbest || !sapmaVar(sorgu))) ?? 'live streaming';
+  const gorseller = await vikiGorseller(sorgular.length ? sorgular : [gorselYedek]);
 
   return json({
     ok: true,

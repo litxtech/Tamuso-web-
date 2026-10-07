@@ -800,6 +800,8 @@ export const es: CeviriSozlugu = {
     yayinla: "Anadir a tu historia",
     yanitYaz: "Responder…",
     yanitGonderildi: "Respuesta enviada",
+    yanitHikayesine: "Respondiste a su historia",
+    yanitHikayene: "Respondió a tu historia",
     hediye: "Enviar regalo",
     menu: "Mas",
     goruntuleyenler: "Espectadores",

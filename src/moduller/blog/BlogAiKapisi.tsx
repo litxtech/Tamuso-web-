@@ -15,15 +15,22 @@ export function BlogAiKapisi({ baslik, calisiyor, kapat, gonder }: Props) {
     <View style={styles.kutu}>
       <View style={styles.ust}>
         <Text style={styles.baslik}>DeepSeek · {baslik}</Text>
-        <Pressable onPress={kapat} hitSlop={8} accessibilityLabel="Kapat">
-          <Text style={styles.kapat}>Kapat</Text>
-        </Pressable>
+        <View style={styles.ustAksiyon}>
+          {istek.trim() ? (
+            <Pressable onPress={() => setIstek('')} hitSlop={8} accessibilityLabel="Komutu temizle">
+              <Text style={styles.kapat}>Temizle</Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={kapat} hitSlop={8} accessibilityLabel="Kapat">
+            <Text style={styles.kapat}>Kapat</Text>
+          </Pressable>
+        </View>
       </View>
-      <Text style={styles.not}>İstediğini yaz. İlgili başlık, metin, SEO, etiket, şehir ve balık alanları birlikte dolar.</Text>
+      <Text style={styles.not}>Komut yazının konusu olsun. Asistan o konuyu açar; başlık, metin, SEO ve etiketleri ona göre doldurur.</Text>
       <TextInput
         value={istek}
         onChangeText={setIstek}
-        placeholder="Örn. Trabzon’da hamsi avı rehberi, sahil ve pazar"
+        placeholder="Örn. Canlı yayında hediye nasıl çalışır, yeni kullanıcıya anlat"
         placeholderTextColor={R.textMuted}
         style={styles.girdi}
         multiline
@@ -51,6 +58,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ust: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  ustAksiyon: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   baslik: { color: R.text, fontWeight: '700' },
   kapat: { color: R.textMuted },
   not: { color: R.textMuted, fontSize: 12 },

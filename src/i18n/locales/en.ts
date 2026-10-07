@@ -804,6 +804,8 @@ export const en: CeviriSozlugu = {
     yayinla: "Add to your story",
     yanitYaz: "Reply…",
     yanitGonderildi: "Reply sent",
+    yanitHikayesine: "Replied to their story",
+    yanitHikayene: "Replied to your story",
     hediye: "Send gift",
     menu: "More",
     goruntuleyenler: "Viewers",

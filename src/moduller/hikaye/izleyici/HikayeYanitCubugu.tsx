@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  Keyboard,
   Pressable,
   StyleSheet,
   TextInput,
@@ -20,6 +19,7 @@ type Props = {
   onGonder: (metin: string) => Promise<void> | void;
   onHediye?: () => void;
   onMenu?: () => void;
+  onOdak?: (acik: boolean) => void;
 };
 
 export function HikayeYanitCubugu({
@@ -28,6 +28,7 @@ export function HikayeYanitCubugu({
   onGonder,
   onHediye,
   onMenu,
+  onOdak,
 }: Props) {
   const { t } = useCeviri();
   const [metin, setMetin] = useState('');
@@ -40,17 +41,14 @@ export function HikayeYanitCubugu({
     try {
       await onGonder(body);
       setMetin('');
+      Keyboard.dismiss();
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={8}
-    >
-      <View style={styles.wrap}>
+    <View style={styles.wrap}>
         <TextInput
           value={metin}
           onChangeText={setMetin}
@@ -60,7 +58,10 @@ export function HikayeYanitCubugu({
           editable={!disabled && !busy}
           maxLength={500}
           returnKeyType="send"
+          blurOnSubmit={false}
           onSubmitEditing={() => void gonder()}
+          onFocus={() => onOdak?.(true)}
+          onBlur={() => onOdak?.(false)}
         />
         {onHediye ? (
           <Pressable
@@ -100,8 +101,7 @@ export function HikayeYanitCubugu({
             <Ionicons name="send" size={16} color="#fff" />
           )}
         </Pressable>
-      </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

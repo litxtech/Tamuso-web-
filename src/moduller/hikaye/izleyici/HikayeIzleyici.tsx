@@ -54,8 +54,17 @@ import { HikayeTepkiSeridi } from './HikayeTepkiSeridi';
 import { HikayeMenuSheet } from './HikayeMenuSheet';
 import { HikayeGoruntuleyenlerSheet } from './HikayeGoruntuleyenlerSheet';
 import { HikayeMuzikCubugu } from './HikayeMuzikCubugu';
+import { useKlavyeYuksekligi } from '../../../bilesenler/klavye/useKlavyeYuksekligi';
 
 const { width: EKRAN_W, height: EKRAN_H } = Dimensions.get('window');
+
+function hikayeYanitMetni(oge: HikayeOgesi): string | null {
+  const overlay = oge.overlays?.find(
+    (o) => o.type === 'text' && typeof o.text === 'string' && o.text.trim(),
+  );
+  const metin = overlay?.text?.trim() || oge.caption?.trim() || '';
+  return metin || null;
+}
 
 function efektTintAl(oge: HikayeOgesi): string | null {
   const stil = oge.text_style;
@@ -361,6 +370,7 @@ export function HikayeIzleyici({
 }: Props) {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
+  const { yukseklik: klavyeY, acik: klavyeAcik } = useKlavyeYuksekligi();
   const hediye = useHediyeMagaza();
   const [items, setItems] = useState(grup.items);
   const [index, setIndex] = useState(
@@ -368,6 +378,7 @@ export function HikayeIzleyici({
   );
   const [ilerleme, setIlerleme] = useState(0);
   const [duraklat, setDuraklat] = useState(false);
+  const [yanitOdak, setYanitOdak] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);
   const [izleyicilerAcik, setIzleyicilerAcik] = useState(false);
   const [bildirAcik, setBildirAcik] = useState(false);
@@ -536,6 +547,8 @@ export function HikayeIzleyici({
       !oge ||
       !medyaHazir ||
       duraklat ||
+      klavyeAcik ||
+      yanitOdak ||
       menuAcik ||
       izleyicilerAcik ||
       bildirAcik ||
@@ -561,6 +574,8 @@ export function HikayeIzleyici({
     sureMs,
     medyaHazir,
     duraklat,
+    klavyeAcik,
+    yanitOdak,
     menuAcik,
     izleyicilerAcik,
     bildirAcik,
@@ -595,14 +610,26 @@ export function HikayeIzleyici({
         Alert.alert(t('ortak.hata'), sohbet.hata);
         return;
       }
+      const gorselUrl = oge.media_type === 'image' ? oge.media_url : null;
+      const videoUrl = oge.media_type === 'video' ? oge.media_url : null;
+      const onizleme =
+        oge.thumbnail_url ||
+        gorselUrl ||
+        null;
       const msg = await MesajGonder({
         threadId: sohbet.threadId,
         body: metin,
         messageType: 'text',
+        mediaUrl: videoUrl || gorselUrl,
         mediaMeta: {
           type: 'story_reply',
           story_id: oge.story_id,
           story_item_id: oge.id,
+          story_media_type: oge.media_type,
+          thumbnail_url: onizleme,
+          background_color: oge.background_color,
+          story_text: hikayeYanitMetni(oge),
+          owner_name: grup.display_name,
         },
       });
       if (!msg.ok) {
@@ -610,9 +637,8 @@ export function HikayeIzleyici({
         return;
       }
       HikayeAnalitik('story_reply');
-      Alert.alert(t('ortak.basarili'), t('hikaye.yanitGonderildi'));
     },
-    [oge, grup.user_id, t],
+    [oge, grup.user_id, grup.display_name, t],
   );
 
   const tepkiVer = useCallback(
@@ -743,7 +769,7 @@ export function HikayeIzleyici({
                   key={`${oge.id}-${muzik ? 'm' : 'v'}`}
                   uri={oge.media_url}
                   posterUri={oge.thumbnail_url}
-                  paused={duraklat}
+                  paused={duraklat || klavyeAcik || yanitOdak}
                   muted={!!muzik}
                   trimStartSn={(videoTrim?.startMs ?? 0) / 1000}
                   trimEndSn={
@@ -798,7 +824,7 @@ export function HikayeIzleyici({
                   adet={items.length}
                   aktifIndex={index}
                   ilerleme={ilerleme}
-                  duraklatildi={duraklat}
+                  duraklatildi={duraklat || klavyeAcik || yanitOdak}
                 />
                 <View style={styles.ustBar}>
                   <Pressable
@@ -891,7 +917,10 @@ export function HikayeIzleyici({
 
               {muzik ? (
                 <View style={styles.muzikKartIci} pointerEvents="box-none">
-                  <HikayeMuzikCubugu music={muzik} paused={duraklat} />
+                  <HikayeMuzikCubugu
+                    music={muzik}
+                    paused={duraklat || klavyeAcik || yanitOdak}
+                  />
                 </View>
               ) : null}
               {Platform.OS === 'web' ? (
@@ -905,7 +934,13 @@ export function HikayeIzleyici({
         </View>
 
         <View
-          style={[styles.alt, { paddingBottom: Math.max(insets.bottom, 6) }]}
+          style={[
+            styles.alt,
+            {
+              bottom: klavyeY,
+              paddingBottom: klavyeY > 0 ? 8 : Math.max(insets.bottom, 6),
+            },
+          ]}
         >
           {tepkiGoster ? (
             <HikayeTepkiSeridi
@@ -941,6 +976,7 @@ export function HikayeIzleyici({
           ) : (
             <HikayeYanitCubugu
               onGonder={yanitGonder}
+              onOdak={setYanitOdak}
               onHediye={() => {
                 HikayeAnalitik('story_gift_open');
                 hediye.ac({
