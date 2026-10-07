@@ -8,6 +8,14 @@ export type PlatformIletisimAyar = {
   whatsapp_gorunen: string;
   baslik: string;
   alt_metin: string;
+  adres: string;
+  instagram_url: string;
+  tiktok_url: string;
+  x_url: string;
+  youtube_url: string;
+  facebook_url: string;
+  linkedin_url: string;
+  telegram_url: string;
   updated_at?: string;
 };
 
@@ -18,6 +26,14 @@ export function VarsayilanPlatformIletisim(): PlatformIletisimAyar {
     whatsapp_gorunen: '0533 048 30 61',
     baslik: i18n.t('platform.iletisimBaslik'),
     alt_metin: i18n.t('platform.iletisimAlt'),
+    adres: '15442 VENTURA BLVD STE 201-183, USA',
+    instagram_url: '',
+    tiktok_url: '',
+    x_url: '',
+    youtube_url: '',
+    facebook_url: '',
+    linkedin_url: '',
+    telegram_url: '',
   };
 }
 
@@ -49,6 +65,14 @@ export async function PlatformIletisimAyariniGetir(
         row.whatsapp_gorunen?.trim() || varsayilan.whatsapp_gorunen,
       baslik: row.baslik?.trim() || varsayilan.baslik,
       alt_metin: row.alt_metin?.trim() || varsayilan.alt_metin,
+      adres: row.adres?.trim() || varsayilan.adres,
+      instagram_url: row.instagram_url?.trim() || '',
+      tiktok_url: row.tiktok_url?.trim() || '',
+      x_url: row.x_url?.trim() || '',
+      youtube_url: row.youtube_url?.trim() || '',
+      facebook_url: row.facebook_url?.trim() || '',
+      linkedin_url: row.linkedin_url?.trim() || '',
+      telegram_url: row.telegram_url?.trim() || '',
       updated_at: row.updated_at,
     };
     onbellekTs = Date.now();
@@ -64,6 +88,14 @@ export async function AdminPlatformIletisimAyarla(input: {
   whatsapp_gorunen?: string;
   baslik?: string;
   alt_metin?: string;
+  adres?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  x_url?: string;
+  youtube_url?: string;
+  facebook_url?: string;
+  linkedin_url?: string;
+  telegram_url?: string;
 }): Promise<{ ok: true; veri: PlatformIletisimAyar } | { ok: false; hata: string }> {
   const { data, error } = await supabase.rpc('admin_platform_iletisim_ayarla', {
     p_support_email: input.support_email ?? null,
@@ -71,6 +103,14 @@ export async function AdminPlatformIletisimAyarla(input: {
     p_whatsapp_gorunen: input.whatsapp_gorunen ?? null,
     p_baslik: input.baslik ?? null,
     p_alt_metin: input.alt_metin ?? null,
+    p_adres: input.adres ?? null,
+    p_instagram_url: input.instagram_url ?? null,
+    p_tiktok_url: input.tiktok_url ?? null,
+    p_x_url: input.x_url ?? null,
+    p_youtube_url: input.youtube_url ?? null,
+    p_facebook_url: input.facebook_url ?? null,
+    p_linkedin_url: input.linkedin_url ?? null,
+    p_telegram_url: input.telegram_url ?? null,
   });
   if (error) return { ok: false, hata: error.message };
   onbellek = null;

@@ -70,7 +70,8 @@ export default function Index() {
     };
   }, [loading, session, hazir]);
 
-  if (Platform.OS === 'web' && !loading && hazir && !session) {
+  if (Platform.OS === 'web' && !session) {
+    if (loading || !hazir) return null;
     return (
       <WebTanitimKabuk>
         <WebTanitimAnasayfa />

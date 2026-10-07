@@ -130,7 +130,7 @@ export function BlogBlokOkuyucu({ baslik, bosGizle = false }: Props) {
               style={styles.buyukKapak}
             />
           ) : null}
-          <BlogHtmlGorunum html={yazi.content_html} />
+          <BlogHtmlGorunum html={yazi.content_html} kes />
         </View>
       ) : null}
     </View>

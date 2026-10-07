@@ -498,12 +498,12 @@ export const ADMIN_MODULLER: AdminModul[] = [
   {
     icon: 'call-outline',
     label: 'Kurumsal iletişim',
-    alt: 'E-posta · WhatsApp · hamburger',
+    alt: 'Footer · adres · sosyal ağ',
     href: '/admin/iletisim',
     tint: RenkTokenlari.mint,
     bolum: 'Büyüme',
     permissionKey: 'content.contact.view',
-    anahtarlar: ['iletişim', 'mail', 'whatsapp'],
+    anahtarlar: ['iletişim', 'mail', 'whatsapp', 'instagram', 'tiktok', 'footer'],
   },
   {
     icon: 'film-outline',

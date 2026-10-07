@@ -1,5 +1,8 @@
-import React, { useMemo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useDil } from '../../i18n/DilSaglayici';
+import { siteMetin } from '../web-tanitim/siteMetin';
 import { RenkTokenlariKoyu as C } from '../../tasarim-sistemi/tema/RenkPaletleri';
 import { blogHtmlTemizle } from './blogHtmlTemizle';
 
@@ -53,11 +56,23 @@ export function blogBloklari(html: string): Blok[] {
   return bloklar;
 }
 
-export function BlogHtmlGorunum({ html }: { html: string }) {
+const KES_KARAKTER = 720;
+
+export function BlogHtmlGorunum({ html, kes = false }: { html: string; kes?: boolean }) {
+  const { dil } = useDil();
+  const s = siteMetin(dil);
   const bloklar = useMemo(() => blogBloklari(html), [html]);
+  const [acik, setAcik] = useState(false);
+  const uzun = useMemo(
+    () => bloklar.reduce((n, b) => n + (b.tur === 'img' ? 80 : b.metin.length), 0),
+    [bloklar],
+  );
+  const kisilabilir = kes && uzun > KES_KARAKTER;
+  const kapali = kisilabilir && !acik;
   if (!bloklar.length) return null;
   return (
-    <View style={styles.kutu}>
+    <View>
+      <View style={[styles.kutu, kapali && styles.kapali]}>
       {bloklar.map((blok, i) => {
         if (blok.tur === 'img') {
           return (
@@ -79,6 +94,19 @@ export function BlogHtmlGorunum({ html }: { html: string }) {
           </Text>
         );
       })}
+      </View>
+      {kapali ? (
+        <LinearGradient
+          pointerEvents="none"
+          colors={['transparent', C.bg]}
+          style={styles.sis}
+        />
+      ) : null}
+      {kisilabilir ? (
+        <Pressable accessibilityRole="button" onPress={() => setAcik((v) => !v)} style={styles.daha}>
+          <Text style={styles.dahaYazi}>{acik ? s.dahaAz : s.dahaFazla}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -97,4 +125,8 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   gorsel: { width: '100%', aspectRatio: 16 / 9, borderRadius: 16, marginVertical: 4 },
+  kapali: { maxHeight: 460, overflow: 'hidden' },
+  sis: { height: 72, marginTop: -72 },
+  daha: { alignSelf: 'flex-start', marginTop: 8, paddingVertical: 6 },
+  dahaYazi: { color: C.primary, fontSize: 15, fontWeight: '700' },
 });

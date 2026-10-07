@@ -139,7 +139,7 @@ export function BlogYaziGorunum({ yazi, taslak = false }: { yazi: BlogYazi; tasl
         />
       ) : null}
       <View style={styles.okuma}>
-        <BlogHtmlGorunum html={yazi.content_html} />
+        <BlogHtmlGorunum html={yazi.content_html} kes />
       </View>
       {(yazi.blog_post_cities ?? []).length ? (
         <View style={styles.satir}>

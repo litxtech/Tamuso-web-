@@ -36,6 +36,14 @@ export default function AdminIletisimEkrani() {
   const [waG, setWaG] = useState(VARSAYILAN_PLATFORM_ILETISIM.whatsapp_gorunen);
   const [baslik, setBaslik] = useState(VARSAYILAN_PLATFORM_ILETISIM.baslik);
   const [alt, setAlt] = useState(VARSAYILAN_PLATFORM_ILETISIM.alt_metin);
+  const [adres, setAdres] = useState(VARSAYILAN_PLATFORM_ILETISIM.adres);
+  const [ig, setIg] = useState('');
+  const [tt, setTt] = useState('');
+  const [x, setX] = useState('');
+  const [yt, setYt] = useState('');
+  const [fb, setFb] = useState('');
+  const [li, setLi] = useState('');
+  const [tg, setTg] = useState('');
   const [yukleniyor, setYukleniyor] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -48,6 +56,14 @@ export default function AdminIletisimEkrani() {
     setWaG(a.whatsapp_gorunen);
     setBaslik(a.baslik);
     setAlt(a.alt_metin);
+    setAdres(a.adres);
+    setIg(a.instagram_url);
+    setTt(a.tiktok_url);
+    setX(a.x_url);
+    setYt(a.youtube_url);
+    setFb(a.facebook_url);
+    setLi(a.linkedin_url);
+    setTg(a.telegram_url);
     setYukleniyor(false);
   }, []);
 
@@ -71,6 +87,14 @@ export default function AdminIletisimEkrani() {
       whatsapp_gorunen: waG.trim(),
       baslik: baslik.trim(),
       alt_metin: alt.trim(),
+      adres: adres.trim(),
+      instagram_url: ig.trim(),
+      tiktok_url: tt.trim(),
+      x_url: x.trim(),
+      youtube_url: yt.trim(),
+      facebook_url: fb.trim(),
+      linkedin_url: li.trim(),
+      telegram_url: tg.trim(),
     });
     setBusy(false);
     if (!r.ok) {
@@ -78,14 +102,14 @@ export default function AdminIletisimEkrani() {
       return;
     }
     setAyar(r.veri);
-    Alert.alert('Kaydedildi', 'Hamburger menüdeki iletişim güncellendi.');
+    Alert.alert('Kaydedildi', 'Footer ve destek kartı güncellendi.');
   };
 
   return (
     <Screen edges={['top']}>
       <EkranBasligi
         title="Kurumsal iletişim"
-        subtitle="Hamburger · şikayet · destek"
+        subtitle="Footer · mail · sosyal ağ"
         fallbackHref="/admin"
       />
       <ScrollView
@@ -93,8 +117,9 @@ export default function AdminIletisimEkrani() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={AdminStil.kartAlt}>
-          Ana sayfa hamburger menüsünde görünür. Değişiklik anında yayına
-          alınır (build gerekmez).
+          Site footer’ında ve destek kartında görünür. Sosyal adres boşsa o
+          düğme çıkmaz. Bağlantılar https ile başlamalı. Değişiklik anında
+          yayına alınır.
         </Text>
 
         {yukleniyor ? (
@@ -144,6 +169,38 @@ export default function AdminIletisimEkrani() {
               placeholder="0533 048 30 61"
               placeholderTextColor={RenkTokenlari.textDim}
             />
+            <Text style={styles.label}>Adres</Text>
+            <TextInput
+              style={AdminStil.input}
+              value={adres}
+              onChangeText={setAdres}
+              placeholder="15442 VENTURA BLVD STE 201-183, USA"
+              placeholderTextColor={RenkTokenlari.textDim}
+            />
+            {(
+              [
+                ['Instagram', ig, setIg],
+                ['TikTok', tt, setTt],
+                ['X', x, setX],
+                ['YouTube', yt, setYt],
+                ['Facebook', fb, setFb],
+                ['LinkedIn', li, setLi],
+                ['Telegram', tg, setTg],
+              ] as const
+            ).map(([ad, deger, yaz]) => (
+              <View key={ad}>
+                <Text style={styles.label}>{ad} URL</Text>
+                <TextInput
+                  style={AdminStil.input}
+                  value={deger}
+                  onChangeText={yaz}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="https://"
+                  placeholderTextColor={RenkTokenlari.textDim}
+                />
+              </View>
+            ))}
 
             <Pressable
               style={[AdminStil.aksiyon, styles.kaydet, busy && { opacity: 0.6 }]}
