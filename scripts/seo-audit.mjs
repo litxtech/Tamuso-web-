@@ -160,7 +160,7 @@ if (!harita.includes('https://www.tamuso.com/</loc>') && !harita.includes('https
   }
 }
 if (!bulunamadiBelgesi().includes('noindex')) hata('blog 404 noindex değil');
-if (!fs.existsSync(path.join(kok, 'middleware.js'))) hata('blog middleware yok');
+if (!fs.existsSync(path.join(kok, 'api', 'blog-yol.mjs'))) hata('blog 404 yolu yok');
 if (!robots.includes('Disallow: /blog/ara')) hata('blog araması robots.txt ile açık');
 if (/^disallow:\s*\/blog\s*$/im.test(robots)) hata('blog kökü robots.txt ile kapalı');
 
