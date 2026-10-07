@@ -1,8 +1,11 @@
 import React, { createElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -10,11 +13,15 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { Screen } from '../../components/Screen';
 import { EkranBasligi } from '../../components/EkranBasligi';
+import { KlavyeGuvenliAlan } from '../../bilesenler/klavye/KlavyeGuvenliAlan';
 import { RenkTokenlari as R } from '../../tasarim-sistemi/RenkTokenlari';
+import { BlogAiKapisi } from './BlogAiKapisi';
 import { BlogAltMenu } from './BlogAltMenu';
 import { BlogCeviriSeridi } from './BlogCeviriSeridi';
+import { blogAsistanCevir, blogAsistanDoldur, type BlogAsistanOneri, type BlogGorselAday } from './blogAsistan';
 import {
   aciklamaDurumu,
   aciklamaOlustur,
@@ -26,11 +33,13 @@ import {
 } from './blogSeo';
 import { slugYap } from './blogSlug';
 import {
+  blogCeviriKaydet,
   blogDurum,
   blogGorselYukle,
   blogKaliciSil,
   blogKategoriler,
   blogKaydet,
+  blogSehirAdlariEsle,
   blogSehirAra,
   blogSlugBaska,
   blogYaziGetir,
@@ -56,7 +65,9 @@ function saat(iso: string | null) {
 export function BlogEditorEkrani({ id }: Props) {
   const { width } = useWindowDimensions();
   const genis = width >= 980;
+  const DILLER = ['en', 'de', 'es', 'ar', 'ru'];
   const editorRef = useRef<HTMLDivElement | null>(null);
+  const kaydirRef = useRef<ScrollView | null>(null);
   const slugElle = useRef(false);
   const seoElle = useRef(false);
   const aciklamaElle = useRef(false);
@@ -64,12 +75,16 @@ export function BlogEditorEkrani({ id }: Props) {
   const [hazir, setHazir] = useState(!id);
   const [kayitId, setKayitId] = useState(id);
   const [updatedAt, setUpdatedAt] = useState<string | undefined>();
+  const updatedAtRef = useRef<string | undefined>(undefined);
+  updatedAtRef.current = updatedAt;
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [html, setHtml] = useState('<p></p>');
   const [cover, setCover] = useState<string | null>(null);
   const [coverAlt, setCoverAlt] = useState('');
+  const [coverCredit, setCoverCredit] = useState<string | null>(null);
+  const [dil, setDil] = useState('tr');
   const [kategoriId, setKategoriId] = useState<string | null>(null);
   const [kategoriler, setKategoriler] = useState<BlogKategori[]>([]);
   const [etiketMetin, setEtiketMetin] = useState('');
@@ -93,8 +108,16 @@ export function BlogEditorEkrani({ id }: Props) {
   const [mesaj, setMesaj] = useState('');
   const [hata, setHata] = useState('');
   const [sonKayit, setSonKayit] = useState<string | null>(null);
+  const [mesgul, setMesgul] = useState(false);
+  const [ai, setAi] = useState<{ alan: string; baslik: string } | null>(null);
+  const [aiCalisiyor, setAiCalisiyor] = useState(false);
+  const [oneriler, setOneriler] = useState<BlogAsistanOneri>({ etiketler: [], sehir_adlari: [], baliklar: [] });
+  const [gorseller, setGorseller] = useState<BlogGorselAday[]>([]);
   const [yonler, setYonler] = useState<{ from_slug: string; to_slug: string }[]>([]);
   const kaydediliyor = useRef(false);
+  const bekleyen = useRef<{ hedef: BlogDurum; yayinla: boolean } | null>(null);
+  const ceviriSuruyor = useRef(false);
+  const oneriDurdu = useRef(false);
   const publishedIso = useRef<string | null>(null);
   const ilkKayit = useRef(true);
 
@@ -121,6 +144,8 @@ export function BlogEditorEkrani({ id }: Props) {
       setHtml(yazi.content_html || '<p></p>');
       setCover(yazi.cover_image_url);
       setCoverAlt(yazi.cover_image_alt ?? '');
+      setCoverCredit(yazi.cover_credit ?? null);
+      setDil(yazi.language_code || 'tr');
       setKategoriId(yazi.category_id);
       setEtiketMetin((yazi.blog_post_tags ?? []).map((t) => t.blog_tags?.name).filter(Boolean).join(', '));
       setSehirler(yazi.blog_post_cities ?? []);
@@ -133,7 +158,8 @@ export function BlogEditorEkrani({ id }: Props) {
       setCanonical(yazi.canonical_url ?? '');
       setOgTitle(yazi.og_title ?? '');
       setOgDesc(yazi.og_description ?? '');
-      setIndexle(yazi.robots_index);
+      const taslakKilidi = yazi.status === 'taslak' || yazi.status === 'inceleme' || yazi.status === 'cop' || yazi.status === 'arsiv';
+      setIndexle(taslakKilidi ? true : yazi.robots_index);
       setOneCikan(yazi.featured);
       setKonu(yazi.focus_topic ?? '');
       setNiyet(yazi.search_intent ?? '');
@@ -147,8 +173,21 @@ export function BlogEditorEkrani({ id }: Props) {
 
   useEffect(() => {
     if (!hazir || !editorRef.current) return;
+    if (typeof document !== 'undefined' && document.activeElement === editorRef.current) return;
     if (editorRef.current.innerHTML !== html) editorRef.current.innerHTML = html;
   }, [hazir, html]);
+
+  function imleciGorunurYap() {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const rect = sel.getRangeAt(0).getClientRects()[0] || sel.getRangeAt(0).getBoundingClientRect();
+    const vv = window.visualViewport;
+    const gorunenAlt = (vv?.offsetTop ?? 0) + (vv?.height ?? window.innerHeight);
+    if (rect && rect.bottom > gorunenAlt - 36) {
+      window.scrollBy({ top: rect.bottom - gorunenAlt + 88, left: 0 });
+    }
+  }
 
   function icerik(): string {
     if (Platform.OS === 'web' && editorRef.current) return editorRef.current.innerHTML;
@@ -162,7 +201,7 @@ export function BlogEditorEkrani({ id }: Props) {
 
   const gorunenBaslik = seoBaslik(title, seoTitle);
   const gorunenAciklama = aciklamaOlustur(meta, excerpt, icerik());
-  const gorunenKanonik = kanonik(slug, canonical);
+  const gorunenKanonik = kanonik(slug, canonical, dil);
   const kontrol = useMemo(
     () => seoKontrol({
       title, slug, excerpt, content_html: html, seo_title: seoTitle, meta_description: meta,
@@ -171,10 +210,90 @@ export function BlogEditorEkrani({ id }: Props) {
     [title, slug, excerpt, html, seoTitle, meta, canonical, cover, coverAlt],
   );
 
-  async function kaydet(hedef: BlogDurum, yayinla = false) {
-    if (kaydediliyor.current) return;
+  function etiketListe(ek: string[] = []) {
+    const hepsi = [...etiketMetin.split(','), ...ek].map((ad) => ad.trim()).filter(Boolean);
+    return [...new Set(hepsi)];
+  }
+
+  function taslakPaket() {
+    return {
+      title,
+      excerpt,
+      content_html: icerik(),
+      seo_title: seoTitle,
+      meta_description: meta,
+      keywords: kelimeler,
+      focus_topic: konu,
+      sehirler: sehirler.map((s) => s.city_name),
+      etiketler: etiketListe(),
+    };
+  }
+
+  async function paylasAdres(adresSlug: string, baslik: string) {
+    const url = kanonik(adresSlug, null, dil);
+    try {
+      const sonuc = await Share.share({ message: `${baslik}\n${url}`, url });
+      if (sonuc.action === Share.dismissedAction) await Clipboard.setStringAsync(url);
+    } catch {
+      await Clipboard.setStringAsync(url);
+    }
+    return url;
+  }
+
+  async function dillereHazirla(kaynakId: string, yayinla: boolean) {
+    if (dil !== 'tr' || ceviriSuruyor.current) return;
+    ceviriSuruyor.current = true;
+    const paket = taslakPaket();
+    try {
+      for (const hedef of DILLER) {
+        setMesaj(`${hedef} hazırlanıyor…`);
+        const sonuc = await blogAsistanCevir({ dil: hedef, taslak: paket });
+        if (!sonuc.ok || !sonuc.ceviri.title) {
+          setHata((eski) => `${eski ? `${eski} ` : ''}${hedef} hazırlanamadı.`);
+          continue;
+        }
+        const c = sonuc.ceviri;
+        await blogCeviriKaydet({
+          kaynakId,
+          dil: hedef,
+          title: c.title || hedef,
+          slug: c.slug || '',
+          excerpt: c.excerpt || '',
+          content_html: c.content_html || '<p></p>',
+          seo_title: c.seo_title,
+          meta_description: c.meta_description,
+          og_title: c.og_title,
+          og_description: c.og_description,
+          keywords: c.keywords,
+          focus_topic: c.focus_topic,
+          search_intent: c.search_intent,
+          cover_alt: c.cover_alt,
+          faqs: c.faqs.map((f, i) => ({ ...f, sort_order: i })),
+          etiketler: c.etiketler.map((name) => ({ name })),
+          yayinla,
+        });
+      }
+    } finally {
+      ceviriSuruyor.current = false;
+    }
+  }
+
+  async function kaydet(hedef: BlogDurum, yayinla = false, elle = false) {
+    if (kaydediliyor.current) {
+      if (elle) {
+        bekleyen.current = { hedef, yayinla };
+        setMesaj('Kayıt sıraya alındı.');
+      }
+      return;
+    }
     const govde = icerik();
     setHtml(govde);
+    const kullanilacakSlug = slugYap(slug) || slugYap(title) || `taslak-${Date.now().toString(36)}`;
+    if (kullanilacakSlug !== slug) setSlug(kullanilacakSlug);
+    if (!title.trim()) {
+      setHata('Önce bir başlık yazın.');
+      return;
+    }
     const zaman = yayin ? new Date(yayin) : new Date();
     const gelecek = yayinla && !Number.isNaN(zaman.getTime()) && zaman.getTime() > Date.now() + 30000;
     const status: BlogDurum = yayinla ? (gelecek ? 'planlandi' : 'yayinda') : hedef;
@@ -184,40 +303,43 @@ export function BlogEditorEkrani({ id }: Props) {
       publishedIso.current = published_at;
     }
     if (status === 'taslak' || status === 'cop') published_at = null;
+    let uyarilar: string[] = [];
     if (yayinla) {
-      if (await blogSlugBaska(slug, kayitId, 'tr')) {
+      if (await blogSlugBaska(kullanilacakSlug, kayitId, dil)) {
         setHata('Bu slug kullanılıyor.');
         return;
       }
       const denetim = seoKontrol({
-        title, slug, excerpt, content_html: govde, seo_title: seoTitle, meta_description: meta,
+        title, slug: kullanilacakSlug, excerpt, content_html: govde, seo_title: seoTitle, meta_description: meta,
         canonical_url: canonical, cover_image_url: cover, cover_image_alt: coverAlt,
       });
       if (denetim.engel.length) {
         setHata(denetim.engel.join(' '));
         return;
       }
-      if (denetim.uyari.length && !(await onay(`${denetim.uyari.join('\n')}\n\nYine de yayınlansın mı?`))) return;
+      uyarilar = denetim.uyari;
     }
     kaydediliyor.current = true;
+    setMesgul(true);
     setHata('');
     try {
       const yazi = await blogKaydet({
         id: kayitId,
-        updated_at: updatedAt,
+        updated_at: updatedAtRef.current,
         title,
-        slug,
+        slug: kullanilacakSlug,
         excerpt,
         content_html: govde,
         cover_image_url: cover,
         cover_image_alt: coverAlt || null,
+        cover_credit: coverCredit,
         category_id: kategoriId,
         author_id: null,
         author_name: null,
         author_bio: null,
         author_avatar_url: null,
         content_group_id: grupId,
-        language_code: 'tr',
+        language_code: dil,
         status,
         published_at,
         seo_title: seoTitle || null,
@@ -232,20 +354,34 @@ export function BlogEditorEkrani({ id }: Props) {
         search_intent: niyet || null,
         keywords: kelimeler || null,
         faqs,
-        etiketler: etiketMetin.split(',').map((ad) => ({ name: ad.trim() })).filter((e) => e.name),
+        etiketler: etiketListe().map((name) => ({ name })),
         sehirler,
+        zorla: elle,
       });
       setKayitId(yazi.id);
+      updatedAtRef.current = yazi.updated_at;
       setUpdatedAt(yazi.updated_at);
       setGrupId(yazi.content_group_id);
       setDurum(yazi.status);
       setSonKayit(yazi.updated_at);
-      setMesaj(yayinla ? 'Yayınlandı. Adres bir sonraki site dışa aktarımında site haritasına girer.' : 'Kaydedildi.');
-      if (!id) router.replace(`/admin/blog/${yazi.id}` as never);
+      const url = kanonik(yazi.slug, null, dil);
+      setMesaj(yayinla
+        ? `Yayınlandı. Paylaş: ${url}${uyarilar.length ? ` · ${uyarilar[0]}` : ''}`
+        : 'Taslak kaydedildi.');
+      if (yayinla) {
+        await paylasAdres(yazi.slug, yazi.title);
+        await dillereHazirla(yazi.id, true);
+        setMesaj(`Yayınlandı. ${url}`);
+      }
+      if (!id && yazi.id) router.replace(`/admin/blog/${yazi.id}` as never);
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Kayıt olmadı');
     } finally {
       kaydediliyor.current = false;
+      setMesgul(false);
+      const sonraki = bekleyen.current;
+      bekleyen.current = null;
+      if (sonraki) void kaydet(sonraki.hedef, sonraki.yayinla, true);
     }
   }
 
@@ -256,29 +392,27 @@ export function BlogEditorEkrani({ id }: Props) {
       return;
     }
     const t = setTimeout(() => {
+      if (ceviriSuruyor.current || aiCalisiyor) return;
       void kaydet(durum === 'yayinda' || durum === 'planlandi' ? durum : 'taslak', false);
     }, 4000);
     return () => clearTimeout(t);
   }, [title, slug, excerpt, html, cover, coverAlt, kategoriId, etiketMetin, faqs, seoTitle, meta, canonical, hazir]);
 
-  async function gorselSec(dosya: File | undefined, kapakMi: boolean) {
+  async function gorselSec(dosya: Blob | undefined, kapakMi: boolean, mime?: string) {
     if (!dosya) return;
-    const alt = Platform.OS === 'web' ? window.prompt('Görsel alt metni', title || 'Görsel') : '';
-    if (!alt?.trim()) {
-      setHata('Alt metin olmadan görsel eklenmez.');
-      return;
-    }
+    const alt = (kapakMi ? coverAlt || title : title || 'Görsel').trim() || 'Görsel';
     try {
-      const url = await blogGorselYukle(dosya, slug || 'gorsel');
+      const url = await blogGorselYukle(dosya, slug || title || 'gorsel', 'blog', mime);
       if (kapakMi) {
         setCover(url);
-        setCoverAlt(alt.trim());
+        if (!coverAlt.trim()) setCoverAlt(alt);
+        setCoverCredit(null);
       } else if (editorRef.current) {
         editorRef.current.focus();
         document.execCommand(
           'insertHTML',
           false,
-          `<figure><img src="${url}" alt="${alt.trim()}" loading="lazy" /><figcaption>${alt.trim()}</figcaption></figure>`,
+          `<figure><img src="${url}" alt="${alt}" loading="lazy" /><figcaption>${alt}</figcaption></figure>`,
         );
         setHtml(editorRef.current.innerHTML);
       }
@@ -287,6 +421,113 @@ export function BlogEditorEkrani({ id }: Props) {
     }
   }
 
+  async function galeridenKapak() {
+    const { ImagePickerModuluYukle } = await import('../../ortak/medya/ImagePickerHazirMi');
+    const yuklu = await ImagePickerModuluYukle();
+    if (!yuklu.ok) {
+      setHata(yuklu.hata);
+      return;
+    }
+    const izin = await yuklu.ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!izin.granted) {
+      setHata('Galeri izni gerekli.');
+      return;
+    }
+    const secim = await yuklu.ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (secim.canceled || !secim.assets[0]) return;
+    const asset = secim.assets[0];
+    const yanit = await fetch(asset.uri);
+    await gorselSec(await yanit.blob(), true, asset.mimeType || 'image/jpeg');
+  }
+
+  function kapakSec(aday: BlogGorselAday) {
+    setCover(aday.url);
+    setCoverAlt(aday.alt || title || 'Kapak');
+    setCoverCredit(aday.credit);
+  }
+
+  function oneriUygula(liste: BlogAsistanOneri, adaylar: BlogGorselAday[]) {
+    setOneriler(liste);
+    if (adaylar.length) setGorseller(adaylar);
+    const ek = [...liste.etiketler, ...liste.baliklar];
+    if (ek.length) setEtiketMetin(etiketListe(ek).join(', '));
+    if (liste.sehir_adlari.length) {
+      void blogSehirAdlariEsle(liste.sehir_adlari).then((bulunan) => {
+        setSehirler((eski) => {
+          const sonraki = [...eski];
+          for (const sehir of bulunan) {
+            if (!sonraki.some((s) => s.city_id === sehir.city_id)) sonraki.push(sehir);
+          }
+          return sonraki;
+        });
+      });
+    }
+  }
+
+  async function aiGonder(istek: string) {
+    if (!ai) return;
+    setAiCalisiyor(true);
+    setHata('');
+    try {
+      const sonuc = await blogAsistanDoldur({
+        mod: ai.alan === 'kapak' ? 'gorsel' : 'doldur',
+        alan: ai.alan,
+        istek,
+        taslak: taslakPaket(),
+      });
+      if (!sonuc.ok) {
+        setHata(sonuc.code === 'FORBIDDEN' ? 'Bu işlem için yönetici gerekir.' : 'DeepSeek yanıt vermedi.');
+        return;
+      }
+      const t = sonuc.taslak;
+      if (t?.title) baslikYaz(t.title);
+      if (t?.excerpt) setExcerpt(t.excerpt);
+      if (t?.content_html) {
+        setHtml(t.content_html);
+        if (editorRef.current) editorRef.current.innerHTML = t.content_html;
+      }
+      if (t?.seo_title) { seoElle.current = true; setSeoTitle(t.seo_title); }
+      if (t?.meta_description) { aciklamaElle.current = true; setMeta(t.meta_description); }
+      if (t?.og_title) setOgTitle(t.og_title);
+      if (t?.og_description) setOgDesc(t.og_description);
+      if (t?.keywords) setKelimeler(t.keywords);
+      if (t?.focus_topic) setKonu(t.focus_topic);
+      if (t?.search_intent) setNiyet(t.search_intent);
+      if (t?.cover_alt) setCoverAlt(t.cover_alt);
+      if (t?.slug && !slugElle.current) setSlug(slugYap(t.slug) || slugYap(t.title || ''));
+      if (t?.faqs?.length) setFaqs(t.faqs.map((f, i) => ({ ...f, sort_order: i })));
+      oneriUygula(
+        {
+          etiketler: [...(t?.etiketler ?? []), ...sonuc.oneriler.etiketler],
+          sehir_adlari: sonuc.oneriler.sehir_adlari,
+          baliklar: sonuc.oneriler.baliklar,
+        },
+        sonuc.gorseller,
+      );
+      if (!cover && sonuc.gorseller[0]) kapakSec(sonuc.gorseller[0]);
+      setMesaj('DeepSeek alanları doldurdu.');
+      setAi(null);
+    } finally {
+      setAiCalisiyor(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!hazir || title.trim().length + html.trim().length < 48) return;
+    const t = setTimeout(() => {
+      if (oneriDurdu.current || ceviriSuruyor.current) return;
+      void blogAsistanDoldur({ mod: 'oner', taslak: taslakPaket() }).then((sonuc) => {
+        if (!sonuc.ok) {
+          oneriDurdu.current = true;
+          return;
+        }
+        setOneriler(sonuc.oneriler);
+        if (sonuc.gorseller.length) setGorseller((eski) => (eski.length ? eski : sonuc.gorseller));
+      });
+    }, 6000);
+    return () => clearTimeout(t);
+  }, [title, html, hazir]);
+
   function komut(ad: string, deger?: string) {
     if (Platform.OS !== 'web') return;
     editorRef.current?.focus();
@@ -294,19 +535,37 @@ export function BlogEditorEkrani({ id }: Props) {
     if (editorRef.current) setHtml(editorRef.current.innerHTML);
   }
 
+  function aiSatir(etiket: string, anahtar: string) {
+    return (
+      <View style={styles.alanUst}>
+        <Text style={styles.etiket}>{etiket}</Text>
+        <Pressable onPress={() => setAi({ alan: anahtar, baslik: etiket })} hitSlop={8} accessibilityLabel={`${etiket} için DeepSeek`}>
+          <Text style={styles.ai}>DeepSeek</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <Screen edges={['top']}>
-      <EkranBasligi title={id ? 'Yazıyı düzenle' : 'Yeni yazı'} subtitle={sonKayit ? `Son kayıt: ${saat(sonKayit)}` : 'Taslak'} />
-      <ScrollView contentContainerStyle={styles.sayfa}>
+      <EkranBasligi title={id ? 'Yazıyı düzenle' : 'Yeni yazı'} subtitle={sonKayit ? `Son kayıt: ${saat(sonKayit)}` : durum} />
+      <KlavyeGuvenliAlan style={styles.klavye}>
+      <ScrollView
+        ref={kaydirRef}
+        style={styles.kaydir}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.sayfa}
+      >
         <BlogAltMenu />
         <BlogCeviriSeridi yaziId={kayitId} grupId={grupId} />
         {hata ? <Text style={styles.hata}>{hata}</Text> : null}
         {mesaj ? <Text style={styles.mesaj}>{mesaj}</Text> : null}
         <View style={[styles.kolon, genis && styles.kolonYan]}>
           <View style={styles.sol}>
-            <Text style={styles.etiket}>Başlık</Text>
+            {aiSatir('Başlık', 'title')}
             <TextInput value={title} onChangeText={baslikYaz} style={styles.girdi} placeholder="Yazı başlığı" placeholderTextColor={R.textMuted} />
-            <Text style={styles.etiket}>İçerik</Text>
+            {aiSatir('İçerik', 'content_html')}
             {Platform.OS === 'web' ? (
               <View style={styles.araclar}>
                 {[
@@ -350,18 +609,24 @@ export function BlogEditorEkrani({ id }: Props) {
                   role: 'textbox',
                   'aria-label': 'Yazı içeriği',
                   style: editorStil,
-                  onInput: (e: { currentTarget: HTMLDivElement }) => setHtml(e.currentTarget.innerHTML),
+                  onInput: (e: { currentTarget: HTMLDivElement }) => {
+                    setHtml(e.currentTarget.innerHTML);
+                    imleciGorunurYap();
+                  },
+                  onKeyUp: () => imleciGorunurYap(),
                 })
               : (
                 <TextInput
                   value={html}
                   onChangeText={setHtml}
                   multiline
+                  scrollEnabled={false}
+                  textAlignVertical="top"
                   style={[styles.girdi, styles.uzun]}
                 />
               )}
             <Text style={styles.kucuk}>{okumaDakika(html)} dk okuma. Sayfadaki tek H1 başlıktır; içerikte H2 ve H3 kullanın.</Text>
-            <Text style={styles.etiket}>Sık sorulanlar</Text>
+            {aiSatir('Sık sorulanlar', 'faqs')}
             {faqs.map((f, i) => (
               <View key={i} style={styles.kutu}>
                 <TextInput value={f.question} placeholder="Soru" placeholderTextColor={R.textMuted} style={styles.girdi} onChangeText={(question) => setFaqs((liste) => liste.map((x, n) => n === i ? { ...x, question } : x))} />
@@ -373,9 +638,9 @@ export function BlogEditorEkrani({ id }: Props) {
             </Pressable>
           </View>
           <View style={styles.sag}>
-            <Text style={styles.etiket}>Kısa açıklama</Text>
+            {aiSatir('Kısa açıklama', 'excerpt')}
             <TextInput value={excerpt} onChangeText={setExcerpt} style={styles.girdi} multiline />
-            <Text style={styles.etiket}>Slug</Text>
+            {aiSatir('Slug', 'slug')}
             <TextInput value={slug} onChangeText={(v) => { slugElle.current = true; setSlug(slugYap(v) || v.toLowerCase()); }} style={styles.girdi} autoCapitalize="none" />
             <Text style={styles.etiket}>Kategori</Text>
             <ScrollView horizontal contentContainerStyle={styles.serit}>
@@ -385,9 +650,32 @@ export function BlogEditorEkrani({ id }: Props) {
                 </Pressable>
               ))}
             </ScrollView>
-            <Text style={styles.etiket}>Etiketler</Text>
+            {aiSatir('Etiketler', 'etiketler')}
             <TextInput value={etiketMetin} onChangeText={setEtiketMetin} placeholder="Trabzon, Karadeniz" placeholderTextColor={R.textMuted} style={styles.girdi} />
-            <Text style={styles.etiket}>İlgili şehir</Text>
+            {oneriler.etiketler.length || oneriler.baliklar.length || oneriler.sehir_adlari.length ? (
+              <View style={styles.oneriSerit}>
+                {oneriler.etiketler.map((ad) => (
+                  <Pressable key={`e-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
+                    <Text style={styles.cipYazi}>{ad}</Text>
+                  </Pressable>
+                ))}
+                {oneriler.baliklar.map((ad) => (
+                  <Pressable key={`b-${ad}`} onPress={() => setEtiketMetin(etiketListe([ad]).join(', '))} style={styles.cip}>
+                    <Text style={styles.cipYazi}>Balık · {ad}</Text>
+                  </Pressable>
+                ))}
+                {oneriler.sehir_adlari.map((ad) => (
+                  <Pressable key={`s-${ad}`} onPress={() => { setSehirQ(ad); void blogSehirAdlariEsle([ad]).then((bulunan) => setSehirler((eski) => {
+                    const sonraki = [...eski];
+                    for (const sehir of bulunan) if (!sonraki.some((x) => x.city_id === sehir.city_id)) sonraki.push(sehir);
+                    return sonraki;
+                  })); }} style={styles.cip}>
+                    <Text style={styles.cipYazi}>Şehir · {ad}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+            {aiSatir('İlgili şehir', 'sehir')}
             <TextInput value={sehirQ} onChangeText={(v) => { setSehirQ(v); void blogSehirAra(v).then(setSehirSonuc); }} placeholder="Şehir ara" placeholderTextColor={R.textMuted} style={styles.girdi} />
             {sehirSonuc.map((s) => (
               <Pressable key={s.id} onPress={() => setSehirler((liste) => liste.some((x) => x.city_id === s.id) ? liste : [...liste, { city_id: s.id, city_name: s.name, city_slug: s.slug }])}>
@@ -395,15 +683,36 @@ export function BlogEditorEkrani({ id }: Props) {
               </Pressable>
             ))}
             <Text style={styles.kucuk}>{sehirler.map((s) => s.city_name).join(', ')}</Text>
-            <Text style={styles.etiket}>Kapak</Text>
-            {Platform.OS === 'web' ? createElement('input', {
-              type: 'file',
-              accept: 'image/*',
-              'aria-label': 'Kapak görseli',
-              onChange: (e: { target: { files?: FileList | null } }) => void gorselSec(e.target.files?.[0], true),
-            }) : null}
+            {aiSatir('Kapak', 'kapak')}
+            {cover ? (
+              <Image source={{ uri: cover }} accessibilityLabel={coverAlt || title || 'Kapak'} style={styles.kapak} />
+            ) : (
+              <Text style={styles.uyari}>Kapak yoksa paylaşım önizlemesi görselsiz kalır.</Text>
+            )}
+            <View style={styles.satir}>
+              {Platform.OS === 'web' ? createElement('input', {
+                type: 'file',
+                accept: 'image/*',
+                'aria-label': 'Kapak görseli',
+                onChange: (e: { target: { files?: FileList | null } }) => void gorselSec(e.target.files?.[0], true),
+              }) : (
+                <Pressable onPress={() => void galeridenKapak()} style={styles.arac}><Text style={styles.aracYazi}>Galeriden seç</Text></Pressable>
+              )}
+              <Pressable onPress={() => setAi({ alan: 'kapak', baslik: 'Kapak fotoğrafı' })} style={styles.arac}>
+                <Text style={styles.aracYazi}>Gerçek fotoğraf bul</Text>
+              </Pressable>
+            </View>
+            {gorseller.length ? (
+              <ScrollView horizontal contentContainerStyle={styles.serit}>
+                {gorseller.map((g) => (
+                  <Pressable key={g.url} onPress={() => kapakSec(g)}>
+                    <Image source={{ uri: g.url }} accessibilityLabel={g.alt} style={styles.aday} />
+                  </Pressable>
+                ))}
+              </ScrollView>
+            ) : null}
             <TextInput value={coverAlt} onChangeText={setCoverAlt} placeholder="Kapak alt metni" placeholderTextColor={R.textMuted} style={styles.girdi} />
-            {cover ? <Text style={styles.kucuk}>{cover}</Text> : <Text style={styles.uyari}>Kapak yoksa paylaşım önizlemesi görselsiz kalır.</Text>}
+            {coverCredit ? <Text style={styles.kucuk}>{coverCredit}</Text> : null}
             <Text style={styles.etiket}>Yayın tarihi</Text>
             {Platform.OS === 'web' ? createElement('input', {
               type: 'datetime-local',
@@ -417,13 +726,13 @@ export function BlogEditorEkrani({ id }: Props) {
             <Text style={styles.kucuk}>Gelecek tarih planlar. Zamanı gelince yazı kendiliğinden açılır; cron gerekmez.</Text>
             <Pressable onPress={() => setOneCikan((v) => !v)}><Text style={styles.link}>{oneCikan ? 'Öne çıkan' : 'Öne çıkan yap'}</Text></Pressable>
             <Pressable onPress={() => setIndexle((v) => !v)}><Text style={styles.link}>{indexle ? 'Index' : 'Noindex'}</Text></Pressable>
-            <Text style={styles.etiket}>SEO title · {[...gorunenBaslik].length} · {baslikDurumu(gorunenBaslik)}</Text>
+            {aiSatir(`SEO title · ${[...gorunenBaslik].length} · ${baslikDurumu(gorunenBaslik)}`, 'seo_title')}
             <TextInput value={seoTitle} onChangeText={(v) => { seoElle.current = true; setSeoTitle(v); }} placeholder={seoBaslik(title)} placeholderTextColor={R.textMuted} style={styles.girdi} />
-            <Text style={styles.etiket}>Meta açıklama · {[...gorunenAciklama].length} · {aciklamaDurumu(gorunenAciklama)}</Text>
+            {aiSatir(`Meta açıklama · ${[...gorunenAciklama].length} · ${aciklamaDurumu(gorunenAciklama)}`, 'meta')}
             <TextInput value={meta} onChangeText={(v) => { aciklamaElle.current = true; setMeta(v); }} placeholder={gorunenAciklama} placeholderTextColor={R.textMuted} style={styles.girdi} multiline />
-            <Text style={styles.etiket}>Canonical</Text>
+            {aiSatir('Canonical', 'canonical')}
             <TextInput value={canonical} onChangeText={(v) => { kanonikElle.current = true; setCanonical(v); }} placeholder={gorunenKanonik} placeholderTextColor={R.textMuted} style={styles.girdi} autoCapitalize="none" />
-            <Text style={styles.etiket}>OG title / açıklama</Text>
+            {aiSatir('OG title / açıklama', 'og')}
             <TextInput value={ogTitle} onChangeText={setOgTitle} placeholder={gorunenBaslik} placeholderTextColor={R.textMuted} style={styles.girdi} />
             <TextInput value={ogDesc} onChangeText={setOgDesc} placeholder={gorunenAciklama} placeholderTextColor={R.textMuted} style={styles.girdi} />
             <View style={styles.onizleme}>
@@ -434,7 +743,9 @@ export function BlogEditorEkrani({ id }: Props) {
             </View>
             <View style={styles.onizleme}>
               <Text style={styles.kucuk}>Paylaşım önizleme</Text>
-              {cover ? <Text style={styles.kucuk}>Kapak kullanılacak</Text> : <Text style={styles.uyari}>Görsel yok</Text>}
+              {cover ? (
+                <Image source={{ uri: cover }} accessibilityLabel={coverAlt || 'Kapak'} style={styles.kapak} />
+              ) : <Text style={styles.uyari}>Görsel yok</Text>}
               <Text style={styles.gBaslik}>{ogTitle || gorunenBaslik}</Text>
               <Text style={styles.gAcik}>{ogDesc || gorunenAciklama}</Text>
             </View>
@@ -443,21 +754,13 @@ export function BlogEditorEkrani({ id }: Props) {
             {kontrol.maddeler.map((m) => (
               <Text key={m.ad} style={styles.kucuk}>{m.tamam ? 'Tamam' : 'Eksik'} · {m.ad}</Text>
             ))}
-            <Text style={styles.etiket}>Editoryal notlar</Text>
+            {aiSatir('Editoryal notlar', 'konu')}
             <TextInput value={konu} onChangeText={setKonu} placeholder="Anahtar konu" placeholderTextColor={R.textMuted} style={styles.girdi} />
             <TextInput value={niyet} onChangeText={setNiyet} placeholder="Arama niyeti" placeholderTextColor={R.textMuted} style={styles.girdi} />
             <TextInput value={kelimeler} onChangeText={setKelimeler} placeholder="İlgili kelimeler" placeholderTextColor={R.textMuted} style={styles.girdi} />
             <Text style={styles.kucuk}>Bu üç alan sitede gösterilmez.</Text>
             {yonler.length ? (
               <Text style={styles.kucuk}>Eski adresler: {yonler.map((y) => y.from_slug).join(', ')}</Text>
-            ) : null}
-            <Pressable style={styles.dugme} onPress={() => void kaydet('taslak')}><Text style={styles.dugmeYazi}>Taslak kaydet</Text></Pressable>
-            <Pressable style={styles.dugme} onPress={() => void kaydet(durum, true)}><Text style={styles.dugmeYazi}>Yayınla</Text></Pressable>
-            {kayitId ? (
-              <Pressable onPress={() => router.push(`/admin/blog/onizleme/${kayitId}` as never)}><Text style={styles.link}>Önizle</Text></Pressable>
-            ) : null}
-            {kayitId && durum !== 'cop' ? (
-              <Pressable onPress={() => void blogDurum(kayitId, 'cop').then(() => setDurum('cop'))}><Text style={styles.link}>Çöpe taşı</Text></Pressable>
             ) : null}
             {kayitId && durum === 'cop' ? (
               <Pressable onPress={async () => {
@@ -470,17 +773,55 @@ export function BlogEditorEkrani({ id }: Props) {
           </View>
         </View>
       </ScrollView>
+      {ai ? (
+        <BlogAiKapisi
+          baslik={ai.baslik}
+          calisiyor={aiCalisiyor}
+          kapat={() => setAi(null)}
+          gonder={(istek) => void aiGonder(istek)}
+        />
+      ) : null}
+      <View style={styles.altBar}>
+        {hata ? <Text style={styles.hata}>{hata}</Text> : null}
+        {mesaj ? <Text style={styles.mesaj}>{mesaj}</Text> : null}
+        <View style={styles.satir}>
+          <Pressable style={[styles.dugme, styles.dugmeYan, mesgul && styles.soluk]} disabled={mesgul} onPress={() => void kaydet('taslak', false, true)}>
+            {mesgul ? <ActivityIndicator color="#fff" /> : <Text style={styles.dugmeYazi}>Taslak</Text>}
+          </Pressable>
+          <Pressable style={[styles.dugme, styles.dugmeYan, mesgul && styles.soluk]} disabled={mesgul} onPress={() => void kaydet(durum, true, true)}>
+            <Text style={styles.dugmeYazi}>Yayınla</Text>
+          </Pressable>
+        </View>
+        <View style={styles.satir}>
+          {kayitId ? (
+            <Pressable onPress={() => router.push(`/admin/blog/onizleme/${kayitId}` as never)}><Text style={styles.link}>Önizle</Text></Pressable>
+          ) : null}
+          {slug ? (
+            <Pressable onPress={() => void paylasAdres(slug, title || 'Blog')}><Text style={styles.link}>Paylaş</Text></Pressable>
+          ) : null}
+          {kayitId ? (
+            <Pressable onPress={() => void dillereHazirla(kayitId, durum === 'yayinda' || durum === 'planlandi')}><Text style={styles.link}>Tüm diller</Text></Pressable>
+          ) : null}
+          {kayitId && durum !== 'cop' ? (
+            <Pressable onPress={() => void blogDurum(kayitId, 'cop').then(() => setDurum('cop'))}><Text style={styles.link}>Çöpe taşı</Text></Pressable>
+          ) : null}
+        </View>
+      </View>
+      </KlavyeGuvenliAlan>
     </Screen>
   );
 }
 
 const editorStil = {
-  minHeight: 280,
+  minHeight: 320,
   border: '1px solid #2c2840',
   borderRadius: 12,
   padding: 12,
   color: '#f4f1ea',
   background: '#100e18',
+  whiteSpace: 'pre-wrap' as const,
+  overflowWrap: 'break-word' as const,
+  lineHeight: '1.6',
 };
 
 const styles = StyleSheet.create({
@@ -510,5 +851,16 @@ const styles = StyleSheet.create({
   gUrl: { color: '#81c995', fontSize: 12 },
   gAcik: { color: R.textMuted, fontSize: 13 },
   dugme: { backgroundColor: R.primary, borderRadius: 10, padding: 12, alignItems: 'center' },
+  dugmeYan: { flex: 1 },
   dugmeYazi: { color: '#fff', fontWeight: '700' },
+  klavye: { flex: 1 },
+  kaydir: { flex: 1 },
+  alanUst: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  ai: { color: R.primarySoft, fontSize: 12, fontWeight: '700' },
+  kapak: { width: '100%', aspectRatio: 16 / 9, borderRadius: 12 },
+  aday: { width: 96, height: 64, borderRadius: 8 },
+  altBar: { borderTopWidth: 1, borderTopColor: R.border, padding: 12, gap: 8, backgroundColor: '#100e18' },
+  satir: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
+  oneriSerit: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  soluk: { opacity: 0.6 },
 });

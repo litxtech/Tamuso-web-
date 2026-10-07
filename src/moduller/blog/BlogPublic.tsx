@@ -14,7 +14,7 @@ import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { Screen } from '../../components/Screen';
 import { RenkTokenlariKoyu as C } from '../../tasarim-sistemi/tema/RenkPaletleri';
-import { blogDuzMetin } from './blogHtmlTemizle';
+import { BlogHtmlGorunum } from './BlogHtmlGorunum';
 import { okumaDakika } from './blogSeo';
 import {
   blogHerkeseAcik,
@@ -78,6 +78,9 @@ export function BlogListeGorunum({ baslik = 'Blog', giris = 'Karadeniz’den sos
         <View style={styles.grid}>
           {goster.map((s) => (
             <Pressable key={s.slug} style={styles.kart} onPress={() => ac(`/blog/${s.slug}`)}>
+              {s.cover_image_url ? (
+                <Image source={{ uri: s.cover_image_url }} accessibilityLabel={s.title} style={styles.kartKapak} />
+              ) : null}
               <Text style={styles.kucuk}>{katAd(s)} · {tarih(s.published_at)}</Text>
               <Text style={styles.h2}>{s.title}</Text>
               <Text style={styles.govde}>{s.excerpt}</Text>
@@ -141,7 +144,7 @@ export function BlogYaziGorunum({ yazi, taslak = false }: { yazi: BlogYazi; tasl
             style={styles.kapak}
           />
         ) : null}
-        <Text style={styles.govde}>{blogDuzMetin(yazi.content_html)}</Text>
+        <BlogHtmlGorunum html={yazi.content_html} />
         {(yazi.blog_post_cities ?? []).map((s) => (
           <Pressable key={s.city_id} onPress={() => ac(`/sehir/${s.city_id}`)}>
             <Text style={styles.link}>{s.city_name}</Text>
@@ -219,7 +222,8 @@ const styles = StyleSheet.create({
   govde: { color: C.text, fontSize: 16, lineHeight: 26 },
   kucuk: { color: C.textMuted, fontSize: 13 },
   link: { color: C.primary, paddingVertical: 4 },
-  kart: { borderWidth: 1, borderColor: C.border, borderRadius: 16, padding: 14, gap: 6 },
+  kart: { borderWidth: 1, borderColor: C.border, borderRadius: 16, padding: 14, gap: 6, overflow: 'hidden' },
+  kartKapak: { width: '100%', aspectRatio: 16 / 9, borderRadius: 12 },
   grid: { gap: 12 },
   arama: { borderWidth: 1, borderColor: C.border, borderRadius: 12, color: C.text, padding: 10 },
   satir: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },

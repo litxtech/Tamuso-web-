@@ -47,7 +47,7 @@ export function BlogCeviriSeridi({ yaziId, grupId }: { yaziId?: string; grupId?:
           </View>
         );
       })}
-      <Text style={{ color: R.textMuted, fontSize: 12 }}>Taslak çeviri yayınlanmaz ve dizine girmez. Türkçe metin kopyalanmaz.</Text>
+      <Text style={{ color: R.textMuted, fontSize: 12 }}>Türkçe yayın, diğer dilleri DeepSeek ile aynı yazının SEO metni olarak hazırlar.</Text>
     </View>
   );
 }

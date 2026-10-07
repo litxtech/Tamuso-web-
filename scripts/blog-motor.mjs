@@ -202,6 +202,8 @@ main{max-width:46rem;margin:0 auto;padding:8px 16px 72px}
 .meta{font-family:system-ui,sans-serif;font-size:13px;color:#c9c2b4}
 h1{font-size:2rem;line-height:1.2;margin:8px 0}
 .kapak{width:100%;border-radius:16px;aspect-ratio:16/9;object-fit:cover}
+.icerik p,.icerik li{margin:0 0 1rem}
+.icerik h2,.icerik h3{margin:1.2rem 0 .45rem}
 .icerik img{max-width:100%;height:auto;border-radius:12px}
 .icerik pre{white-space:pre-wrap}
 nav.kirik{font-family:system-ui,sans-serif;font-size:14px}

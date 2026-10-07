@@ -4,6 +4,14 @@
     "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs && node scripts/blog-olustur.mjs",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/sitemap-blog.xml", "destination": "/api/sitemap-blog" },
+    { "source": "/blog", "destination": "/api/blog-yol" },
+    { "source": "/en/blog", "destination": "/api/blog-yol?lang=en" },
+    { "source": "/de/blog", "destination": "/api/blog-yol?lang=de" },
+    { "source": "/es/blog", "destination": "/api/blog-yol?lang=es" },
+    { "source": "/ar/blog", "destination": "/api/blog-yol?lang=ar" },
+    { "source": "/ru/blog", "destination": "/api/blog-yol?lang=ru" },
+    { "source": "/yazar/:slug", "destination": "/api/blog-yol?yazar=:slug" },
     { "source": "/blog/:slug", "destination": "/api/blog-yol?slug=:slug" },
     { "source": "/en/blog/:slug", "destination": "/api/blog-yol?lang=en&slug=:slug" },
     { "source": "/de/blog/:slug", "destination": "/api/blog-yol?lang=de&slug=:slug" },
@@ -968,7 +976,7 @@
     },
     {
       "source": "/blog",
-      "destination": "/index.html"
+      "destination": "/api/blog-yol"
     },
     {
       "source": "/host",

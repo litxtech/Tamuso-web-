@@ -24,6 +24,7 @@ export type BlogYazi = {
   content_html: string;
   cover_image_url: string | null;
   cover_image_alt: string | null;
+  cover_credit?: string | null;
   category_id: string | null;
   author_id: string | null;
   author_name: string | null;
@@ -58,7 +59,7 @@ export type BlogYazi = {
 };
 
 const SECIM = `
-  id,title,slug,excerpt,content_html,cover_image_url,cover_image_alt,category_id,
+  id,title,slug,excerpt,content_html,cover_image_url,cover_image_alt,cover_credit,category_id,
   author_id,author_name,author_bio,author_avatar_url,status,published_at,
   seo_title,meta_description,canonical_url,og_title,og_description,og_image_url,
   robots_index,featured,reading_minutes,focus_topic,search_intent,keywords,
@@ -72,7 +73,9 @@ const SECIM = `
 
 function hata(error: { message: string } | null, yedek: string): never {
   const mesaj = error?.message ?? yedek;
-  if (/duplicate key|blog_posts_slug/i.test(mesaj)) throw new Error('Bu slug kullanılıyor.');
+  if (/duplicate key|blog_posts_slug|blog_posts_lang_slug|blog_posts_group_lang/i.test(mesaj)) {
+    throw new Error('Bu slug veya dil sürümü kullanılıyor.');
+  }
   if (/güvenlik|ayrılmış/i.test(mesaj)) throw new Error(mesaj);
   throw new Error(mesaj);
 }
@@ -156,6 +159,28 @@ export async function blogEtiketler(): Promise<BlogEtiket[]> {
   return (data ?? []) as BlogEtiket[];
 }
 
+export async function blogSehirAdlariEsle(adlar: string[]): Promise<BlogSehir[]> {
+  const sonuc: BlogSehir[] = [];
+  for (const ham of adlar) {
+    const q = ham.trim();
+    if (q.length < 2) continue;
+    const tam = await supabase.from('geo_cities').select('id,name,slug').ilike('name', q).eq('is_active', true).limit(1);
+    let satir = tam.data?.[0];
+    if (!satir) {
+      const gevsek = await supabase
+        .from('geo_cities')
+        .select('id,name,slug')
+        .ilike('name', `%${q}%`)
+        .eq('is_active', true)
+        .limit(1);
+      satir = gevsek.data?.[0];
+    }
+    if (!satir || sonuc.some((s) => s.city_id === satir.id)) continue;
+    sonuc.push({ city_id: satir.id as string, city_name: satir.name as string, city_slug: satir.slug as string });
+  }
+  return sonuc;
+}
+
 export async function blogSehirAra(ad: string) {
   const q = ad.trim();
   if (q.length < 2) return [];
@@ -185,6 +210,7 @@ export type BlogKayit = {
   content_html: string;
   cover_image_url: string | null;
   cover_image_alt: string | null;
+  cover_credit?: string | null;
   category_id: string | null;
   author_id: string | null;
   author_name: string | null;
@@ -211,9 +237,11 @@ export type BlogKayit = {
   faqs: BlogFaq[];
   etiketler: { name: string }[];
   sehirler: BlogSehir[];
+  /** Elle basılan kayıt, kendi otomatik kaydıyla çakışırsa bir kez yeniden dener. */
+  zorla?: boolean;
 };
 
-export async function blogKaydet(kayit: BlogKayit): Promise<BlogYazi> {
+export async function blogKaydet(kayit: BlogKayit, deneme = 0): Promise<BlogYazi> {
   const govde = {
     title: kayit.title.trim(),
     slug: kayit.slug,
@@ -221,6 +249,7 @@ export async function blogKaydet(kayit: BlogKayit): Promise<BlogYazi> {
     content_html: blogHtmlTemizle(kayit.content_html),
     cover_image_url: kayit.cover_image_url,
     cover_image_alt: kayit.cover_image_alt,
+    cover_credit: kayit.cover_credit ?? null,
     category_id: kayit.category_id,
     author_id: kayit.author_id,
     author_name: kayit.author_name,
@@ -256,7 +285,13 @@ export async function blogKaydet(kayit: BlogKayit): Promise<BlogYazi> {
     if (kayit.updated_at) q = q.eq('updated_at', kayit.updated_at);
     const { data, error } = await q.select('id');
     if (error) hata(error, 'Kayıt güncellenemedi');
-    if (!data?.length) throw new Error('Bu yazı başka bir oturumda değişmiş. Sayfayı yenileyin.');
+    if (!data?.length) {
+      if (kayit.zorla && deneme < 1 && kayit.updated_at) {
+        const taze = await blogYaziGetir(id);
+        if (taze) return blogKaydet({ ...kayit, updated_at: taze.updated_at }, deneme + 1);
+      }
+      throw new Error('Bu yazı başka bir oturumda değişmiş. Sayfayı yenileyin.');
+    }
   }
 
   const { error: faqSil } = await supabase.from('blog_faqs').delete().eq('post_id', id);
@@ -489,16 +524,94 @@ export async function blogKardesler(groupId: string) {
   return data ?? [];
 }
 
-export async function blogGorselYukle(dosya: File, ad: string, tur: 'blog' | 'authors' | 'social' | 'video' = 'blog'): Promise<string> {
-  if (/svg|html|javascript/i.test(dosya.type) || /\.svg$/i.test(dosya.name)) {
+export async function blogCeviriKaydet(girdi: {
+  kaynakId: string;
+  dil: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content_html: string;
+  seo_title: string | null;
+  meta_description: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  keywords: string | null;
+  focus_topic: string | null;
+  search_intent: string | null;
+  cover_alt: string | null;
+  faqs: BlogFaq[];
+  etiketler: { name: string }[];
+  yayinla: boolean;
+}) {
+  const kaynak = await blogYaziGetir(girdi.kaynakId);
+  if (!kaynak?.content_group_id) throw new Error('İçerik grubu yok');
+  const { data: varOlan } = await supabase
+    .from('blog_posts')
+    .select('id')
+    .eq('content_group_id', kaynak.content_group_id)
+    .eq('language_code', girdi.dil)
+    .maybeSingle();
+  const slug = slugYap(girdi.slug) || `${kaynak.slug}-${girdi.dil}`;
+  return blogKaydet({
+    id: (varOlan?.id as string | undefined) ?? undefined,
+    title: girdi.title || girdi.dil,
+    slug,
+    excerpt: girdi.excerpt,
+    content_html: girdi.content_html || '<p></p>',
+    cover_image_url: kaynak.cover_image_url,
+    cover_image_alt: girdi.cover_alt || kaynak.cover_image_alt,
+    cover_credit: kaynak.cover_credit ?? null,
+    category_id: kaynak.category_id,
+    author_id: kaynak.author_id,
+    author_name: kaynak.author_name,
+    author_bio: kaynak.author_bio,
+    author_avatar_url: kaynak.author_avatar_url,
+    status: girdi.yayinla ? kaynak.status : 'taslak',
+    published_at: girdi.yayinla ? kaynak.published_at : null,
+    seo_title: girdi.seo_title,
+    meta_description: girdi.meta_description,
+    canonical_url: null,
+    og_title: girdi.og_title,
+    og_description: girdi.og_description,
+    og_image_url: kaynak.cover_image_url,
+    robots_index: girdi.yayinla && kaynak.status === 'yayinda',
+    featured: false,
+    focus_topic: girdi.focus_topic,
+    search_intent: girdi.search_intent,
+    keywords: girdi.keywords,
+    language_code: girdi.dil,
+    content_group_id: kaynak.content_group_id,
+    blog_author_id: kaynak.blog_author_id,
+    faqs: girdi.faqs,
+    etiketler: girdi.etiketler,
+    sehirler: kaynak.blog_post_cities ?? [],
+  }).then(async (yazi) => {
+    await supabase.from('blog_posts').update({
+      translation_status: girdi.yayinla ? 'published' : 'draft',
+    }).eq('id', yazi.id);
+    return yazi;
+  });
+}
+
+export async function blogGorselYukle(
+  dosya: Blob,
+  ad: string,
+  tur: 'blog' | 'authors' | 'social' | 'video' = 'blog',
+  mimeHint?: string,
+): Promise<string> {
+  const gelenMime = mimeHint || (dosya as File).type || 'image/jpeg';
+  const adDosya = (dosya as File).name || '';
+  if (/svg|html|javascript/i.test(gelenMime) || /\.svg$/i.test(adDosya)) {
     throw new Error('Bu dosya türü yüklenemez.');
   }
-  if (dosya.size > 8_000_000 && !dosya.type.startsWith('video/')) {
+  if (dosya.size > 8_000_000 && !gelenMime.startsWith('video/')) {
     throw new Error('Görsel 8 MB sınırını aşıyor.');
   }
-  const blob = dosya.type.startsWith('video/') ? dosya : await webpYap(dosya);
-  const uzanti = dosya.type.startsWith('video/') ? 'mp4' : 'webp';
-  const mime = dosya.type.startsWith('video/') ? 'video/mp4' : 'image/webp';
+  const web = typeof document !== 'undefined';
+  const video = gelenMime.startsWith('video/');
+  const blob = video || !web ? dosya : await webpYap(dosya as File);
+  const uzanti = video ? 'mp4' : web ? 'webp' : (gelenMime.includes('png') ? 'png' : 'jpg');
+  const mime = video ? 'video/mp4' : web ? 'image/webp' : gelenMime;
   const yol = `${tur}/${slugYap(ad) || 'gorsel'}-${Date.now()}.${uzanti}`;
   const { error } = await supabase.storage.from('blog-gorseller').upload(yol, blob, {
     contentType: mime,

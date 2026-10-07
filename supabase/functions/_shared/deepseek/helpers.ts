@@ -19,6 +19,8 @@ export const LANG_NAMES: Record<string, string> = {
   es: 'Spanish',
   pt: 'Portuguese',
   ar: 'Arabic',
+  de: 'German',
+  ru: 'Russian',
   fr: 'French',
   fil: 'Filipino',
 };

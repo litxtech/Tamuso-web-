@@ -11,3 +11,4 @@ Disallow: /*?search=
 Disallow: /*?q=
 
 Sitemap: https://www.tamuso.com/sitemap.xml
+Sitemap: https://www.tamuso.com/sitemap-blog.xml

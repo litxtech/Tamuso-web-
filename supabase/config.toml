@@ -65,3 +65,6 @@ verify_jwt = true
 [functions.creator-studio-play]
 verify_jwt = true
 
+[functions.blog-asistan]
+verify_jwt = true
+
