@@ -57,7 +57,7 @@ export default function Root({ children }: PropsWithChildren) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var p=location.pathname;if(p.length>1&&p.endsWith('/')){history.replaceState(null,'',p.replace(/\\/+$/,'')+location.search+location.hash);}})();",
+              "(function(){var p=location.pathname;if(p.length>1&&p.endsWith('/')){p=p.replace(/\\/+$/,'');history.replaceState(null,'',p+location.search+location.hash);}var site=p==='/'||p.indexOf('/tanitim')===0;var kisa=window.screen?Math.min(screen.width,screen.height):window.innerWidth;var dar=kisa<760;if(site&&dar){var m=document.querySelector('meta[name=viewport]');if(m)m.setAttribute('content','width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content');}})();",
           }}
         />
         {headNodes}

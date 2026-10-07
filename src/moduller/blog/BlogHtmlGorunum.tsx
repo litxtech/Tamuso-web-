@@ -84,16 +84,17 @@ export function BlogHtmlGorunum({ html }: { html: string }) {
 }
 
 const styles = StyleSheet.create({
-  kutu: { gap: 12 },
-  h2: { color: C.text, fontSize: 22, lineHeight: 28, fontWeight: '700', marginTop: 8 },
-  h3: { color: C.text, fontSize: 18, lineHeight: 24, fontWeight: '700' },
-  p: { color: C.text, fontSize: 17, lineHeight: 27 },
+  kutu: { gap: 18 },
+  h2: { color: C.text, fontSize: 24, lineHeight: 32, fontWeight: '700', marginTop: 12 },
+  h3: { color: C.text, fontSize: 20, lineHeight: 28, fontWeight: '700', marginTop: 4 },
+  p: { color: C.text, fontSize: 18, lineHeight: 32 },
   alinti: {
     color: C.textMuted,
-    fontSize: 17,
-    lineHeight: 27,
+    fontSize: 18,
+    lineHeight: 32,
     borderLeftWidth: 3,
     borderLeftColor: C.primary,
-    paddingLeft: 12,
+    paddingLeft: 16,
   },
+  gorsel: { width: '100%', aspectRatio: 16 / 9, borderRadius: 16, marginVertical: 4 },
 });

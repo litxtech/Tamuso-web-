@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { type Href, router } from 'expo-router';
+import { type Href, router, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { DESTEKLENEN_DILLER, DIL_ETIKETLERI, UlkeKodundanDil } from '../../i18n/diller';
@@ -28,6 +28,35 @@ function disAc(url: string) {
     return;
   }
   void Linking.openURL(url);
+}
+
+function WebSiteMobilOlcek() {
+  const yol = usePathname();
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined' || typeof window === 'undefined') return;
+    const meta = document.querySelector('meta[name="viewport"]');
+    const normal =
+      'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content';
+    const uzak =
+      'width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content';
+    const uygula = () => {
+      const pazarlama = yol === '/' || yol.startsWith('/tanitim');
+      const kisa = window.screen
+        ? Math.min(window.screen.width, window.screen.height)
+        : window.innerWidth;
+      const dar = kisa < 760;
+      document.documentElement.removeAttribute('data-web-site');
+      meta?.setAttribute('content', pazarlama && dar ? uzak : normal);
+    };
+    uygula();
+    window.addEventListener('resize', uygula);
+    return () => {
+      window.removeEventListener('resize', uygula);
+      document.documentElement.removeAttribute('data-web-site');
+      meta?.setAttribute('content', normal);
+    };
+  }, [yol]);
+  return null;
 }
 
 export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
@@ -105,6 +134,7 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
 
   return (
     <View style={[styles.kok, { paddingTop: insets.top }]}>
+      <WebSiteMobilOlcek />
       <View style={styles.ust}>
         <Pressable
           accessibilityLabel={m.menu}

@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { CihazKimliginiGetir } from '../kimlik-dogrulama/oturum/CihazKimliginiGetir';
 import { blogHtmlTemizle } from './blogHtmlTemizle';
 import { slugYap } from './blogSlug';
 
@@ -41,6 +42,7 @@ export type BlogYazi = {
   robots_index: boolean;
   featured: boolean;
   reading_minutes: number;
+  okunma_sayisi?: number;
   focus_topic: string | null;
   search_intent: string | null;
   keywords: string | null;
@@ -68,8 +70,26 @@ const SECIM = `
   blog_categories(id,name,slug,description,seo_title,meta_description),
   blog_faqs(id,question,answer,sort_order),
   blog_post_tags(blog_tags(id,name,slug)),
-  blog_post_cities(city_id,city_name,city_slug)
+  blog_post_cities(city_id,city_name,city_slug),
+  blog_okunma_sayac(adet)
 `;
+
+type OkunmaSatir = { blog_okunma_sayac?: { adet?: number } | { adet?: number }[] | null };
+
+export function blogOkunmaAdet(satir?: OkunmaSatir | null) {
+  const k = satir?.blog_okunma_sayac;
+  const adet = Array.isArray(k) ? k[0]?.adet : k?.adet;
+  return Math.max(0, Math.floor(adet ?? 0));
+}
+
+export function blogOkunmaYazi(adet?: number | null) {
+  const n = Math.max(0, Math.floor(adet ?? 0));
+  return `${n.toLocaleString('tr-TR')} kişi okudu`;
+}
+
+function okunmaIsle<T extends OkunmaSatir>(satir: T) {
+  return { ...satir, okunma_sayisi: blogOkunmaAdet(satir) };
+}
 
 function hata(error: { message: string } | null, yedek: string): never {
   const mesaj = error?.message ?? yedek;
@@ -117,7 +137,7 @@ export async function blogYazilari(durum?: BlogDurum | 'hepsi', sayfa = 0) {
 export async function blogYaziGetir(id: string): Promise<BlogYazi | null> {
   const { data, error } = await supabase.from('blog_posts').select(SECIM).eq('id', id).maybeSingle();
   if (error) hata(error, 'Yazı alınamadı');
-  return (data as BlogYazi | null) ?? null;
+  return data ? okunmaIsle(data as BlogYazi) : null;
 }
 
 export async function blogHerkeseAcik(slug: string, dil = 'tr'): Promise<BlogYazi | null> {
@@ -130,21 +150,37 @@ export async function blogHerkeseAcik(slug: string, dil = 'tr'): Promise<BlogYaz
     .lte('published_at', new Date().toISOString())
     .maybeSingle();
   if (error) return null;
-  return (data as BlogYazi | null) ?? null;
+  return data ? okunmaIsle(data as BlogYazi) : null;
+}
+
+export async function blogOkumaKaydet(slug: string, dil = 'tr'): Promise<number | null> {
+  try {
+    const cihaz = await CihazKimliginiGetir();
+    const { data, error } = await supabase.rpc('blog_okuma_kaydet', {
+      p_slug: slug,
+      p_dil: dil,
+      p_cihaz: cihaz,
+    });
+    if (error || !data || typeof data !== 'object') return null;
+    const govde = data as { ok?: boolean; okunma?: number };
+    if (govde.ok !== true || typeof govde.okunma !== 'number') return null;
+    return govde.okunma;
+  } catch {
+    return null;
+  }
 }
 
 export async function blogListeHerkese(sayfa = 0, boyut = 12, dil = 'tr') {
   const { data, error, count } = await supabase
     .from('blog_posts')
-    .select('title,slug,excerpt,cover_image_url,cover_image_alt,published_at,featured,reading_minutes,language_code,blog_categories(name,slug)', { count: 'exact' })
+    .select('title,slug,excerpt,cover_image_url,cover_image_alt,published_at,featured,reading_minutes,language_code,blog_categories(name,slug),blog_okunma_sayac(adet)', { count: 'exact' })
     .eq('language_code', dil)
     .in('status', ['yayinda', 'planlandi'])
     .lte('published_at', new Date().toISOString())
-    .order('featured', { ascending: false })
     .order('published_at', { ascending: false })
     .range(sayfa * boyut, sayfa * boyut + boyut - 1);
   if (error) return { satirlar: [], toplam: 0 };
-  return { satirlar: data ?? [], toplam: count ?? 0 };
+  return { satirlar: (data ?? []).map((satir) => okunmaIsle(satir as OkunmaSatir)), toplam: count ?? 0 };
 }
 
 export async function blogKategoriler(): Promise<BlogKategori[]> {

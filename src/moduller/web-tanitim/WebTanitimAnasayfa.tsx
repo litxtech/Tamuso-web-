@@ -34,6 +34,7 @@ export function WebTanitimAnasayfa() {
   const m = tanitimMetin(dil);
   const { width } = useWindowDimensions();
   const genis = width >= 980;
+  const dar = width < 760;
   const nabiz = useRef(new Animated.Value(1)).current;
   const [sohbetN, setSohbetN] = useState(1);
   const [klipler, setKlipler] = useState<WebTanitimMedya[]>(VARSAYILAN_TANITIM_MEDYA);
@@ -91,19 +92,19 @@ export function WebTanitimAnasayfa() {
     <View>
       <TanitimSeo yol="/" />
 
-      <View style={styles.hero}>
+      <View style={[styles.hero, dar && styles.heroDar]}>
         <TanitimVideo key={gorusme.url} kaynak={gorusme.url} poster={gorusme.poster} />
         <LinearGradient
           colors={['rgba(8,8,17,0.15)', 'rgba(8,8,17,0.55)', '#080811']}
           style={StyleSheet.absoluteFill}
         />
-        <View style={[styles.heroIc, genis && styles.heroIcGenis]}>
+        <View style={[styles.heroIc, genis && styles.heroIcGenis, dar && styles.heroIcDar]}>
           <View style={styles.rozet}>
             <Animated.View style={[styles.rozetNokta, { opacity: nabiz }]} />
             <Text style={styles.rozetYazi}>{m.heroRozet}</Text>
           </View>
-          <Text style={styles.heroBaslik}>{m.heroBaslik}</Text>
-          <Text style={styles.heroAlt}>{m.heroAlt}</Text>
+          <Text style={[styles.heroBaslik, dar && styles.heroBaslikDar]}>{m.heroBaslik}</Text>
+          <Text style={[styles.heroAlt, dar && styles.heroAltDar]}>{m.heroAlt}</Text>
           <View style={styles.heroBtnler}>
             <Pressable
               style={styles.anaBtn}
@@ -319,7 +320,9 @@ const styles = StyleSheet.create({
   seritYazi: { color: C.textMuted, fontWeight: '700', fontSize: 13 },
   vizyon: { color: C.textMuted, fontSize: 16, lineHeight: 26, maxWidth: 760 },
   hero: { minHeight: 520, justifyContent: 'flex-end' },
+  heroDar: { minHeight: 460 },
   heroIc: { paddingHorizontal: 22, paddingBottom: 36, paddingTop: 80, maxWidth: 760 },
+  heroIcDar: { paddingHorizontal: 24, paddingBottom: 48, paddingTop: 96 },
   heroIcGenis: { paddingHorizontal: 48, paddingBottom: 56 },
   rozet: {
     alignSelf: 'flex-start',
@@ -335,7 +338,9 @@ const styles = StyleSheet.create({
   rozetNokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4D6D' },
   rozetYazi: { color: '#fff', fontWeight: '800', fontSize: 12, letterSpacing: 0.6 },
   heroBaslik: { color: '#fff', fontSize: 40, lineHeight: 46, fontWeight: '800' },
+  heroBaslikDar: { fontSize: 32, lineHeight: 40 },
   heroAlt: { color: 'rgba(255,255,255,0.82)', fontSize: 17, lineHeight: 26, marginTop: 12 },
+  heroAltDar: { fontSize: 16, lineHeight: 26, marginTop: 14 },
   heroBtnler: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 22 },
   anaBtn: {
     height: 48,
@@ -357,7 +362,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   ikincilBtnYazi: { color: '#fff', fontWeight: '700' },
-  izgara: { paddingHorizontal: 16, gap: 14, marginTop: 8 },
+  izgara: { paddingHorizontal: 22, gap: 18, marginTop: 28 },
   izgaraGenis: { flexDirection: 'row', paddingHorizontal: 40 },
   sahne: {
     flex: 1,
@@ -376,7 +381,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sahneAlt: { position: 'absolute', left: 16, right: 16, bottom: 16 },
-  ikili: { paddingHorizontal: 16, gap: 14, marginTop: 14 },
+  ikili: { paddingHorizontal: 22, gap: 18, marginTop: 22 },
   ikiliGenis: { flexDirection: 'row', paddingHorizontal: 40 },
   sohbetKart: {
     flex: 1,
@@ -413,7 +418,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   cipYazi: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  blok: { paddingHorizontal: 16, marginTop: 36 },
+  blok: { paddingHorizontal: 22, marginTop: 48 },
   blokBaslik: { color: C.text, fontSize: 32, fontWeight: '800' },
   blokAlt: { color: C.textMuted, marginTop: 6, marginBottom: 14, fontSize: 15 },
   ozellikIzgara: { gap: 10 },

@@ -27,8 +27,13 @@ export default function TabsLayout() {
     if (!session) {
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
         const path = window.location.pathname.replace(/\/+$/, '') || '/';
-        if (path === '/' || path.startsWith('/tanitim')) {
-          router.replace((path === '/' ? '/tanitim' : path) as Href);
+        const acikSite =
+          path === '/' ||
+          path.startsWith('/tanitim') ||
+          path.startsWith('/blog') ||
+          path.startsWith('/politika');
+        if (acikSite) {
+          if (path === '/') router.replace('/tanitim' as Href);
           return;
         }
       }

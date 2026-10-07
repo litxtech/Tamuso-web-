@@ -103,6 +103,22 @@
         input, textarea, select { font-size: 16px !important; }
       }
     </style>
+    <script>
+      (function () {
+        var p = location.pathname.replace(/\/+$/, '') || '/';
+        var site = p === '/' || p.indexOf('/tanitim') === 0;
+        var kisa = window.screen ? Math.min(screen.width, screen.height) : window.innerWidth;
+        var dar = kisa < 760;
+        if (!site || !dar) return;
+        var m = document.querySelector('meta[name="viewport"]');
+        if (m) {
+          m.setAttribute(
+            'content',
+            'width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content'
+          );
+        }
+      })();
+    </script>
   </head>
 
   <body>
