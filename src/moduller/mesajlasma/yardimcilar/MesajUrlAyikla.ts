@@ -5,7 +5,8 @@
 
 export type MesajUrlParca =
   | { tur: 'text'; deger: string }
-  | { tur: 'link'; deger: string; url: string };
+  | { tur: 'link'; deger: string; url: string }
+  | { tur: 'tel'; deger: string; numara: string };
 
 /** Trailing punctuation sık sık mesaj sonuna yapışır */
 const TRAIL_PUNCT_RE = /[.,;:!?)>\]]+$/;
@@ -98,6 +99,51 @@ export function MesajMetniLinkParcala(metin: string): MesajUrlParca[] {
     } else {
       parcalar.push({ tur: 'text', deger: ham });
     }
+    last = start + ham.length;
+  }
+  if (last < metin.length) {
+    parcalar.push({ tur: 'text', deger: metin.slice(last) });
+  }
+  const urlParcalari = parcalar.length ? parcalar : [{ tur: 'text' as const, deger: metin }];
+  return urlParcalari.flatMap((p) =>
+    p.tur === 'text' ? metindenTelefonParcala(p.deger) : [p],
+  );
+}
+
+/**
+ * Telefon gibi görünen numaralar. Kısa kodlar (112, 444…) bağlanmaz.
+ * En az 8 hane; 10’dan kısa yalın rakam dizisi de bağlanmaz.
+ */
+const TEL_RE = /(\+?\d(?:[\s().-]{0,2}\d){7,14})/g;
+
+function telefonNumarasi(ham: string): string | null {
+  const govde = ham.trim();
+  const rakam = govde.replace(/\D/g, '');
+  if (rakam.length < 8 || rakam.length > 15) return null;
+  const arti = govde.trimStart().startsWith('+');
+  const sifir = rakam.startsWith('0');
+  const ayrac = /[\s().-]/.test(govde);
+  if (!arti && !sifir && !ayrac && rakam.length < 10) return null;
+  return arti ? `+${rakam}` : rakam;
+}
+
+function metindenTelefonParcala(metin: string): MesajUrlParca[] {
+  if (!metin) return [{ tur: 'text', deger: metin }];
+  const re = new RegExp(TEL_RE.source, TEL_RE.flags);
+  const parcalar: MesajUrlParca[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(metin)) !== null) {
+    const ham = m[1] ?? m[0];
+    const start = m.index;
+    const onceki = start > 0 ? metin[start - 1] : '';
+    if (onceki && /[\w+]/.test(onceki)) continue;
+    const numara = telefonNumarasi(ham);
+    if (!numara) continue;
+    if (start > last) {
+      parcalar.push({ tur: 'text', deger: metin.slice(last, start) });
+    }
+    parcalar.push({ tur: 'tel', deger: ham, numara });
     last = start + ham.length;
   }
   if (last < metin.length) {

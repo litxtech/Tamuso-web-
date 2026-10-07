@@ -4026,6 +4026,8 @@ export const tr = {
     bosChatAlt: "Metin, fotoğraf veya video gönder — anında ulaşır.",
     tarihBugun: "Bugün",
     tarihDun: "Dün",
+    telefonSms: "Mesaj gönder",
+    telefonWhatsapp: "WhatsApp",
     mahkemeKapaliComposer: "Bu mahkeme kapalı. Yeni mesaj yazılamaz.",
     yazPlaceholder: "Mesaj yaz…",
     medyaGonderA11y: "Fotoğraf veya video gönder",

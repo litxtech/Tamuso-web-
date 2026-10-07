@@ -39,6 +39,8 @@ import {
   MesajHikayeYanitOnizleme,
 } from './MesajHikayeYanitOnizleme';
 import { MesajKartTokenlari } from '../tasarim/MesajKartTokenlari';
+import { mesajPaylasimKodu } from '../yardimcilar/MesajPaylasimKodu';
+import * as Clipboard from 'expo-clipboard';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { CeviriMetinKarti } from '../../ai-ceviri/bilesenler/CeviriMetinKarti';
 import { MesajIlkUrl } from '../yardimcilar/MesajUrlAyikla';
@@ -66,6 +68,33 @@ type Props = {
   onReply?: (item: DirektMesaj) => void;
   highlighted?: boolean;
 };
+
+function MesajKopyaSatiri({ deger, mine }: { deger: string; mine: boolean }) {
+  const { t } = useCeviri();
+  const [ok, setOk] = useState(false);
+  return (
+    <Pressable
+      onPress={() => {
+        void Clipboard.setStringAsync(deger);
+        void Haptics.selectionAsync();
+        setOk(true);
+        setTimeout(() => setOk(false), 1400);
+      }}
+      style={kopyaStilleri.satir}
+      accessibilityRole="button"
+      accessibilityLabel={t('ortak.kopyala')}
+    >
+      <Ionicons
+        name="copy-outline"
+        size={14}
+        color={mine ? 'rgba(18,4,12,0.75)' : RenkTokenlari.primarySoft}
+      />
+      <Text style={[kopyaStilleri.yazi, mine && kopyaStilleri.yaziMine]}>
+        {ok ? t('ortak.kopyalandi') : t('ortak.kopyala')}
+      </Text>
+    </Pressable>
+  );
+}
 
 function saat(iso: string, locale: string): string {
   try {
@@ -134,6 +163,7 @@ export function MesajBaloncugu({
   const isAgencyOffer = item.message_type === 'agency_package_offer';
   const isAgencyReceipt = item.message_type === 'agency_package_receipt';
   const davet = AjansDavetMesajindanKoduCikar(item.body);
+  const paylasim = mesajPaylasimKodu(item.body);
   const [davetBusy, setDavetBusy] = useState(false);
   const [davetGonderildi, setDavetGonderildi] = useState(false);
   const [indirBusy, setIndirBusy] = useState(false);
@@ -485,6 +515,7 @@ export function MesajBaloncugu({
           text={metin}
           style={mine ? styles.bodyMine : styles.body}
           mine={mine}
+          telefonKarti
         />
       )
     ) : null;
@@ -753,8 +784,10 @@ export function MesajBaloncugu({
                 text={item.body}
                 style={styles.medyaCaption}
                 mine={mine}
+                telefonKarti
               />
             )}
+            {paylasim ? <MesajKopyaSatiri deger={paylasim.deger} mine={mine} /> : null}
             {metaSatiri(false)}
           </View>
         ) : null}
@@ -835,9 +868,11 @@ export function MesajBaloncugu({
             text={item.body}
             style={mine ? styles.bodyMine : styles.body}
             mine={mine}
+            telefonKarti
           />
         )
       ) : null}
+      {paylasim ? <MesajKopyaSatiri deger={paylasim.deger} mine={mine} /> : null}
       {metaSatiri(false)}
     </>
   );
@@ -876,6 +911,24 @@ export function MesajBaloncugu({
 
   return sar(paket);
 }
+
+const kopyaStilleri = StyleSheet.create({
+  satir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+  },
+  yazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.primarySoft,
+    fontWeight: '700',
+  },
+  yaziMine: {
+    color: 'rgba(18,4,12,0.75)',
+  },
+});
 
 const styles = StyleSheet.create({
   sharedWrap: {

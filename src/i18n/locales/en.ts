@@ -4026,6 +4026,8 @@ export const en: CeviriSozlugu = {
     bosChatAlt: "Send text, photo, or video — it arrives instantly.",
     tarihBugun: "Today",
     tarihDun: "Yesterday",
+    telefonSms: "Send message",
+    telefonWhatsapp: "WhatsApp",
     mahkemeKapaliComposer: "This court is closed. No new messages.",
     yazPlaceholder: "Write a message…",
     medyaGonderA11y: "Send photo or video",

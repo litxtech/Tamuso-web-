@@ -76,6 +76,7 @@ export function CeviriMetinKarti({
         text={deger}
         style={stil}
         mine={mine}
+        telefonKarti={context === 'dm'}
         numberOfLines={numberOfLines}
       />
     ) : (
