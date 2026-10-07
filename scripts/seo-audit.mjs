@@ -27,6 +27,7 @@ if (!fs.existsSync(robotsYol)) hata('public/robots.txt yok');
 
 const robots = fs.existsSync(robotsYol) ? fs.readFileSync(robotsYol, 'utf8') : '';
 if (/^disallow:\s*\/\s*$/im.test(robots)) hata('robots.txt tüm siteyi kapatıyor');
+if (/^disallow:\s*\/blog\s*$/im.test(robots)) hata('robots.txt blogu kapatıyor');
 if (!robots.includes(`Sitemap: ${ORIGIN}/sitemap.xml`)) {
   hata(`robots.txt site haritası ${ORIGIN}/sitemap.xml değil`);
 }
@@ -116,6 +117,52 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
     }
   }
 }
+
+const { slugYap, yaziBelgesi, siteHaritasi, bulunamadiBelgesi } = await import('./blog-motor.mjs');
+const beklenenSlug = slugYap("Trabzon'da Yeni İnsanlarla Tanışmanın 10 Yolu");
+if (beklenenSlug !== 'trabzonda-yeni-insanlarla-tanismanin-10-yolu') {
+  hata(`slug dönüşümü ${beklenenSlug}`);
+}
+const ornek = yaziBelgesi({
+  title: "Trabzon'da Yeni İnsanlarla Tanışmanın 10 Yolu",
+  slug: 'trabzonda-yeni-insanlarla-tanisma',
+  excerpt: 'Trabzon’da yeni insanlarla tanışmanın, şehri ve günlük hayatı paylaşmanın yolları.',
+  content_html: '<p>Trabzon’da yeni insanlarla tanışmak için şehrin günlük hayatına karışmak gerekir.</p><h2>Meydan</h2><p>Meydanda ve sahilde açık sohbetler olur.</p>',
+  published_at: '2026-10-07T00:00:00.000Z',
+  updated_at: '2026-10-07T00:00:00.000Z',
+  author_name: 'Tamuso',
+  robots_index: true,
+  kategori: { name: 'Şehir Rehberleri', slug: 'sehir-rehberleri' },
+  faqs: [{ question: 'Kimler kullanabilir?', answer: 'Tamuso 18 yaş ve üzeri içindir.' }],
+}, []);
+if ((ornek.match(/<h1[\s>]/gi) || []).length !== 1) hata('blog yazısında birden fazla H1');
+if (!ornek.includes('href="https://www.tamuso.com/blog/trabzonda-yeni-insanlarla-tanisma"')) {
+  hata('blog canonical');
+}
+if (!ornek.includes('BlogPosting') || !ornek.includes('BreadcrumbList')) hata('blog şema eksik');
+if (/aggregateRating|reviewCount|ratingValue/i.test(ornek)) hata('blog sahte puan şeması');
+if (!ornek.includes('og:type" content="article"')) hata('blog og type');
+const harita = siteHaritasi(
+  [{ yol: '/' }],
+  [
+    { slug: 'yayin', robots_index: true, updated_at: '2026-10-07T00:00:00.000Z' },
+    { slug: 'gizli', robots_index: false, updated_at: '2026-10-07T00:00:00.000Z' },
+  ],
+  [{ slug: 'karadeniz', adet: 2 }],
+  [],
+  1,
+);
+if (!harita.includes('https://www.tamuso.com/blog/yayin')) hata('yayın site haritasında yok');
+if (harita.includes('/blog/gizli')) hata('noindex yazı site haritasında');
+if (!harita.includes('https://www.tamuso.com/</loc>') && !harita.includes('https://www.tamuso.com/</loc>'.replace('</loc>', ''))) {
+  if (!harita.includes('https://www.tamuso.com/</loc>') && !harita.includes('<loc>https://www.tamuso.com/</loc>')) {
+    hata('ana sayfa site haritasında yok');
+  }
+}
+if (!bulunamadiBelgesi().includes('noindex')) hata('blog 404 noindex değil');
+if (!fs.existsSync(path.join(kok, 'middleware.js'))) hata('blog middleware yok');
+if (!robots.includes('Disallow: /blog/ara')) hata('blog araması robots.txt ile açık');
+if (/^disallow:\s*\/blog\s*$/im.test(robots)) hata('blog kökü robots.txt ile kapalı');
 
 if (hatalar.length) {
   console.error(`seo:audit ${hatalar.length} hata`);

@@ -77,11 +77,16 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
     setMenu(false);
     setDiller(false);
     setDestek(false);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && String(href).startsWith('/blog')) {
+      window.location.assign(String(href));
+      return;
+    }
     router.push(href);
   };
 
   const nav: Nav[] = [
     { etiket: m.navAnasayfa, href: '/' as Href },
+    { etiket: m.navBlog, href: '/blog' as Href },
     { etiket: m.navOzellik, href: '/tanitim/ozellikler' as Href },
     { etiket: m.navCoin, href: '/tanitim/coinler' as Href },
     { etiket: m.navMeyve, href: '/tanitim/meyve' as Href },
@@ -161,6 +166,9 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
         <View style={styles.alt}>
           <Text style={styles.altSirket}>{m.footerSirket}</Text>
           <View style={styles.altLinkler}>
+            <Pressable onPress={() => git('/blog' as Href)}>
+              <Text style={styles.altLink}>{m.navBlog}</Text>
+            </Pressable>
             <Pressable onPress={() => git('/politika' as Href)}>
               <Text style={styles.altLink}>{m.navPolitika}</Text>
             </Pressable>

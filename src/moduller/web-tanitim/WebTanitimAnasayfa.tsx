@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { type Href, router } from 'expo-router';
+import { BlogSonYazilar } from '../blog/BlogSonYazilar';
 import { TanitimSeo } from './TanitimSeo';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDil } from '../../i18n/DilSaglayici';
@@ -243,6 +244,7 @@ export function WebTanitimAnasayfa() {
           href={'/politika' as Href}
         />
       </View>
+      <BlogSonYazilar />
     </View>
   );
 }

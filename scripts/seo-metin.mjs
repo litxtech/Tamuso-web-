@@ -71,6 +71,7 @@ function ozellikler(src) {
 
 const BAGLANTILAR = [
   ['/', 'Ana sayfa'],
+  ['/blog', 'Blog'],
   ['/tanitim/ozellikler', 'Özellikler'],
   ['/tanitim/coinler', 'Coinler'],
   ['/tanitim/meyve', 'Meyve oyunu'],

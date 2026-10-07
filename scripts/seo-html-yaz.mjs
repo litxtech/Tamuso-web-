@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sayfaIcerigi } from './seo-metin.mjs';
+import { listeBelgesi, yaziBelgesi } from './blog-motor.mjs';
 
 const ORIGIN = 'https://www.tamuso.com';
 const kok = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -113,4 +114,82 @@ for (const sayfa of sayfalar) {
   fs.writeFileSync(path.join(dizin, 'index.html'), html);
 }
 
+function blogSatir(row) {
+  return {
+    title: row.title,
+    slug: row.slug,
+    excerpt: row.excerpt || '',
+    content_html: row.content_html || '',
+    cover_image_url: row.cover_image_url,
+    cover_image_alt: row.cover_image_alt,
+    published_at: row.published_at,
+    updated_at: row.updated_at,
+    author_name: row.author_name,
+    seo_title: row.seo_title,
+    meta_description: row.meta_description,
+    canonical_url: row.canonical_url,
+    og_image_url: row.og_image_url,
+    robots_index: row.robots_index,
+    kategori: row.blog_categories || null,
+    etiketler: (row.blog_post_tags || []).map((t) => t.blog_tags).filter(Boolean),
+    sehirler: row.blog_post_cities || [],
+    faqs: row.blog_faqs || [],
+  };
+}
+
+async function anasayfaBlog() {
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  const giris = 'Karadeniz’den sosyal yaşama, şehir rehberlerinden Tamuso dünyasına kadar güncel içerikler.';
+  const blogDizin = path.join(dist, 'blog');
+  fs.mkdirSync(blogDizin, { recursive: true });
+  if (!url || !key) {
+    fs.writeFileSync(path.join(blogDizin, 'index.html'), listeBelgesi({
+      yazilar: [], sayfa: 1, sayfaSayisi: 1, baslik: 'Blog', aciklama: giris,
+      canonical: `${ORIGIN}/blog`, robots: 'index,follow', giris,
+    }));
+    return;
+  }
+  const kontrol = new AbortController();
+  const zaman = setTimeout(() => kontrol.abort(), 8000);
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/blog_posts?select=title,slug,excerpt,content_html,cover_image_url,cover_image_alt,published_at,updated_at,author_name,seo_title,meta_description,canonical_url,og_image_url,robots_index,blog_categories(name,slug),blog_faqs(question,answer,sort_order),blog_post_cities(city_id,city_name)&status=in.(yayinda,planlandi)&published_at=lte.${encodeURIComponent(new Date().toISOString())}&order=published_at.desc&limit=100`,
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        signal: kontrol.signal,
+      },
+    );
+    const rows = res.ok ? await res.json() : [];
+    const liste = Array.isArray(rows) ? rows.map(blogSatir) : [];
+    fs.writeFileSync(path.join(blogDizin, 'index.html'), listeBelgesi({
+      yazilar: liste, sayfa: 1, sayfaSayisi: 1, baslik: 'Blog', aciklama: giris,
+      canonical: `${ORIGIN}/blog`, robots: 'index,follow', giris,
+    }));
+    for (const yazi of liste) {
+      if (!yazi.slug) continue;
+      const klasor = path.join(blogDizin, yazi.slug);
+      fs.mkdirSync(klasor, { recursive: true });
+      fs.writeFileSync(path.join(klasor, 'index.html'), yaziBelgesi(yazi, []));
+    }
+    const kartlar = liste
+      .slice(0, 6)
+      .filter((r) => r.slug && r.title)
+      .map((r) => `<li><a href="/blog/${attr(r.slug)}">${attr(r.title)}</a></li>`)
+      .join('');
+    if (!kartlar || !fs.existsSync(sablonYol)) return;
+    const blok = `<section><h2>Tamuso’dan son yazılar</h2><ul>${kartlar}</ul><p><a href="/blog">Blog</a></p></section>`;
+    const html = fs.readFileSync(sablonYol, 'utf8').replace('</main>', `${blok}</main>`);
+    fs.writeFileSync(sablonYol, html);
+  } catch {
+    fs.writeFileSync(path.join(blogDizin, 'index.html'), listeBelgesi({
+      yazilar: [], sayfa: 1, sayfaSayisi: 1, baslik: 'Blog', aciklama: giris,
+      canonical: `${ORIGIN}/blog`, robots: 'index,follow', giris,
+    }));
+  } finally {
+    clearTimeout(zaman);
+  }
+}
+
+await anasayfaBlog();
 console.log(`seo: ${sayfalar.length} herkese açık sayfa`);

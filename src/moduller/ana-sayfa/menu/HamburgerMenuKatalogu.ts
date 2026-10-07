@@ -30,6 +30,16 @@ export type HamburgerKatalogOgesi = {
 
 export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = [
   {
+    itemKey: 'blog',
+    icon: 'reader-outline',
+    tint: RenkTokenlari.accent,
+    baslikKey: 'anaSayfa.menuBlog',
+    altKey: 'anaSayfa.menuBlogAlt',
+    href: 'https://www.tamuso.com/blog',
+    defaultGroup: 'kesfet',
+    defaultSort: 15,
+  },
+  {
     itemKey: 'live',
     icon: 'videocam-outline',
     tint: RenkTokenlari.live,

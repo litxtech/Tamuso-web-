@@ -436,6 +436,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['duyuru', 'announcement', 'yayın'],
   },
   {
+    icon: 'reader-outline',
+    label: 'Blog',
+    alt: 'Yazı · kategori · SEO',
+    href: '/admin/blog',
+    tint: RenkTokenlari.accent,
+    bolum: 'Ürün',
+    permissionKey: 'content.blog.view',
+    anahtarlar: ['blog', 'yazı', 'seo', 'makale'],
+  },
+  {
     icon: 'menu-outline',
     label: 'Hamburger menü',
     alt: 'Sıra · gizle · simülasyon',

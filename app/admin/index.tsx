@@ -38,6 +38,7 @@ import {
   type AdminModul,
 } from '../../src/moduller/admin/arama/AdminModulKatalogu';
 import { AdminAramaKutusu } from '../../src/moduller/admin/arama/AdminAramaKutusu';
+import { BlogIstatistik } from '../../src/moduller/blog/BlogIstatistik';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import { BoslukTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
@@ -213,6 +214,8 @@ export default function AdminHubEkrani() {
             {aramaSonuc.length} sayfa · Enter ile ilk sonuca git
           </Text>
         )}
+
+        {!aramaAktif ? <BlogIstatistik /> : null}
 
         {ADMIN_BOLUM_SIRASI.map((bolum) => {
           const items = gosterilecek.filter((m) => m.bolum === bolum);

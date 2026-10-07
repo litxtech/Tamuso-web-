@@ -3,5 +3,11 @@ Allow: /
 
 Disallow: /admin
 Disallow: /admin/
+Disallow: /blog/ara
+Disallow: /onizleme
+Disallow: /onizleme/
+Disallow: /arama
+Disallow: /*?search=
+Disallow: /*?q=
 
 Sitemap: https://www.tamuso.com/sitemap.xml

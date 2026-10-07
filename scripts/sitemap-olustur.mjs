@@ -56,7 +56,7 @@ function gitGunu(dosya) {
 
 function oncelik(url) {
   if (url === '/') return { priority: '1.0', changefreq: 'weekly' };
-  if (url === '/tanitim' || url === '/politika') return { priority: '0.8', changefreq: 'weekly' };
+  if (url === '/tanitim' || url === '/politika' || url === '/blog') return { priority: '0.8', changefreq: 'weekly' };
   return { priority: '0.6', changefreq: 'monthly' };
 }
 
@@ -84,6 +84,15 @@ for (const sayfa of sayfalar) {
   tekil.set(yol, { ...sayfa, gun: gitGunu(sayfa.kaynak) });
 }
 
+if (!tekil.has('/blog')) {
+  tekil.set('/blog', {
+    yol: '/blog',
+    title: 'Blog | Tamuso',
+    description: 'Karadeniz’den sosyal yaşama, şehir rehberlerinden Tamuso dünyasına kadar güncel içerikler.',
+    gun: '',
+  });
+}
+
 const sirali = [...tekil.values()].sort((a, b) => a.yol.localeCompare(b.yol));
 const govde = sirali
   .map((sayfa) => {
@@ -100,6 +109,26 @@ const govde = sirali
   })
   .join('\n');
 
-const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${govde}\n</urlset>\n`;
-fs.writeFileSync(cikti, xml);
+const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${govde}\n</urlset>\n`;
+const kayitYolu = path.join(kok, 'public', 'blog-url-kaydi.json');
+let ek = '';
+if (fs.existsSync(kayitYolu)) {
+  const kayit = JSON.parse(fs.readFileSync(kayitYolu, 'utf8'));
+  const satirlar = [];
+  for (const yol of kayit) {
+    if (!yol?.yol || typeof yol.yol !== 'string') continue;
+    const gecerli = yol.yol.startsWith('/blog') || /^\/(en|de|es|ar|ru)\/blog/.test(yol.yol) || yol.yol.startsWith('/yazar/');
+    if (!gecerli) continue;
+    const loc = `${ORIGIN}${yol.yol}`;
+    if (xml.includes(`<loc>${loc}</loc>`) || ek.includes(`<loc>${loc}</loc>`)) continue;
+    const satir = ['  <url>', `    <loc>${xmlKacis(loc)}</loc>`];
+    if (yol.lastmod) satir.push(`    <lastmod>${xmlKacis(yol.lastmod)}</lastmod>`);
+    if (yol.image) satir.push(`    <image:image><image:loc>${xmlKacis(yol.image)}</image:loc></image:image>`);
+    satir.push('    <priority>0.7</priority>', '  </url>');
+    satirlar.push(satir.join('\n'));
+  }
+  ek = satirlar.join('\n');
+}
+const ciktiXml = ek ? xml.replace('</urlset>', `${ek}\n</urlset>`) : xml;
+fs.writeFileSync(cikti, ciktiXml);
 console.log(`sitemap: ${sirali.length} herkese açık sayfa -> ${cikti}`);

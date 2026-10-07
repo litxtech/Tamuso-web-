@@ -56,7 +56,9 @@ function yuru(dizin, goreli = '') {
   return bulunan;
 }
 
-const yollar = [...new Set(yuru(appDizin))].sort((a, b) => b.length - a.length || a.localeCompare(b));
+const yollar = [...new Set(yuru(appDizin))]
+  .filter((yol) => yol === '/blog' || !yol.startsWith('/blog/'))
+  .sort((a, b) => b.length - a.length || a.localeCompare(b));
 const rewrites = yollar.map((source) => ({ source, destination: '/index.html' }));
 const vercel = JSON.parse(fs.readFileSync(vercelYol, 'utf8'));
 vercel.rewrites = rewrites;

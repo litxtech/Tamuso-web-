@@ -1,9 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs",
+    "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs && node scripts/blog-olustur.mjs",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/blog/:slug", "destination": "/api/blog-yol?slug=:slug" },
+    { "source": "/en/blog/:slug", "destination": "/api/blog-yol?lang=en&slug=:slug" },
+    { "source": "/de/blog/:slug", "destination": "/api/blog-yol?lang=de&slug=:slug" },
+    { "source": "/es/blog/:slug", "destination": "/api/blog-yol?lang=es&slug=:slug" },
+    { "source": "/ar/blog/:slug", "destination": "/api/blog-yol?lang=ar&slug=:slug" },
+    { "source": "/ru/blog/:slug", "destination": "/api/blog-yol?lang=ru&slug=:slug" },
     {
       "source": "/admin/duyurular/:id/izleyiciler",
       "destination": "/index.html"
@@ -101,6 +107,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/blog/onizleme/:id",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/finance/simulator",
       "destination": "/index.html"
     },
@@ -130,6 +140,10 @@
     },
     {
       "source": "/oyun/fruit-wheel-gecmis",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/kategoriler",
       "destination": "/index.html"
     },
     {
@@ -209,6 +223,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/blog/etiketler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/taslaklar",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/coin-paketleri",
       "destination": "/index.html"
     },
@@ -282,6 +304,10 @@
     },
     {
       "source": "/admin/ajanslar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/yayinda",
       "destination": "/index.html"
     },
     {
@@ -473,6 +499,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/blog/yeni",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/dogrulama",
       "destination": "/index.html"
     },
@@ -522,6 +552,18 @@
     },
     {
       "source": "/admin/ajanslar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/cop",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/seo",
       "destination": "/index.html"
     },
     {
@@ -725,6 +767,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/blog",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/ciro",
       "destination": "/index.html"
     },
@@ -918,6 +964,10 @@
     },
     {
       "source": "/sehir",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog",
       "destination": "/index.html"
     },
     {

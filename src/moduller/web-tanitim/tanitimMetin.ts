@@ -61,6 +61,7 @@ export type TanitimMetin = {
   navMeyve: string;
   navHakkinda: string;
   navPolitika: string;
+  navBlog: string;
   navDestek: string;
   navYatirim: string;
   navIsbirligi: string;
@@ -174,6 +175,7 @@ const TR: TanitimMetin = {
   navMeyve: 'Meyve oyunu',
   navHakkinda: 'Hakkında',
   navPolitika: 'Politikalar',
+  navBlog: 'Blog',
   navDestek: 'Canlı destek',
   navYatirim: 'Yatırım',
   navIsbirligi: 'İşbirliği',
@@ -315,6 +317,7 @@ const EN: TanitimMetin = {
   navMeyve: 'Fruit game',
   navHakkinda: 'About',
   navPolitika: 'Policies',
+  navBlog: 'Blog',
   navDestek: 'Live support',
   navYatirim: 'Investment',
   navIsbirligi: 'Partnership',
@@ -456,6 +459,7 @@ const ES: TanitimMetin = {
   navMeyve: 'Juego de frutas',
   navHakkinda: 'Acerca de',
   navPolitika: 'Políticas',
+  navBlog: 'Blog',
   navDestek: 'Soporte en vivo',
 };
 
@@ -555,6 +559,7 @@ const PT: TanitimMetin = {
   navMeyve: 'Jogo de frutas',
   navHakkinda: 'Sobre',
   navPolitika: 'Políticas',
+  navBlog: 'Blog',
   navDestek: 'Suporte ao vivo',
 };
 
@@ -653,6 +658,7 @@ const AR: TanitimMetin = {
   navMeyve: 'لعبة الفاكهة',
   navHakkinda: 'حول',
   navPolitika: 'السياسات',
+  navBlog: 'المدونة',
   navDestek: 'الدعم المباشر',
 };
 
@@ -751,6 +757,7 @@ const FR: TanitimMetin = {
   navMeyve: 'Jeu de fruits',
   navHakkinda: 'À propos',
   navPolitika: 'Politiques',
+  navBlog: 'Blog',
   navDestek: 'Support en direct',
 };
 
@@ -849,6 +856,7 @@ const FIL: TanitimMetin = {
   navMeyve: 'Larong prutas',
   navHakkinda: 'Tungkol',
   navPolitika: 'Mga patakaran',
+  navBlog: 'Blog',
   navDestek: 'Live na suporta',
 };
 

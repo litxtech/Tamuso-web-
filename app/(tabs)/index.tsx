@@ -4,6 +4,7 @@ import {
   BackHandler,
   DeviceEventEmitter,
   FlatList,
+  Linking,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -748,7 +749,13 @@ export default function HomeScreen() {
           acik={menuAcik}
           onAcikDegisti={setMenuAcik}
           ogeler={menuOgeleri}
-          onOgeSec={(href) => router.push(href as any)}
+          onOgeSec={(href) => {
+            if (href.startsWith('http://') || href.startsWith('https://')) {
+              void Linking.openURL(href);
+              return;
+            }
+            router.push(href as any);
+          }}
           profil={{
             displayName:
               profile?.display_name ??
