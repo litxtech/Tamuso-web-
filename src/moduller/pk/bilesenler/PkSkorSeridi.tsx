@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import type { PkCanliMacDetay } from '../skor/PkCanliMaciniGetir';
-import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
-import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { AktifSayiLocale } from '../../../i18n/diller';
 import { useCeviri } from '../../../i18n/useCeviri';
 
@@ -18,7 +15,7 @@ function kalanSaniye(endsAt: string | null): number | null {
   return Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 1000));
 }
 
-/** Canlı yayın üstünde PK skor çubuğu */
+/** TikTok tarzı şeffaf skor şeridi — videonun üstünde */
 export function PkSkorSeridi({ mac, selfLiveId }: Props) {
   const { dil } = useCeviri();
   const sayiLocale = AktifSayiLocale(dil);
@@ -36,100 +33,119 @@ export function PkSkorSeridi({ mac, selfLiveId }: Props) {
       ? '—'
       : `${Math.floor(kalan / 60)}:${String(kalan % 60).padStart(2, '0')}`;
 
-  const adA = mac.side_a?.host_name ?? 'A';
-  const adB = mac.side_b?.host_name ?? 'B';
-  const senA = selfLiveId && mac.live_a_id === selfLiveId;
-  const senB = selfLiveId && mac.live_b_id === selfLiveId;
+  const senA = !!(selfLiveId && mac.live_a_id === selfLiveId);
+  const adSol = (senA ? mac.side_a?.host_name : mac.side_b?.host_name) ?? '';
+  const adSag = (senA ? mac.side_b?.host_name : mac.side_a?.host_name) ?? '';
+  const skorSol = senA ? mac.score_a : mac.score_b;
+  const skorSag = senA ? mac.score_b : mac.score_a;
+  const oranSol = senA ? oranA : 100 - oranA;
 
   return (
     <View style={styles.wrap} pointerEvents="none">
-      <LinearGradient
-        colors={['rgba(18,14,28,0.88)', 'rgba(18,14,28,0.55)']}
-        style={styles.kart}
-      >
-        <View style={styles.ust}>
-          <Text style={styles.pk}>PK</Text>
+      <View style={styles.ust}>
+        <Text style={styles.skorSol}>{skorSol.toLocaleString(sayiLocale)}</Text>
+        <View style={styles.timerPill}>
           <Text style={styles.timer}>{timer}</Text>
         </View>
-        <View style={styles.isimler}>
-          <Text style={[styles.ad, senA && styles.sen]} numberOfLines={1}>
-            {adA}
-          </Text>
-          <Text style={styles.vs}>VS</Text>
-          <Text
-            style={[styles.ad, styles.adB, senB && styles.sen]}
-            numberOfLines={1}
-          >
-            {adB}
-          </Text>
-        </View>
-        <View style={styles.skorlar}>
-          <Text style={styles.skorA}>
-            {mac.score_a.toLocaleString(sayiLocale)}
-          </Text>
-          <Text style={styles.skorB}>
-            {mac.score_b.toLocaleString(sayiLocale)}
-          </Text>
-        </View>
-        <View style={styles.bar}>
-          <View style={[styles.barA, { width: `${oranA}%` as `${number}%` }]} />
-        </View>
-      </LinearGradient>
+        <Text style={styles.skorSag}>{skorSag.toLocaleString(sayiLocale)}</Text>
+      </View>
+      <View style={styles.bar}>
+        <View style={[styles.barSol, { width: `${oranSol}%` as `${number}%` }]} />
+        <View style={styles.barSag} />
+      </View>
+      <View style={styles.isimler}>
+        <Text style={styles.adSol} numberOfLines={1}>
+          {adSol}
+        </Text>
+        <Text style={styles.adSag} numberOfLines={1}>
+          {adSag}
+        </Text>
+      </View>
     </View>
   );
 }
 
+const golge = {
+  textShadowColor: 'rgba(0,0,0,0.65)',
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 3,
+} as const;
+
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: 12,
-    marginTop: 6,
-    zIndex: 5,
-  },
-  kart: {
-    borderRadius: YaricapTokenlari.lg,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(240,180,41,0.35)',
-    gap: 6,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 10,
+    gap: 4,
   },
   ust: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  pk: {
-    ...TipografiTokenlari.micro,
-    color: '#F0B429',
+  skorSol: {
+    ...TipografiTokenlari.h2,
+    fontSize: 26,
+    lineHeight: 30,
+    color: '#7DD3FC',
     fontWeight: '900',
-    letterSpacing: 1,
+    flex: 1,
+    ...golge,
   },
-  timer: { ...TipografiTokenlari.caption, color: RenkTokenlari.text, fontWeight: '700' },
+  skorSag: {
+    ...TipografiTokenlari.h2,
+    fontSize: 26,
+    lineHeight: 30,
+    color: '#F9A8D4',
+    fontWeight: '900',
+    flex: 1,
+    textAlign: 'right',
+    ...golge,
+  },
+  timerPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.28)',
+  },
+  timer: {
+    ...TipografiTokenlari.caption,
+    color: '#fff',
+    fontWeight: '800',
+  },
+  bar: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+  },
+  barSol: {
+    height: '100%',
+    backgroundColor: 'rgba(56,189,248,0.82)',
+  },
+  barSag: {
+    flex: 1,
+    height: '100%',
+    backgroundColor: 'rgba(244,114,182,0.82)',
+  },
   isimler: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  ad: {
-    ...TipografiTokenlari.caption,
-    color: '#60A5FA',
-    flex: 1,
-    fontWeight: '700',
-  },
-  adB: { color: '#F472B6', textAlign: 'right' },
-  sen: { textDecorationLine: 'underline' },
-  vs: { ...TipografiTokenlari.micro, color: RenkTokenlari.textDim },
-  skorlar: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
   },
-  skorA: { ...TipografiTokenlari.body, color: '#60A5FA', fontWeight: '800' },
-  skorB: { ...TipografiTokenlari.body, color: '#F472B6', fontWeight: '800' },
-  bar: {
-    height: 6,
-    borderRadius: YaricapTokenlari.pill,
-    backgroundColor: 'rgba(244,114,182,0.4)',
-    overflow: 'hidden',
+  adSol: {
+    ...TipografiTokenlari.micro,
+    color: 'rgba(255,255,255,0.92)',
+    fontWeight: '700',
+    flex: 1,
+    ...golge,
   },
-  barA: { height: '100%', backgroundColor: '#60A5FA' },
+  adSag: {
+    ...TipografiTokenlari.micro,
+    color: 'rgba(255,255,255,0.92)',
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'right',
+    ...golge,
+  },
 });

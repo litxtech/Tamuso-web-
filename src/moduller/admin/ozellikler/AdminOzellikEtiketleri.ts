@@ -142,6 +142,7 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
       'story_gifts_enabled',
       'story_discovery_enabled',
       'story_official_promotions_enabled',
+      'live_clip_story_enabled',
     ],
   },
   {
@@ -503,6 +504,11 @@ const OZELLIK_METINLERI: Record<string, AdminOzellikMetni> = {
   story_official_promotions_enabled: {
     baslik: 'Resmi hikaye promosyonu',
     aciklama: 'Admin resmi hikaye tepsi önceliğini açar.',
+  },
+  live_clip_story_enabled: {
+    baslik: 'Canlı kesit hikaye',
+    aciklama:
+      'Yayın sahibi canlı veya PK sırasında 15–30 sn kesit alıp hikaye olarak paylaşabilir.',
   },
   voice_room_music_enabled: {
     baslik: 'Ses odası müziği',

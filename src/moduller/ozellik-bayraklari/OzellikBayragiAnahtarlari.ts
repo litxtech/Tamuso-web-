@@ -62,6 +62,7 @@ export const OzellikBayragiAnahtarlari = [
   'story_gifts_enabled',
   'story_discovery_enabled',
   'story_official_promotions_enabled',
+  'live_clip_story_enabled',
   'voice_room_music_enabled',
   'music_ducking_enabled',
   'music_playlists_enabled',

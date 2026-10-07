@@ -6,6 +6,7 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Dimensions,
   Keyboard,
   Platform,
   Pressable,
@@ -34,8 +35,14 @@ import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
+import { CanliKesitPaneli } from '../../canli-kesit/CanliKesitPaneli';
+import {
+  CanliMuzikButonu,
+  CanliMuzikSheet,
+  CanliMuzikTemizlik,
+} from './CanliMuzikDinle';
 import { IcerikGuvenlikDugmesi } from '../../moderasyon/bilesenler/IcerikGuvenlikDugmesi';
-import { PkSkorSeridi } from '../../pk/bilesenler/PkSkorSeridi';
+import { PkIkiliSahne } from '../../pk/bilesenler/PkIkiliSahne';
 import type { PkCanliMacDetay } from '../../pk/skor/PkCanliMaciniGetir';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { AktifDil } from '../../../i18n';
@@ -80,6 +87,8 @@ type Props = {
   onBitir?: () => void;
   onCikis?: () => void;
   onPk?: () => void;
+  /** PK bitti — yayın açık kalır, tam ekrana dön */
+  onPkBitti?: () => void;
   onMeta?: (patch: Partial<CanliYayinMeta>) => void;
   pkMac?: PkCanliMacDetay | null;
   isGuest?: boolean;
@@ -119,6 +128,7 @@ export function CanliYayinTiyatro({
   onBitir,
   onCikis,
   onPk,
+  onPkBitti,
   onMeta,
   pkMac,
   isGuest = false,
@@ -127,6 +137,10 @@ export function CanliYayinTiyatro({
   const locale = DIL_LOCALE_MAP[AktifDil()];
   const insets = useSafeAreaInsets();
   const { yukseklik: klavyeH, acik: klavyeAcik } = useKlavyeYuksekligi(0);
+  /** Android modal resize etmeyebilir — ham klavye yüksekliği */
+  const [hamKlavye, setHamKlavye] = useState(0);
+  const [kokH, setKokH] = useState(0);
+  const tamYukseklik = useRef(0);
   const [yorumYenile, setYorumYenile] = useState(0);
   const [burst, setBurst] = useState<{ id: string; x: number; y: number } | null>(
     null,
@@ -137,9 +151,54 @@ export function CanliYayinTiyatro({
   const [kameraCevirBusy, setKameraCevirBusy] = useState(false);
   const [baglantiBanner, setBaglantiBanner] = useState<string | null>(null);
   const [izleyiciAcik, setIzleyiciAcik] = useState(false);
+  const [kesitAcik, setKesitAcik] = useState(false);
+  const [muzikAcik, setMuzikAcik] = useState(false);
   const [sureSn, setSureSn] = useState(0);
+  const [pkSonuc, setPkSonuc] = useState<{
+    kazanan: string;
+  } | null>(null);
+  const oncekiPk = useRef<PkCanliMacDetay | null>(null);
+  const tRef = useRef(t);
+  tRef.current = t;
   const begeniKilit = useRef(false);
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const show = Keyboard.addListener('keyboardDidShow', (e) => {
+      let h = e.endCoordinates?.height ?? 0;
+      if (h <= 0) {
+        const screenY = e.endCoordinates?.screenY ?? 0;
+        if (screenY > 0) {
+          h = Dimensions.get('screen').height - screenY;
+        }
+      }
+      setHamKlavye(Math.max(0, Math.round(h)));
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => setHamKlavye(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const once = oncekiPk.current;
+    oncekiPk.current = pkMac ?? null;
+    if (!once || pkMac) return;
+    const cevir = tRef.current;
+    const adA = once.side_a?.host_name ?? cevir('canliYayin.yayinciA');
+    const adB = once.side_b?.host_name ?? cevir('canliYayin.yayinciB');
+    const kazanan =
+      once.score_a === once.score_b
+        ? cevir('canliYayin.pkBerabere')
+        : cevir('canliYayin.pkKazanan', {
+            ad: once.score_a > once.score_b ? adA : adB,
+          });
+    setPkSonuc({ kazanan });
+    const id = setTimeout(() => setPkSonuc(null), 2800);
+    return () => clearTimeout(id);
+  }, [pkMac]);
 
   useEffect(() => {
     const bas = meta.started_at ? Date.parse(meta.started_at) : NaN;
@@ -301,31 +360,49 @@ export function CanliYayinTiyatro({
     [profilAc],
   );
 
-  // Yorumlar yalnızca composer + klavyenin hemen üstünde dursun.
-  // Eski: altBarH (klavye pad dahil) + klavyeH tekrar eklenince üst çentiğe fırlıyordu.
+  // Yorumlar composer'ın hemen üstünde. Android tam ekran modal çoğu
+  // cihazda resize etmez; kök kısalmadıysa ham klavye kadar kaldır.
+  // Kök zaten kısaldıysa tekrar ekleme — input üste fırlamasın.
+  const kuculme =
+    tamYukseklik.current > 0 && kokH > 0
+      ? Math.max(0, tamYukseklik.current - kokH)
+      : 0;
+  const androidKalkis = klavyeAcik
+    ? Math.max(0, hamKlavye - kuculme)
+    : 0;
+  const kalkis = Platform.OS === 'android' ? androidKalkis : klavyeAcik ? klavyeH : 0;
   const yorumBottom =
-    10 +
-    composerH +
-    (klavyeAcik
-      ? Platform.OS === 'ios'
-        ? klavyeH
-        : 0
-      : Math.max(insets.bottom, 8));
-  const altPad = klavyeAcik
-    ? Platform.OS === 'android'
-      ? 8
-      : Math.max(8, klavyeH)
-    : Math.max(insets.bottom, 8);
+    10 + composerH + (klavyeAcik ? kalkis : Math.max(insets.bottom, 8));
+  const altPad = klavyeAcik ? Math.max(8, kalkis) : Math.max(insets.bottom, 8);
   const yorumYukseklik = klavyeAcik ? 140 : 220;
 
   return (
-    <View style={styles.root}>
+    <View
+      style={styles.root}
+      onLayout={(e) => {
+        const h = Math.round(e.nativeEvent.layout.height);
+        if (h > tamYukseklik.current) tamYukseklik.current = h;
+        setKokH((prev) => (prev === h ? prev : h));
+      }}
+    >
       <Pressable style={styles.stage} onPress={ekranaDokun}>
-        <VideoKatmani
-          rol={rol}
-          mock={medyaMock}
-          durumYazi={medyaDurum ?? undefined}
-        />
+        {pkMac ? (
+          <PkIkiliSahne
+            rol={rol}
+            mock={medyaMock}
+            durumYazi={medyaDurum ?? undefined}
+            mac={pkMac}
+            selfLiveId={meta.id}
+            barUst={Math.max(8, insets.top) + 84}
+            onBitti={onPkBitti}
+          />
+        ) : (
+          <VideoKatmani
+            rol={rol}
+            mock={medyaMock}
+            durumYazi={medyaDurum ?? undefined}
+          />
+        )}
 
         {/* Hafif okunabilirlik — videoyu karartmaz */}
         <LinearGradient
@@ -350,7 +427,7 @@ export function CanliYayinTiyatro({
           <View
             style={[
               styles.baglantiBanner,
-              { top: Math.max(6, insets.top) + 52 },
+              { top: Math.max(6, insets.top) + 48 },
             ]}
             pointerEvents="none"
           >
@@ -358,11 +435,12 @@ export function CanliYayinTiyatro({
           </View>
         ) : null}
 
-        {/* Üst sol: yayıncı */}
+        {/* Üst: yayıncı solda, düğmeler sağda — tek satır */}
         <View
-          style={[styles.topOverlay, { paddingTop: Math.max(6, insets.top + 2) }]}
+          style={[styles.topOverlay, { paddingTop: Math.max(4, insets.top + 2) }]}
           pointerEvents="box-none"
         >
+          <View style={styles.ustSatir} pointerEvents="box-none">
           <View style={styles.hostSatir} pointerEvents="box-none">
             <Pressable
               style={styles.hostKart}
@@ -402,7 +480,7 @@ export function CanliYayinTiyatro({
             ) : null}
           </View>
 
-          <View style={styles.sagUst}>
+          <View style={styles.sagUst} pointerEvents="box-none">
             {walletCoins != null ? (
               <Pressable
                 style={styles.coinChipUst}
@@ -416,7 +494,7 @@ export function CanliYayinTiyatro({
                 accessibilityRole="button"
                 accessibilityLabel={t('canliYayin.a11yCoinYukle')}
               >
-                <Text style={styles.coinText}>
+                <Text style={styles.coinText} numberOfLines={1}>
                   🪙 {walletCoins.toLocaleString(locale)}
                 </Text>
                 {onCoinYukle ? (
@@ -448,6 +526,7 @@ export function CanliYayinTiyatro({
                 varyant="metin"
               />
             ) : null}
+            {rol === 'host' ? <CanliMuzikButonu onPress={() => setMuzikAcik(true)} /> : null}
             {rol === 'host' ? (
               <Pressable
                 onPress={() => {
@@ -476,11 +555,12 @@ export function CanliYayinTiyatro({
               <Ionicons name="close" size={20} color="#fff" />
             </Pressable>
           </View>
+          </View>
         </View>
 
-        {/* Chip satırı */}
+        {/* Chip satırı — host satırının hemen altı */}
         <View
-          style={[styles.chipSatir, { top: Math.max(6, insets.top) + 52 }]}
+          style={[styles.chipSatir, { top: Math.max(6, insets.top) + 50 }]}
           pointerEvents="box-none"
         >
           <View style={styles.chip}>
@@ -501,9 +581,16 @@ export function CanliYayinTiyatro({
           </View>
         </View>
 
-        {pkMac ? (
-          <View style={[styles.pkWrap, { top: Math.max(6, insets.top) + 88 }]}>
-            <PkSkorSeridi mac={pkMac} selfLiveId={meta.id} />
+        {pkSonuc ? (
+          <View
+            style={[styles.pkSonuc, { top: Math.max(6, insets.top) + 112 }]}
+            pointerEvents="none"
+          >
+            <Text style={styles.pkSonucBaslik}>{t('canliYayin.pkBitti')}</Text>
+            <Text style={styles.pkSonucKazanan}>{pkSonuc.kazanan}</Text>
+            {rol === 'host' ? (
+              <Text style={styles.pkSonucDevam}>{t('canliYayin.pkDevam')}</Text>
+            ) : null}
           </View>
         ) : null}
       </Pressable>
@@ -512,6 +599,7 @@ export function CanliYayinTiyatro({
       <View
         style={[
           styles.yorumFloat,
+          pkMac ? styles.yorumPkYan : null,
           { bottom: yorumBottom, height: yorumYukseklik },
         ]}
         pointerEvents="box-none"
@@ -525,6 +613,13 @@ export function CanliYayinTiyatro({
             baslikGizle
             maxMesaj={80}
             floatMod
+            ekSessionId={
+              pkMac
+                ? pkMac.live_a_id === meta.id
+                  ? pkMac.live_b_id ?? undefined
+                  : pkMac.live_a_id ?? undefined
+                : undefined
+            }
             onProfil={yorumProfilAc}
           />
         </ModulHataSiniri>
@@ -562,6 +657,20 @@ export function CanliYayinTiyatro({
                 </Pressable>
               ) : null}
               {rol === 'host' &&
+              currentUserId &&
+              currentUserId === meta.host_id &&
+              !isGuest &&
+              OzellikBayragiAktifMi('live_clip_story_enabled') ? (
+                <Pressable
+                  onPress={() => setKesitAcik(true)}
+                  style={styles.kesitBtn}
+                  accessibilityLabel={t('canliYayin.kesitPaylas')}
+                >
+                  <Ionicons name="film-outline" size={16} color="#fff" />
+                  <Text style={styles.kesitYazi}>{t('canliYayin.kesit')}</Text>
+                </Pressable>
+              ) : null}
+              {rol === 'host' &&
               OzellikBayragiAktifMi('pk_enabled') &&
               onPk ? (
                 <Pressable onPress={onPk} style={styles.aksiyonBtn}>
@@ -572,6 +681,35 @@ export function CanliYayinTiyatro({
           ) : null}
         </View>
       </View>
+
+      {rol === 'host' ? <CanliMuzikTemizlik /> : null}
+      {muzikAcik && rol === 'host' ? (
+        <CanliMuzikSheet onKapat={() => setMuzikAcik(false)} />
+      ) : null}
+
+      {kesitAcik && rol === 'host' ? (
+        <CanliKesitPaneli
+          kaynak={{
+            liveId: meta.id,
+            pkId: pkMac?.status === 'live' ? pkMac.id : null,
+            hostAd:
+              pkMac?.status === 'live'
+                ? (pkMac.side_a?.host_name ?? meta.hostAd)
+                : meta.hostAd,
+            rakipAd:
+              pkMac?.status === 'live'
+                ? pkMac.live_a_id === meta.id
+                  ? pkMac.side_b?.host_name
+                  : pkMac.side_a?.host_name
+                : null,
+          }}
+          onKapat={() => setKesitAcik(false)}
+          onPaylasildi={() => {
+            setKesitAcik(false);
+            Alert.alert(t('ortak.basarili'), t('canliYayin.kesitPaylasildi'));
+          }}
+        />
+      ) : null}
 
       <CanliIzleyiciPaneli
         sessionId={meta.id}
@@ -628,18 +766,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 6,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    gap: 8,
+    paddingHorizontal: 8,
   },
-  hostSatir: {
+  ustSatir: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flexShrink: 1,
-    maxWidth: '72%',
+    gap: 6,
+  },
+  hostSatir: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
   },
   hostKart: {
     flexDirection: 'row',
@@ -650,7 +789,8 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     borderRadius: YaricapTokenlari.pill,
     backgroundColor: 'rgba(0,0,0,0.28)',
-    maxWidth: '100%',
+    flexShrink: 1,
+    minWidth: 0,
   },
   avatar: {
     width: 38,
@@ -678,6 +818,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   takipBtn: {
+    flexShrink: 0,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: YaricapTokenlari.pill,
@@ -689,6 +830,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   takipEdildi: {
+    flexShrink: 0,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: YaricapTokenlari.pill,
@@ -702,7 +844,9 @@ const styles = StyleSheet.create({
   sagUst: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'flex-end',
+    gap: 4,
+    flexShrink: 0,
   },
   izleyiciChip: {
     flexDirection: 'row',
@@ -719,17 +863,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   kapatBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   kameraCevirBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -782,11 +926,36 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 10,
   },
-  pkWrap: {
+  pkSonuc: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 5,
+    alignSelf: 'center',
+    zIndex: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(12,8,16,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(240,180,41,0.45)',
+    alignItems: 'center',
+    gap: 4,
+    maxWidth: '80%',
+  },
+  pkSonucBaslik: {
+    ...TipografiTokenlari.micro,
+    color: '#F0B429',
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  pkSonucKazanan: {
+    ...TipografiTokenlari.body,
+    color: '#fff',
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  pkSonucDevam: {
+    ...TipografiTokenlari.caption,
+    color: 'rgba(255,255,255,0.78)',
+    textAlign: 'center',
   },
   yorumFloat: {
     position: 'absolute',
@@ -794,7 +963,11 @@ const styles = StyleSheet.create({
     width: '78%',
     maxWidth: 340,
     height: 220,
-    zIndex: 7,
+    zIndex: 8,
+  },
+  yorumPkYan: {
+    width: '68%',
+    maxWidth: 280,
   },
   altBar: {
     position: 'absolute',
@@ -816,6 +989,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingBottom: 2,
+  },
+  kesitBtn: {
+    height: 44,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.28)',
+  },
+  kesitYazi: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
   },
   aksiyonBtn: {
     width: 44,
@@ -839,12 +1028,16 @@ const styles = StyleSheet.create({
     gap: 3,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(240,180,41,0.4)',
+    flexShrink: 1,
+    maxWidth: 88,
+    minWidth: 0,
   },
   coinText: {
     ...TipografiTokenlari.micro,
     color: '#FFE08A',
     fontWeight: '800',
     fontSize: 12,
+    flexShrink: 1,
   },
   surePill: {
     flexDirection: 'row',

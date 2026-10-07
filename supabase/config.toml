@@ -68,3 +68,6 @@ verify_jwt = true
 [functions.blog-asistan]
 verify_jwt = true
 
+[functions.canli-kesit]
+verify_jwt = true
+

@@ -66,17 +66,29 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
     };
   }, [VideoViewComp, mock]);
 
-  // mediaStream gecikmeli gelince RTCView boş URL kalmasın — kısa poll
+  // İkinci yayında track geç gelir veya readyState 'ended' kalır.
+  // İzleyici SFU'dan görür; yerel VideoView ancak 'live' olunca bağlanır.
   useEffect(() => {
     if (mock) return;
     let n = 0;
     const id = setInterval(() => {
       n += 1;
-      setLocalVideo(LiveKitBaglantiYoneticisi.localVideoTrack());
-      setRemoteVideo(LiveKitBaglantiYoneticisi.remoteVideoTrack());
+      const yerel = LiveKitBaglantiYoneticisi.localVideoTrack();
+      const uzak = LiveKitBaglantiYoneticisi.remoteVideoTrack();
+      setLocalVideo(yerel);
+      setRemoteVideo(uzak);
       setStreamTick((x) => x + 1);
-      if (n >= 12) clearInterval(id);
-    }, 500);
+      const aday = rol === 'host' ? yerel : uzak ?? yerel;
+      const durum = aday?.mediaStreamTrack?.readyState;
+      if (durum === 'live' || n >= 40) clearInterval(id);
+      if (
+        rol === 'host' &&
+        n === 8 &&
+        (!yerel || durum === 'ended')
+      ) {
+        LiveKitBaglantiYoneticisi.kameraArkaPlandaDene(4);
+      }
+    }, 300);
     return () => clearInterval(id);
   }, [mock, rol]);
 
@@ -84,7 +96,16 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
     rol === 'host'
       ? localVideo
       : remoteVideo ?? localVideo;
-  const nativeOk = !mock && !!track && !!VideoViewComp;
+  const trackCanli = (() => {
+    if (!track) return false;
+    try {
+      const durum = track.mediaStreamTrack?.readyState;
+      return !durum || durum === 'live';
+    } catch {
+      return true;
+    }
+  })();
+  const nativeOk = !mock && !!track && trackCanli && !!VideoViewComp;
   // Ön kamera: ayna (selfie konforu). Arka kamera: düz (sağ/sol ters olmasın).
   const mirrorLocal = rol === 'host' && kameraFacing === 'user';
   void streamTick; // poll re-render — mediaStream.id güncellensin

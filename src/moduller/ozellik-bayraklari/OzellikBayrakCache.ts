@@ -75,6 +75,7 @@ export const YEREL_BAYRAKLAR: Record<OzellikBayragiAnahtari, boolean> = {
   story_gifts_enabled: false,
   story_discovery_enabled: false,
   story_official_promotions_enabled: false,
+  live_clip_story_enabled: true,
   voice_room_music_enabled: true,
   music_ducking_enabled: true,
   music_playlists_enabled: true,

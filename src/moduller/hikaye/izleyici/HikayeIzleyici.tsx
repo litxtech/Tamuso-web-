@@ -46,6 +46,8 @@ import {
   HikayeTepki,
 } from '../islemler/HikayeIslemleri';
 import { HikayeAnalitik } from '../islemler/HikayeAnalitik';
+import { AnalyticsOlayEkle } from '../../guvenlik/analytics/AnalyticsOlayEkle';
+import { CanliKesitKatil } from '../../canli-kesit/CanliKesitKatil';
 import { HikayeOgeSuresiMs, HikayeZamanMetni } from '../islemler/HikayeZaman';
 import { HikayeSuruklenebilirMetin } from '../besteci/HikayeSuruklenebilirMetin';
 import { HikayeIlerlemeCubugu } from './HikayeIlerlemeCubugu';
@@ -199,6 +201,20 @@ function paylasimRozetAl(
     return { kind: 'shared_agency', title: shared.text || 'Ajans', subtitle: null };
   }
   return null;
+}
+
+function kesitKaynagi(attachment?: Record<string, unknown> | null): {
+  liveId: string | null;
+  pkId: string | null;
+  pk: boolean;
+} | null {
+  if (!attachment) return null;
+  const kaynak = attachment.source_type;
+  if (kaynak !== 'live' && kaynak !== 'pk') return null;
+  const liveId = typeof attachment.ref_id === 'string' ? attachment.ref_id : null;
+  const pkId =
+    typeof attachment.source_pk_id === 'string' ? attachment.source_pk_id : null;
+  return { liveId, pkId, pk: kaynak === 'pk' };
 }
 
 type Props = {
@@ -470,6 +486,17 @@ export function HikayeIzleyici({
     () => (oge ? paylasimRozetAl(oge.overlays, oge.attachment) : null),
     [oge],
   );
+  const kesit = oge ? kesitKaynagi(oge.attachment) : null;
+  const kesitGoruldu = useRef<string | null>(null);
+  useEffect(() => {
+    if (!oge || !kesit || kesitGoruldu.current === oge.id) return;
+    kesitGoruldu.current = oge.id;
+    void AnalyticsOlayEkle('live_clip_story_viewed', {
+      item_id: oge.id,
+      live_id: kesit.liveId,
+      pk_id: kesit.pkId,
+    });
+  }, [oge, kesit]);
   const metinOverlays = useMemo(
     () => (oge?.overlays ?? []).filter((o) => o.type === 'text'),
     [oge],
@@ -885,7 +912,9 @@ export function HikayeIzleyici({
                     color="#fff"
                   />
                   <Text style={styles.paylasimBaslik} numberOfLines={1}>
-                    {paylasimRozet.title}
+                    {kesit
+                      ? t(kesit.pk ? 'canliYayin.kesitPk' : 'canliYayin.kesitRozet')
+                      : paylasimRozet.title}
                   </Text>
                   {paylasimRozet.subtitle ? (
                     <Text style={styles.paylasimAlt} numberOfLines={1}>
@@ -893,6 +922,14 @@ export function HikayeIzleyici({
                     </Text>
                   ) : null}
                 </View>
+              ) : null}
+
+              {kesit ? (
+                <CanliKesitKatil
+                  liveId={kesit.liveId}
+                  pkId={kesit.pkId}
+                  pk={kesit.pk}
+                />
               ) : null}
 
               {oge.caption && oge.media_type !== 'text' ? (
@@ -1030,7 +1067,16 @@ export function HikayeIzleyici({
               Alert.alert(t('ortak.basarili'), t('hikaye.sessizeAlindi'));
             })();
           }}
-          onBildir={() => setBildirAcik(true)}
+          onBildir={() => {
+            if (kesit) {
+              void AnalyticsOlayEkle('live_clip_reported', {
+                item_id: oge.id,
+                live_id: kesit.liveId,
+                pk_id: kesit.pkId,
+              });
+            }
+            setBildirAcik(true);
+          }}
         />
 
         <HikayeGoruntuleyenlerSheet

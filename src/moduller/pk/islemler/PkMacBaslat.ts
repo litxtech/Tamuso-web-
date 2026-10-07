@@ -28,6 +28,25 @@ export async function PkMacBaslat(input: {
   return { ok: true, matchId: row.id, endsAt: row.ends_at ?? null };
 }
 
+/** Süre dolunca PK biter. Yayın oturumu açık kalır. Erken bitirme yok. */
+export async function PkMacSuresiDoldu(matchId: string): Promise<{
+  ok: boolean;
+  status?: string;
+  winner?: string | null;
+  hata?: string;
+}> {
+  const { data, error } = await supabase.rpc('pk_mac_suresi_doldu', {
+    p_match_id: matchId,
+  });
+  if (error) return { ok: false, hata: error.message };
+  const row = data as { status?: string; winner_side?: string | null } | null;
+  return {
+    ok: true,
+    status: row?.status,
+    winner: row?.winner_side ?? null,
+  };
+}
+
 export async function PkMacBitir(
   matchId: string,
 ): Promise<{ ok: boolean; hata?: string }> {

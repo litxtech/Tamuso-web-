@@ -296,6 +296,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['oda', 'ses', 'room', 'yayın'],
   },
   {
+    icon: 'film-outline',
+    label: 'Story kesitleri',
+    alt: 'Canlı kesit · PK · süre · rapor',
+    href: '/admin/kesitler',
+    tint: RenkTokenlari.live,
+    bolum: 'Güvenlik',
+    permissionKey: 'stories.view',
+    anahtarlar: ['kesit', 'hikaye', 'story', 'clip'],
+  },
+  {
     icon: 'ribbon-outline',
     label: 'Ünvan Yönetimi',
     alt: 'Oluştur · tasarla · ata · geri al',
