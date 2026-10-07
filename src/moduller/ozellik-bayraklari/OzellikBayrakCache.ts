@@ -126,6 +126,16 @@ export const YEREL_BAYRAKLAR: Record<OzellikBayragiAnahtari, boolean> = {
   upload_activity_enabled: true,
   ai_music_activity_enabled: true,
   tournament_activity_enabled: false,
+  live_ui_follow_visible: true,
+  live_ui_coin_visible: true,
+  live_ui_viewers_visible: true,
+  live_ui_report_visible: true,
+  live_ui_music_visible: true,
+  live_ui_camera_visible: true,
+  live_ui_gift_visible: true,
+  live_ui_clip_visible: true,
+  live_ui_pk_visible: true,
+  live_ui_chat_visible: true,
 };
 
 export const YEREL_KILL: Record<KillSwitchAnahtari, boolean> = {

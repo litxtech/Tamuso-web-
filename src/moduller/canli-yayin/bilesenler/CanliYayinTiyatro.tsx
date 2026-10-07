@@ -25,6 +25,7 @@ import { CanliYorumAkisi } from './CanliYorumAkisi';
 import { CanliYorumComposer } from './CanliYorumComposer';
 import { CanliBegeniEfekti } from './CanliBegeniEfekti';
 import { CanliIzleyiciPaneli } from './CanliIzleyiciPaneli';
+import { CanliIzleyiciGeldi } from './CanliIzleyiciGeldi';
 import { CanliYayinBegen } from '../islemler/CanliYayinIslemleri';
 import { TakipEt } from '../../kullanici-profili/okuma/TakipIslemleri';
 import type { CanliSohbetMesajGorunum } from '../../canli-sohbet/bilesenler/CanliSohbetMesajKarti';
@@ -34,7 +35,7 @@ import { supabase } from '../../../lib/supabase';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
+import { useOzellikBayragi } from '../../ozellik-bayraklari/OzellikBayrakSaglayici';
 import { CanliKesitPaneli } from '../../canli-kesit/CanliKesitPaneli';
 import {
   CanliMuzikButonu,
@@ -161,6 +162,18 @@ export function CanliYayinTiyatro({
   const tRef = useRef(t);
   tRef.current = t;
   const begeniKilit = useRef(false);
+  const takipButon = useOzellikBayragi('live_ui_follow_visible');
+  const coinButon = useOzellikBayragi('live_ui_coin_visible');
+  const izleyiciButon = useOzellikBayragi('live_ui_viewers_visible');
+  const sikayetButon = useOzellikBayragi('live_ui_report_visible');
+  const muzikButon = useOzellikBayragi('live_ui_music_visible');
+  const kameraButon = useOzellikBayragi('live_ui_camera_visible');
+  const hediyeButon = useOzellikBayragi('live_ui_gift_visible');
+  const kesitButon = useOzellikBayragi('live_ui_clip_visible');
+  const pkButon = useOzellikBayragi('live_ui_pk_visible');
+  const yorumButon = useOzellikBayragi('live_ui_chat_visible');
+  const kesitSistem = useOzellikBayragi('live_clip_story_enabled');
+  const pkSistem = useOzellikBayragi('pk_enabled');
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -464,7 +477,7 @@ export function CanliYayinTiyatro({
               </View>
             </Pressable>
 
-            {rol === 'izleyici' && !takipEdildi ? (
+            {rol === 'izleyici' && !takipEdildi && takipButon ? (
               <Pressable
                 style={styles.takipBtn}
                 onPress={takipEt}
@@ -473,7 +486,7 @@ export function CanliYayinTiyatro({
                 <Text style={styles.takipYazi}>{t('canliYayin.takipEt')}</Text>
               </Pressable>
             ) : null}
-            {takipEdildi ? (
+            {takipEdildi && takipButon ? (
               <View style={styles.takipEdildi}>
                 <Text style={styles.takipEdildiYazi}>{t('canliYayin.takipEdildi')}</Text>
               </View>
@@ -481,7 +494,7 @@ export function CanliYayinTiyatro({
           </View>
 
           <View style={styles.sagUst} pointerEvents="box-none">
-            {walletCoins != null ? (
+            {walletCoins != null && coinButon ? (
               <Pressable
                 style={styles.coinChipUst}
                 onPress={() => {
@@ -502,6 +515,7 @@ export function CanliYayinTiyatro({
                 ) : null}
               </Pressable>
             ) : null}
+            {izleyiciButon ? (
             <Pressable
               style={styles.izleyiciChip}
               onPress={() => setIzleyiciAcik(true)}
@@ -516,7 +530,8 @@ export function CanliYayinTiyatro({
                   : meta.viewer_count}
               </Text>
             </Pressable>
-            {rol === 'izleyici' ? (
+            ) : null}
+            {rol === 'izleyici' && sikayetButon ? (
               <IcerikGuvenlikDugmesi
                 tur="live"
                 contentId={meta.id}
@@ -526,8 +541,10 @@ export function CanliYayinTiyatro({
                 varyant="metin"
               />
             ) : null}
-            {rol === 'host' ? <CanliMuzikButonu onPress={() => setMuzikAcik(true)} /> : null}
-            {rol === 'host' ? (
+            {rol === 'host' && muzikButon ? (
+              <CanliMuzikButonu onPress={() => setMuzikAcik(true)} />
+            ) : null}
+            {rol === 'host' && kameraButon ? (
               <Pressable
                 onPress={() => {
                   if (kameraCevirBusy) return;
@@ -595,6 +612,13 @@ export function CanliYayinTiyatro({
         ) : null}
       </Pressable>
 
+      <CanliIzleyiciGeldi
+        sessionId={meta.id}
+        currentUserId={currentUserId}
+        hostId={meta.host_id}
+        bottom={yorumBottom + yorumYukseklik + 8}
+      />
+
       {/* Yorumlar — alt barın üstünde, input'u örtmez */}
       <View
         style={[
@@ -636,18 +660,22 @@ export function CanliYayinTiyatro({
             if (h > 30 && Math.abs(h - composerH) > 2) setComposerH(h);
           }}
         >
-          <CanliYorumComposer
-            sessionId={meta.id}
-            canSend={canSend}
-            onNeedUpgrade={onNeedUpgrade}
-            onSent={() => {
-              setYorumYenile((n) => n + 1);
-            }}
-            placeholder={t('canliYayin.yorumEkle')}
-          />
+          {yorumButon ? (
+            <CanliYorumComposer
+              sessionId={meta.id}
+              canSend={canSend}
+              onNeedUpgrade={onNeedUpgrade}
+              onSent={() => {
+                setYorumYenile((n) => n + 1);
+              }}
+              placeholder={t('canliYayin.yorumEkle')}
+            />
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
           {!klavyeAcik ? (
             <View style={styles.aksiyonlar}>
-              {onHediye ? (
+              {onHediye && hediyeButon ? (
                 <Pressable
                   onPress={() => onHediye()}
                   style={styles.aksiyonBtn}
@@ -660,7 +688,8 @@ export function CanliYayinTiyatro({
               currentUserId &&
               currentUserId === meta.host_id &&
               !isGuest &&
-              OzellikBayragiAktifMi('live_clip_story_enabled') ? (
+              kesitButon &&
+              kesitSistem ? (
                 <Pressable
                   onPress={() => setKesitAcik(true)}
                   style={styles.kesitBtn}
@@ -671,7 +700,8 @@ export function CanliYayinTiyatro({
                 </Pressable>
               ) : null}
               {rol === 'host' &&
-              OzellikBayragiAktifMi('pk_enabled') &&
+              pkButon &&
+              pkSistem &&
               onPk ? (
                 <Pressable onPress={onPk} style={styles.aksiyonBtn}>
                   <Ionicons name="flash" size={20} color="#F0B429" />
@@ -683,11 +713,11 @@ export function CanliYayinTiyatro({
       </View>
 
       {rol === 'host' ? <CanliMuzikTemizlik /> : null}
-      {muzikAcik && rol === 'host' ? (
+      {muzikAcik && rol === 'host' && muzikButon ? (
         <CanliMuzikSheet onKapat={() => setMuzikAcik(false)} />
       ) : null}
 
-      {kesitAcik && rol === 'host' ? (
+      {kesitAcik && rol === 'host' && kesitButon && kesitSistem ? (
         <CanliKesitPaneli
           kaynak={{
             liveId: meta.id,

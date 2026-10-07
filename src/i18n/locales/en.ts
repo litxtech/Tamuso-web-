@@ -3887,6 +3887,8 @@ export const en: CeviriSozlugu = {
     kesitSn: "{{n}}s",
     kesitHazirlaniyor: "Preparing clip...",
     kesitKaydediliyor: "Processing video...",
+    kesitCekiliyor: "Recording clip",
+    kesitBitir: "Stop",
     kesitYukleniyor: "Uploading... {{n}}%",
     kesitYayinlaniyor: "Publishing story...",
     kesitHazir: "Your clip is ready 🎬",

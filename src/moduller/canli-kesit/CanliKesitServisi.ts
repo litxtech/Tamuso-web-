@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { OrtamDegiskenleri } from '../../yapilandirma/OrtamDegiskenleri';
 import { DepoyaMedyaYukle } from '../../ortak/medya/DepoyaMedyaYukle';
@@ -75,12 +76,16 @@ async function istekKapat(
   });
 }
 
-export async function canliKesitOlustur(opts: {
+export type KesitIstek = {
+  istekId: string;
+  maxBayt: number;
+  saniye: KesitSaniye;
+};
+
+export async function canliKesitIstekAc(opts: {
   kaynak: KesitKaynak;
   saniye: number;
-  sinyal?: AbortSignal;
-  onAsama?: (asama: 'kayit' | 'sunucu', oran: number) => void;
-}): Promise<KesitSonuc<KesitTaslak>> {
+}): Promise<KesitSonuc<KesitIstek>> {
   const saniye = kesitSaniyeNormalize(opts.saniye);
   const { data, error } = await supabase.rpc('canli_kesit_istek_ac', {
     p_live_id: opts.kaynak.liveId,
@@ -91,7 +96,6 @@ export async function canliKesitOlustur(opts: {
   });
   if (error) return { ok: false, hata: hataCevir(error.message), kod: 'istek' };
   const row = (data ?? {}) as {
-    ok?: boolean;
     request_id?: string;
     duration_ms?: number;
     max_bytes?: number;
@@ -105,6 +109,42 @@ export async function canliKesitOlustur(opts: {
   const sure = kesitSaniyeNormalize(
     typeof row.duration_ms === 'number' ? Math.round(row.duration_ms / 1000) : saniye,
   );
+  return { ok: true, data: { istekId, maxBayt, saniye: sure } };
+}
+
+export function canliKesitDosyadanTaslak(
+  istek: KesitIstek,
+  dosya: { uri: string; mime: string; bayt: number; width?: number | null; height?: number | null },
+): KesitTaslak {
+  return {
+    istekId: istek.istekId,
+    url: null,
+    yerelUri: dosya.uri,
+    mime: dosya.mime,
+    saniye: istek.saniye,
+    maxBayt: istek.maxBayt,
+    width: dosya.width ?? null,
+    height: dosya.height ?? null,
+    yol: null,
+  };
+}
+
+export async function canliKesitIstekBirak(
+  istekId: string,
+  durum: 'failed' | 'cancelled',
+): Promise<void> {
+  await istekKapat(istekId, durum);
+}
+
+export async function canliKesitOlustur(opts: {
+  kaynak: KesitKaynak;
+  saniye: number;
+  sinyal?: AbortSignal;
+  onAsama?: (asama: 'kayit' | 'sunucu', oran: number) => void;
+}): Promise<KesitSonuc<KesitTaslak>> {
+  const acildi = await canliKesitIstekAc({ kaynak: opts.kaynak, saniye: opts.saniye });
+  if (!acildi.ok) return acildi;
+  const { istekId, maxBayt, saniye: sure } = acildi.data;
 
   try {
     if (canliKesitYerelKayitVarMi()) {
@@ -146,45 +186,8 @@ export async function canliKesitOlustur(opts: {
       };
     }
 
-    opts.onAsama?.('sunucu', 0);
-    const bas = Date.now();
-    const toplam = sure * 1000 + 8000;
-    const nabiz = setInterval(() => {
-      opts.onAsama?.('sunucu', Math.min(0.95, (Date.now() - bas) / toplam));
-    }, 400);
-    const cagri = await supabase.functions.invoke('canli-kesit', {
-      body: { requestId: istekId },
-    });
-    clearInterval(nabiz);
-    if (opts.sinyal?.aborted) {
-      await istekKapat(istekId, 'cancelled');
-      return { ok: false, hata: i18n.t('canliYayin.kesitOlusturulamadi'), kod: 'iptal' };
-    }
-    const govde = (cagri.data ?? {}) as { ok?: boolean; url?: string; hata?: string };
-    if (cagri.error || !govde.ok || !govde.url) {
-      await istekKapat(istekId, 'failed');
-      return { ok: false, hata: i18n.t('canliYayin.kesitOlusturulamadi') };
-    }
-    olay('live_clip_created', {
-      live_id: opts.kaynak.liveId,
-      pk_id: opts.kaynak.pkId ?? null,
-      duration_sec: sure,
-      yol: 'livekit',
-    });
-    return {
-      ok: true,
-      data: {
-        istekId,
-        url: govde.url,
-        yerelUri: null,
-        mime: 'video/mp4',
-        saniye: sure,
-        maxBayt,
-        width: 720,
-        height: 1280,
-        yol: null,
-      },
-    };
+    await istekKapat(istekId, 'failed');
+    return { ok: false, hata: i18n.t('canliYayin.kesitVideoHazirlanamadi') };
   } catch (e) {
     const iptal = e instanceof Error && e.message === 'iptal';
     await istekKapat(istekId, iptal ? 'cancelled' : 'failed');
@@ -194,11 +197,33 @@ export async function canliKesitOlustur(opts: {
   }
 }
 
+/** iOS kamera QuickTime üretir. Hikaye oynatıcısı gerçek MP4 ister. */
+async function kesitMp4Yap(uri: string): Promise<string> {
+  if (Platform.OS === 'web') return uri;
+  try {
+    const { Video } = await import('react-native-compressor');
+    const out = await Video.compress(uri, {
+      compressionMethod: 'auto',
+      maxSize: 1280,
+      minimumFileSizeForCompress: 0,
+    });
+    const yol = typeof out === 'string' ? out.trim() : '';
+    if (!yol) return uri;
+    return yol.startsWith('file://') || yol.startsWith('content://')
+      ? yol
+      : `file://${yol}`;
+  } catch {
+    return uri;
+  }
+}
+
 async function yukle(taslak: KesitTaslak, onOran?: (n: number) => void): Promise<KesitSonuc<{ url: string; yol: string }>> {
   if (taslak.url && !taslak.yerelUri) {
     return { ok: true, data: { url: taslak.url, yol: taslak.yol ?? '' } };
   }
   if (!taslak.yerelUri) return { ok: false, hata: i18n.t('canliYayin.kesitVideoHazirlanamadi') };
+  const mp4 = await kesitMp4Yap(taslak.yerelUri);
+  taslak = { ...taslak, yerelUri: mp4, mime: 'video/mp4' };
   const uid = (await supabase.auth.getUser()).data.user?.id;
   if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
   const bayt = await HikayeDosyaBoyutuBayt(taslak.yerelUri);

@@ -1,20 +1,23 @@
 /** Kesit süre ve boyut kuralları — sunucu ile aynı sınırlar. */
 
+export const KESIT_MIN_SANIYE = 1;
+export const KESIT_MAX_SANIYE = 30;
 export const KESIT_SURELERI = [15, 20, 30] as const;
-export type KesitSaniye = (typeof KESIT_SURELERI)[number];
+export type KesitSaniye = number;
 
-export const KESIT_VARSAYILAN_SANIYE: KesitSaniye = 30;
+export const KESIT_VARSAYILAN_SANIYE = KESIT_MAX_SANIYE;
 export const KESIT_CAPTION_MAX = 300;
 /** story-media kovası 50MB. 30 sn için güvenli tavan. */
 export const KESIT_VARSAYILAN_MAX_BAYT = 18 * 1024 * 1024;
 
-export function kesitSuresiGecerliMi(saniye: number): saniye is KesitSaniye {
-  return (KESIT_SURELERI as readonly number[]).includes(saniye);
+export function kesitSuresiGecerliMi(saniye: number): boolean {
+  return Number.isInteger(saniye) && saniye >= KESIT_MIN_SANIYE && saniye <= KESIT_MAX_SANIYE;
 }
 
-export function kesitSaniyeNormalize(saniye: number | null | undefined): KesitSaniye {
-  if (saniye === 15 || saniye === 20 || saniye === 30) return saniye;
-  return KESIT_VARSAYILAN_SANIYE;
+export function kesitSaniyeNormalize(saniye: number | null | undefined): number {
+  const n = Math.round(Number(saniye));
+  if (!Number.isFinite(n)) return KESIT_VARSAYILAN_SANIYE;
+  return Math.min(KESIT_MAX_SANIYE, Math.max(KESIT_MIN_SANIYE, n));
 }
 
 export function kesitBoyutAsimi(bayt: number | null | undefined, maxBayt: number): boolean {

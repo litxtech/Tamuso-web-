@@ -3887,6 +3887,8 @@ export const tr = {
     kesitSn: "{{n}} sn",
     kesitHazirlaniyor: "Kesit hazırlanıyor...",
     kesitKaydediliyor: "Video işleniyor...",
+    kesitCekiliyor: "Kesit alınıyor",
+    kesitBitir: "Bitir",
     kesitYukleniyor: "Yükleniyor... {{n}}%",
     kesitYayinlaniyor: "Story yayınlanıyor...",
     kesitHazir: "Kesitin hazır 🎬",

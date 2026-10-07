@@ -3633,6 +3633,8 @@ export const pt: CeviriSozlugu = {
     kesitSn: "{{n}} s",
     kesitHazirlaniyor: "Preparando o clipe...",
     kesitKaydediliyor: "Processando vídeo...",
+    kesitCekiliyor: "Gravando o clipe",
+    kesitBitir: "Parar",
     kesitYukleniyor: "Enviando... {{n}}%",
     kesitYayinlaniyor: "Publicando story...",
     kesitHazir: "Seu clipe está pronto 🎬",

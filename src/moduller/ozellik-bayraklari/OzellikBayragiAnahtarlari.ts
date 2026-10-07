@@ -114,6 +114,16 @@ export const OzellikBayragiAnahtarlari = [
   'upload_activity_enabled',
   'ai_music_activity_enabled',
   'tournament_activity_enabled',
+  'live_ui_follow_visible',
+  'live_ui_coin_visible',
+  'live_ui_viewers_visible',
+  'live_ui_report_visible',
+  'live_ui_music_visible',
+  'live_ui_camera_visible',
+  'live_ui_gift_visible',
+  'live_ui_clip_visible',
+  'live_ui_pk_visible',
+  'live_ui_chat_visible',
 ] as const;
 
 export type OzellikBayragiAnahtari = (typeof OzellikBayragiAnahtarlari)[number];

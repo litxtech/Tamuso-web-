@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { useKlavyeYuksekligi } from '../../bilesenler/klavye/useKlavyeYuksekligi';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useCeviri } from '../../i18n/useCeviri';
 import { RenkTokenlari } from '../../tasarim-sistemi/RenkTokenlari';
@@ -15,19 +17,31 @@ import { YaricapTokenlari } from '../../tasarim-sistemi/BoslukVeYaricapTokenlari
 import { AnalyticsOlayEkle } from '../guvenlik/analytics/AnalyticsOlayEkle';
 import {
   KESIT_CAPTION_MAX,
+  KESIT_MAX_SANIYE,
   KESIT_SURELERI,
   KESIT_VARSAYILAN_SANIYE,
   type KesitSaniye,
 } from './canliKesitDogrulama';
 import {
+  CanliKesitKamera,
+  kesitKamerayiGeriVer,
+  type KesitKameraDosya,
+  type KesitKameraTutu,
+} from './CanliKesitKamera';
+import { canliKesitYerelKayitVarMi } from './CanliKesitKaydedici';
+import {
+  canliKesitDosyadanTaslak,
+  canliKesitIstekAc,
+  canliKesitIstekBirak,
   canliKesitOlustur,
   canliKesitVazgec,
   canliKesitYayinla,
+  type KesitIstek,
   type KesitKaynak,
   type KesitTaslak,
 } from './CanliKesitServisi';
 
-type Asama = 'sure' | 'kayit' | 'onizleme' | 'yukleme';
+type Asama = 'sure' | 'kayit' | 'baglaniyor' | 'onizleme' | 'yukleme';
 
 type Props = {
   kaynak: KesitKaynak;
@@ -58,27 +72,71 @@ function OnizlemeVideo({ uri }: { uri: string }) {
 
 export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
   const { t } = useCeviri();
-  const [asama, setAsama] = useState<Asama>('sure');
-  const [saniye, setSaniye] = useState<KesitSaniye>(KESIT_VARSAYILAN_SANIYE);
+  const [asama, setAsama] = useState<Asama>('kayit');
+  const [saniye, setSaniye] = useState<KesitSaniye>(15);
   const [oran, setOran] = useState(0);
   const [taslak, setTaslak] = useState<KesitTaslak | null>(null);
   const [caption, setCaption] = useState('');
   const [hata, setHata] = useState<string | null>(null);
+  const [istek, setIstek] = useState<KesitIstek | null>(null);
+  const [gecen, setGecen] = useState(0);
+  const kameraRef = useRef<KesitKameraTutu>(null);
+  const girdiRef = useRef<TextInput>(null);
+  const { yukseklik: klavyeY, acik: klavyeAcik } = useKlavyeYuksekligi(8);
   const iptal = useRef<AbortController | null>(null);
   const kilit = useRef(false);
+  const acildi = useRef(false);
+  const kapali = useRef(false);
+  const istekRef = useRef<KesitIstek | null>(null);
+  const yerel = canliKesitYerelKayitVarMi();
 
   useEffect(() => {
     return () => {
+      kapali.current = true;
       iptal.current?.abort();
+      const id = istekRef.current?.istekId;
+      if (id) void canliKesitIstekBirak(id, 'cancelled');
     };
   }, []);
+
+  useEffect(() => {
+    if (acildi.current) return;
+    acildi.current = true;
+    if (yerel) void baslat(KESIT_MAX_SANIYE);
+  }, []);
+
+  useEffect(() => {
+    if (asama !== 'kayit' || yerel) return;
+    const bas = Date.now();
+    const id = setInterval(() => {
+      setGecen(Math.min(KESIT_MAX_SANIYE, Math.floor((Date.now() - bas) / 1000)));
+    }, 200);
+    return () => clearInterval(id);
+  }, [asama, yerel]);
+
+  function klavyeyiKapat() {
+    girdiRef.current?.blur();
+    Keyboard.dismiss();
+  }
+
+  function istekYaz(sonraki: KesitIstek | null) {
+    istekRef.current = sonraki;
+    setIstek(sonraki);
+  }
 
   async function baslat(secim: KesitSaniye) {
     if (kilit.current) return;
     kilit.current = true;
+    const onceki = istekRef.current;
+    const devredildi = Boolean(onceki);
+    if (onceki) {
+      istekYaz(null);
+      void canliKesitIstekBirak(onceki.istekId, 'cancelled');
+    }
     setSaniye(secim);
     setHata(null);
     setOran(0);
+    setTaslak(null);
     setAsama('kayit');
     const kontrol = new AbortController();
     iptal.current = kontrol;
@@ -87,24 +145,79 @@ export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
       pk_id: kaynak.pkId ?? null,
       duration_sec: secim,
     });
-    const sonuc = await canliKesitOlustur({
-      kaynak,
-      saniye: secim,
-      sinyal: kontrol.signal,
-      onAsama: (_a, o) => setOran(o),
-    });
-    kilit.current = false;
-    if (!sonuc.ok) {
-      if (sonuc.kod === 'iptal') {
-        onKapat();
+    if (yerel) {
+      const sonuc = await canliKesitOlustur({
+        kaynak,
+        saniye: secim,
+        sinyal: kontrol.signal,
+        onAsama: (_a, o) => setOran(o),
+      });
+      kilit.current = false;
+      if (!sonuc.ok) {
+        if (devredildi) kesitKamerayiGeriVer();
+        if (sonuc.kod === 'iptal') {
+          onKapat();
+          return;
+        }
+        setHata(sonuc.hata);
+        setAsama('sure');
         return;
       }
-      setHata(sonuc.hata);
+      setTaslak(sonuc.data);
+      setAsama('onizleme');
+      return;
+    }
+    const acilan = await canliKesitIstekAc({ kaynak, saniye: secim });
+    kilit.current = false;
+    if (!acilan.ok) {
+      if (devredildi) kesitKamerayiGeriVer();
+      setHata(acilan.hata);
       setAsama('sure');
       return;
     }
-    setTaslak(sonuc.data);
+    if (kontrol.signal.aborted) {
+      if (devredildi) kesitKamerayiGeriVer();
+      await canliKesitIstekBirak(acilan.data.istekId, 'cancelled');
+      return;
+    }
+    istekYaz(acilan.data);
+  }
+
+  async function kameraBitti(dosya: KesitKameraDosya) {
+    setAsama('baglaniyor');
+    const acilan = await canliKesitIstekAc({ kaynak, saniye: dosya.saniye });
+    if (kapali.current) {
+      if (acilan.ok) void canliKesitIstekBirak(acilan.data.istekId, 'cancelled');
+      return;
+    }
+    if (!acilan.ok) {
+      setHata(acilan.hata);
+      setAsama('sure');
+      return;
+    }
+    if (dosya.bayt > acilan.data.maxBayt) {
+      setHata(t('canliYayin.kesitCokBuyuk'));
+      void canliKesitIstekBirak(acilan.data.istekId, 'failed');
+      setAsama('sure');
+      return;
+    }
+    void AnalyticsOlayEkle('live_clip_created', {
+      live_id: kaynak.liveId,
+      pk_id: kaynak.pkId ?? null,
+      duration_sec: acilan.data.saniye,
+      bytes: dosya.bayt,
+      yol: 'cihaz',
+    });
+    istekYaz(acilan.data);
+    setTaslak(canliKesitDosyadanTaslak(acilan.data, dosya));
     setAsama('onizleme');
+  }
+
+  function kameraHata() {
+    if (istek) void canliKesitIstekBirak(istek.istekId, 'failed');
+    istekYaz(null);
+    setHata(t('canliYayin.kesitOlusturulamadi'));
+    setAsama('sure');
   }
 
   async function paylas() {
@@ -129,6 +242,11 @@ export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
 
   async function vazgec() {
     iptal.current?.abort();
+    const acikIstek = istekRef.current;
+    if (acikIstek && !taslak) {
+      istekYaz(null);
+      await canliKesitIstekBirak(acikIstek.istekId, 'cancelled');
+    }
     await canliKesitVazgec(taslak);
     onKapat();
   }
@@ -137,29 +255,51 @@ export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
     const onceki = taslak;
     setTaslak(null);
     await canliKesitVazgec(onceki);
-    void baslat(saniye);
+    if (yerel) void baslat(saniye);
+    else {
+      setHata(null);
+      setGecen(0);
+      setAsama('kayit');
+    }
   }
 
   const onizlemeUri = taslak?.yerelUri || taslak?.url || null;
   const yuzde = Math.round(Math.min(1, Math.max(0, oran)) * 100);
 
   return (
-    <View style={styles.perde} pointerEvents="box-none">
+    <View
+      style={[styles.perde, klavyeAcik ? { paddingBottom: klavyeY } : null]}
+      pointerEvents="box-none"
+    >
+      <Pressable style={StyleSheet.absoluteFill} onPress={klavyeyiKapat} />
       <View style={styles.kart}>
         {asama === 'sure' ? (
           <>
             <Text style={styles.baslik}>{t('canliYayin.kesitSure')}</Text>
-            <View style={styles.sureSatir}>
-              {KESIT_SURELERI.map((sn) => (
-                <Pressable
-                  key={sn}
-                  onPress={() => void baslat(sn)}
-                  style={[styles.sureBtn, sn === KESIT_VARSAYILAN_SANIYE && styles.sureBtnVarsayilan]}
-                >
-                  <Text style={styles.sureYazi}>{t('canliYayin.kesitSn', { n: sn })}</Text>
-                </Pressable>
-              ))}
-            </View>
+            {yerel ? (
+              <View style={styles.sureSatir}>
+                {KESIT_SURELERI.map((sn) => (
+                  <Pressable
+                    key={sn}
+                    onPress={() => void baslat(sn)}
+                    style={[styles.sureBtn, sn === KESIT_VARSAYILAN_SANIYE && styles.sureBtnVarsayilan]}
+                  >
+                    <Text style={styles.sureYazi}>{t('canliYayin.kesitSn', { n: sn })}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => {
+                  setHata(null);
+                  setGecen(0);
+                  setAsama('kayit');
+                }}
+                style={styles.ana}
+              >
+                <Text style={styles.anaYazi}>{t('canliYayin.kesitTekrar')}</Text>
+              </Pressable>
+            )}
             {hata ? <Text style={styles.hata}>{hata}</Text> : null}
             <Pressable onPress={onKapat} style={styles.hayalet}>
               <Text style={styles.hayaletYazi}>{t('ortak.iptal')}</Text>
@@ -169,32 +309,83 @@ export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
 
         {asama === 'kayit' ? (
           <>
-            <Text style={styles.baslik}>{t('canliYayin.kesitHazirlaniyor')}</Text>
-            <Text style={styles.alt}>
-              {t('canliYayin.kesitKaydediliyor')} {yuzde}%
-            </Text>
-            <ActivityIndicator color="#fff" />
+            <Text style={styles.baslik}>{t('canliYayin.kesitCekiliyor')}</Text>
+            {!yerel ? (
+              <View style={styles.cekKutu}>
+                <CanliKesitKamera
+                  ref={kameraRef}
+                  onBasladi={() => setGecen(0)}
+                  onDone={(dosya) => void kameraBitti(dosya)}
+                  onError={kameraHata}
+                />
+                <View style={styles.sureRozeti} pointerEvents="none">
+                  <Text style={styles.sureRozetiYazi}>
+                    {t('canliYayin.kesitSn', { n: gecen })}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.alt}>
+                  {t('canliYayin.kesitKaydediliyor')} {yuzde}%
+                </Text>
+                <ActivityIndicator color="#fff" />
+                <View style={styles.sureSatir}>
+                  {KESIT_SURELERI.map((sn) => (
+                    <Pressable
+                      key={sn}
+                      onPress={() => void baslat(sn)}
+                      style={[styles.sureBtn, sn === saniye && styles.sureBtnVarsayilan]}
+                    >
+                      <Text style={styles.sureYazi}>{t('canliYayin.kesitSn', { n: sn })}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+            {!yerel ? (
+              <Pressable onPress={() => kameraRef.current?.durdur()} style={styles.ana}>
+                <Text style={styles.anaYazi}>{t('canliYayin.kesitBitir')}</Text>
+              </Pressable>
+            ) : null}
             <Pressable onPress={() => void vazgec()} style={styles.hayalet}>
               <Text style={styles.hayaletYazi}>{t('ortak.iptal')}</Text>
             </Pressable>
           </>
         ) : null}
 
+        {asama === 'baglaniyor' ? (
+          <>
+            <Text style={styles.baslik}>{t('canliYayin.kesitHazirlaniyor')}</Text>
+            <ActivityIndicator color="#fff" />
+          </>
+        ) : null}
+
         {asama === 'onizleme' && onizlemeUri ? (
           <>
             <Text style={styles.baslik}>{t('canliYayin.kesitHazir')}</Text>
-            <View style={styles.onizlemeKutu}>
-              <OnizlemeVideo uri={onizlemeUri} />
-              <View style={styles.rozet} pointerEvents="none">
-                <Text style={styles.rozetYazi}>
-                  {kaynak.pkId
-                    ? `PK · ${kaynak.hostAd ?? ''} × ${kaynak.rakipAd ?? ''}`
-                    : t('canliYayin.kesitCanliYayindan')}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.sessizNot}>{t('canliYayin.kesitOnizlemeSessiz')}</Text>
+            {klavyeAcik ? null : (
+              <>
+                <View style={styles.onizlemeKutu}>
+                  <OnizlemeVideo uri={onizlemeUri} />
+                  <View style={styles.rozet} pointerEvents="none">
+                    <Text style={styles.rozetYazi}>
+                      {kaynak.pkId
+                        ? `PK · ${kaynak.hostAd ?? ''} × ${kaynak.rakipAd ?? ''}`
+                        : t('canliYayin.kesitCanliYayindan')}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.sessizNot}>{t('canliYayin.kesitOnizlemeSessiz')}</Text>
+              </>
+            )}
+            {klavyeAcik ? (
+              <Pressable onPress={klavyeyiKapat} style={styles.klavyeKapat}>
+                <Text style={styles.hayaletYazi}>{t('ortak.tamam')}</Text>
+              </Pressable>
+            ) : null}
             <TextInput
+              ref={girdiRef}
               value={caption}
               onChangeText={(v) => setCaption(v.slice(0, KESIT_CAPTION_MAX))}
               placeholder={t('canliYayin.kesitCaption')}
@@ -202,9 +393,19 @@ export function CanliKesitPaneli({ kaynak, onKapat, onPaylasildi }: Props) {
               style={styles.girdi}
               maxLength={KESIT_CAPTION_MAX}
               multiline
+              blurOnSubmit
+              submitBehavior="blurAndSubmit"
+              returnKeyType="done"
+              onSubmitEditing={klavyeyiKapat}
             />
             {hata ? <Text style={styles.hata}>{hata}</Text> : null}
-            <Pressable onPress={() => void paylas()} style={styles.ana}>
+            <Pressable
+              onPress={() => {
+                klavyeyiKapat();
+                void paylas();
+              }}
+              style={styles.ana}
+            >
               <Text style={styles.anaYazi}>{t('canliYayin.kesitStoryPaylas')}</Text>
             </Pressable>
             <View style={styles.altSatir}>
@@ -265,6 +466,24 @@ const styles = StyleSheet.create({
   },
   sureBtnVarsayilan: { backgroundColor: RenkTokenlari.accent },
   sureYazi: { color: '#fff', fontWeight: '800' },
+  cekKutu: {
+    alignSelf: 'center',
+    width: 210,
+    height: 372,
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
+  sureRozeti: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  sureRozetiYazi: { color: '#fff', fontSize: 16, fontWeight: '800' },
   onizlemeKutu: {
     alignSelf: 'center',
     width: 140,
@@ -290,6 +509,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.55)',
     textAlign: 'center',
   },
+  klavyeKapat: { alignSelf: 'flex-end', paddingVertical: 4, paddingHorizontal: 4 },
   girdi: {
     minHeight: 44,
     maxHeight: 88,

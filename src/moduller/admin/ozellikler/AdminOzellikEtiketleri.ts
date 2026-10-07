@@ -38,6 +38,22 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
     ],
   },
   {
+    id: 'canli-buton',
+    baslik: 'Canlı yayın butonları',
+    flagKeys: [
+      'live_ui_follow_visible',
+      'live_ui_coin_visible',
+      'live_ui_viewers_visible',
+      'live_ui_report_visible',
+      'live_ui_music_visible',
+      'live_ui_camera_visible',
+      'live_ui_gift_visible',
+      'live_ui_clip_visible',
+      'live_ui_pk_visible',
+      'live_ui_chat_visible',
+    ],
+  },
+  {
     id: 'mesaj',
     baslik: 'Mesaj',
     flagKeys: [
@@ -233,6 +249,46 @@ const OZELLIK_METINLERI: Record<string, AdminOzellikMetni> = {
   gifts_enabled: {
     baslik: 'Hediyeler',
     aciklama: 'Oda ve yayında hediye gönderme özelliğini kontrol eder.',
+  },
+  live_ui_follow_visible: {
+    baslik: 'Takip butonu',
+    aciklama: 'Kapalıyken canlı yayın ekranındaki takip butonu gizlenir.',
+  },
+  live_ui_coin_visible: {
+    baslik: 'Coin butonu',
+    aciklama: 'Kapalıyken yayındaki coin bakiyesi ve yükleme butonu gizlenir.',
+  },
+  live_ui_viewers_visible: {
+    baslik: 'İzleyici butonu',
+    aciklama: 'Kapalıyken izleyici sayısı gizlenir.',
+  },
+  live_ui_report_visible: {
+    baslik: 'Şikayet butonu',
+    aciklama: 'Kapalıyken izleyicinin şikayet butonu gizlenir.',
+  },
+  live_ui_music_visible: {
+    baslik: 'Müzik butonu',
+    aciklama: 'Kapalıyken yayıncının müzik butonu gizlenir.',
+  },
+  live_ui_camera_visible: {
+    baslik: 'Kamerayı çevir',
+    aciklama: 'Kapalıyken yayıncının kamera çevirme butonu gizlenir.',
+  },
+  live_ui_gift_visible: {
+    baslik: 'Hediye butonu',
+    aciklama: 'Kapalıyken yayındaki hediye butonu gizlenir.',
+  },
+  live_ui_clip_visible: {
+    baslik: 'Kesit butonu',
+    aciklama: 'Kapalıyken yayıncının kesit paylaşma butonu gizlenir.',
+  },
+  live_ui_pk_visible: {
+    baslik: 'PK butonu',
+    aciklama: 'Kapalıyken yayıncının PK butonu gizlenir.',
+  },
+  live_ui_chat_visible: {
+    baslik: 'Yorum kutusu',
+    aciklama: 'Kapalıyken canlı yayındaki yorum yazma kutusu gizlenir.',
   },
   pk_enabled: {
     baslik: 'PK / düello',

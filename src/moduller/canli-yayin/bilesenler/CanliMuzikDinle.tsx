@@ -51,6 +51,17 @@ function bildir() {
   for (const fn of dinleyiciler) fn(calanId);
 }
 
+/** Kesit kaydı ses oturumunu bölmüşse aynı parçayı sürdürür. */
+export function canliMuzikDevam() {
+  const p = player;
+  if (!p) return;
+  try {
+    p.play();
+  } catch {
+    /* oturum hâlâ kilitliyse yayın ekranı parçayı yeniden seçer */
+  }
+}
+
 export function canliMuzikDurdur() {
   const p = player;
   player = null;

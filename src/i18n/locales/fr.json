@@ -3456,6 +3456,8 @@
     "kesitSn": "{{n}} s",
     "kesitHazirlaniyor": "Préparation de l’extrait...",
     "kesitKaydediliyor": "Traitement de la vidéo...",
+    "kesitCekiliyor": "Enregistrement de l’extrait",
+    "kesitBitir": "Arrêter",
     "kesitYukleniyor": "Envoi... {{n}}%",
     "kesitYayinlaniyor": "Publication de la story...",
     "kesitHazir": "Ton extrait est prêt 🎬",
