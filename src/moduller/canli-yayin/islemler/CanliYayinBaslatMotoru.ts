@@ -11,7 +11,6 @@ import {
   MedyaOdasiKes,
 } from '../../livekit/MedyaBaglantisi';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
-import { KameraOnizlemeSerbestBirak } from '../../livekit/kamera/KameraOnizlemeKilidi';
 import { MedyaIzinleriniIste } from '../../livekit/izin/MedyaIzinleriniIste';
 import {
   CanliYayinBaslat,
@@ -64,6 +63,12 @@ const CONNECT_TIMEOUT_MS = 18_000;
 const MAX_RETRY = 3;
 
 let kilit = false;
+let baslatNesli = 0;
+
+/** Uygulama arka plana geçince süren açılışı iptal eder. */
+export function CanliYayinBaslatIptalEt() {
+  baslatNesli += 1;
+}
 
 function log(msg: string, extra?: Record<string, unknown>) {
   if (__DEV__) {
@@ -140,6 +145,8 @@ export async function CanliYayinBaslatMotoru(input: {
     return { ok: false, hata: i18n.t('canliYayin.zatenBaslatiliyor') };
   }
   kilit = true;
+  const nesil = baslatNesli;
+  const iptalEdildi = () => nesil !== baslatNesli;
   const t0 = Date.now();
   const metrik: Partial<CanliBaslatMetrik> = {};
   const countdownSn = input.countdownSn ?? 3;
@@ -157,15 +164,15 @@ export async function CanliYayinBaslatMotoru(input: {
     progress({ durum: 'preparing', asama: 'permissions', mesaj: i18n.t('canliYayin.hazirlaniyor') });
     log('permissions_ready');
 
-    // Önceki yarım bağlantıyı temizle + stüdyo kamerasını serbest bırak
-    await MedyaOdasiKes().catch(() => undefined);
-    await KameraOnizlemeSerbestBirak(2_800).catch(() => undefined);
-
-    const izin = await MedyaIzinleriniIste({
+    // İzin ve eski oda aynı anda. Kamera önizlemesi hâlâ açıkken bırakmayı bekleme.
+    const izinP = MedyaIzinleriniIste({
       mikrofon: true,
       kamera: input.videoEnabled,
       amac: 'yayin',
     });
+    const kesP = MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+
+    const [izin] = await Promise.all([izinP, kesP]);
     if (!izin.ok) {
       progress({ durum: 'failed', mesaj: izin.hata });
       return {
@@ -178,6 +185,10 @@ export async function CanliYayinBaslatMotoru(input: {
 
     metrik.button_to_countdown_ms = Date.now() - t0;
     progress({ durum: 'countdown', countdown: countdownSn });
+    // Geri sayım stüdyo CameraView'i kapatır; yakalama bu sırada başlar.
+    if (input.videoEnabled && AktifRtcSaglayici() !== 'agora') {
+      LiveKitBaglantiYoneticisi.kameraOncedenAc();
+    }
 
     // Server session + LiveKit paralel (countdown süresinde)
     const tToken = Date.now();
@@ -198,7 +209,7 @@ export async function CanliYayinBaslatMotoru(input: {
     const countdownPromise = (async () => {
       for (let n = countdownSn; n >= 1; n--) {
         progress({ durum: 'countdown', countdown: n });
-        await sleep(700);
+        await sleep(380);
       }
     })();
 
@@ -242,7 +253,9 @@ export async function CanliYayinBaslatMotoru(input: {
               ? i18n.t('canliYayin.baglaniyor')
               : i18n.t('canliYayin.baglantiRetry', { attempt, max: MAX_RETRY }),
         });
-        await MedyaOdasiKes().catch(() => undefined);
+        if (attempt > 1) {
+          await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+        }
         medya = await withTimeout(
           MedyaOdasiBaglan({
             roomName,
@@ -289,26 +302,46 @@ export async function CanliYayinBaslatMotoru(input: {
       mesaj: i18n.t('canliYayin.yayinAciliyor'),
     });
 
-    // Video açıksa track attach olana kadar bekle (RN SDP gecikmesi)
+    // Bağlanırken kamera zaten yayınlandıysa ikinci kez bekleme.
     if (input.videoEnabled && AktifRtcSaglayici() === 'agora') {
       await MedyaKameraAcVeBekle(8_000);
-    } else if (input.videoEnabled) {
-      await KameraOnizlemeSerbestBirak(1_500).catch(() => undefined);
-      const camOk = await LiveKitBaglantiYoneticisi.kameraAcVeBekle(8_000);
-      if (!camOk && !LiveKitBaglantiYoneticisi.localVideoYayindaMi()) {
-        // Yayın düşmesin — sesle CANLI'ya al, kamera arka planda bağlansın
+    } else if (input.videoEnabled && !LiveKitBaglantiYoneticisi.localVideoTrack()) {
+      const camOk = await LiveKitBaglantiYoneticisi.kameraAcVeBekle(2_500);
+      if (!camOk) {
         log('camera_pending_background_retry');
-        LiveKitBaglantiYoneticisi.kameraArkaPlandaDene(8);
-      } else if (!LiveKitBaglantiYoneticisi.localVideoTrack()) {
-        log('camera_pending_attach');
         LiveKitBaglantiYoneticisi.kameraArkaPlandaDene(4);
       } else {
         log('camera_published');
       }
+    } else if (input.videoEnabled) {
+      log('camera_published');
     }
     log('microphone_published');
 
+    if (iptalEdildi()) {
+      await CanliYayinBitir(session.id).catch(() => undefined);
+      await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+      sessionId = null;
+      return {
+        ok: false as const,
+        hata: i18n.t('canliYayin.yayinBitti'),
+        stage: 'completed' as const,
+        metrik,
+      };
+    }
+
     const aktif = await CanliYayinAktifEt(session.id);
+    if (iptalEdildi()) {
+      await CanliYayinBitir(session.id).catch(() => undefined);
+      await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+      sessionId = null;
+      return {
+        ok: false as const,
+        hata: i18n.t('canliYayin.yayinBitti'),
+        stage: 'server_active' as const,
+        metrik,
+      };
+    }
     if (!aktif.ok) {
       logErr('server_live_status_active', aktif.hata);
       progress({ durum: 'failed', asama: 'server_active', mesaj: aktif.hata });

@@ -40,12 +40,14 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
     () => LiveKitBaglantiYoneticisi.kameraFacingAl(),
   );
   const [streamTick, setStreamTick] = useState(0);
+  const [nesil, setNesil] = useState(0);
 
   useEffect(() => {
     return LiveKitBaglantiYoneticisi.videoDinle((s) => {
       setLocalVideo(s.localVideo);
       setRemoteVideo(s.remoteVideo);
       setKameraFacing(s.kameraFacing);
+      setNesil(s.nesil ?? 0);
     });
   }, []);
 
@@ -118,7 +120,7 @@ export const CanliYayinVideoSahne = React.memo(function CanliYayinVideoSahne({
       return '';
     }
   })();
-  const trackKey = `${track?.sid ?? 'none'}-${streamId || 'waiting'}`;
+  const trackKey = `${track?.sid ?? 'none'}-${streamId || 'waiting'}-${nesil}`;
 
   if (!mock && AktifRtcSaglayici() === 'agora') {
     return (

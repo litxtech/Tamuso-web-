@@ -24,6 +24,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import * as FileSystem from 'expo-file-system/legacy';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ModulHataSiniri } from '../../../ortak/hata-sinirlari/ModulHataSiniri';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -224,7 +225,64 @@ type Props = {
   onKapat?: () => void;
 };
 
-function HikayeVideo({
+function kesitAdresiMi(uri: string): boolean {
+  return uri.includes('/kesit-');
+}
+
+/**
+ * iPhone kesiti QuickTime olarak kaydolur ve moov atomu dosyanın sonundadır.
+ * Uzak .mp4 adresi bu yüzden hikayede açılmaz; önce önbelleğe indirilir.
+ */
+function HikayeVideo(props: {
+  uri: string;
+  posterUri?: string | null;
+  paused: boolean;
+  muted?: boolean;
+  trimStartSn?: number;
+  trimEndSn?: number | null;
+  onHazir?: () => void;
+}) {
+  const kesit = kesitAdresiMi(props.uri);
+  const [kaynak, setKaynak] = useState<string | null>(kesit ? null : props.uri);
+
+  useEffect(() => {
+    if (!kesit) {
+      setKaynak(props.uri);
+      return;
+    }
+    let iptal = false;
+    const ad = props.uri.split('/').pop()?.split('?')[0] || 'kesit.mp4';
+    const hedef = `${FileSystem.cacheDirectory ?? ''}${ad}`;
+    void (async () => {
+      try {
+        const bilgi = await FileSystem.getInfoAsync(hedef);
+        if (bilgi.exists && 'size' in bilgi && Number(bilgi.size) > 0) {
+          if (!iptal) setKaynak(hedef);
+          return;
+        }
+        const indir = await FileSystem.downloadAsync(props.uri, hedef);
+        if (!iptal) setKaynak(indir.status === 200 ? indir.uri : props.uri);
+      } catch {
+        if (!iptal) setKaynak(props.uri);
+      }
+    })();
+    return () => {
+      iptal = true;
+    };
+  }, [kesit, props.uri]);
+
+  if (!kaynak) {
+    return (
+      <View style={[StyleSheet.absoluteFill, styles.medyaYukle]}>
+        <ActivityIndicator color="#fff" />
+      </View>
+    );
+  }
+
+  return <HikayeVideoOynatici {...props} uri={kaynak} />;
+}
+
+function HikayeVideoOynatici({
   uri,
   posterUri,
   paused,
@@ -251,6 +309,7 @@ function HikayeVideo({
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
     p.muted = muted;
+    p.audioMixingMode = 'mixWithOthers';
     try {
       p.volume = muted ? 0 : 1;
     } catch {

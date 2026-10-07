@@ -22,7 +22,10 @@ import {
   LiveKitGlobalsKaydet,
 } from '../polyfill/LiveKitGlobalsKaydet';
 import i18n from '../../../i18n';
-import { KameraOnizlemeSerbestBirak } from '../kamera/KameraOnizlemeKilidi';
+import {
+  KameraOnizlemeSerbestBirak,
+  KameraOnizlemeTutuluyorMu,
+} from '../kamera/KameraOnizlemeKilidi';
 import { SesHataMetni } from './SesHataMetni';
 
 /** 1:1 görüşme — WhatsApp benzeri: düşük gecikme, az kasma */
@@ -146,7 +149,88 @@ type VideoDinleyici = (state: {
   remoteIds: string[];
   /** user = ön (ayna), environment = arka (düz) */
   kameraFacing: 'user' | 'environment';
+  nesil: number;
 }) => void;
+
+type MedyaBolumIstegi = { numAudios?: number; numVideos?: number };
+
+type LiveKitMotor = {
+  isClosed?: boolean;
+  pcManager?: unknown;
+  client?: {
+    onMediaSectionsRequirement?: (requirement: MedyaBolumIstegi) => void;
+    __tamusoPazarlik?: boolean;
+  };
+  addMediaSections?: (numAudios: number, numVideos: number) => void;
+  negotiate?: () => Promise<void>;
+};
+
+type OdaMotoru = Room & {
+  engine?: LiveKitMotor;
+  maybeCreateEngine?: () => void;
+  recreateEngine?: (sendLeave?: boolean) => void;
+};
+
+function pcYoneticiKapali(e: unknown): boolean {
+  const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+  return /PC manager is closed|cannot negotiate on closed engine/i.test(msg);
+}
+
+/**
+ * livekit-client `onMediaSectionsRequirement` → `negotiate()` sözünü yakalamaz.
+ * Kopuş sırasında PC kapanınca bu, konsola uncaught NegotiationError basar.
+ * Motor yeniden kurulunca (reconnect) aynı sarmalayıcıyı tekrar tak.
+ */
+function pazarlikReddiniYut(room: Room): void {
+  const motor = (room as OdaMotoru).engine;
+  const client = motor?.client;
+  if (!motor || !client || client.__tamusoPazarlik) return;
+  client.__tamusoPazarlik = true;
+  client.onMediaSectionsRequirement = (requirement) => {
+    if (motor.isClosed || !motor.pcManager) return;
+    try {
+      motor.addMediaSections?.(
+        requirement?.numAudios ?? 0,
+        requirement?.numVideos ?? 0,
+      );
+      void motor.negotiate?.().catch((e: unknown) => {
+        if (pcYoneticiKapali(e) || motor.isClosed || !motor.pcManager) return;
+        console.warn('[LiveKit] negotiate', e);
+      });
+    } catch (e) {
+      if (pcYoneticiKapali(e)) return;
+      console.warn('[LiveKit] media sections', e);
+    }
+  };
+}
+
+function motorYenilemesiniSar(room: Room): void {
+  const hedef = room as OdaMotoru;
+  const maybe = hedef.maybeCreateEngine;
+  if (typeof maybe === 'function' && !(maybe as { __tamuso?: boolean }).__tamuso) {
+    const orig = maybe.bind(hedef);
+    const sarilmis = () => {
+      orig();
+      pazarlikReddiniYut(room);
+    };
+    (sarilmis as { __tamuso?: boolean }).__tamuso = true;
+    hedef.maybeCreateEngine = sarilmis;
+  }
+  const recreate = hedef.recreateEngine;
+  if (
+    typeof recreate === 'function' &&
+    !(recreate as { __tamuso?: boolean }).__tamuso
+  ) {
+    const orig = recreate.bind(hedef);
+    const sarilmis = (sendLeave?: boolean) => {
+      orig(sendLeave);
+      pazarlikReddiniYut(room);
+    };
+    (sarilmis as { __tamuso?: boolean }).__tamuso = true;
+    hedef.recreateEngine = sarilmis;
+  }
+  pazarlikReddiniYut(room);
+}
 
 function globalsKaydet() {
   try {
@@ -186,10 +270,19 @@ class LiveKitBaglantiYoneticisiImpl {
   private uzakSesHacmi = 1;
   /** Bu oturumda yayın hakkı var mı (host/speaker). Dinleyici false. */
   private asPublisher = false;
+  /** Yayıncı kamerayı açık istiyor — arka plandan dönüşte yeniden açılır. */
+  private kameraIstenenAcik = false;
+  /** VideoView yeniden bağlansın diye artar. */
+  private onizlemeNesil = 0;
+  private oneGetirme: Promise<void> | null = null;
   /** Uygulama mikrofonu açık istiyor mu — reconnect setTimeout mute'u ezmesin */
   private micIstenenAcik = false;
   /** bilerek kes / rol upgrade — UI "Bağlantı koptu" göstermesin */
   private kasitliKes = false;
+  /** Yayın odası bağlanmadan açılan yerel kamera — ilk kare gecikmesin */
+  private onKamera: LocalVideoTrack | null = null;
+  private kameraAcma: Promise<LocalVideoTrack | null> | null = null;
+  private kameraNesil = 0;
 
   /** Track'e yazılacak seviye (Android dinleyicide boost; yayıncıda AEC için 1×) */
   private uzakSesUygulanacak(): number {
@@ -335,11 +428,23 @@ class LiveKitBaglantiYoneticisiImpl {
 
   private videoDurumu() {
     return {
-      localVideo: this.localVideoTrack(),
+      localVideo: this.localVideoTrack() ?? this.onKameraCanli(),
       remoteVideo: this.remoteVideoTrack(),
       remoteIds: this.remoteParticipantIds(),
       kameraFacing: this.kameraFacing,
+      nesil: this.onizlemeNesil,
     };
+  }
+
+  private onKameraCanli(): LocalVideoTrack | null {
+    const t = this.onKamera;
+    if (!t) return null;
+    try {
+      if (t.mediaStreamTrack?.readyState === 'ended') return null;
+    } catch {
+      return null;
+    }
+    return t;
   }
 
   private yayinlaVideo() {
@@ -386,14 +491,13 @@ class LiveKitBaglantiYoneticisiImpl {
    */
   async kameraAcVeBekle(timeoutMs = 5_000): Promise<boolean> {
     const basla = Date.now();
-    if (this.localVideoTrack()) {
+    const mevcut = this.localVideoTrack();
+    const mevcutCanli =
+      !!mevcut && mevcut.mediaStreamTrack?.readyState !== 'ended';
+    if (mevcutCanli) {
       this.yayinlaVideo();
       return true;
     }
-    // Expo CameraView hâlâ tutuyorsa önce serbest bırakmayı bekle
-    await KameraOnizlemeSerbestBirak(
-      Math.min(2_000, Math.max(400, timeoutMs / 2)),
-    ).catch(() => undefined);
 
     while (Date.now() - basla < timeoutMs) {
       if (this.room?.state !== ConnectionState.Connected) return false;
@@ -402,26 +506,86 @@ class LiveKitBaglantiYoneticisiImpl {
         this.yayinlaVideo();
         return true;
       }
-      // Publish uçuşta — yıkıcı unpublish yapmadan bekle
-      if (this.localVideoYayindaMi()) {
-        await new Promise((r) => setTimeout(r, 220));
-        if (this.localVideoTrack()) {
-          this.yayinlaVideo();
-          return true;
-        }
-        // Publication var ama track yok — yine de "yayında" say (UI poll bağlar)
-        if (Date.now() - basla > timeoutMs * 0.65) {
-          this.yayinlaVideo();
-          return true;
-        }
+      if (this.localVideoTrack()) {
+        this.yayinlaVideo();
+        return true;
       }
-      await new Promise((r) => setTimeout(r, 280));
+      await new Promise((r) => setTimeout(r, 160));
     }
-    if (this.localVideoTrack() || this.localVideoYayindaMi()) {
+    if (this.localVideoTrack()) {
       this.yayinlaVideo();
       return true;
     }
     return false;
+  }
+
+  /** Geri sayımda stüdyo kamerası kapanır kapanmaz yakalamayı başlat. */
+  kameraOncedenAc(): void {
+    if (Platform.OS === 'web') return;
+    void (async () => {
+      if (Platform.OS !== 'web') {
+        const native = livekitNativeAl();
+        if (native) await this.sesOturumuHazirla(native).catch(() => undefined);
+      }
+      const track = await this.yerelKameraHazirla();
+      if (track) this.yayinlaVideo();
+    })();
+  }
+
+  private async yerelKameraHazirla(): Promise<LocalVideoTrack | null> {
+    const yayinda = this.localVideoTrack();
+    if (yayinda) {
+      try {
+        if (yayinda.mediaStreamTrack?.readyState !== 'ended') return yayinda;
+      } catch {
+        /* yeniden aç */
+      }
+    }
+    const hazir = this.onKameraCanli();
+    if (hazir) return hazir;
+    if (this.kameraAcma) return this.kameraAcma;
+    const nesil = this.kameraNesil;
+    let is: Promise<LocalVideoTrack | null>;
+    is = (async () => {
+      await KameraOnizlemeSerbestBirak(700).catch(() => undefined);
+      if (nesil !== this.kameraNesil) return null;
+      const tekrar = this.onKameraCanli();
+      if (tekrar) return tekrar;
+      try {
+        const track = await createLocalVideoTrack(this.videoCaptureOpts());
+        if (nesil !== this.kameraNesil) {
+          try {
+            track.stop();
+          } catch {
+            /* iptal */
+          }
+          return null;
+        }
+        this.onKamera = track;
+        this.yayinlaVideo();
+        return track;
+      } catch (e) {
+        console.warn('[LiveKit] kamera ön açma', e);
+        return null;
+      } finally {
+        if (this.kameraAcma === is) this.kameraAcma = null;
+      }
+    })();
+    this.kameraAcma = is;
+    return is;
+  }
+
+  private onKamerayiDurdur() {
+    this.kameraNesil += 1;
+    this.kameraAcma = null;
+    const t = this.onKamera;
+    this.onKamera = null;
+    if (!t) return;
+    try {
+      t.stop();
+    } catch {
+      /* zaten kapalı */
+    }
   }
 
   /**
@@ -543,6 +707,8 @@ class LiveKitBaglantiYoneticisiImpl {
     if (input.publishVideo) this.kameraFacing = 'user';
     // undefined → false (dinleyici güvenli); sadece açık true yayıncı
     this.asPublisher = !!input.asPublisher;
+    if (this.asPublisher && input.publishVideo) this.kameraIstenenAcik = true;
+    else if (!this.asPublisher) this.kameraIstenenAcik = false;
     const ayniOdaCanli =
       !input.mock &&
       !input.token.startsWith('mock.') &&
@@ -649,7 +815,10 @@ class LiveKitBaglantiYoneticisiImpl {
       }
     }
 
-    await this.baglantiyiKesIc({ rolSifirla: false });
+    await this.baglantiyiKesIc({
+      rolSifirla: false,
+      kameraKoru: !!input.publishVideo,
+    });
     if (nesil !== this.baglantiNesil) {
       return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
     }
@@ -707,9 +876,13 @@ class LiveKitBaglantiYoneticisiImpl {
           ? input.sesOdasi
           : !gorusme && !input.publishVideo;
       const videoYayin = !!input.publishVideo && !gorusme;
+      // Canlı (yayıncı veya izleyici): RN VideoView boyutu geç gelir.
+      // adaptiveStream / dynacast ilk kareyi saniyelerce tutar.
+      const canliVideo = !sesOdasi && !gorusme;
       const room = new Room({
-        adaptiveStream: sesOdasi ? false : { pixelDensity: 'screen' },
-        dynacast: !sesOdasi,
+        adaptiveStream:
+          canliVideo || sesOdasi ? false : { pixelDensity: 'screen' },
+        dynacast: !canliVideo && !sesOdasi,
         stopLocalTrackOnUnpublish: true,
         audioCaptureDefaults: {
           ...SES_ODA_CAPTURE,
@@ -734,17 +907,13 @@ class LiveKitBaglantiYoneticisiImpl {
           : videoYayin
             ? {
                 ...SES_ODA_PUBLISH,
-                simulcast: true,
-                videoSimulcastLayers: [
-                  VideoPresets.h180,
-                  VideoPresets.h360,
-                  VideoPresets.h720,
-                ],
+                simulcast: false,
                 videoEncoding: VideoPresets.h720.encoding,
-                degradationPreference: 'balanced',
+                degradationPreference: 'maintain-framerate',
               }
             : SES_ODA_PUBLISH,
       });
+      motorYenilemesiniSar(room);
       this.room = room;
 
       const yenile = () => this.yayinlaVideo();
@@ -877,16 +1046,15 @@ class LiveKitBaglantiYoneticisiImpl {
       await this.hoparlorGucluAc();
       this.uzakSesleriGucluAc();
 
-      // Kamera, mic'ten BAĞIMSIZ — mute host da görüntü yayınlayabilsin
+      // Kamera, mic'ten BAĞIMSIZ — mute host da görüntü yayınlayabilsin.
+      // Yakalama geri sayımda başladıysa burada yalnız publish edilir.
       if (this.asPublisher && input.publishVideo) {
-        // Expo CameraView serbest bırakılmadan WebRTC kamera açılmaz
-        await KameraOnizlemeSerbestBirak(2_800).catch(() => undefined);
         if (nesil !== this.baglantiNesil) {
           await this.odayiGuvenliKes(room);
           if (this.room === room) this.room = null;
           return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
         }
-        const camOk = await this.kameraAcVeBekle(7_500);
+        const camOk = await this.kameraAcVeBekle(4_000);
         if (!camOk) {
           // Odayı düşürme — sesle devam, kamera arka planda bağlansın
           console.warn(
@@ -1321,12 +1489,44 @@ class LiveKitBaglantiYoneticisiImpl {
     }
     const opts = this.videoCaptureOpts();
 
-    // Zaten track varsa dokunma — gereksiz unpublish yayın keser
-    if (this.localVideoTrack()) {
-      const pub = lp.getTrackPublication(Track.Source.Camera);
-      if (pub?.isMuted) await pub.unmute().catch(() => undefined);
-      this.yayinlaVideo();
-      return true;
+    const hazir = await this.yerelKameraHazirla();
+    if (hazir && room.state === ConnectionState.Connected) {
+      try {
+        if (hazir.mediaStreamTrack?.readyState === 'ended') {
+          if (this.onKamera === hazir) this.onKamera = null;
+        } else {
+          const pub = lp.getTrackPublication(Track.Source.Camera);
+          if (pub?.track !== hazir) {
+            await lp.publishTrack(hazir, { source: Track.Source.Camera });
+          }
+          if (this.onKamera === hazir) this.onKamera = null;
+          const yeni = lp.getTrackPublication(Track.Source.Camera);
+          if (yeni?.isMuted) await yeni.unmute().catch(() => undefined);
+          this.yayinlaVideo();
+          return true;
+        }
+      } catch (e) {
+        console.warn('[LiveKit] hazır kamera publish', e);
+      }
+    }
+
+    // Ölü track (önceki yayın) yerel önizlemeyi karartır; izleyici SFU'dan görür.
+    const mevcutVideo = this.localVideoTrack();
+    if (mevcutVideo) {
+      const hazir = mevcutVideo.mediaStreamTrack?.readyState;
+      if (hazir === 'ended') {
+        await lp.unpublishTrack(mevcutVideo).catch(() => undefined);
+        try {
+          mevcutVideo.stop();
+        } catch {
+          /* zaten kapalı */
+        }
+      } else {
+        const pub = lp.getTrackPublication(Track.Source.Camera);
+        if (pub?.isMuted) await pub.unmute().catch(() => undefined);
+        this.yayinlaVideo();
+        return true;
+      }
     }
 
     for (let i = 0; i < 4; i++) {
@@ -1520,6 +1720,7 @@ class LiveKitBaglantiYoneticisiImpl {
   }
 
   setLocalVideoEnabled(enabled: boolean) {
+    this.kameraIstenenAcik = enabled && this.asPublisher;
     void (async () => {
       try {
         if (enabled) await this.kameraAcVeBekle(4_000);
@@ -1568,6 +1769,63 @@ class LiveKitBaglantiYoneticisiImpl {
   }
 
   /**
+   * Uygulama öne gelince: sesi tazele, kapanan kamerayı yeniden yayınla.
+   * iOS arka planda kamerayı kapatır; track 'ended' kalırsa görüntü dönmez.
+   */
+  kamerayiOneGetir(): Promise<void> {
+    if (this.oneGetirme) return this.oneGetirme;
+    let is: Promise<void>;
+    is = this.kamerayiOneGetirIc().finally(() => {
+      if (this.oneGetirme === is) this.oneGetirme = null;
+    });
+    this.oneGetirme = is;
+    return is;
+  }
+
+  private async kamerayiOneGetirIc(): Promise<void> {
+    await this.sesOturumunuYenile(false);
+    const room = this.room;
+    if (!room || room.state !== ConnectionState.Connected) return;
+    if (
+      this.asPublisher &&
+      this.kameraIstenenAcik &&
+      !KameraOnizlemeTutuluyorMu()
+    ) {
+      const lp = room.localParticipant;
+      const mevcut = this.localVideoTrack();
+      const bitti = !mevcut || mevcut.mediaStreamTrack?.readyState === 'ended';
+      if (!bitti && mevcut) {
+        try {
+          await mevcut.restartTrack(this.videoCaptureOpts());
+          const pub = lp.getTrackPublication(Track.Source.Camera);
+          if (pub?.isMuted) await pub.unmute().catch(() => undefined);
+        } catch (e) {
+          console.warn('[LiveKit] kamera geri', e);
+          await lp.unpublishTrack(mevcut).catch(() => undefined);
+          try {
+            mevcut.stop();
+          } catch {
+            /* zaten kapalı */
+          }
+          await this.kameraAcVeBekle(5_000);
+        }
+      } else {
+        if (mevcut) {
+          await lp.unpublishTrack(mevcut).catch(() => undefined);
+          try {
+            mevcut.stop();
+          } catch {
+            /* zaten kapalı */
+          }
+        }
+        await this.kameraAcVeBekle(5_000);
+      }
+    }
+    this.onizlemeNesil += 1;
+    this.yayinlaVideo();
+  }
+
+  /**
    * Hoparlör + uzak hacim — soft. Tam configure için sesOturumunuYenile(true).
    */
   private async sesPipelineGucluAc(): Promise<void> {
@@ -1575,10 +1833,10 @@ class LiveKitBaglantiYoneticisiImpl {
     this.uzakSesleriGucluAc();
   }
 
-  async baglantiyiKes() {
+  async baglantiyiKes(hizli = false) {
     this.baglantiNesil += 1;
     try {
-      await this.sirayaAl(() => this.baglantiyiKesIc());
+      await this.sirayaAl(() => this.baglantiyiKesIc({ hizli }));
     } catch {
       /* caller'a unhandled rejection sızmasın */
     }
@@ -1651,9 +1909,15 @@ class LiveKitBaglantiYoneticisiImpl {
     }
   }
 
-  private async baglantiyiKesIc(opts?: { rolSifirla?: boolean }) {
+  private async baglantiyiKesIc(opts?: {
+    rolSifirla?: boolean;
+    hizli?: boolean;
+    kameraKoru?: boolean;
+  }) {
     const rolSifirla = opts?.rolSifirla !== false;
+    const hizli = !!opts?.hizli;
     this.kasitliKes = true;
+    if (!opts?.kameraKoru) this.onKamerayiDurdur();
     try {
       const room = this.room;
       // Connecting/Reconnecting iken disconnect → LeaveRequest + STATE_MISMATCH.
@@ -1664,7 +1928,7 @@ class LiveKitBaglantiYoneticisiImpl {
           room.state === ConnectionState.Reconnecting ||
           room.state === ConnectionState.SignalReconnecting)
       ) {
-        await this.bagliOlanaKadarBekle(12_000);
+        await this.bagliOlanaKadarBekle(hizli ? 700 : 12_000);
       }
       // Hâlâ mid-flight (yavaş ICE) — kısa ikinci bekleme
       if (
@@ -1672,12 +1936,12 @@ class LiveKitBaglantiYoneticisiImpl {
         (room.state === ConnectionState.Reconnecting ||
           room.state === ConnectionState.SignalReconnecting)
       ) {
-        await this.bagliOlanaKadarBekle(8_000);
+        await this.bagliOlanaKadarBekle(hizli ? 400 : 8_000);
       }
       // room'u disconnect bitmeden null'lama — paralel baglan eski WS ile yarışmasın
       if (room && room.state !== ConnectionState.Disconnected) {
         await this.odayiGuvenliKes(room);
-        await this.odaDuseneKadarBekle(room, 3_000);
+        await this.odaDuseneKadarBekle(room, hizli ? 800 : 3_000);
       }
       if (this.room === room) this.room = null;
     } catch {
@@ -1685,7 +1949,7 @@ class LiveKitBaglantiYoneticisiImpl {
       if (this.room) this.room = null;
     }
     try {
-      if (this.audioSessionAcik) {
+      if (!opts?.kameraKoru && this.audioSessionAcik) {
         // iOS: registerGlobals/setupIOSAudioManagement oturumu yönetir —
         // agresif stop sonraki odada uzak sesi kırabilir. Android'de kapat.
         if (Platform.OS === 'android') {
@@ -1696,16 +1960,17 @@ class LiveKitBaglantiYoneticisiImpl {
           }
         }
         this.audioSessionAcik = false;
+        this.sonSesImza = null;
       }
       this.roomName = null;
-      this.sonSesImza = null;
-      this.kameraFacing = 'user';
+      if (!opts?.kameraKoru) this.kameraFacing = 'user';
       // uzakSesHacmi korunur — tercih kullanıcı slider'ında; kesince 1'e çekme
       if (rolSifirla) {
         this.gorusmeModu = false;
         this.sesOdasiModu = false;
         this.asPublisher = false;
         this.micIstenenAcik = false;
+        this.kameraIstenenAcik = false;
       }
       this.durum = 'disconnected';
       this.speakerGuvenliTemizle();
@@ -1731,6 +1996,7 @@ class LiveKitBaglantiYoneticisiImpl {
 const globalKayit = globalThis as typeof globalThis & {
   __tamusoLiveKitYoneticisi?: LiveKitBaglantiYoneticisiImpl;
   __tamusoLiveKitAppState?: boolean;
+  __tamusoLiveKitAppStateSub?: { remove: () => void };
 };
 
 export const LiveKitBaglantiYoneticisi =
@@ -1739,23 +2005,23 @@ export const LiveKitBaglantiYoneticisi =
     new LiveKitBaglantiYoneticisiImpl());
 
 // Fast Refresh: global singleton eski prototipte kalırsa yeni metotları bağla
-if (
-  typeof (LiveKitBaglantiYoneticisi as { kameraFacingAl?: unknown })
-    .kameraFacingAl !== 'function'
-) {
-  Object.setPrototypeOf(
-    LiveKitBaglantiYoneticisi,
-    LiveKitBaglantiYoneticisiImpl.prototype,
-  );
-}
-if (Platform.OS !== 'web' && !globalKayit.__tamusoLiveKitAppState) {
+Object.setPrototypeOf(
+  LiveKitBaglantiYoneticisi,
+  LiveKitBaglantiYoneticisiImpl.prototype,
+);
+if (Platform.OS !== 'web') {
+  globalKayit.__tamusoLiveKitAppStateSub?.remove();
   globalKayit.__tamusoLiveKitAppState = true;
-  AppState.addEventListener('change', (state) => {
-    if (state === 'active') {
-      // Soft yenile — tam configure arka plandan dönüşte yarış yaratır
-      void LiveKitBaglantiYoneticisi.sesOturumunuYenile(false);
-    }
-  });
+  globalKayit.__tamusoLiveKitAppStateSub = AppState.addEventListener(
+    'change',
+    (state) => {
+      if (state !== 'active') return;
+      setTimeout(() => {
+        if (AppState.currentState !== 'active') return;
+        void LiveKitBaglantiYoneticisi.kamerayiOneGetir();
+      }, 350);
+    },
+  );
 }
 
 const hmr =
