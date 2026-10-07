@@ -8,13 +8,13 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { TextInput as GhTextInput } from 'react-native-gesture-handler';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
@@ -52,6 +52,12 @@ import { MesajHedefCevresindeGetir } from '../../src/moduller/mesajlasma/islemle
 import { DmMedyalariSec, DmMedyaUriYukle, type DmMedyaTaslak } from '../../src/moduller/mesajlasma/islemler/DmMedyasiYukle';
 import { MesajKullaniciAramaPaneli } from '../../src/moduller/mesajlasma/bilesenler/MesajKullaniciAramaPaneli';
 import { MesajBaloncugu } from '../../src/moduller/mesajlasma/bilesenler/MesajBaloncugu';
+import { MesajGunAyraci } from '../../src/moduller/mesajlasma/bilesenler/MesajGunAyraci';
+import {
+  mesajAyniGun,
+  mesajGunEtiketi,
+} from '../../src/moduller/mesajlasma/yardimcilar/MesajGunEtiketi';
+import { DIL_LOCALE_MAP } from '../../src/i18n/diller';
 import { MesajMedyaSecimPaneli } from '../../src/moduller/mesajlasma/bilesenler/MesajMedyaSecimPaneli';
 import { MesajMedyaOnizlemePaneli } from '../../src/moduller/mesajlasma/bilesenler/MesajMedyaOnizlemePaneli';
 import { MesajMedyaGoruntuleyici } from '../../src/moduller/mesajlasma/bilesenler/MesajMedyaGoruntuleyici';
@@ -142,8 +148,27 @@ function rotaParamString(
   return undefined;
 }
 
+/** Aynı id iki kez listelenirse FlatList anahtarı çakışır. Sunucu kopyası kalır. */
+function mesajTekil(liste: DirektMesaj[]): DirektMesaj[] {
+  const byId = new Map<string, DirektMesaj>();
+  const sira: string[] = [];
+  for (const m of liste) {
+    if (!m?.id) continue;
+    if (!byId.has(m.id)) sira.push(m.id);
+    byId.set(m.id, m);
+  }
+  const sunucuIstemci = new Set(
+    [...byId.values()]
+      .filter((m) => m.client_id && m.id !== m.client_id)
+      .map((m) => m.client_id as string),
+  );
+  return sira
+    .filter((kimlik) => !sunucuIstemci.has(kimlik))
+    .map((kimlik) => byId.get(kimlik)!);
+}
+
 export default function MesajDetayEkrani() {
-  const { t } = useCeviri();
+  const { t, dil } = useCeviri();
   const { id: idHam } = useLocalSearchParams<{ id: string | string[] }>();
   const id = rotaParamString(idHam);
   const threadId = id && id !== 'yeni' ? id : undefined;
@@ -155,6 +180,7 @@ export default function MesajDetayEkrani() {
     : Math.max(insets.bottom, BoslukTokenlari.md);
   const magaza = useHediyeMagaza();
   const [mesajlar, setMesajlar] = useState<DirektMesaj[]>([]);
+  const mesajlarGorunen = useMemo(() => mesajTekil(mesajlar), [mesajlar]);
   const [gonderiyor, setGonderiyor] = useState(false);
   const [aciliyor, setAciliyor] = useState(false);
   const [peer, setPeer] = useState<ThreadKarsiProfil | null>(null);
@@ -291,8 +317,9 @@ export default function MesajDetayEkrani() {
     } else {
       next = [...prev, { ...msg, _localStatus: 'sent' }];
     }
-    mesajlarRef.current = next;
-    setMesajlar(next);
+    const tekil = mesajTekil(next);
+    mesajlarRef.current = tekil;
+    setMesajlar(tekil);
     if (threadId) MesajSayfaOnbellekYaz(threadId, next);
     listeAltaKaydir();
   }, [listeAltaKaydir, threadId]);
@@ -836,6 +863,37 @@ export default function MesajDetayEkrani() {
       mergeMesaj({ ...sonuc.mesaj, _localStatus: 'sent' });
     },
     [id, user?.id, mergeMesaj],
+  );
+
+  const ozellikDoldur = useCallback(
+    async (tur: 'cuzdan' | 'id') => {
+      if (tur === 'id') {
+        const pid = profile?.public_user_id;
+        if (!pid) {
+          Alert.alert('ID', t('mesajSohbet.idYok'));
+          return null;
+        }
+        return {
+          etiket: t('mesajlar.idPaylas'),
+          metin: t('mesajSohbet.idPaylasMetin', { id: pid }),
+        };
+      }
+      const r = await CuzdanHesabiGarantile();
+      if (!r.ok || !r.hesap.wallet_number) {
+        Alert.alert(
+          t('cuzdan.baslik'),
+          r.ok === false ? r.hata : t('mesajSohbet.cuzdanNoYok'),
+        );
+        return null;
+      }
+      const no = r.hesap.wallet_number.replace(/\D/g, '');
+      const formatli = no.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+      return {
+        etiket: t('mesajlar.cuzdanNoPaylas'),
+        metin: t('mesajSohbet.cuzdanNoPaylasMetin', { no: formatli }),
+      };
+    },
+    [profile?.public_user_id, t],
   );
 
   const cuzdanNoPaylas = useCallback(() => {
@@ -1529,7 +1587,7 @@ export default function MesajDetayEkrani() {
           <FlatList
             ref={listRef}
             style={styles.listFlex}
-            data={mesajlar}
+            data={mesajlarGorunen}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
@@ -1569,7 +1627,18 @@ export default function MesajDetayEkrani() {
                 </Text>
               </View>
             }
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => {
+              const onceki = index > 0 ? mesajlarGorunen[index - 1] : null;
+              const gunEtiket =
+                !onceki || !mesajAyniGun(onceki.created_at, item.created_at)
+                  ? mesajGunEtiketi(item.created_at, DIL_LOCALE_MAP[dil], {
+                      bugun: t('mesajSohbet.tarihBugun'),
+                      dun: t('mesajSohbet.tarihDun'),
+                    })
+                  : null;
+              return (
+              <View>
+              {gunEtiket ? <MesajGunAyraci etiket={gunEtiket} /> : null}
               <MesajBaloncugu
                 item={item}
                 mine={item.sender_id === user?.id}
@@ -1604,7 +1673,9 @@ export default function MesajDetayEkrani() {
                   item.message_type === 'shared_post' && sharedPostYukleniyor
                 }
               />
-            )}
+              </View>
+              );
+            }}
           />
 
           {engelli ? (
@@ -1651,6 +1722,7 @@ export default function MesajDetayEkrani() {
                 ajansMi={!!peer?.peer_agency_id}
                 onCuzdanNoPaylas={cuzdanNoPaylas}
                 onIdPaylas={idPaylas}
+                onOzellikDoldur={ozellikDoldur}
                 onMetinPaylas={(m) => void hizliMetinGonder(m)}
                 onPaketTeklif={
                   peer?.peer_agency_id
@@ -1740,7 +1812,7 @@ export default function MesajDetayEkrani() {
               </LinearGradient>
             </Pressable>
             {taslakHazir ? (
-            <TextInput
+            <GhTextInput
               value={metin}
               onChangeText={setMetin}
               placeholder={t('mesajSohbet.yazPlaceholder')}
@@ -1749,6 +1821,8 @@ export default function MesajDetayEkrani() {
               multiline
               maxLength={4000}
               blurOnSubmit={false}
+              contextMenuHidden={false}
+              keyboardType="default"
             />
             ) : (
               <View style={[styles.input, styles.inputTaslakBekliyor]} />

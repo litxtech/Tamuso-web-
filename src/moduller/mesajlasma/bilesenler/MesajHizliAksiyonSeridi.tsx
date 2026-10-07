@@ -8,11 +8,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { TextInput as GhTextInput } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
@@ -38,6 +38,10 @@ type Props = {
   onCuzdanNoPaylas: () => void;
   onIdPaylas: () => void;
   onMetinPaylas: (metin: string) => void;
+  /** Cüzdan no / kullanıcı ID metnini hızlı işleme doldurur */
+  onOzellikDoldur?: (
+    tur: 'cuzdan' | 'id',
+  ) => Promise<{ etiket: string; metin: string } | null>;
   /** Ajans paket teklifi (Stripe) — ajans sohbetinde */
   onPaketTeklif?: () => void;
 };
@@ -50,6 +54,7 @@ export function MesajHizliAksiyonSeridi({
   onCuzdanNoPaylas,
   onIdPaylas,
   onMetinPaylas,
+  onOzellikDoldur,
   onPaketTeklif,
 }: Props) {
   const { t } = useCeviri();
@@ -224,7 +229,7 @@ export function MesajHizliAksiyonSeridi({
           <View style={[styles.modal, { paddingBottom: modalPadBottom }]}>
             <Text style={styles.modalBaslik}>{t('mesajlar.hizliEkleBaslik')}</Text>
             <Text style={styles.modalAlt}>{t('mesajlar.hizliEkleAlt')}</Text>
-            <TextInput
+            <GhTextInput
               value={etiket}
               onChangeText={setEtiket}
               placeholder={t('mesajlar.hizliEtiketPh')}
@@ -232,8 +237,9 @@ export function MesajHizliAksiyonSeridi({
               style={styles.input}
               maxLength={40}
               autoFocus
+              contextMenuHidden={false}
             />
-            <TextInput
+            <GhTextInput
               value={metin}
               onChangeText={setMetin}
               placeholder={t('mesajlar.hizliMetinPh')}
@@ -242,7 +248,41 @@ export function MesajHizliAksiyonSeridi({
               maxLength={2000}
               multiline
               textAlignVertical="top"
+              contextMenuHidden={false}
             />
+            {onOzellikDoldur ? (
+              <View style={styles.ozellikKutu}>
+                <Text style={styles.ozellikBaslik}>{t('mesajlar.ozellikEkle')}</Text>
+                <View style={styles.ozellikSatir}>
+                  <Pressable
+                    style={styles.cip}
+                    onPress={() => {
+                      void onOzellikDoldur('cuzdan').then((r) => {
+                        if (!r) return;
+                        setEtiket((e) => e.trim() || r.etiket);
+                        setMetin(r.metin);
+                      });
+                    }}
+                  >
+                    <Ionicons name="wallet-outline" size={15} color={RenkTokenlari.mint} />
+                    <Text style={styles.cipYazi}>{t('mesajlar.cuzdanNoPaylas')}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.cip}
+                    onPress={() => {
+                      void onOzellikDoldur('id').then((r) => {
+                        if (!r) return;
+                        setEtiket((e) => e.trim() || r.etiket);
+                        setMetin(r.metin);
+                      });
+                    }}
+                  >
+                    <Ionicons name="id-card-outline" size={15} color={RenkTokenlari.primarySoft} />
+                    <Text style={styles.cipYazi}>{t('mesajlar.idPaylas')}</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
             <View style={styles.modalAksiyon}>
               <Pressable
                 style={styles.modalIptal}
@@ -373,6 +413,19 @@ const styles = StyleSheet.create({
   },
   inputCoklu: {
     minHeight: 88,
+  },
+  ozellikKutu: {
+    gap: 8,
+  },
+  ozellikBaslik: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textMuted,
+    fontWeight: '700',
+  },
+  ozellikSatir: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   modalAksiyon: {
     flexDirection: 'row',
