@@ -55,6 +55,9 @@ export type TanitimMetin = {
   destekYaz: string;
   destekWhatsapp: string;
   footerSirket: string;
+  footerUrun: string;
+  footerKurum: string;
+  footerYasal: string;
   navAnasayfa: string;
   navOzellik: string;
   navCoin: string;
@@ -169,6 +172,9 @@ const TR: TanitimMetin = {
   destekYaz: 'E-posta yaz',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'Tamuso, LitxTech LLC iştirakidir.',
+  footerUrun: 'Ürün',
+  footerKurum: 'Şirket',
+  footerYasal: 'Yasal',
   navAnasayfa: 'Anasayfa',
   navOzellik: 'Özellikler',
   navCoin: 'Coinler',
@@ -311,6 +317,9 @@ const EN: TanitimMetin = {
   destekYaz: 'Email us',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'Tamuso is a subsidiary of LitxTech LLC.',
+  footerUrun: 'Product',
+  footerKurum: 'Company',
+  footerYasal: 'Legal',
   navAnasayfa: 'Home',
   navOzellik: 'Features',
   navCoin: 'Coins',
@@ -453,6 +462,9 @@ const ES: TanitimMetin = {
   destekYaz: 'Escribir por correo',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'Tamuso es una filial de LitxTech LLC.',
+  footerUrun: 'Producto',
+  footerKurum: 'Empresa',
+  footerYasal: 'Legal',
   navAnasayfa: 'Inicio',
   navOzellik: 'Funciones',
   navCoin: 'Coins',
@@ -553,6 +565,9 @@ const PT: TanitimMetin = {
   destekYaz: 'Escrever e-mail',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'A Tamuso é uma subsidiária da LitxTech LLC.',
+  footerUrun: 'Produto',
+  footerKurum: 'Empresa',
+  footerYasal: 'Legal',
   navAnasayfa: 'Início',
   navOzellik: 'Recursos',
   navCoin: 'Coins',
@@ -652,6 +667,9 @@ const AR: TanitimMetin = {
   destekYaz: 'راسلنا بالبريد',
   destekWhatsapp: 'واتساب',
   footerSirket: 'تاموسو شركة تابعة لـ LitxTech LLC.',
+  footerUrun: 'المنتج',
+  footerKurum: 'الشركة',
+  footerYasal: 'قانوني',
   navAnasayfa: 'الرئيسية',
   navOzellik: 'الميزات',
   navCoin: 'العملات',
@@ -751,6 +769,9 @@ const FR: TanitimMetin = {
   destekYaz: 'Écrire un e-mail',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'Tamuso est une filiale de LitxTech LLC.',
+  footerUrun: 'Produit',
+  footerKurum: 'Société',
+  footerYasal: 'Mentions',
   navAnasayfa: 'Accueil',
   navOzellik: 'Fonctions',
   navCoin: 'Coins',
@@ -850,6 +871,9 @@ const FIL: TanitimMetin = {
   destekYaz: 'Sumulat sa email',
   destekWhatsapp: 'WhatsApp',
   footerSirket: 'Ang Tamuso ay subsidiary ng LitxTech LLC.',
+  footerUrun: 'Produkto',
+  footerKurum: 'Kumpanya',
+  footerYasal: 'Legal',
   navAnasayfa: 'Home',
   navOzellik: 'Mga feature',
   navCoin: 'Mga coin',

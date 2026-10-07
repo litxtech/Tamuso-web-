@@ -86,10 +86,14 @@ const BAGLANTILAR = [
 ];
 
 function nav(aktif) {
-  const linkler = BAGLANTILAR.filter(([yol]) => yol !== aktif)
-    .map(([yol, ad]) => `<a href="${yol}">${kacis(ad)}</a>`)
-    .join(' · ');
-  return `<nav>${linkler}</nav>`;
+  const grup = (baslik, yollar) => {
+    const ic = yollar
+      .filter(([yol]) => yol !== aktif)
+      .map(([yol, ad]) => `<a href="${yol}">${kacis(ad)}</a>`)
+      .join(' · ');
+    return ic ? `<p><strong>${kacis(baslik)}</strong> ${ic}</p>` : '';
+  };
+  return `<footer><p>Tamuso, LitxTech LLC iştirakidir. Platform 18 yaş ve üzeri içindir.</p>${grup('Ürün', BAGLANTILAR.slice(0, 5))}${grup('Şirket', BAGLANTILAR.slice(5, 8))}${grup('Yasal', BAGLANTILAR.slice(8))}</footer>`;
 }
 
 function maddeListesi(maddeler) {

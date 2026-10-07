@@ -65,9 +65,21 @@ export function WebTanitimAnasayfa() {
     const url = TanitimMedyaUri(oge.public_url, false);
     return { url, poster: posterYolu(url) };
   };
-  const gorusme = al(0);
-  const canli = al(1);
-  const arkadas = al(Math.min(3, klipler.length - 1));
+  const yeniSahne = '/tanitim/gorusme-yeni.mp4';
+  const kullanilan = new Set<string>([yeniSahne]);
+  const benzersiz = (tercih: number) => {
+    const adet = Math.max(klipler.length, 1);
+    for (let adim = 0; adim < adet; adim += 1) {
+      const aday = al((tercih + adim) % adet);
+      if (kullanilan.has(aday.url)) continue;
+      kullanilan.add(aday.url);
+      return aday;
+    }
+    return al(tercih % adet);
+  };
+  const gorusme = benzersiz(0);
+  const canli = benzersiz(1);
+  const arkadas = benzersiz(2);
 
   useEffect(() => {
     const dongu = Animated.loop(
@@ -139,9 +151,9 @@ export function WebTanitimAnasayfa() {
 
       <View style={[styles.izgara, genis && styles.izgaraGenis]}>
         <Sahne
-          key={gorusme.url}
-          video={gorusme.url}
-          poster={gorusme.poster}
+          key={yeniSahne}
+          video={yeniSahne}
+          poster="/tanitim/gorusme-yeni.jpg"
           baslik={m.sahneGorusme}
           alt={m.sahneGorusmeAlt}
           canli={m.heroRozet}

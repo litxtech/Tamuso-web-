@@ -38,7 +38,7 @@ function WebSiteMobilOlcek() {
     const normal =
       'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content';
     const uzak =
-      'width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content';
+      'width=device-width, initial-scale=0.85, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content';
     const uygula = () => {
       const pazarlama = yol === '/' || yol.startsWith('/tanitim');
       const kisa = window.screen
@@ -57,6 +57,48 @@ function WebSiteMobilOlcek() {
     };
   }, [yol]);
   return null;
+}
+
+function AltSutun({
+  baslik,
+  ogeler,
+  git,
+}: {
+  baslik: string;
+  ogeler: [string, string][];
+  git: (href: Href) => void;
+}) {
+  return (
+    <View style={styles.altSutun}>
+      <Text style={styles.altBaslik}>{baslik}</Text>
+      {ogeler.map(([etiket, href]) =>
+        Platform.OS === 'web'
+          ? React.createElement(
+              'a',
+              {
+                key: href,
+                href,
+                onClick: (e: { preventDefault: () => void }) => {
+                  e.preventDefault();
+                  git(href as Href);
+                },
+                style: {
+                  color: '#E7B6CF',
+                  fontSize: 14,
+                  lineHeight: '22px',
+                  textDecoration: 'none',
+                },
+              },
+              etiket,
+            )
+          : (
+            <Pressable key={href} onPress={() => git(href as Href)}>
+              <Text style={styles.altLink}>{etiket}</Text>
+            </Pressable>
+          ),
+      )}
+    </View>
+  );
 }
 
 export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
@@ -190,25 +232,48 @@ export function WebTanitimKabuk({ children }: { children: React.ReactNode }) {
       >
         {children}
         <View style={styles.alt}>
-          <Text style={styles.altSirket}>{m.footerSirket}</Text>
-          <View style={styles.altLinkler}>
-            <Pressable onPress={() => git('/blog' as Href)}>
-              <Text style={styles.altLink}>{m.navBlog}</Text>
-            </Pressable>
-            <Pressable onPress={() => git('/politika' as Href)}>
-              <Text style={styles.altLink}>{m.navPolitika}</Text>
-            </Pressable>
-            <Pressable onPress={() => git('/politika/tos' as Href)}>
-              <Text style={styles.altLink}>{m.sartlar}</Text>
-            </Pressable>
-            <Pressable onPress={() => git('/politika/privacy' as Href)}>
-              <Text style={styles.altLink}>{m.gizlilik}</Text>
-            </Pressable>
-            <Pressable onPress={() => git('/politika/child_safety' as Href)}>
-              <Text style={styles.altLink}>{m.cocuk}</Text>
-            </Pressable>
+          <View style={[styles.altIzgara, !dar && styles.altIzgaraGenis]}>
+            <View style={styles.altMarka}>
+              <Text style={styles.altMarkaYazi}>TAMUSO</Text>
+              <Text style={styles.altSirket}>{m.footerSirket}</Text>
+              <Text style={styles.altInce}>18+</Text>
+            </View>
+            <AltSutun
+              baslik={m.footerUrun}
+              ogeler={[
+                [m.navAnasayfa, '/'],
+                [m.navOzellik, '/tanitim/ozellikler'],
+                [m.navBlog, '/blog'],
+                [m.navCoin, '/tanitim/coinler'],
+                [m.navMeyve, '/tanitim/meyve'],
+              ]}
+              git={git}
+            />
+            <AltSutun
+              baslik={m.footerKurum}
+              ogeler={[
+                [m.navHakkinda, '/tanitim/hakkinda'],
+                [m.navIsbirligi, '/tanitim/isbirligi'],
+                [m.navYatirim, '/tanitim/yatirim'],
+                [m.navDestek, '/destek'],
+              ]}
+              git={git}
+            />
+            <AltSutun
+              baslik={m.footerYasal}
+              ogeler={[
+                [m.navPolitika, '/politika'],
+                [m.sartlar, '/politika/tos'],
+                [m.gizlilik, '/politika/privacy'],
+                [m.cocuk, '/politika/child_safety'],
+              ]}
+              git={git}
+            />
           </View>
-          <Text style={styles.altKucuk}>© {new Date().getFullYear()} Tamuso · LitxTech LLC</Text>
+          <View style={styles.altCizgi} />
+          <Text style={styles.altKucuk}>
+            © {new Date().getFullYear()} Tamuso · LitxTech LLC · {eposta}
+          </Text>
         </View>
       </ScrollView>
 
@@ -366,17 +431,25 @@ const styles = StyleSheet.create({
   kaydir: { flex: 1 },
   kaydirIc: { paddingBottom: 96 },
   alt: {
-    marginTop: 28,
+    marginTop: 36,
     paddingHorizontal: 22,
-    paddingVertical: 28,
+    paddingTop: 28,
+    paddingBottom: 20,
     borderTopWidth: 1,
     borderTopColor: C.border,
-    gap: 12,
+    gap: 18,
   },
-  altSirket: { color: C.text, fontSize: 15, fontWeight: '700' },
-  altLinkler: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  altLink: { color: C.primarySoft, fontSize: 14 },
-  altKucuk: { color: C.textDim, fontSize: 12 },
+  altIzgara: { gap: 22 },
+  altIzgaraGenis: { flexDirection: 'row', alignItems: 'flex-start', gap: 28 },
+  altMarka: { flex: 1.3, gap: 8, minWidth: 180 },
+  altMarkaYazi: { color: C.text, fontSize: 16, fontWeight: '800', letterSpacing: 1.4 },
+  altSutun: { flex: 1, gap: 8, minWidth: 140 },
+  altBaslik: { color: C.text, fontSize: 13, fontWeight: '800', marginBottom: 4 },
+  altSirket: { color: C.textMuted, fontSize: 14, lineHeight: 20 },
+  altInce: { color: C.textDim, fontSize: 12, fontWeight: '700' },
+  altCizgi: { height: 1, backgroundColor: C.border },
+  altLink: { color: C.primarySoft, fontSize: 14, lineHeight: 22 },
+  altKucuk: { color: C.textDim, fontSize: 12, lineHeight: 18 },
   menuPerde: { ...StyleSheet.absoluteFillObject, zIndex: 40, flexDirection: 'row' },
   menuKarart: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
   menuCekmece: {
