@@ -21,6 +21,8 @@ export type GizlilikAyarlari = {
   hide_status_posts: boolean;
   hide_game_stats: boolean;
   is_private: boolean;
+  search_profile_visible: boolean;
+  search_posts_visible: boolean;
 };
 
 const DEFAULTS: GizlilikAyarlari = {
@@ -42,13 +44,18 @@ const DEFAULTS: GizlilikAyarlari = {
   hide_status_posts: false,
   hide_game_stats: false,
   is_private: false,
+  search_profile_visible: true,
+  search_posts_visible: true,
 };
 
 const SELECT_ALANLARI =
-  'hide_recharge_rank, hide_gifter_rank, hide_current_room, hide_last_seen, hide_agency, hide_gift_collection, hide_top_supporter, hide_level, hide_topup_coin, hide_prestige, hide_account_value, hide_crown, hide_online_status, hide_followers, hide_following, hide_status_posts, hide_game_stats, is_private';
+  'hide_recharge_rank, hide_gifter_rank, hide_current_room, hide_last_seen, hide_agency, hide_gift_collection, hide_top_supporter, hide_level, hide_topup_coin, hide_prestige, hide_account_value, hide_crown, hide_online_status, hide_followers, hide_following, hide_status_posts, hide_game_stats, is_private, search_profile_visible, search_posts_visible';
 
 function satirdanAyarlar(data: Partial<GizlilikAyarlari> | null): GizlilikAyarlari {
-  return { ...DEFAULTS, ...(data ?? {}) };
+  const ayar = { ...DEFAULTS, ...(data ?? {}) };
+  if (!data || data.search_profile_visible == null) ayar.search_profile_visible = true;
+  if (!data || data.search_posts_visible == null) ayar.search_posts_visible = true;
+  return ayar;
 }
 
 /** Oturum sahibinin gizlilik ayarları */
@@ -144,6 +151,16 @@ export const GIZLILIK_ALAN_ANAHTARLARI: GizlilikAnahtar[] = [
     key: 'is_private',
     labelKey: 'gizlilik.isPrivate',
     aciklamaKey: 'gizlilik.isPrivateAlt',
+  },
+  {
+    key: 'search_profile_visible',
+    labelKey: 'gizlilik.searchProfile',
+    aciklamaKey: 'gizlilik.searchProfileAlt',
+  },
+  {
+    key: 'search_posts_visible',
+    labelKey: 'gizlilik.searchPosts',
+    aciklamaKey: 'gizlilik.searchPostsAlt',
   },
 ];
 

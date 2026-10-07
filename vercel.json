@@ -1,23 +1,121 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-    "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs && node scripts/blog-olustur.mjs",
+  "buildCommand": "node scripts/sitemap-olustur.mjs && npx expo export --platform web && node scripts/seo-html-yaz.mjs && node scripts/blog-olustur.mjs",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/sitemap-blog.xml", "destination": "/api/sitemap-blog" },
-    { "source": "/blog", "destination": "/api/blog-yol" },
-    { "source": "/en/blog", "destination": "/api/blog-yol?lang=en" },
-    { "source": "/de/blog", "destination": "/api/blog-yol?lang=de" },
-    { "source": "/es/blog", "destination": "/api/blog-yol?lang=es" },
-    { "source": "/ar/blog", "destination": "/api/blog-yol?lang=ar" },
-    { "source": "/ru/blog", "destination": "/api/blog-yol?lang=ru" },
-    { "source": "/yazar/:slug", "destination": "/api/blog-yol?yazar=:slug" },
-    { "source": "/blog/:slug", "destination": "/api/blog-yol?slug=:slug" },
-    { "source": "/en/blog/:slug", "destination": "/api/blog-yol?lang=en&slug=:slug" },
-    { "source": "/de/blog/:slug", "destination": "/api/blog-yol?lang=de&slug=:slug" },
-    { "source": "/es/blog/:slug", "destination": "/api/blog-yol?lang=es&slug=:slug" },
-    { "source": "/ar/blog/:slug", "destination": "/api/blog-yol?lang=ar&slug=:slug" },
-    { "source": "/ru/blog/:slug", "destination": "/api/blog-yol?lang=ru&slug=:slug" },
+    {
+      "source": "/sitemap-blog.xml",
+      "destination": "/api/sitemap-blog"
+    },
+    {
+      "source": "/sitemap-posts.xml",
+      "destination": "/api/sitemap-public?tur=posts"
+    },
+    {
+      "source": "/sitemap-posts-:sayfa.xml",
+      "destination": "/api/sitemap-public?tur=posts&sayfa=:sayfa"
+    },
+    {
+      "source": "/sitemap-profiles.xml",
+      "destination": "/api/sitemap-public?tur=profiles"
+    },
+    {
+      "source": "/sitemap-profiles-:sayfa.xml",
+      "destination": "/api/sitemap-public?tur=profiles&sayfa=:sayfa"
+    },
+    {
+      "source": "/sitemap-cities.xml",
+      "destination": "/api/sitemap-public?tur=cities"
+    },
+    {
+      "source": "/sitemap-topics.xml",
+      "destination": "/api/sitemap-public?tur=topics"
+    },
+    {
+      "source": "/blog",
+      "destination": "/api/blog-yol"
+    },
+    {
+      "source": "/en/blog",
+      "destination": "/api/blog-yol?lang=en"
+    },
+    {
+      "source": "/de/blog",
+      "destination": "/api/blog-yol?lang=de"
+    },
+    {
+      "source": "/es/blog",
+      "destination": "/api/blog-yol?lang=es"
+    },
+    {
+      "source": "/ar/blog",
+      "destination": "/api/blog-yol?lang=ar"
+    },
+    {
+      "source": "/ru/blog",
+      "destination": "/api/blog-yol?lang=ru"
+    },
+    {
+      "source": "/yazar/:slug",
+      "destination": "/api/blog-yol?yazar=:slug"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/api/blog-yol?slug=:slug"
+    },
+    {
+      "source": "/en/blog/:slug",
+      "destination": "/api/blog-yol?lang=en&slug=:slug"
+    },
+    {
+      "source": "/de/blog/:slug",
+      "destination": "/api/blog-yol?lang=de&slug=:slug"
+    },
+    {
+      "source": "/es/blog/:slug",
+      "destination": "/api/blog-yol?lang=es&slug=:slug"
+    },
+    {
+      "source": "/ar/blog/:slug",
+      "destination": "/api/blog-yol?lang=ar&slug=:slug"
+    },
+    {
+      "source": "/ru/blog/:slug",
+      "destination": "/api/blog-yol?lang=ru&slug=:slug"
+    },
+    {
+      "source": "/p/:slug",
+      "destination": "/api/public-icerik?tur=post&slug=:slug"
+    },
+    {
+      "source": "/u/:username",
+      "destination": "/api/public-icerik?tur=profile&slug=:username"
+    },
+    {
+      "source": "/city/:slug/posts",
+      "destination": "/api/public-icerik?tur=city_posts&slug=:slug"
+    },
+    {
+      "source": "/city/:slug",
+      "destination": "/api/public-icerik?tur=city&slug=:slug"
+    },
+    {
+      "source": "/hashtag/:tag",
+      "destination": "/api/public-icerik?tur=hashtag&slug=:tag"
+    },
+    {
+      "source": "/topics/:slug",
+      "destination": "/api/public-icerik?tur=topic&slug=:slug"
+    },
+    {
+      "source": "/discover",
+      "destination": "/api/public-icerik?tur=discover"
+    },
+    {
+      "source": "/people",
+      "destination": "/api/public-icerik?tur=people"
+    },
     {
       "source": "/admin/duyurular/:id/izleyiciler",
       "destination": "/index.html"
@@ -32,6 +130,10 @@
     },
     {
       "source": "/admin/finance/reports/:jobId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/gorusmeler/olustur",
       "destination": "/index.html"
     },
     {
@@ -80,6 +182,10 @@
     },
     {
       "source": "/admin/app-launch/archived",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/yonlendirmeler",
       "destination": "/index.html"
     },
     {
@@ -199,6 +305,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/ajans-sertifika",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/cuzdan-yonetimi",
       "destination": "/index.html"
     },
@@ -223,11 +333,19 @@
       "destination": "/index.html"
     },
     {
+      "source": "/ajans/gorusme/:id/oda",
+      "destination": "/index.html"
+    },
+    {
       "source": "/takip/takip-edilenler",
       "destination": "/index.html"
     },
     {
       "source": "/admin/bannerlar/yeni",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/ceviriler",
       "destination": "/index.html"
     },
     {
@@ -275,7 +393,19 @@
       "destination": "/index.html"
     },
     {
+      "source": "/ajans/:id/gorusmeler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/ajans-odalari",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/bannerlar/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/yazarlar",
       "destination": "/index.html"
     },
     {
@@ -308,6 +438,10 @@
     },
     {
       "source": "/ajans/:id/faturalar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/:id/sertifika",
       "destination": "/index.html"
     },
     {
@@ -375,11 +509,19 @@
       "destination": "/index.html"
     },
     {
+      "source": "/ajans/gorusmelerim",
+      "destination": "/index.html"
+    },
+    {
       "source": "/ayarlar/unvanlarim",
       "destination": "/index.html"
     },
     {
       "source": "/tanitim/ozellikler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/blog/diller",
       "destination": "/index.html"
     },
     {
@@ -431,6 +573,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/ajans/gorusme/:id",
+      "destination": "/index.html"
+    },
+    {
       "source": "/announcements/:id",
       "destination": "/index.html"
     },
@@ -451,6 +597,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/blog/medya",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/destek/:id",
       "destination": "/index.html"
     },
@@ -460,6 +610,10 @@
     },
     {
       "source": "/admin/ozellikler",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/seo-icerik",
       "destination": "/index.html"
     },
     {
@@ -583,6 +737,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/admin/kesitler",
+      "destination": "/index.html"
+    },
+    {
       "source": "/admin/sehirler",
       "destination": "/index.html"
     },
@@ -659,6 +817,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/auth/callback",
+      "destination": "/index.html"
+    },
+    {
       "source": "/durum/duzenle",
       "destination": "/index.html"
     },
@@ -724,6 +886,10 @@
     },
     {
       "source": "/admin/takas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ajans/katil",
       "destination": "/index.html"
     },
     {
@@ -973,10 +1139,6 @@
     {
       "source": "/sehir",
       "destination": "/index.html"
-    },
-    {
-      "source": "/blog",
-      "destination": "/api/blog-yol"
     },
     {
       "source": "/host",

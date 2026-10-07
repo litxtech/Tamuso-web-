@@ -147,7 +147,7 @@ function jsonLd(veri) {
   return `<script type="application/ld+json">${JSON.stringify(veri).replace(/</g, '\\u003c')}</script>`;
 }
 
-function belge({
+export function belge({
   title, description, canonical, robots, ogType, image, json, govde,
   lang = 'tr', dir = 'ltr', alternates = [], twitterTitle, twitterDescription, article = null,
 }) {

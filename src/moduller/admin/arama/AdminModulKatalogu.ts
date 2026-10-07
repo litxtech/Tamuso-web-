@@ -456,6 +456,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['blog', 'yazı', 'seo', 'makale'],
   },
   {
+    icon: 'search-outline',
+    label: 'SEO İçerik',
+    alt: 'Public paylaşım · index · noindex',
+    href: '/admin/seo-icerik',
+    tint: RenkTokenlari.accent,
+    bolum: 'Ürün',
+    permissionKey: 'content.seo.view',
+    anahtarlar: ['seo', 'google', 'index', 'sitemap', 'paylaşım'],
+  },
+  {
     icon: 'menu-outline',
     label: 'Hamburger menü',
     alt: 'Sıra · gizle · simülasyon',

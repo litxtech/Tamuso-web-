@@ -327,6 +327,8 @@ export default function RegisterScreen() {
           .from('profiles')
           .update({ age_confirmed_at: new Date().toISOString() })
           .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '');
+        const { SeoKaynakKaydet } = await import('../../src/moduller/seo/seoKaynak');
+        await SeoKaynakKaydet();
       } catch {
         /* kolon yoksa sessiz */
       }

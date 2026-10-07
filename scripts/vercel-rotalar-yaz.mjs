@@ -56,10 +56,45 @@ function yuru(dizin, goreli = '') {
   return bulunan;
 }
 
+const SABIT = [
+  { source: '/sitemap-blog.xml', destination: '/api/sitemap-blog' },
+  { source: '/sitemap-posts.xml', destination: '/api/sitemap-public?tur=posts' },
+  { source: '/sitemap-posts-:sayfa.xml', destination: '/api/sitemap-public?tur=posts&sayfa=:sayfa' },
+  { source: '/sitemap-profiles.xml', destination: '/api/sitemap-public?tur=profiles' },
+  { source: '/sitemap-profiles-:sayfa.xml', destination: '/api/sitemap-public?tur=profiles&sayfa=:sayfa' },
+  { source: '/sitemap-cities.xml', destination: '/api/sitemap-public?tur=cities' },
+  { source: '/sitemap-topics.xml', destination: '/api/sitemap-public?tur=topics' },
+  { source: '/blog', destination: '/api/blog-yol' },
+  { source: '/en/blog', destination: '/api/blog-yol?lang=en' },
+  { source: '/de/blog', destination: '/api/blog-yol?lang=de' },
+  { source: '/es/blog', destination: '/api/blog-yol?lang=es' },
+  { source: '/ar/blog', destination: '/api/blog-yol?lang=ar' },
+  { source: '/ru/blog', destination: '/api/blog-yol?lang=ru' },
+  { source: '/yazar/:slug', destination: '/api/blog-yol?yazar=:slug' },
+  { source: '/blog/:slug', destination: '/api/blog-yol?slug=:slug' },
+  { source: '/en/blog/:slug', destination: '/api/blog-yol?lang=en&slug=:slug' },
+  { source: '/de/blog/:slug', destination: '/api/blog-yol?lang=de&slug=:slug' },
+  { source: '/es/blog/:slug', destination: '/api/blog-yol?lang=es&slug=:slug' },
+  { source: '/ar/blog/:slug', destination: '/api/blog-yol?lang=ar&slug=:slug' },
+  { source: '/ru/blog/:slug', destination: '/api/blog-yol?lang=ru&slug=:slug' },
+  { source: '/p/:slug', destination: '/api/public-icerik?tur=post&slug=:slug' },
+  { source: '/u/:username', destination: '/api/public-icerik?tur=profile&slug=:username' },
+  { source: '/city/:slug/posts', destination: '/api/public-icerik?tur=city_posts&slug=:slug' },
+  { source: '/city/:slug', destination: '/api/public-icerik?tur=city&slug=:slug' },
+  { source: '/hashtag/:tag', destination: '/api/public-icerik?tur=hashtag&slug=:tag' },
+  { source: '/topics/:slug', destination: '/api/public-icerik?tur=topic&slug=:slug' },
+  { source: '/discover', destination: '/api/public-icerik?tur=discover' },
+  { source: '/people', destination: '/api/public-icerik?tur=people' },
+];
+const sabitKaynak = new Set(SABIT.map((r) => r.source));
 const yollar = [...new Set(yuru(appDizin))]
   .filter((yol) => yol === '/blog' || !yol.startsWith('/blog/'))
+  .filter((yol) => !sabitKaynak.has(yol))
   .sort((a, b) => b.length - a.length || a.localeCompare(b));
-const rewrites = yollar.map((source) => ({ source, destination: '/index.html' }));
+const rewrites = [
+  ...SABIT,
+  ...yollar.map((source) => ({ source, destination: '/index.html' })),
+];
 const vercel = JSON.parse(fs.readFileSync(vercelYol, 'utf8'));
 vercel.rewrites = rewrites;
 fs.writeFileSync(vercelYol, `${JSON.stringify(vercel, null, 2)}\n`);
