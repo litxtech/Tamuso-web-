@@ -33,3 +33,4 @@ Sitemap: https://www.tamuso.com/sitemap-posts.xml
 Sitemap: https://www.tamuso.com/sitemap-profiles.xml
 Sitemap: https://www.tamuso.com/sitemap-cities.xml
 Sitemap: https://www.tamuso.com/sitemap-topics.xml
+Sitemap: https://www.tamuso.com/sitemap-agencies.xml

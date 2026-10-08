@@ -21,6 +21,8 @@ export const publicSeoRoutes = {
   topic: (slug) => `/topics/${slug}`,
   discover: '/discover',
   people: '/people',
+  agencies: '/ajanslar',
+  agency: (slug) => `/ajans-profil/${slug}`,
 };
 
 const SELAMLAMA = new Set([
@@ -95,6 +97,7 @@ export function karar(girdi) {
   if (girdi.moderationPending) engel.push('MODERATION_PENDING');
   if (girdi.reportedHidden) engel.push('REPORTED_AND_HIDDEN');
   if (girdi.blocked || girdi.banned) engel.push('BLOCKED');
+  // sensitive: çocuk güvenliği, şiddet, kendine zarar. Yetişkin paylaşım bu bayrak değildir.
   if (girdi.sensitive) engel.push('SENSITIVE_CONTENT');
   if (girdi.automatedSpam) engel.push('AUTOMATED_SPAM');
   if (girdi.spam) engel.push('SPAM');
@@ -302,7 +305,8 @@ export function postBelgesi(veri) {
 </header>
 <section>${gorsel}${video}<p>${metinHtml(metin)}</p>${konular ? `<p>${konular}</p>` : ''}</section>
 <footer>
-<p><a href="/register">Tamuso'ya katıl</a> · <a href="/login">Giriş yap</a> · <a href="${kacis(veri.appPath || '/')}">Uygulamada aç</a>${veri.reportPath ? ` · <a href="${kacis(veri.reportPath)}">Bildir</a>` : ''}</p>
+${kamuBaglantilari()}
+<p><a href="/register">Tamuso'ya katıl</a> · <a href="${kacis(veri.appPath || '/')}">Uygulamada aç</a>${veri.reportPath ? ` · <a href="${kacis(veri.reportPath)}">Bildir</a>` : ''}</p>
 ${ilgili ? `<h2>Benzer paylaşımlar</h2><ul>${ilgili}</ul>` : ''}
 ${bloglar ? `<h2>İlgili yazılar</h2><ul>${bloglar}</ul>` : ''}
 </footer>
@@ -335,7 +339,7 @@ export function profilBelgesi(veri) {
   const govde = `<article>
 <header><h1>${kacis(veri.name || 'Profil')}</h1><p class="meta">@${kacis(veri.username || '')}${veri.city?.name ? ` · <a href="${kacis(veri.city.path)}">${kacis(veri.city.name)}</a>` : ''}</p>${gorsel}</header>
 <section>${veri.bio ? `<p>${metinHtml(veri.bio)}</p>` : ''}${gonderiler ? `<h2>Herkese açık paylaşımlar</h2><ul>${gonderiler}</ul>` : ''}</section>
-<footer><p><a href="/register">Tamuso'ya katıl</a></p></footer>
+<footer>${kamuBaglantilari()}<p><a href="/register">Tamuso'ya katıl</a></p></footer>
 </article>`;
   return sayfaBelgesi({
     title,
@@ -399,7 +403,7 @@ export function listeBelgesi(veri) {
   const nav = sayfa > 1
     ? `<nav aria-label="Sayfalar"><a href="${kacis(veri.path)}">1</a> <span aria-current="page">${sayfa}</span></nav>`
     : '';
-  const govde = `<article><header><h1>${kacis(veri.h1)}</h1><p>${kacis(veri.description)}</p></header><section>${ogeler ? `<ul>${ogeler}</ul>` : '<p>Henüz listelenecek herkese açık içerik yok.</p>'}${nav}</section></article>`;
+  const govde = `<article><header><h1>${kacis(veri.h1)}</h1><p>${kacis(veri.description)}</p></header><section>${ogeler ? `<ul>${ogeler}</ul>` : '<p>Henüz listelenecek herkese açık içerik yok.</p>'}${nav}</section><footer>${kamuBaglantilari()}</footer></article>`;
   return sayfaBelgesi({
     title: veri.title,
     description: veri.description,
@@ -427,12 +431,55 @@ export function bulunamadiBelgesi() {
   }).replace('href="https://www.tamuso.com/404"', 'href="https://www.tamuso.com/"');
 }
 
+function kamuBaglantilari() {
+  return `<p><a href="/">Ana sayfa</a> · <a href="/discover">Keşfet</a> · <a href="/people">Kişiler</a> · <a href="/tanitim/ozellikler">Oyunlar ve özellikler</a> · <a href="/tanitim/meyve">Meyve oyunu</a> · <a href="/politika/privacy">Gizlilik</a> · <a href="/politika/tos">Koşullar</a> · <a href="/politika/community_rules">Topluluk kuralları</a> · <a href="/blog">Blog</a></p>`;
+}
+
+export function ajansBelgesi(veri) {
+  const logo = guvenliHttps(veri.logo);
+  const gorsel = logo
+    ? `<img src="${kacis(logo)}" alt="${kacis(veri.name || 'Ajans')}" width="120" height="120" loading="eager" />`
+    : '';
+  const govde = `<article>
+<header><h1>${kacis(veri.name || 'Ajans')}</h1>${veri.country ? `<p class="meta">${kacis(veri.country)}</p>` : ''}${gorsel}</header>
+<section>${veri.slogan ? `<p>${kacis(veri.slogan)}</p>` : ''}<p>${metinHtml(veri.description || '')}</p></section>
+<footer>${kamuBaglantilari()}<p><a href="/ajanslar">Tüm ajanslar</a></p></footer>
+</article>`;
+  return sayfaBelgesi({
+    title: veri.title,
+    description: veri.description,
+    path: veri.path,
+    robots: veri.robots,
+    language: 'tr',
+    image: logo || VARSAYILAN_OG,
+    ogType: 'website',
+    json: [{
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: veri.name,
+      description: veri.description,
+      url: `${ORIGIN}${veri.path}`,
+      ...(logo ? { logo } : {}),
+    }],
+    govde,
+  });
+}
+
 export function sitemapUrlset(adresler) {
   const govde = adresler.map((a) => {
     const last = a.lastmod ? `<lastmod>${kacis(String(a.lastmod).slice(0, 10))}</lastmod>` : '';
-    return `<url><loc>${kacis(a.loc)}</loc>${last}</url>`;
+    const gorsel = typeof a.image === 'string' && a.image.startsWith('https://')
+      ? `<image:image><image:loc>${kacis(a.image)}</image:loc>${a.title ? `<image:title>${kacis(a.title)}</image:title>` : ''}</image:image>`
+      : '';
+    const video = typeof a.video === 'string' && a.video.startsWith('https://')
+      && typeof a.thumb === 'string' && a.thumb.startsWith('https://')
+      ? `<video:video><video:thumbnail_loc>${kacis(a.thumb)}</video:thumbnail_loc><video:title>${kacis(a.title || 'Video')}</video:title><video:description>${kacis(a.description || a.title || 'Video')}</video:description><video:content_loc>${kacis(a.video)}</video:content_loc></video:video>`
+      : '';
+    return `<url><loc>${kacis(a.loc)}</loc>${last}${gorsel}${video}</url>`;
   }).join('');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${govde}</urlset>\n`;
+  const imageNs = govde.includes('<image:image>') ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '';
+  const videoNs = govde.includes('<video:video>') ? ' xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"' : '';
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${imageNs}${videoNs}>${govde}</urlset>\n`;
 }
 
 export function sitemapIndex(adresler) {

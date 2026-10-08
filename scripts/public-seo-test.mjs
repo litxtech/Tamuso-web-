@@ -143,6 +143,22 @@ const harita = sitemapUrlset([
 ]);
 assert.match(harita, /acik-111111/);
 assert.ok(!harita.includes('gizli'));
+const gorselli = sitemapUrlset([
+  { loc: `${ORIGIN}/p/gorsel-111111`, image: 'https://cdn.tamuso.com/a.jpg', title: 'Mekan', video: 'https://cdn.tamuso.com/a.mp4' },
+]);
+assert.match(gorselli, /image:loc/);
+assert.ok(!gorselli.includes('video:video'));
+const videolu = sitemapUrlset([
+  {
+    loc: `${ORIGIN}/p/video-111111`,
+    image: 'https://cdn.tamuso.com/a.jpg',
+    thumb: 'https://cdn.tamuso.com/kapak.jpg',
+    video: 'https://cdn.tamuso.com/a.mp4',
+    title: 'Video',
+    description: 'Herkese açık video',
+  },
+]);
+assert.match(videolu, /video:content_loc/);
 
 const robots = fs.readFileSync(path.join(kok, 'public', 'robots.txt'), 'utf8');
 assert.ok(!/^disallow:\s*\/p\/?\s*$/im.test(robots));

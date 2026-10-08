@@ -64,6 +64,7 @@ const SABIT = [
   { source: '/sitemap-profiles-:sayfa.xml', destination: '/api/sitemap-public?tur=profiles&sayfa=:sayfa' },
   { source: '/sitemap-cities.xml', destination: '/api/sitemap-public?tur=cities' },
   { source: '/sitemap-topics.xml', destination: '/api/sitemap-public?tur=topics' },
+  { source: '/sitemap-agencies.xml', destination: '/api/sitemap-public?tur=agencies' },
   { source: '/blog', destination: '/api/blog-yol' },
   { source: '/en/blog', destination: '/api/blog-yol?lang=en' },
   { source: '/de/blog', destination: '/api/blog-yol?lang=de' },
@@ -85,6 +86,8 @@ const SABIT = [
   { source: '/topics/:slug', destination: '/api/public-icerik?tur=topic&slug=:slug' },
   { source: '/discover', destination: '/api/public-icerik?tur=discover' },
   { source: '/people', destination: '/api/public-icerik?tur=people' },
+  { source: '/ajanslar', destination: '/api/public-icerik?tur=agencies' },
+  { source: '/ajans-profil/:slug', destination: '/api/public-icerik?tur=agency&slug=:slug' },
 ];
 const sabitKaynak = new Set(SABIT.map((r) => r.source));
 const yollar = [...new Set(yuru(appDizin))]

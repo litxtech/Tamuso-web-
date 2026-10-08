@@ -3,6 +3,7 @@
  * İlk yanıtta içerik bulunur; Expo kabuğu kullanılmaz.
  */
 import {
+  ajansBelgesi,
   bulunamadiBelgesi,
   listeBelgesi,
   postBelgesi,
@@ -34,6 +35,7 @@ function belge(veri) {
   if (!veri || veri.tur === 'post') return postBelgesi(veri);
   if (veri.tur === 'profile') return profilBelgesi(veri);
   if (veri.tur === 'city' || veri.tur === 'city_posts') return sehirBelgesi(veri);
+  if (veri.tur === 'agency') return ajansBelgesi(veri);
   return listeBelgesi(veri);
 }
 
@@ -43,6 +45,30 @@ export default async function handler(istek, yanit) {
   const slug = url.searchParams.get('slug') || '';
   const sayfa = sayfaNo(url);
   const kok = process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  if (kok && (tur === 'agency' || tur === 'agencies')) {
+    let ajans = null;
+    try {
+      const yanitAjans = await fetch(`${kok}/rest/v1/rpc/seo_ajans_oku`, {
+        method: 'POST',
+        headers: basliklar(),
+        body: JSON.stringify({ p_slug: tur === 'agencies' ? '' : slug }),
+      });
+      ajans = yanitAjans.ok ? await yanitAjans.json() : null;
+    } catch {
+      ajans = null;
+    }
+    if (!ajans || ajans.durum === 'yok' || ajans.http === 404) {
+      return htmlYanit(yanit, 404, bulunamadiBelgesi(), 'noindex, nofollow', 'no-store');
+    }
+    const robotAjans = ajans.robots || 'noindex, follow';
+    return htmlYanit(
+      yanit,
+      200,
+      belge(ajans),
+      robotAjans,
+      robotAjans.startsWith('index') ? 'public, max-age=60, must-revalidate' : 'no-store',
+    );
+  }
   if (!kok || !['post', 'profile', 'city', 'city_posts', 'hashtag', 'topic', 'discover', 'people'].includes(tur)) {
     return htmlYanit(yanit, 404, bulunamadiBelgesi(), 'noindex, nofollow', 'no-store');
   }

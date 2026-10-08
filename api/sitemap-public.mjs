@@ -9,6 +9,7 @@ const AILE = {
   profiles: 'profiles',
   cities: 'cities',
   topics: 'topics',
+  agencies: 'agencies',
 };
 
 function basliklar() {

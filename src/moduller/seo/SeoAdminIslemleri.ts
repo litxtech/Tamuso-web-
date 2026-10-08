@@ -16,6 +16,8 @@ export type SeoSatir = {
   signals: { ad: string; tamam: boolean }[];
   canonical: string | null;
   og_image: string | null;
+  oneri?: 'tut' | 'cikar' | 'incele' | 'gizli' | string;
+  neden_tr?: string;
 };
 
 export type SeoOzet = {
@@ -24,6 +26,10 @@ export type SeoOzet = {
   hidden_posts: number;
   indexable_profiles: number;
   indexable_cities: number;
+  keep_posts?: number;
+  weak_posts?: number;
+  review_posts?: number;
+  agency_ready?: number;
 };
 
 export async function SeoOzetGetir(): Promise<SeoOzet | null> {
@@ -49,6 +55,13 @@ export async function SeoGuncelle(id: string, alan: Record<string, unknown>) {
   });
   if (error) return { ok: false, hata: error.message };
   return { ok: Boolean((data as { ok?: boolean } | null)?.ok) };
+}
+
+export async function SeoZayiflariCikar() {
+  const { data, error } = await supabase.rpc('seo_zayiflari_cikar');
+  if (error) return { ok: false, adet: 0, hata: error.message };
+  const paket = data as { ok?: boolean; adet?: number } | null;
+  return { ok: Boolean(paket?.ok), adet: Number(paket?.adet || 0) };
 }
 
 export async function SeoKonuKaydet(slug: string, title: string, description: string, indexable: boolean) {

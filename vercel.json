@@ -33,6 +33,10 @@
       "destination": "/api/sitemap-public?tur=topics"
     },
     {
+      "source": "/sitemap-agencies.xml",
+      "destination": "/api/sitemap-public?tur=agencies"
+    },
+    {
       "source": "/blog",
       "destination": "/api/blog-yol"
     },
@@ -115,6 +119,14 @@
     {
       "source": "/people",
       "destination": "/api/public-icerik?tur=people"
+    },
+    {
+      "source": "/ajanslar",
+      "destination": "/api/public-icerik?tur=agencies"
+    },
+    {
+      "source": "/ajans-profil/:slug",
+      "destination": "/api/public-icerik?tur=agency&slug=:slug"
     },
     {
       "source": "/admin/duyurular/:id/izleyiciler",
