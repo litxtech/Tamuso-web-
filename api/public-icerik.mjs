@@ -5,10 +5,13 @@
 import {
   ajansBelgesi,
   bulunamadiBelgesi,
+  dizinBelgesi,
   listeBelgesi,
+  odaBelgesi,
   postBelgesi,
   profilBelgesi,
   sehirBelgesi,
+  ulkeBelgesi,
 } from '../scripts/public-seo-motor.mjs';
 
 function basliklar() {
@@ -31,10 +34,15 @@ function htmlYanit(yanit, kod, govde, robot, onbellek) {
   yanit.end(govde);
 }
 
+const DIZIN = new Set(['country', 'countries', 'cities', 'voice', 'voices']);
+
 function belge(veri) {
   if (!veri || veri.tur === 'post') return postBelgesi(veri);
   if (veri.tur === 'profile') return profilBelgesi(veri);
   if (veri.tur === 'city' || veri.tur === 'city_posts') return sehirBelgesi(veri);
+  if (veri.tur === 'country') return ulkeBelgesi(veri);
+  if (veri.tur === 'voice') return odaBelgesi(veri);
+  if (veri.tur === 'countries' || veri.tur === 'cities' || veri.tur === 'voices') return dizinBelgesi(veri);
   if (veri.tur === 'agency') return ajansBelgesi(veri);
   return listeBelgesi(veri);
 }
@@ -67,6 +75,30 @@ export default async function handler(istek, yanit) {
       belge(ajans),
       robotAjans,
       robotAjans.startsWith('index') ? 'public, max-age=60, must-revalidate' : 'no-store',
+    );
+  }
+  if (kok && DIZIN.has(tur)) {
+    let dizin = null;
+    try {
+      const yanitDizin = await fetch(`${kok}/rest/v1/rpc/seo_dizin_oku`, {
+        method: 'POST',
+        headers: basliklar(),
+        body: JSON.stringify({ p_tur: tur, p_slug: slug, p_sayfa: sayfa }),
+      });
+      dizin = yanitDizin.ok ? await yanitDizin.json() : null;
+    } catch {
+      dizin = null;
+    }
+    if (!dizin || dizin.durum === 'yok' || dizin.http === 404) {
+      return htmlYanit(yanit, 404, bulunamadiBelgesi(), 'noindex, nofollow', 'no-store');
+    }
+    const robotDizin = dizin.robots || 'noindex, follow';
+    return htmlYanit(
+      yanit,
+      200,
+      belge(dizin),
+      robotDizin,
+      robotDizin.startsWith('index') ? 'public, max-age=60, must-revalidate' : 'no-store',
     );
   }
   if (!kok || !['post', 'profile', 'city', 'city_posts', 'hashtag', 'topic', 'discover', 'people'].includes(tur)) {

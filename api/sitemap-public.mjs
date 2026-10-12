@@ -8,6 +8,8 @@ const AILE = {
   posts: 'posts',
   profiles: 'profiles',
   cities: 'cities',
+  countries: 'countries',
+  voices: 'voices',
   topics: 'topics',
   agencies: 'agencies',
 };

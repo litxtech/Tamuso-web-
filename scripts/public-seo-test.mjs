@@ -12,6 +12,9 @@ import {
   profilBelgesi,
   sehirBelgesi,
   listeBelgesi,
+  ulkeBelgesi,
+  odaBelgesi,
+  dizinBelgesi,
   bulunamadiBelgesi,
   sitemapUrlset,
   htmlDenetle,
@@ -116,6 +119,64 @@ assert.equal(d8.h1.length, 1);
 assert.match(sehir, /href="\/city\/istanbul\/posts"/);
 assert.match(sehir, /href="\/p\/mekan-111111"/);
 assert.match(sehir, /href="\/blog\/istanbul-rehberi"/);
+const sehirUlke = sehirBelgesi({
+  name: 'İstanbul',
+  path: '/city/istanbul',
+  postsPath: '/city/istanbul/posts',
+  title: 'İstanbul | Tamuso',
+  description: 'İstanbul · Türkiye şehrindeki herkese açık Tamuso paylaşımları, profiller ve ses odaları.',
+  robots: 'index,follow',
+  country: { name: 'Türkiye', path: '/country/tr' },
+  rooms: [{ title: 'Boğaz', path: '/voice/oda-ab12cd' }],
+  posts: [],
+  people: [],
+  blogs: [],
+});
+assert.match(sehirUlke, /href="\/country\/tr"/);
+assert.match(sehirUlke, /href="\/voice\/oda-ab12cd"/);
+assert.match(htmlDenetle(sehirUlke).robots, /index,follow/);
+
+const ulke = ulkeBelgesi({
+  name: 'Türkiye',
+  path: '/country/tr',
+  title: 'Türkiye | Tamuso',
+  description: 'Türkiye’deki Tamuso şehirleri, herkese açık profiller ve ses odaları.',
+  robots: 'index,follow',
+  cities: [{ title: 'İstanbul', path: '/city/istanbul' }],
+  people: [{ title: 'Ayşe', path: '/u/ayse' }],
+  rooms: [{ title: 'Boğaz', path: '/voice/oda-ab12cd' }],
+});
+const dUlke = htmlDenetle(ulke);
+assert.equal(dUlke.h1.length, 1);
+assert.equal(dUlke.canonical, `${ORIGIN}/country/tr`);
+assert.match(ulke, /href="\/city\/istanbul"/);
+assert.ok(dUlke.json.some((j) => j['@type'] === 'Country'));
+
+const oda = odaBelgesi({
+  h1: 'Boğaz sohbeti',
+  name: 'Boğaz sohbeti',
+  path: '/voice/oda-ab12cd',
+  title: 'Boğaz sohbeti | Tamuso',
+  description: 'Boğaz sohbeti, Tamuso’da herkese açık bir ses odasıdır.',
+  robots: 'index,follow',
+  host: { name: 'Ayşe', path: '/u/ayse' },
+  city: { name: 'İstanbul', path: '/city/istanbul' },
+  topic: 'Şehir',
+});
+assert.equal(htmlDenetle(oda).canonical, `${ORIGIN}/voice/oda-ab12cd`);
+assert.match(oda, /href="\/u\/ayse"/);
+assert.ok(!/password|listener_count/i.test(oda));
+
+const dizin = dizinBelgesi({
+  h1: 'Ülkeler',
+  title: 'Ülkeler | Tamuso',
+  description: 'Tamuso’daki ülkeler.',
+  path: '/countries',
+  robots: 'index,follow',
+  items: [{ title: 'Türkiye', path: '/country/tr' }],
+});
+assert.match(dizin, /href="\/country\/tr"/);
+assert.match(htmlDenetle(dizin).robots, /index,follow/);
 
 assert.equal(hashtagIndex(1, 1), false);
 assert.equal(hashtagIndex(3, 2), true);
@@ -163,6 +224,11 @@ assert.match(videolu, /video:content_loc/);
 const robots = fs.readFileSync(path.join(kok, 'public', 'robots.txt'), 'utf8');
 assert.ok(!/^disallow:\s*\/p\/?\s*$/im.test(robots));
 assert.match(robots, /Sitemap: https:\/\/www\.tamuso\.com\/sitemap-posts\.xml/);
+assert.match(robots, /Sitemap: https:\/\/www\.tamuso\.com\/sitemap-cities\.xml/);
+assert.match(robots, /Sitemap: https:\/\/www\.tamuso\.com\/sitemap-countries\.xml/);
+assert.match(robots, /Sitemap: https:\/\/www\.tamuso\.com\/sitemap-voices\.xml/);
+assert.match(robots, /Sitemap: https:\/\/www\.tamuso\.com\/sitemap-profiles\.xml/);
+assert.ok(!/^disallow:\s*\/(city|country|voice|u)(\/|\s|$)/im.test(robots));
 assert.match(robots, /Disallow: \/admin/);
 assert.match(robots, /Disallow: \/mesaj/);
 assert.match(robots, /Disallow: \/search/);

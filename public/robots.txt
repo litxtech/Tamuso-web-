@@ -18,6 +18,9 @@ Disallow: /profil-duzenle
 Disallow: /durum
 Disallow: /kullanici
 Disallow: /sehir
+Disallow: /ulke
+Disallow: /room
+Disallow: /profile
 Disallow: /*?search=
 Disallow: /*?q=
 Disallow: /*?sort=
@@ -32,5 +35,7 @@ Sitemap: https://www.tamuso.com/sitemap-blog.xml
 Sitemap: https://www.tamuso.com/sitemap-posts.xml
 Sitemap: https://www.tamuso.com/sitemap-profiles.xml
 Sitemap: https://www.tamuso.com/sitemap-cities.xml
+Sitemap: https://www.tamuso.com/sitemap-countries.xml
+Sitemap: https://www.tamuso.com/sitemap-voices.xml
 Sitemap: https://www.tamuso.com/sitemap-topics.xml
 Sitemap: https://www.tamuso.com/sitemap-agencies.xml

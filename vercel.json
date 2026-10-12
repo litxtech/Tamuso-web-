@@ -29,6 +29,14 @@
       "destination": "/api/sitemap-public?tur=cities"
     },
     {
+      "source": "/sitemap-countries.xml",
+      "destination": "/api/sitemap-public?tur=countries"
+    },
+    {
+      "source": "/sitemap-voices.xml",
+      "destination": "/api/sitemap-public?tur=voices"
+    },
+    {
       "source": "/sitemap-topics.xml",
       "destination": "/api/sitemap-public?tur=topics"
     },
@@ -103,6 +111,26 @@
     {
       "source": "/city/:slug",
       "destination": "/api/public-icerik?tur=city&slug=:slug"
+    },
+    {
+      "source": "/cities",
+      "destination": "/api/public-icerik?tur=cities"
+    },
+    {
+      "source": "/country/:code",
+      "destination": "/api/public-icerik?tur=country&slug=:code"
+    },
+    {
+      "source": "/countries",
+      "destination": "/api/public-icerik?tur=countries"
+    },
+    {
+      "source": "/voice/:code",
+      "destination": "/api/public-icerik?tur=voice&slug=:code"
+    },
+    {
+      "source": "/voices",
+      "destination": "/api/public-icerik?tur=voices"
     },
     {
       "source": "/hashtag/:tag",
@@ -562,6 +590,10 @@
     },
     {
       "source": "/admin/sehir-secim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/seo-anahtar",
       "destination": "/index.html"
     },
     {

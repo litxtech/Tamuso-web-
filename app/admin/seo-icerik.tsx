@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -104,6 +104,9 @@ export default function SeoIcerikEkrani() {
   return (
     <Screen>
       <EkranBasligi title="Arama görünürlüğü" />
+      <Pressable onPress={() => router.push('/admin/seo-anahtar')} style={styles.filtre}>
+        <Text style={styles.yazi}>SEO yönetimi · Anahtar kelimeler</Text>
+      </Pressable>
       <ScrollView contentContainerStyle={styles.govde}>
         <View style={styles.kart}>
           <Text style={styles.baslik}>Ne Google’da kalır</Text>

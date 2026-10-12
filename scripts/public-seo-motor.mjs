@@ -17,6 +17,11 @@ export const publicSeoRoutes = {
   profile: (username) => `/u/${username}`,
   city: (slug) => `/city/${slug}`,
   cityPosts: (slug) => `/city/${slug}/posts`,
+  cities: '/cities',
+  country: (code) => `/country/${code}`,
+  countries: '/countries',
+  voice: (code) => `/voice/${code}`,
+  voices: '/voices',
   hashtag: (tag) => `/hashtag/${tag}`,
   topic: (slug) => `/topics/${slug}`,
   discover: '/discover',
@@ -362,17 +367,29 @@ export function profilBelgesi(veri) {
 }
 
 export function sehirBelgesi(veri) {
-  const postlar = (veri.posts || []).slice(0, 12).map((p) => `<li><a href="${kacis(p.path)}">${kacis(p.title)}</a></li>`).join('');
-  const insanlar = (veri.people || []).slice(0, 12).map((p) => `<li><a href="${kacis(p.path)}">${kacis(p.title)}</a></li>`).join('');
-  const bloglar = (veri.blogs || []).slice(0, 6).map((p) => `<li><a href="${kacis(p.path)}">${kacis(p.title)}</a></li>`).join('');
+  const postlar = listeOgeleri(veri.posts, 12);
+  const insanlar = listeOgeleri(veri.people, 12);
+  const bloglar = listeOgeleri(veri.blogs, 6);
+  const odalar = listeOgeleri(veri.rooms, 12);
+  const ulke = veri.country?.path
+    ? `<a href="${kacis(veri.country.path)}">${kacis(veri.country.name)}</a>`
+    : '';
+  const kirik = [
+    { '@type': 'ListItem', position: 1, name: 'Tamuso', item: `${ORIGIN}/` },
+    { '@type': 'ListItem', position: 2, name: 'Şehirler', item: `${ORIGIN}/cities` },
+  ];
+  if (veri.country?.name) kirik.push({ '@type': 'ListItem', position: 3, name: veri.country.name, item: `${ORIGIN}${veri.country.path}` });
+  kirik.push({ '@type': 'ListItem', position: kirik.length + 1, name: veri.name, item: `${ORIGIN}${veri.path}` });
   const govde = `<article>
-<header><h1>${kacis(veri.name)}</h1><p>${kacis(veri.description)}</p></header>
+<header><nav class="kirik" aria-label="Konum"><a href="/cities">Şehirler</a>${ulke ? ` · ${ulke}` : ''}</nav><h1>${kacis(veri.name)}</h1><p>${kacis(veri.description)}</p></header>
 <section>
-<p><a href="${kacis(veri.postsPath)}">Paylaşımlar</a> · <a href="/discover">Keşfet</a> · <a href="/blog">Blog</a></p>
+<p><a href="${kacis(veri.postsPath)}">Paylaşımlar</a> · <a href="/voices">Ses odaları</a> · <a href="/people">Kişiler</a> · <a href="/blog">Blog</a></p>
+${odalar ? `<h2>${kacis(veri.name)} ses odaları</h2><ul>${odalar}</ul>` : ''}
 ${postlar ? `<h2>${kacis(veri.name)} paylaşımları</h2><ul>${postlar}</ul>` : ''}
 ${insanlar ? `<h2>${kacis(veri.name)} profilleri</h2><ul>${insanlar}</ul>` : ''}
 ${bloglar ? `<h2>${kacis(veri.name)} yazıları</h2><ul>${bloglar}</ul>` : ''}
 </section>
+<footer>${kamuBaglantilari()}</footer>
 </article>`;
   return sayfaBelgesi({
     title: veri.title,
@@ -383,16 +400,110 @@ ${bloglar ? `<h2>${kacis(veri.name)} yazıları</h2><ul>${bloglar}</ul>` : ''}
     image: VARSAYILAN_OG,
     ogType: 'website',
     json: [
-      { '@context': 'https://schema.org', '@type': 'Place', name: veri.name, url: `${ORIGIN}${veri.path}` },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Place',
+        name: veri.name,
+        url: `${ORIGIN}${veri.path}`,
+        ...(veri.country?.name ? { containedInPlace: { '@type': 'Country', name: veri.country.name } } : {}),
+      },
+      { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: kirik },
+    ],
+    govde,
+  });
+}
+
+export function ulkeBelgesi(veri) {
+  const sehirler = listeOgeleri(veri.cities, 80);
+  const insanlar = listeOgeleri(veri.people, 24);
+  const odalar = listeOgeleri(veri.rooms, 24);
+  const govde = `<article>
+<header><nav class="kirik" aria-label="Konum"><a href="/countries">Ülkeler</a></nav><h1>${kacis(veri.name)}</h1><p>${kacis(veri.description)}</p></header>
+<section>
+<p><a href="/cities">Şehirler</a> · <a href="/voices">Ses odaları</a> · <a href="/people">Kişiler</a></p>
+${sehirler ? `<h2>${kacis(veri.name)} şehirleri</h2><ul>${sehirler}</ul>` : '<p>Bu ülkede henüz kayıtlı şehir yok.</p>'}
+${odalar ? `<h2>Herkese açık ses odaları</h2><ul>${odalar}</ul>` : ''}
+${insanlar ? `<h2>Herkese açık profiller</h2><ul>${insanlar}</ul>` : ''}
+</section>
+<footer>${kamuBaglantilari()}</footer>
+</article>`;
+  return sayfaBelgesi({
+    title: veri.title,
+    description: veri.description,
+    path: veri.path,
+    robots: veri.robots,
+    language: 'tr',
+    image: VARSAYILAN_OG,
+    ogType: 'website',
+    json: [
+      { '@context': 'https://schema.org', '@type': 'Country', name: veri.name, url: `${ORIGIN}${veri.path}` },
       {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Tamuso', item: `${ORIGIN}/` },
-          { '@type': 'ListItem', position: 2, name: veri.name, item: `${ORIGIN}${veri.path}` },
+          { '@type': 'ListItem', position: 2, name: 'Ülkeler', item: `${ORIGIN}/countries` },
+          { '@type': 'ListItem', position: 3, name: veri.name, item: `${ORIGIN}${veri.path}` },
         ],
       },
     ],
+    govde,
+  });
+}
+
+export function odaBelgesi(veri) {
+  const host = veri.host?.path
+    ? `<a href="${kacis(veri.host.path)}">${kacis(veri.host.name)}</a>`
+    : kacis(veri.host?.name || 'Tamuso');
+  const sehir = veri.city?.path ? `<a href="${kacis(veri.city.path)}">${kacis(veri.city.name)}</a>` : '';
+  const ulke = veri.country?.path ? `<a href="${kacis(veri.country.path)}">${kacis(veri.country.name)}</a>` : '';
+  const yer = [sehir, ulke].filter(Boolean).join(' · ');
+  const govde = `<article>
+<header><nav class="kirik" aria-label="Konum"><a href="/voices">Ses odaları</a></nav><h1>${kacis(veri.h1 || veri.name)}</h1><p class="meta">${host}${yer ? ` · ${yer}` : ''}</p></header>
+<section><p>${kacis(veri.description)}</p>${veri.topic ? `<p>${kacis(veri.topic)}</p>` : ''}</section>
+<footer>${kamuBaglantilari()}<p><a href="/voices">Tüm ses odaları</a> · <a href="/register">Tamuso'ya katıl</a></p></footer>
+</article>`;
+  return sayfaBelgesi({
+    title: veri.title,
+    description: veri.description,
+    path: veri.path,
+    robots: veri.robots,
+    language: 'tr',
+    image: guvenliHttps(veri.image) || VARSAYILAN_OG,
+    ogType: 'website',
+    json: [{
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: veri.h1 || veri.name,
+      description: veri.description,
+      url: `${ORIGIN}${veri.path}`,
+    }],
+    govde,
+  });
+}
+
+export function dizinBelgesi(veri) {
+  const ogeler = listeOgeleri(veri.items, 400);
+  const govde = `<article>
+<header><h1>${kacis(veri.h1)}</h1><p>${kacis(veri.description)}</p></header>
+<section>${ogeler ? `<ul>${ogeler}</ul>` : '<p>Henüz listelenecek herkese açık kayıt yok.</p>'}</section>
+<footer>${kamuBaglantilari()}</footer>
+</article>`;
+  return sayfaBelgesi({
+    title: veri.title,
+    description: veri.description,
+    path: veri.path,
+    robots: veri.robots,
+    language: 'tr',
+    image: VARSAYILAN_OG,
+    ogType: 'website',
+    json: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: veri.h1,
+      description: veri.description,
+      url: `${ORIGIN}${veri.path}`,
+    }],
     govde,
   });
 }
@@ -432,7 +543,11 @@ export function bulunamadiBelgesi() {
 }
 
 function kamuBaglantilari() {
-  return `<p><a href="/">Ana sayfa</a> · <a href="/discover">Keşfet</a> · <a href="/people">Kişiler</a> · <a href="/tanitim/ozellikler">Oyunlar ve özellikler</a> · <a href="/tanitim/meyve">Meyve oyunu</a> · <a href="/politika/privacy">Gizlilik</a> · <a href="/politika/tos">Koşullar</a> · <a href="/politika/community_rules">Topluluk kuralları</a> · <a href="/blog">Blog</a></p>`;
+  return `<p><a href="/">Ana sayfa</a> · <a href="/discover">Keşfet</a> · <a href="/people">Kişiler</a> · <a href="/cities">Şehirler</a> · <a href="/countries">Ülkeler</a> · <a href="/voices">Ses odaları</a> · <a href="/tanitim/ozellikler">Oyunlar ve özellikler</a> · <a href="/tanitim/meyve">Meyve oyunu</a> · <a href="/politika/privacy">Gizlilik</a> · <a href="/politika/tos">Koşullar</a> · <a href="/politika/community_rules">Topluluk kuralları</a> · <a href="/blog">Blog</a></p>`;
+}
+
+function listeOgeleri(ogeler, sinir) {
+  return (ogeler || []).slice(0, sinir).map((p) => `<li><a href="${kacis(p.path)}">${kacis(p.title)}</a></li>`).join('');
 }
 
 export function ajansBelgesi(veri) {

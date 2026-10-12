@@ -466,6 +466,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     anahtarlar: ['seo', 'google', 'index', 'sitemap', 'paylaşım'],
   },
   {
+    icon: 'pricetag-outline',
+    label: 'Anahtar kelimeler',
+    alt: 'SEO yönetimi · taslak · yayın',
+    href: '/admin/seo-anahtar',
+    tint: RenkTokenlari.accent,
+    bolum: 'Ürün',
+    permissionKey: 'content.seo.keywords.view',
+    anahtarlar: ['seo', 'anahtar', 'kelime', 'google', 'meta'],
+  },
+  {
     icon: 'menu-outline',
     label: 'Hamburger menü',
     alt: 'Sıra · gizle · simülasyon',

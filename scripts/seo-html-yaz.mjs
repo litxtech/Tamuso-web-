@@ -146,4 +146,62 @@ async function anasayfaBlog() {
 }
 
 await anasayfaBlog();
+
+async function yayinlariGetir() {
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return [];
+  const kontrol = new AbortController();
+  const zaman = setTimeout(() => kontrol.abort(), 8000);
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/seo_sayfa_yayin_oku`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: '{}',
+      signal: kontrol.signal,
+    });
+    const veri = res.ok ? await res.json() : [];
+    return Array.isArray(veri) ? veri : [];
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(zaman);
+  }
+}
+
+function htmlKacis(deger) {
+  return String(deger ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function yayinIsle(dosya, kayit) {
+  if (!kayit || !fs.existsSync(dosya)) return;
+  let html = fs.readFileSync(dosya, 'utf8');
+  if (kayit.title) html = html.replace(/<title>[^<]*<\/title>/, `<title>${htmlKacis(kayit.title)}</title>`);
+  if (kayit.description) {
+    html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${htmlKacis(kayit.description)}$2`);
+    html = html.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${htmlKacis(kayit.description)}$2`);
+  }
+  if (kayit.title) {
+    html = html.replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${htmlKacis(kayit.title)}$2`);
+  }
+  if (kayit.h1) html = html.replace(/<h1>[^<]*<\/h1>/, `<h1>${htmlKacis(kayit.h1)}</h1>`);
+  if (kayit.intro) html = html.replace('</h1>', `</h1><p>${htmlKacis(kayit.intro)}</p>`);
+  if (kayit.h2) html = html.replace('</h1>', `</h1><h2>${htmlKacis(kayit.h2)}</h2>`);
+  if (kayit.faq) html = html.replace('</main>', `<h2>Sık sorulan soru</h2><p>${htmlKacis(kayit.faq)}</p></main>`);
+  fs.writeFileSync(dosya, html);
+}
+
+const yayinlar = await yayinlariGetir();
+for (const kayit of yayinlar) {
+  if (!kayit || typeof kayit.yol !== 'string' || !kayit.yol.startsWith('/')) continue;
+  const dosya = kayit.yol === '/'
+    ? sablonYol
+    : path.join(dist, ...kayit.yol.split('/').filter(Boolean), 'index.html');
+  yayinIsle(dosya, kayit);
+}
+
 console.log(`seo: ${sayfalar.length} herkese açık sayfa`);
