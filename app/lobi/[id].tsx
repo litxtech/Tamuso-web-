@@ -36,6 +36,8 @@ import {
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { OdaCikisKilidiAktifMi } from '../../src/moduller/ses-odalari/navigasyon/OdaCikisKilidi';
 import { YeniOdaOnbellegeYaz } from '../../src/moduller/ses-odalari/onbellek/YeniOdaOnbellek';
+import { LiveKitTokenOncedenAl } from '../../src/moduller/livekit/token/LiveKitTokenAl';
+import { MedyaSesOturumuIsit } from '../../src/moduller/livekit/MedyaBaglantisi';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 type LobiKisi = {
@@ -93,6 +95,16 @@ export default function OdaLobisiEkrani() {
         () => undefined,
       );
       YeniOdaOnbellegeYaz(hedef, []);
+      const kanal = hedef.livekit_room_name?.trim() || `voice_${hedef.id}`;
+      try {
+        LiveKitTokenOncedenAl({
+          roomName: kanal,
+          role: hostMu ? 'host' : 'listener',
+        });
+        MedyaSesOturumuIsit({ asPublisher: hostMu });
+      } catch {
+        /* ısıtma isteğe bağlı */
+      }
       router.replace(`/room/${hedef.id}` as any);
       return true;
     } catch (e) {

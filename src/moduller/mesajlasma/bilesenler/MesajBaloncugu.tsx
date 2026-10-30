@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import type { DirektMesaj } from '../okuma/MesajlariGetir';
 import { HostBasvurusuOlustur } from '../../hostlar/islemler/HostBasvuruIslemleri';
 import { AjansDavetMesajindanKoduCikar } from '../../ajanslar/yardimcilar/AjansDavetMesajindanKoduCikar';
+import { AjansDavetHttpsUrlOlustur } from '../../paylasim-linkleri/PaylasimUrl';
 import { MedyaUriGuvenli } from '../yardimcilar/MedyaUriGecerliMi';
 import { MesajYanitOzetMetin } from '../yardimcilar/MesajYanitOzetMetin';
 import { DurumVideoOnizleme } from '../../durum/bilesenler/DurumVideoOnizleme';
@@ -34,6 +35,10 @@ import { MesajBaglantiliMetin } from './MesajBaglantiliMetin';
 import { MesajViewOnceKarti } from './MesajViewOnceKarti';
 import { MesajAjansPaketTeklifKarti } from './MesajAjansPaketTeklifKarti';
 import { MesajAjansPaketFisKarti } from './MesajAjansPaketFisKarti';
+import {
+  AjansPaketTalebiMi,
+  MesajAjansPaketTalepDugmesi,
+} from './MesajAjansPaketTalepDugmesi';
 import {
   HikayeYanitCoz,
   MesajHikayeYanitOnizleme,
@@ -67,6 +72,10 @@ type Props = {
   /** Çift dokunuşla yanıt */
   onReply?: (item: DirektMesaj) => void;
   highlighted?: boolean;
+  /** Ajans sahibi: paket talebi altında "Bu paketi gönder" */
+  ajansSahibi?: boolean;
+  /** Talep edilen paketin teklif kartı sonradan gönderildi mi */
+  paketTalebiGonderildi?: boolean;
 };
 
 function MesajKopyaSatiri({ deger, mine }: { deger: string; mine: boolean }) {
@@ -129,6 +138,8 @@ export function MesajBaloncugu({
   onViewOncePatch,
   onReply,
   highlighted,
+  ajansSahibi,
+  paketTalebiGonderildi,
 }: Props) {
   const { t, dil } = useCeviri();
   const locale = DIL_LOCALE_MAP[dil];
@@ -450,6 +461,11 @@ export function MesajBaloncugu({
         >
           {saat(item.created_at, locale)}
         </Text>
+        {mine && queued ? (
+          <Text style={mine ? styles.timeMine : styles.time}>
+            {t('cevrimdisi.gonderilecek')}
+          </Text>
+        ) : null}
         {mine ? (
           <Ionicons name={ikon.name} size={14} color={ikon.color} />
         ) : null}
@@ -829,9 +845,23 @@ export function MesajBaloncugu({
                 : t('mesajlar.ajansDaveti')}
             </Text>
           </View>
-          <Text style={mine ? styles.davetKodMine : styles.davetKod}>
-            {t('mesajlar.kodEtiket', { kod: davet.kod })}
-          </Text>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/ajans/katil',
+                params: { kod: davet.kod },
+              } as any)
+            }
+            accessibilityRole="link"
+            accessibilityLabel={t('host.ajansaKatil')}
+          >
+            <Text
+              style={[mine ? styles.davetKodMine : styles.davetKod, styles.davetLink]}
+              numberOfLines={2}
+            >
+              {AjansDavetHttpsUrlOlustur(davet.kod)}
+            </Text>
+          </Pressable>
           {!mine ? (
             <Pressable
               onPress={davetiKabulEt}
@@ -873,6 +903,9 @@ export function MesajBaloncugu({
         )
       ) : null}
       {paylasim ? <MesajKopyaSatiri deger={paylasim.deger} mine={mine} /> : null}
+      {!mine && ajansSahibi && AjansPaketTalebiMi(item) ? (
+        <MesajAjansPaketTalepDugmesi item={item} gonderildi={!!paketTalebiGonderildi} />
+      ) : null}
       {metaSatiri(false)}
     </>
   );
@@ -1107,8 +1140,11 @@ const styles = StyleSheet.create({
   davetKodMine: {
     ...TipografiTokenlari.caption,
     color: 'rgba(18,4,12,0.7)',
-    letterSpacing: 0.6,
+    letterSpacing: 0.2,
     fontWeight: '600',
+  },
+  davetLink: {
+    textDecorationLine: 'underline',
   },
   davetCta: {
     marginTop: 2,

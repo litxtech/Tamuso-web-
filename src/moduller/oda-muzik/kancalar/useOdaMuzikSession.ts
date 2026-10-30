@@ -7,6 +7,10 @@ import {
   type RoomMusicSession,
 } from '../islemler/OdaMuzikApi';
 import {
+  AktifSesOdasiArkaPlandaMi,
+  AktifSesOdasiKucultmeTazeMi,
+} from '../../ses-odalari/oturum/AktifSesOdasiOturumu';
+import {
   OdaMuzikConfigAyarla,
   OdaMuzikDurdur,
   OdaMuzikSessionUygula,
@@ -108,6 +112,8 @@ export function useOdaMuzikSession(roomId: string | null | undefined) {
       alive = false;
       appSub.remove();
       void supabase.removeChannel(ch);
+      // Küçültülmüş odada müzik ekrandan bağımsız çalsın
+      if (AktifSesOdasiArkaPlandaMi() || AktifSesOdasiKucultmeTazeMi()) return;
       void OdaMuzikDurdur();
     };
     // yalnız roomId — yenile ref ile; aksi halde subscribe sonrası .on() yarışı

@@ -1,17 +1,22 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { ListeGrubu, ListeSatiri } from '../../src/components/ListeSatiri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { AdminYetkisiVarMi } from '../../src/moduller/admin/yetki/AdminYetkisiVarMi';
+import {
+  AdminPaneliAc,
+  AdminWebAdresiVarMi,
+} from '../../src/moduller/admin/web/AdminWebAdresi';
 import { useKullanimSuresi } from '../../src/moduller/kullanim-suresi/baglam/KullanimSuresiSaglayici';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import { BoslukTokenlari, HeaderTokenlari } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../src/i18n/useCeviri';
+import { UygulamaSurumNotu } from '../../src/bilesenler/UygulamaSurumNotu';
 
 /** Profil menüsü — hesap hub; tercihler / gizlilik ayrı sayfalarda */
 export default function ProfilAyarlarEkrani() {
@@ -20,10 +25,11 @@ export default function ProfilAyarlarEkrani() {
     signOut,
     isGuest,
     refreshProfile,
-    refreshWallet,
   } = useAuth();
+  const { refreshWallet } = useWallet();
   const { t } = useCeviri();
-  const isAdmin = AdminYetkisiVarMi(profile);
+  // Personel konsolu yalnızca web'de açılır (iOS binary'sinde personel girişi yok).
+  const isAdmin = Platform.OS === 'web' && AdminYetkisiVarMi(profile);
   const { formatli: kullanimFormatli, yenile: kullanimYenile } =
     useKullanimSuresi();
   const [upgradeAcik, setUpgradeAcik] = useState(false);
@@ -102,6 +108,12 @@ export default function ProfilAyarlarEkrani() {
             onPress={() => router.push('/ayarlar' as any)}
           />
           <ListeSatiri
+            icon="cloud-offline-outline"
+            label={t('cevrimdisi.veriBaslik')}
+            value={t('cevrimdisi.veriAlt')}
+            onPress={() => router.push('/ayarlar/veri-cevrimdisi' as any)}
+          />
+          <ListeSatiri
             icon="receipt-outline"
             label={t('ayarlar.satinAlmaGecmisi')}
             value={t('ayarlar.satinAlmaDeger')}
@@ -144,12 +156,14 @@ export default function ProfilAyarlarEkrani() {
           />
         </ListeGrubu>
 
-        {isAdmin ? (
+        {isAdmin && AdminWebAdresiVarMi() ? (
           <ListeGrubu title={t('profil.yonetim')}>
             <ListeSatiri
               icon="construct-outline"
               label={t('profil.adminPaneli')}
-              onPress={() => router.push('/admin' as any)}
+              onPress={() => {
+                void AdminPaneliAc();
+              }}
               last
             />
           </ListeGrubu>
@@ -167,6 +181,8 @@ export default function ProfilAyarlarEkrani() {
             <Text style={styles.deleteAccountText}>{t('hesapSil.baslik')}</Text>
           </Pressable>
         ) : null}
+
+        <UygulamaSurumNotu />
       </ScrollView>
 
       <HesabiTamamlaKarti

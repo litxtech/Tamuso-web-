@@ -141,6 +141,33 @@ export default function DurumOlusturEkrani() {
           yayinTur = 'audio';
           sureMs = sesTaslak.durationMs;
         }
+        const { AgBaglantiDurumunuGetir } = await import(
+          '../../src/moduller/ag-baglantisi/okuma/AgBaglantiDurumunuGetir'
+        );
+        const ag = await AgBaglantiDurumunuGetir();
+        const offline = !ag.bagli || ag.internetErisilebilir === false;
+        if (offline) {
+          const { TaslakKaydet } = await import('../../src/moduller/cevrimdisi/TaslakDeposu');
+          const { CevrimdisiAktifKullanici } = await import(
+            '../../src/moduller/cevrimdisi/AktifKullanici'
+          );
+          const uid = CevrimdisiAktifKullanici();
+          if (uid) {
+            await TaslakKaydet(uid, {
+              id: `post-${Date.now()}`,
+              type: 'post',
+              text: birlesik,
+              images: yayinTur === 'image' && yayinUrl ? [yayinUrl] : [],
+              video: yayinTur === 'video' && yayinUrl ? yayinUrl : null,
+              hashtags: [],
+              mentions: [],
+              location: null,
+            });
+          }
+          setBusy(false);
+          Alert.alert(t('durum.baslik'), t('cevrimdisi.taslakKaydedildi'));
+          return;
+        }
         const r = await DurumOlustur(
           yayinTur === 'text'
             ? {

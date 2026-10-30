@@ -43,8 +43,20 @@ export async function PkDavetGonder(input: {
     p_to_live_id: input.toLiveId,
     p_sure_saniye: input.sureSaniye ?? 300,
   });
-  if (error) return { ok: false, hata: error.message };
+  if (error) return { ok: false, hata: pkDavetHataCevir(error.message) };
   return { ok: true, invite: data as PkDavet };
+}
+
+function pkDavetHataCevir(mesaj: string): string {
+  const m = mesaj.toLowerCase();
+  if (m.includes('live session ended') || m === 'expired') {
+    return i18n.t('pk.yayinKapandi');
+  }
+  if (m.includes('already in live')) return i18n.t('pk.zatenPk');
+  if (m.includes('pending pk invite')) return i18n.t('pk.davetBekliyor');
+  if (m.includes('already resolved')) return i18n.t('pk.davetYanitlanamadi');
+  if (!mesaj || mesaj === 'expired') return i18n.t('pk.davetYanitlanamadi');
+  return mesaj;
 }
 
 export async function PkDavetYanitla(input: {
@@ -55,7 +67,7 @@ export async function PkDavetYanitla(input: {
     p_invite_id: input.inviteId,
     p_kabul: input.kabul,
   });
-  if (error) return { ok: false, hata: error.message };
+  if (error) return { ok: false, hata: pkDavetHataCevir(error.message) };
   const row = data as {
     ok?: boolean;
     status?: string;
@@ -70,7 +82,7 @@ export async function PkDavetYanitla(input: {
       inviteId: row.invite_id ?? input.inviteId,
     };
   }
-  if (!row?.ok) return { ok: false, hata: i18n.t('pk.davetYanitlanamadi') };
+  if (!row?.ok) return { ok: false, hata: pkDavetHataCevir(row?.status ?? '') };
   return {
     ok: true,
     status: (row.status as 'accepted' | 'rejected') ?? 'rejected',

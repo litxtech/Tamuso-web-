@@ -193,6 +193,26 @@ function HeicBaytMi(bytes: Uint8Array): boolean {
 }
 
 /**
+ * iPhone HEIC’i gerçek JPEG baytına çevirir.
+ * Otomatik kip, JPEG daha büyükse orijinal HEIC’i geri verir — bu yüzden manual.
+ */
+async function HeicJpegCevir(uri: string): Promise<string | null> {
+  try {
+    const { Image } = await import('react-native-compressor');
+    const out = await Image.compress(uri, {
+      compressionMethod: 'manual',
+      output: 'jpg',
+      quality: 0.86,
+      maxWidth: 2048,
+      maxHeight: 2048,
+    });
+    return typeof out === 'string' && out.length > 0 ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Supabase Storage yükleme — doğru Content-Type ile.
  */
 export async function DepoyaMedyaYukle(
@@ -212,6 +232,7 @@ export async function DepoyaMedyaYukle(
   const tur = girdi.tur ?? 'image';
   let uri = girdi.uri;
   let mime = girdi.mime;
+  let path = girdi.path;
 
   try {
     // Platform geneli: tüm videolar 1080p'ye sıkıştırılır (4K dahil)
@@ -225,20 +246,29 @@ export async function DepoyaMedyaYukle(
       }
     }
 
+    let bytes = await YerelDosyayiBaytOku(uri);
+    if (bytes.byteLength === 0) {
+      return { ok: false, hata: i18n.t('medyaYukle.dosyaBos') };
+    }
+    if (tur === 'image' && HeicBaytMi(bytes)) {
+      const jpegUri = await HeicJpegCevir(uri);
+      if (!jpegUri) {
+        return { ok: false, hata: i18n.t('auth.medyaHeicDesteklenmiyor') };
+      }
+      uri = jpegUri;
+      mime = 'image/jpeg';
+      path = path.replace(/\.(heic|heif)$/i, '.jpg');
+      bytes = await YerelDosyayiBaytOku(uri);
+      if (bytes.byteLength === 0 || HeicBaytMi(bytes)) {
+        return { ok: false, hata: i18n.t('auth.medyaHeicDesteklenmiyor') };
+      }
+    }
     const ext = MedyaUzantisiCoz(
       uri,
       mime,
       tur === 'video' ? 'mp4' : tur === 'audio' ? 'mp3' : 'jpg',
     );
     const contentType = GuvenliMimeTipi(mime, ext, tur);
-
-    const bytes = await YerelDosyayiBaytOku(uri);
-    if (bytes.byteLength === 0) {
-      return { ok: false, hata: i18n.t('medyaYukle.dosyaBos') };
-    }
-    if (tur === 'image' && HeicBaytMi(bytes)) {
-      return { ok: false, hata: i18n.t('auth.medyaHeicDesteklenmiyor') };
-    }
     const limitBytes =
       girdi.maxBytes ??
       (tur === 'video' ? VIDEO_SIKISTIRMA_SONRASI_MAX_BYTES : undefined);
@@ -261,7 +291,7 @@ export async function DepoyaMedyaYukle(
     }
 
     const { error } = await supabase.storage.from(girdi.bucket).upload(
-      girdi.path,
+      path,
       bytes,
       {
         contentType,
@@ -278,7 +308,7 @@ export async function DepoyaMedyaYukle(
       };
     }
 
-    return { ok: true, path: girdi.path, contentType };
+    return { ok: true, path, contentType };
   } catch (e) {
     return {
       ok: false,

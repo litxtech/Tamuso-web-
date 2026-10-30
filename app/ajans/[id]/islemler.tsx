@@ -147,6 +147,7 @@ export default function AjansIslemlerEkrani() {
               toUserId: secili.id,
               coins: n,
               idempotencyKey: uuidYerel(),
+              loadType: 'promotion',
             });
             setBusy(false);
             if (!r.ok) Alert.alert(t('ajans.alertYukleme'), r.hata);

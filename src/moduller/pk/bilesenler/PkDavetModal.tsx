@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -58,6 +59,12 @@ export function PkDavetModal({ davet, onKapat, onSonuc }: Props) {
     const r = await PkDavetYanitla({ inviteId: davet.id, kabul });
     setBusy(false);
     if (!r.ok) {
+      Alert.alert(t('pk.davetBadge'), r.hata || t('pk.davetYanitlanamadi'));
+      onKapat();
+      return;
+    }
+    if (r.status !== 'accepted') {
+      Alert.alert(t('pk.davetBadge'), t('pk.yayinKapandi'));
       onKapat();
       return;
     }

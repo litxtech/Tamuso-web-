@@ -32,6 +32,16 @@ export function useDurumAkisRealtime({
   useEffect(() => {
     if (!enabled) return;
 
+    let insertTimer: ReturnType<typeof setTimeout> | null = null;
+    const insertGecikmeli = () => {
+      if (insertTimer) clearTimeout(insertTimer);
+      insertTimer = setTimeout(() => {
+        insertTimer = null;
+        if (ustteMiRef.current) ustteCb.current();
+        else asagiCb.current();
+      }, 800);
+    };
+
     const kanal = supabase
       .channel('durum-akis-feed')
       .on(
@@ -41,10 +51,7 @@ export function useDurumAkisRealtime({
           schema: 'public',
           table: 'status_posts',
         },
-        () => {
-          if (ustteMiRef.current) ustteCb.current();
-          else asagiCb.current();
-        },
+        insertGecikmeli,
       )
       .on(
         'postgres_changes',
@@ -63,6 +70,7 @@ export function useDurumAkisRealtime({
       .subscribe();
 
     return () => {
+      if (insertTimer) clearTimeout(insertTimer);
       void supabase.removeChannel(kanal);
     };
   }, [enabled, ustteMiRef]);

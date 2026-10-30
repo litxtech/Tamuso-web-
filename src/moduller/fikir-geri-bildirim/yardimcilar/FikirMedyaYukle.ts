@@ -42,12 +42,12 @@ export async function FikirGorseliSecVeYukle(opts?: {
     if (!up.ok) return { ok: false, hata: up.hata };
 
     const base = OrtamDegiskenleri.supabaseUrl?.replace(/\/$/, '') ?? '';
-    const public_url = `${base}/storage/v1/object/public/feedback-media/${path}`;
+    const public_url = `${base}/storage/v1/object/public/feedback-media/${up.path}`;
 
     return {
       ok: true,
       ek: {
-        storage_path: path,
+        storage_path: up.path,
         public_url,
         mime_type: up.contentType,
       },

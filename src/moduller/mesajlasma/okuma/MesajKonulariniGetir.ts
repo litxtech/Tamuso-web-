@@ -1,4 +1,6 @@
 import { supabase } from '../../../lib/supabase';
+import { CevrimdisiAktifKullanici } from '../../cevrimdisi/AktifKullanici';
+import { cevrimdisiOku, cevrimdisiYaz } from '../../cevrimdisi/CevrimdisiDeposu';
 
 export type MesajKonusu = {
   id: string;
@@ -36,13 +38,38 @@ export async function MesajKonulariniGetir(
   });
 
   if (!error && data) {
-    return normalize(data as MesajKonusu[]);
+    const rows = normalize(data as MesajKonusu[]);
+    await konuOnbellekYaz(arsiv, rows);
+    return rows;
   }
 
   // Fallback eski 1-arg RPC
   const fb = await supabase.rpc('mesaj_konularini_getir', { p_limit: 50 });
   if (!fb.error && fb.data) {
-    return normalize(fb.data as MesajKonusu[]);
+    const rows = normalize(fb.data as MesajKonusu[]);
+    await konuOnbellekYaz(arsiv, rows);
+    return rows;
   }
-  return [];
+  return konuOnbellekOku(arsiv);
+}
+
+function konuAlan(arsiv: boolean): string {
+  return arsiv ? 'mesajKonuArsiv' : 'mesajKonu';
+}
+
+async function konuOnbellekYaz(arsiv: boolean, rows: MesajKonusu[]): Promise<void> {
+  const uid = CevrimdisiAktifKullanici();
+  if (!uid || rows.length === 0) return;
+  await cevrimdisiYaz(uid, konuAlan(arsiv), rows);
+}
+
+async function konuOnbellekOku(arsiv: boolean): Promise<MesajKonusu[]> {
+  const uid = CevrimdisiAktifKullanici();
+  if (!uid) return [];
+  const ham = await cevrimdisiOku<unknown>(uid, konuAlan(arsiv), []);
+  if (!Array.isArray(ham)) return [];
+  return ham.filter(
+    (r): r is MesajKonusu =>
+      !!r && typeof r === 'object' && typeof (r as MesajKonusu).id === 'string',
+  );
 }

@@ -23,6 +23,8 @@ type Props = {
   placement?: Placement;
   /** Backdrop’a basınca kapat */
   backdropClosable?: boolean;
+  /** iOS: kapanış animasyonu bitince */
+  onDismiss?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
   rootStyle?: StyleProp<ViewStyle>;
 };
@@ -34,6 +36,7 @@ export function TamusoModal({
   animationType = 'fade',
   placement = 'center',
   backdropClosable = true,
+  onDismiss,
   contentStyle,
   rootStyle,
 }: Props) {
@@ -48,6 +51,7 @@ export function TamusoModal({
       statusBarTranslucent
       hardwareAccelerated
       onRequestClose={onClose}
+      onDismiss={onDismiss}
     >
       <View
         style={[

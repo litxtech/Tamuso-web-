@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import { OdaIslemOzetleriniBagla } from '../../ses-odalari/okuma/OdaIslemOzeti';
 import type { Room, RoomMode } from '../../../types/models';
 import type { KesfetFiltresi } from '../filtreler/KesfetFiltreleri';
 
@@ -40,6 +41,18 @@ export async function KesfetOneriGetir(input: {
   }
 
   const { data, error } = await q;
-  if (error) throw error;
-  return (data as Room[]) ?? [];
+  if (error) {
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { KesfetAnlikOku } = await import('../../cevrimdisi/AnlikGoruntu');
+    const disk = await KesfetAnlikOku(CevrimdisiAktifKullanici());
+    if (disk && disk.length > 0) return disk as Room[];
+    throw error;
+  }
+  const odalar = await OdaIslemOzetleriniBagla((data as Room[]) ?? []);
+  if (odalar.length > 0) {
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { KesfetAnlikYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+    void KesfetAnlikYaz(CevrimdisiAktifKullanici(), odalar);
+  }
+  return odalar;
 }

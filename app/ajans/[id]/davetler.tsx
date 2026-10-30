@@ -18,6 +18,9 @@ import {
   AjansDavetOlustur,
 } from '../../../src/moduller/ajanslar/islemler/AjansYonetimV2Islemleri';
 import { AjansKayitDurum } from '../../../src/moduller/ajanslar/i18n/AjansEtiketleri';
+import { AjansProfilGetir } from '../../../src/moduller/ajanslar/okuma/AjansProfilGetir';
+import { DurumAjansDavetOlustur } from '../../../src/moduller/durum/islemler/DurumIslemleri';
+import { AjansDavetHttpsUrlOlustur } from '../../../src/moduller/paylasim-linkleri/PaylasimUrl';
 import { useCeviri } from '../../../src/i18n/useCeviri';
 import { RenkTokenlari } from '../../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../src/tasarim-sistemi/TipografiTokenlari';
@@ -27,6 +30,7 @@ export default function AjansDavetlerEkrani() {
   const id = useAjansRouteId();
   const [liste, setListe] = useState<Array<Record<string, unknown>>>([]);
   const [analitik, setAnalitik] = useState<Record<string, unknown> | null>(null);
+  const [ajansAdi, setAjansAdi] = useState('');
   const [label, setLabel] = useState('');
   const [maxUses, setMaxUses] = useState('1');
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -35,12 +39,14 @@ export default function AjansDavetlerEkrani() {
     if (!id) return;
     setYukleniyor(true);
     try {
-      const [l, a] = await Promise.all([
+      const [l, a, profil] = await Promise.all([
         AjansDavetListesi(id),
         AjansDavetAnalitik(id).catch(() => null),
+        AjansProfilGetir(id).catch(() => null),
       ]);
       setListe(l);
       setAnalitik(a);
+      setAjansAdi(profil?.agency.name?.trim() || '');
     } catch {
       setListe([]);
     } finally {
@@ -49,6 +55,25 @@ export default function AjansDavetlerEkrani() {
   }, [id]);
 
   useFocusEffect(useCallback(() => { void yukle(); }, [yukle]));
+
+  const linkPaylas = (kod: string) => {
+    const url = AjansDavetHttpsUrlOlustur(kod);
+    const ad = ajansAdi || t('ajans.katilBaslik');
+    void Share.share({
+      message: t('ajans.davetPaylasMetin', { ad, url }),
+    }).catch(() => undefined);
+  };
+
+  const gonderiPaylas = (kod: string) => {
+    void (async () => {
+      const r = await DurumAjansDavetOlustur(kod);
+      if (!r.ok) {
+        Alert.alert(t('ajans.alertDavet'), r.hata ?? t('ajans.alertDavet'));
+        return;
+      }
+      Alert.alert(t('ajans.alertDavet'), t('ajans.davetGonderiOldu'));
+    })();
+  };
 
   return (
     <AjansAltEkranKabuk
@@ -85,10 +110,7 @@ export default function AjansDavetlerEkrani() {
               });
               if (!r.ok) Alert.alert(t('ajans.alertDavet'), r.hata);
               else {
-                Alert.alert(t('ajans.alertKod'), r.invite_code ?? '');
-                await Share.share({
-                  message: t('ajans.davetPaylasMetin', { kod: r.invite_code }),
-                }).catch(() => undefined);
+                if (r.invite_code) linkPaylas(r.invite_code);
                 await yukle();
               }
             })();
@@ -107,6 +129,16 @@ export default function AjansDavetlerEkrani() {
               <AjansListeSatir
                 title={String(d.invite_code)}
                 subtitle={`${AjansKayitDurum(String(d.status), t)} · ${d.used_count ?? 0}/${d.max_uses ?? '∞'}${d.label ? ` · ${d.label}` : ''}`}
+              />
+              <AjansCta
+                ghost
+                label={t('ajans.davetLinkPaylas')}
+                onPress={() => linkPaylas(String(d.invite_code))}
+              />
+              <AjansCta
+                ghost
+                label={t('ajans.davetGonderiPaylas')}
+                onPress={() => gonderiPaylas(String(d.invite_code))}
               />
               <AjansCta
                 ghost

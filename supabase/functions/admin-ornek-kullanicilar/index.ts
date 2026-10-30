@@ -118,21 +118,22 @@ Deno.serve(async (req) => {
         .select('id')
         .eq('is_sample', true);
       const ids = (rows ?? []).map((r) => r.id as string);
-      let silinen = 0;
       const hatalar: string[] = [];
       for (const id of ids) {
         const { error } = await admin.auth.admin.deleteUser(id);
-        if (error) hatalar.push(`${id}: ${error.message}`);
-        else silinen += 1;
+        if (error && !/not found/i.test(error.message)) {
+          hatalar.push(`${id}: ${error.message}`);
+        }
       }
-      await admin.from('admin_audit_logs').insert({
-        admin_id: user.id,
-        action: 'sample_users_purge',
-        summary: `Örnek kullanıcılar silindi: ${silinen}`,
-        details: { silinen, hatalar, toplam: ids.length },
-      });
+      const { data: temiz, error: temizHata } = await admin.rpc(
+        'admin_ornek_kullanicilari_sil',
+      );
+      const silinen = Number(
+        (temiz as { silinen?: number } | null)?.silinen ?? 0,
+      );
+      if (temizHata) hatalar.push(temizHata.message);
       return Response.json(
-        { ok: true, action: 'purge', silinen, hatalar },
+        { ok: !temizHata, action: 'purge', silinen, hatalar },
         { headers: corsHeaders },
       );
     }

@@ -12,12 +12,14 @@ import type { DurumOggesi } from '../islemler/DurumIslemleri';
 import {
   DurumMedyaHttpsMi,
   DurumMuzikPayloadAl,
+  DurumAjansDavetPayloadAl,
   DurumOyunKazanciPayloadAl,
   DurumSesPayloadAl,
 } from '../islemler/DurumIslemleri';
 import { DurumMuzikKarti } from './DurumMuzikKarti';
 import { DurumSesKarti } from './DurumSesKarti';
 import { DurumOyunKazanciKart } from './DurumOyunKazanciKart';
+import { DurumAjansDavetKarti } from './DurumAjansDavetKarti';
 import { DurumVideoOnizleme } from './DurumVideoOnizleme';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
@@ -90,6 +92,7 @@ export function DurumProfilIzgarasi({
             .filter((oge) => oge && typeof oge.id === 'string' && oge.id.length > 0)
             .map((oge) => {
             const kazanc = DurumOyunKazanciPayloadAl(oge);
+            const ajansDavet = DurumAjansDavetPayloadAl(oge);
             const muzik = DurumMuzikPayloadAl(oge);
             const ses = DurumSesPayloadAl(oge);
             return (
@@ -107,6 +110,8 @@ export function DurumProfilIzgarasi({
               >
                 {kazanc ? (
                   <DurumOyunKazanciKart payload={kazanc} compact />
+                ) : ajansDavet ? (
+                  <DurumAjansDavetKarti payload={ajansDavet} compact />
                 ) : muzik ? (
                   <DurumMuzikKarti payload={muzik} compact />
                 ) : ses ? (

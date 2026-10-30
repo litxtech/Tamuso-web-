@@ -9,6 +9,7 @@ import {
 } from '../livekit/kamera/KameraOnizlemeKilidi';
 import { canliMuzikDevam } from '../canli-yayin/bilesenler/CanliMuzikDinle';
 import { KESIT_MAX_SANIYE, kesitSaniyeNormalize } from './canliKesitDogrulama';
+import { kesitSesKaydiAc, kesitSesKaydiKapat, kesitSesModunuTut } from './kesitSesKaydi';
 
 export type KesitKameraDosya = {
   uri: string;
@@ -30,6 +31,7 @@ function kamerayiYayinaGeriVer() {
   setTimeout(() => {
     KameraOnizlemeBirakildi();
     void (async () => {
+      await kesitSesKaydiKapat();
       let ok = await LiveKitBaglantiYoneticisi.kameraAcVeBekle(8_000);
       if (!ok) {
         await new Promise((r) => setTimeout(r, 600));
@@ -52,8 +54,8 @@ type Props = {
 };
 
 /**
- * Yayındaki kamerayı kısa süre devralır. Mikrofonu açmaz; oda müziği çalmaya devam eder.
- * Kayıt kullanıcı durdurana kadar sürer, en fazla 30 sn. Bırakınca kamera yayına döner.
+ * Yayındaki kamerayı kısa süre devralır. Konuşma ve hoparlördeki müzik kayda girer.
+ * Kayıt kullanıcı durdurana kadar sürer, en fazla 30 sn. Bırakınca kamera ve mikrofon yayına döner.
  */
 export const CanliKesitKamera = forwardRef<KesitKameraTutu, Props>(function CanliKesitKamera(
   { onBasladi, onDone, onError },
@@ -98,6 +100,8 @@ export const CanliKesitKamera = forwardRef<KesitKameraTutu, Props>(function Canl
       } catch {
         /* kamera zaten kapalı olabilir */
       }
+      await kesitSesKaydiAc();
+      if (iptal) return;
       await new Promise((r) => setTimeout(r, Platform.OS === 'android' ? 420 : 360));
       if (iptal) return;
       const mevcut = await izinIsteRef.current();
@@ -148,6 +152,7 @@ export const CanliKesitKamera = forwardRef<KesitKameraTutu, Props>(function Canl
     try {
       baslangic.current = Date.now();
       onBasladiRef.current?.();
+      await kesitSesModunuTut();
       setTimeout(() => canliMuzikDevam(), 280);
       const cek = (codec: boolean) =>
         view.recordAsync(
@@ -198,7 +203,6 @@ export const CanliKesitKamera = forwardRef<KesitKameraTutu, Props>(function Canl
       style={styles.cam}
       facing={facing}
       mode="video"
-      mute
       videoQuality="720p"
       videoBitrate={1_400_000}
       animateShutter={false}

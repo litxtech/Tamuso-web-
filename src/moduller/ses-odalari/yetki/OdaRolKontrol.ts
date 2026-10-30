@@ -29,6 +29,7 @@ export type KatilimciMenuAksiyonu =
   | 'admin_ata'
   | 'admin_kaldir'
   | 'lider_devret'
+  | 'lider_geri_al'
   | 'kick'
   | 'ban'
   | 'koltuktan_ayril';
@@ -41,6 +42,12 @@ export function KatilimciMenuAksiyonlari(input: {
   targetOnSeat: boolean;
   targetMicLocked: boolean;
   targetIsSelf: boolean;
+  /** Odayı kuran, devrettiği liderliği geri alabilir */
+  liderGeriAl?: boolean;
+  /** Gerçek oda sahibi — liderliği devredebilir */
+  liderDevredebilir?: boolean;
+  /** Hedef şu an rooms.host_id */
+  hedefGercekSahip?: boolean;
 }): KatilimciMenuAksiyonu[] {
   if (input.targetIsSelf) {
     const self: KatilimciMenuAksiyonu[] = ['profil'];
@@ -51,11 +58,23 @@ export function KatilimciMenuAksiyonlari(input: {
   const ops: KatilimciMenuAksiyonu[] = ['profil'];
   if (input.actorRole === 'member') return ops;
 
-  // OWNER hedefi: sadece profil
-  if (input.targetIsOwner) return ops;
+  // OWNER hedefi: kurucu liderliği geri alabilir, başka yönetim yok
+  if (input.targetIsOwner) {
+    if (input.liderGeriAl) ops.push('lider_geri_al');
+    return ops;
+  }
 
   // ADMIN başka ADMIN'e: sadece profil (owner hariç)
   if (input.actorRole === 'admin' && input.targetIsAdmin) return ops;
+
+  if (input.actorRole === 'owner') {
+    if (input.liderGeriAl) ops.push('lider_geri_al');
+    if (input.targetIsAdmin) ops.push('admin_kaldir');
+    else if (!input.hedefGercekSahip) ops.push('admin_ata');
+    if (input.liderDevredebilir !== false && !input.hedefGercekSahip) {
+      ops.push('lider_devret');
+    }
+  }
 
   ops.push('mute');
   if (input.targetMicLocked) ops.push('mic_unlock');
@@ -63,12 +82,7 @@ export function KatilimciMenuAksiyonlari(input: {
   if (input.targetOnSeat) ops.push('unseat');
   ops.push('kick');
 
-  if (input.actorRole === 'owner') {
-    if (input.targetIsAdmin) ops.push('admin_kaldir');
-    else ops.push('admin_ata');
-    ops.push('lider_devret');
-    ops.push('ban');
-  }
+  if (input.actorRole === 'owner') ops.push('ban');
 
   return ops;
 }

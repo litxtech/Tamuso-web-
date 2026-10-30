@@ -154,6 +154,11 @@ export function BildirimHedefYolu(input: {
     // şimdilik owner_id yoksa deep_link alanına güven.
   }
 
+  const meeting = str('meeting_id');
+  if (meeting && (type.startsWith('agency_meeting') || input.category === 'agency')) {
+    return `/ajans/gorusme/${meeting}`;
+  }
+
   const room = str('room_id');
   if (room) return `/lobi/${room}`;
 

@@ -17,7 +17,7 @@ import { useCeviri, type CeviriAnahtari } from '../../src/i18n/useCeviri';
 import { TextField } from '../../src/components/TextField';
 import { GradientButton } from '../../src/components/GradientButton';
 import { KlavyeScrollView, KlavyeFocusKaydir, type KlavyeScrollHandle } from '../../src/bilesenler/klavye/KlavyeScrollView';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { ProfilMedyaBuyutucu } from '../../src/moduller/kullanici-profili/bilesenler/ProfilMedyaBuyutucu';
 import { ProfilMedyaSecenekleri } from '../../src/moduller/kullanici-profili/bilesenler/ProfilMedyaSecenekleri';
@@ -105,8 +105,9 @@ function adSoyadAyir(displayName: string | null | undefined): {
 /** Profil: medya, kimlik, iletişim, şifre, banka/IBAN */
 export default function ProfilDuzenleEkrani() {
   const { t, i18n } = useCeviri();
-  const { profile, user, isGuest, refreshProfile, refreshWallet, updatePassword, patchProfile } =
+  const { profile, user, isGuest, refreshProfile, updatePassword, patchProfile } =
     useAuth();
+  const { refreshWallet } = useWallet();
   const scrollRef = useRef<KlavyeScrollHandle>(null);
   const [upgradeAcik, setUpgradeAcik] = useState(false);
   const [medyaBusy, setMedyaBusy] = useState<ProfilMedyaTuru | null>(null);

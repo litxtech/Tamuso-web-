@@ -1,6 +1,6 @@
 {
   "name": "muta",
-  "version": "1.2.5",
+  "version": "1.3.0",
   "main": "expo-router/entry",
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^15.0.2",
@@ -72,6 +72,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
     "@expo/ngrok": "^4.1.3",
     "@types/react": "~19.2.2",
     "dotenv-cli": "^11.0.0",
@@ -108,8 +109,12 @@
     "sim:kaskad": "npx --yes tsx scripts/kaskad-simulator.ts",
     "sim:nox": "npx --yes tsx scripts/nox-simulator.ts",
     "test:kaskad": "npx --yes tsx scripts/kaskad-tests.ts",
+    "test:storm-king": "npx --yes tsx scripts/storm-king-tests.ts",
+    "sim:storm-king": "npx --yes tsx scripts/storm-king-sim.ts",
     "test:nox": "npx --yes tsx scripts/nox-simulator.ts 100000",
     "test:takip": "npx --yes tsx scripts/takip-tests.ts",
+    "test:cevrimdisi": "npx --yes tsx scripts/cevrimdisi-tests.ts",
+    "test:ekonomi-sql": "npx --yes tsx scripts/ekonomi-sql-tests.ts",
     "eas-build-pre-install": "npm config set legacy-peer-deps true",
     "eas:whoami": "eas whoami",
     "eas:dev": "eas build --profile development --platform android",
@@ -128,6 +133,13 @@
   },
   "private": true,
   "expo": {
+    "autolinking": {
+      "ios": {
+        "exclude": [
+          "@stripe/stripe-react-native"
+        ]
+      }
+    },
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [

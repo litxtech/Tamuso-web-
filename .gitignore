@@ -62,3 +62,22 @@ supabase/.temp/
 /GoogleService-Info.plist
 /firebase-service-account.json
 
+
+# Super Admin web uygulamasi (ayri deploy)
+/apps/super-admin/dist/
+/apps/super-admin/.expo/
+/apps/super-admin/node_modules/
+
+# Arsivlenen ekranlar (iOS binary disinda)
+/archive/
+
+# Expo export denemeleri
+/.tmp-ios-export/
+/.tmp-export-check/
+
+# Admin uygulamasi env (kok .env'e hardlink)
+/apps/super-admin/.env
+
+# Build / submit loglari (yerel)
+eas-*.log
+.tmp-*

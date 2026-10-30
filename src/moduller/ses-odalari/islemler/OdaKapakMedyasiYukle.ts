@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+﻿import { supabase } from '../../../lib/supabase';
 import i18n from '../../../i18n';
 import { GaleriAc } from '../../../ortak/medya/ImagePickerHazirMi';
 import {
@@ -7,7 +7,7 @@ import {
 } from '../../../ortak/medya/DepoyaMedyaYukle';
 
 /**
- * Galeriden ses odası kapak görseli seçer (yüklemez).
+ * Galeriden ses odasÄ± kapak gÃ¶rseli seÃ§er (yÃ¼klemez).
  */
 export async function OdaKapakSec(): Promise<
   | { ok: true; uri: string; mimeType?: string | null }
@@ -32,8 +32,8 @@ export async function OdaKapakSec(): Promise<
 }
 
 /**
- * Kapak görselini storage'a yükler; public URL döner.
- * rooms.cover_url güncellemesi çağıran tarafta yapılır.
+ * Kapak gÃ¶rselini storage'a yÃ¼kler; public URL dÃ¶ner.
+ * rooms.cover_url gÃ¼ncellemesi Ã§aÄŸÄ±ran tarafta yapÄ±lÄ±r.
  */
 export async function OdaKapakUriIleYukle(
   uri: string,
@@ -44,7 +44,7 @@ export async function OdaKapakUriIleYukle(
     if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
     const { YaptirimAktifMi } = await import(
-      '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+      '../../medya-yukleme/AdminSesOdasiIslemleri'
     );
     if (await YaptirimAktifMi('upload_ban')) {
       return {
@@ -74,7 +74,7 @@ export async function OdaKapakUriIleYukle(
       };
     }
 
-    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(path);
+    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(up.path);
     return { ok: true, url: `${pub.publicUrl}?t=${Date.now()}` };
   } catch (e) {
     return {
@@ -83,3 +83,4 @@ export async function OdaKapakUriIleYukle(
     };
   }
 }
+

@@ -19,7 +19,7 @@ import { Screen } from '../../../../src/components/Screen';
 import { ModulHataSiniri } from '../../../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { MedyaUriGuvenli } from '../../../../src/moduller/mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { DogrulanmisTik } from '../../../../src/moduller/kullanici-profili/bilesenler/DogrulanmisTik';
-import { useAuth } from '../../../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import {
@@ -64,7 +64,8 @@ export default function AjansProfilEkrani() {
   const locale = DIL_LOCALE_MAP[dil];
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { isGuest, refreshProfile, refreshWallet } = useAuth();
+  const { isGuest, refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const { uyelik, yenile: uyelikYenile } = useAjansUyeligi(!isGuest);
   const [profil, setProfil] = useState<AjansProfil | null>(null);

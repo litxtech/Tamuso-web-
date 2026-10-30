@@ -279,8 +279,8 @@ export async function SesOdasiArkaPlanTamamenCik(): Promise<void> {
   const roomId = durum?.roomId;
   KonusmaciSesSeviyesi.mockDurdur();
   await SesOdasiArkaPlanDurdur();
-  await MedyaOdasiKes();
   AktifSesOdasiBitir();
+  await MedyaOdasiKes({ zorla: true });
 
   if (roomId) {
     try {

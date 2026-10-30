@@ -22,6 +22,8 @@ export type AjansMenuOgesi = {
 
 const GRUP_MAP: Record<string, AjansMenuGrupId> = {
   ozet: 'genel',
+  gorusmeler: 'genel',
+  sertifika: 'genel',
   canli: 'genel',
   uyeler: 'genel',
   analitik: 'genel',

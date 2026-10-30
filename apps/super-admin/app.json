@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Tamuso Admin",
+    "slug": "tamuso-super-admin",
+    "version": "1.0.0",
+    "scheme": "tamuso-admin",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "app",
+          "asyncRoutes": false
+        }
+      ]
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "experiments": {
+      "typedRoutes": false
+    },
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}

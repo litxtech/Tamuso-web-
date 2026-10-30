@@ -13,6 +13,13 @@ export function PaylasimHttpsUrlOlustur(davetKodu?: string | null): string {
   return base;
 }
 
+/** Ajans davetini https link yapar — paylaşımda düz kod yerine bu gider. */
+export function AjansDavetHttpsUrlOlustur(davetKodu: string): string {
+  const base = PaylasimHttpsUrlOlustur().replace(/\/$/, '');
+  const ayir = base.includes('?') ? '&' : '?';
+  return `${base}${ayir}ajans=${encodeURIComponent(davetKodu.trim().toUpperCase())}`;
+}
+
 /** Uygulama içi deep link */
 export function PaylasimDeepLinkOlustur(davetKodu: string): string {
   const scheme = OrtamDegiskenleri.uygulamaSemasi || 'muta';

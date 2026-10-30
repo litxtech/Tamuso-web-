@@ -3,6 +3,7 @@ import { LiveKitTokenAl, type LiveKitRol } from './token/LiveKitTokenAl';
 import { LiveKitBaglantiYoneticisi } from './baglanti/LiveKitBaglantiYoneticisi';
 import { SesHataMetni } from './baglanti/SesHataMetni';
 import { RtcAktifSaglayici } from '../rtc/RtcProviderDurumu';
+import { CanliOlcumIsaretle } from '../canli-yayin/olcum/CanliIzlemeOlcum';
 import {
   AgoraBaglan,
   AgoraHoparlor,
@@ -118,19 +119,30 @@ export async function MedyaOdasiBaglan(input: {
   /** Ses odası: dinleyici de OS mic izni — iOS playAndRecord (uzak Opus) için */
   const sesOdasi = !input.gorusmeModu && !input.video;
 
-  // Ses odası dinleyici: izin var, yayın yok. Canlı video izleyici: izin yok.
-  const izin = await MedyaIzinleriniIste({
-    mikrofon: asPublisher || sesOdasi,
-    kamera: publishVideo,
-    amac: asPublisher ? 'yayin' : 'dinleme',
-  });
+  // İzin + token + ses oturumu ısıtması paralel — odaya giriş gecikmesini kes
+  const sesIsit =
+    typeof LiveKitBaglantiYoneticisi.sesOturumuIsit === 'function'
+      ? LiveKitBaglantiYoneticisi.sesOturumuIsit({
+          sesOdasi,
+          asPublisher,
+          gorusmeModu: !!input.gorusmeModu,
+        }).catch(() => undefined)
+      : Promise.resolve();
+  const [izin, token] = await Promise.all([
+    MedyaIzinleriniIste({
+      mikrofon: asPublisher || sesOdasi,
+      kamera: publishVideo,
+      amac: asPublisher ? 'yayin' : 'dinleme',
+    }),
+    LiveKitTokenAl({
+      roomName: input.roomName,
+      role: input.role,
+    }),
+    sesIsit,
+  ]);
   if (!izin.ok) return { ok: false, hata: izin.hata ?? 'Medya izni yok' };
-
-  const token = await LiveKitTokenAl({
-    roomName: input.roomName,
-    role: input.role,
-  });
   if (!token.ok) return { ok: false, hata: token.hata };
+  CanliOlcumIsaretle('token', input.roomName);
 
   const bag = await LiveKitBaglantiYoneticisi.baglan({
     url: token.url,
@@ -261,6 +273,23 @@ export function MedyaSesOturumunuYenile(zorla = false) {
   void LiveKitBaglantiYoneticisi.sesOturumunuYenile(zorla);
 }
 
+/**
+ * Navigasyon anında AudioSession + globals ısıt — connect öncesi sessizlik olmasın.
+ * Bağlantı açmaz; müzik/odak profilini ses odası dinleyiciye alır.
+ */
+export function MedyaSesOturumuIsit(opts?: {
+  asPublisher?: boolean;
+}): void {
+  if (RtcAktifSaglayici() === 'AGORA') return;
+  // Fast Refresh: eski singleton prototipinde metot yoksa sessizce geç
+  if (typeof LiveKitBaglantiYoneticisi.sesOturumuIsit !== 'function') return;
+  void LiveKitBaglantiYoneticisi.sesOturumuIsit({
+    sesOdasi: true,
+    asPublisher: !!opts?.asPublisher,
+    gorusmeModu: false,
+  }).catch(() => undefined);
+}
+
 /** Ekran kapanınca iOS ses oturumunu yeniden aç — bağlantı duruyorsa ses geri gelir. */
 export function MedyaMiniSesiniTut() {
   const muzigiSurdur = () => {
@@ -289,6 +318,11 @@ export function MedyaMiniSesiniTut() {
 export function MedyaYayinciMi(): boolean {
   if (acikMotor === 'agora') return AgoraYayinciMi();
   return LiveKitBaglantiYoneticisi.yayinciMi();
+}
+
+/** En son bağlanması istenen oda — eski ekranın gecikmeli temizliği yenisini kesmesin. */
+export function MedyaSonHedefOda(): string | null {
+  return sonBaglanti?.roomName ?? null;
 }
 
 /** Aynı odaya LiveKit ile bağlı mı — yarış sonrası sahte hata bastırmak için. */

@@ -37,6 +37,8 @@ type Props = {
   onPress: () => void;
   index?: number;
   aktif?: boolean;
+  /** Kayıtlı akış canlı değil; dinleyici sayısı gösterilmez. */
+  eskiVeri?: boolean;
 };
 
 function sayacBicimle(n: number): string {
@@ -44,7 +46,7 @@ function sayacBicimle(n: number): string {
   return String(n);
 }
 
-function AnaSayfaFeedKartIc({ oge, onPress }: Props) {
+function AnaSayfaFeedKartIc({ oge, onPress, eskiVeri }: Props) {
   const { t } = useCeviri();
   const { isGuest } = useAuth();
   const ses = oge.tur === 'oda';
@@ -115,9 +117,15 @@ function AnaSayfaFeedKartIc({ oge, onPress }: Props) {
             <View style={styles.ust}>
               <View style={styles.ustSol}>
                 <View style={[styles.rozet, { borderColor: `${anaYumusak}80` }]}>
-                  <AnaSayfaCanliNokta boyut={5} renk={anaYumusak} nabiz={false} />
+                  {eskiVeri ? null : (
+                    <AnaSayfaCanliNokta boyut={5} renk={anaYumusak} nabiz={false} />
+                  )}
                   <Text style={[styles.rozetYazi, { color: anaYumusak }]}>
-                    {ses ? t('olusturTab.rozetSes') : t('anaSayfa.canliRozet')}
+                    {eskiVeri
+                      ? t('cevrimdisi.sonGorulen')
+                      : ses
+                        ? t('olusturTab.rozetSes')
+                        : t('anaSayfa.canliRozet')}
                   </Text>
                 </View>
                 {oge.kendim ? (
@@ -130,7 +138,7 @@ function AnaSayfaFeedKartIc({ oge, onPress }: Props) {
                 ) : null}
               </View>
               <View style={styles.ustSag}>
-                {oge.listener_count > 0 ? (
+                {!eskiVeri && oge.listener_count > 0 ? (
                   <View style={styles.sayac}>
                     <Ionicons
                       name={ses ? 'headset' : 'eye'}
@@ -168,6 +176,18 @@ function AnaSayfaFeedKartIc({ oge, onPress }: Props) {
               <Text style={styles.baslik} numberOfLines={2}>
                 {oge.title}
               </Text>
+              {ses ? (
+                <View style={styles.islem}>
+                  <Ionicons name="gift" size={11} color="#F5E6A8" />
+                  <Text style={styles.islemYazi}>
+                    {sayacBicimle(oge.hediye_islem ?? 0)}
+                  </Text>
+                  <Ionicons name="game-controller" size={11} color="#C9B6FF" />
+                  <Text style={styles.islemYazi}>
+                    {sayacBicimle(oge.oyun_islem ?? 0)}
+                  </Text>
+                </View>
+              ) : null}
               {ses ? (
                 <View style={styles.uyeOnizleme}>
                   <OdaUyeAvatarYigini
@@ -217,9 +237,12 @@ export const AnaSayfaFeedKart = memo(
     a.oge.id === b.oge.id &&
     a.oge.title === b.oge.title &&
     a.oge.listener_count === b.oge.listener_count &&
+    a.oge.hediye_islem === b.oge.hediye_islem &&
+    a.oge.oyun_islem === b.oge.oyun_islem &&
     a.oge.cover_url === b.oge.cover_url &&
     a.oge.tur === b.oge.tur &&
     a.oge.kendim === b.oge.kendim &&
+    a.eskiVeri === b.eskiVeri &&
     a.onPress === b.onPress,
 );
 
@@ -336,6 +359,16 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.textOnOverlay,
     fontWeight: '700',
     lineHeight: 16,
+  },
+  islem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  islemYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textOnOverlay,
+    fontWeight: '700',
   },
   uyeOnizleme: {
     flexDirection: 'row',

@@ -27,6 +27,7 @@ import { CanliBegeniEfekti } from './CanliBegeniEfekti';
 import { CanliIzleyiciPaneli } from './CanliIzleyiciPaneli';
 import { CanliIzleyiciGeldi } from './CanliIzleyiciGeldi';
 import { CanliYayinBegen } from '../islemler/CanliYayinIslemleri';
+import { useCanliVideoOncelik } from '../islemler/useCanliVideoOncelik';
 import { TakipEt } from '../../kullanici-profili/okuma/TakipIslemleri';
 import type { CanliSohbetMesajGorunum } from '../../canli-sohbet/bilesenler/CanliSohbetMesajKarti';
 import { LiveKitBaglantiYoneticisi } from '../../livekit/baglanti/LiveKitBaglantiYoneticisi';
@@ -78,6 +79,8 @@ type Props = {
   meta: CanliYayinMeta;
   medyaDurum?: string | null;
   medyaMock?: boolean;
+  /** Bağlantı başarısız — bekleme ekranında hata metni göster */
+  medyaHata?: boolean;
   currentUserId?: string | null;
   canSend: boolean;
   walletCoins?: number | null;
@@ -93,23 +96,37 @@ type Props = {
   onMeta?: (patch: Partial<CanliYayinMeta>) => void;
   pkMac?: PkCanliMacDetay | null;
   isGuest?: boolean;
+  /** İzleyici bağlantı hatası — kontrollü yeniden bağlan */
+  onTekrarDene?: () => void;
 };
 
 const VideoKatmani = memo(function VideoKatmani({
   rol,
   mock,
   durumYazi,
+  hata,
+  kapakUrl,
+  onTekrarDene,
 }: {
   rol: 'host' | 'izleyici';
   mock?: boolean;
   durumYazi?: string;
+  hata?: boolean;
+  kapakUrl?: string | null;
+  onTekrarDene?: () => void;
 }) {
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents={hata && onTekrarDene ? 'box-none' : 'none'}
+    >
       <CanliYayinVideoSahne
         rol={rol === 'host' ? 'host' : 'izleyici'}
         mock={!!mock}
         durumYazi={durumYazi}
+        hata={hata}
+        kapakUrl={kapakUrl}
+        onTekrarDene={onTekrarDene}
       />
     </View>
   );
@@ -120,6 +137,7 @@ export function CanliYayinTiyatro({
   meta,
   medyaDurum,
   medyaMock,
+  medyaHata,
   currentUserId,
   canSend,
   walletCoins,
@@ -133,8 +151,10 @@ export function CanliYayinTiyatro({
   onMeta,
   pkMac,
   isGuest = false,
+  onTekrarDene,
 }: Props) {
   const { t } = useCeviri();
+  const sosyalHazir = useCanliVideoOncelik(rol);
   const locale = DIL_LOCALE_MAP[AktifDil()];
   const insets = useSafeAreaInsets();
   const { yukseklik: klavyeH, acik: klavyeAcik } = useKlavyeYuksekligi(0);
@@ -414,6 +434,9 @@ export function CanliYayinTiyatro({
             rol={rol}
             mock={medyaMock}
             durumYazi={medyaDurum ?? undefined}
+            hata={medyaHata}
+            kapakUrl={meta.hostAvatar}
+            onTekrarDene={onTekrarDene}
           />
         )}
 
@@ -612,12 +635,15 @@ export function CanliYayinTiyatro({
         ) : null}
       </Pressable>
 
-      <CanliIzleyiciGeldi
-        sessionId={meta.id}
-        currentUserId={currentUserId}
-        hostId={meta.host_id}
-        bottom={yorumBottom + yorumYukseklik + 8}
-      />
+      {/* Sosyal katman ilk kareden sonra — video bağlantısıyla yarışmasın */}
+      {sosyalHazir ? (
+        <CanliIzleyiciGeldi
+          sessionId={meta.id}
+          currentUserId={currentUserId}
+          hostId={meta.host_id}
+          bottom={yorumBottom + yorumYukseklik + 8}
+        />
+      ) : null}
 
       {/* Yorumlar — alt barın üstünde, input'u örtmez */}
       <View
@@ -629,23 +655,25 @@ export function CanliYayinTiyatro({
         pointerEvents="box-none"
       >
         <ModulHataSiniri modulAdi="canli-sohbet" varyant="kart">
-          <CanliYorumAkisi
-            sessionId={meta.id}
-            currentUserId={currentUserId}
-            hostId={meta.host_id}
-            yenileSinyali={yorumYenile}
-            baslikGizle
-            maxMesaj={80}
-            floatMod
-            ekSessionId={
-              pkMac
-                ? pkMac.live_a_id === meta.id
-                  ? pkMac.live_b_id ?? undefined
-                  : pkMac.live_a_id ?? undefined
-                : undefined
-            }
-            onProfil={yorumProfilAc}
-          />
+          {sosyalHazir ? (
+            <CanliYorumAkisi
+              sessionId={meta.id}
+              currentUserId={currentUserId}
+              hostId={meta.host_id}
+              yenileSinyali={yorumYenile}
+              baslikGizle
+              maxMesaj={80}
+              floatMod
+              ekSessionId={
+                pkMac
+                  ? pkMac.live_a_id === meta.id
+                    ? pkMac.live_b_id ?? undefined
+                    : pkMac.live_a_id ?? undefined
+                  : undefined
+              }
+              onProfil={yorumProfilAc}
+            />
+          ) : null}
         </ModulHataSiniri>
       </View>
 

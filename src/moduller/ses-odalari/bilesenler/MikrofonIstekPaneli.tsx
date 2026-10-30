@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import {
@@ -19,6 +19,7 @@ import {
   type MikrofonIstegi,
 } from '../mikrofon/MikrofonIstekleriniGetir';
 import { MikrofonIstegiYanitla } from '../mikrofon/MikrofonIstegiYanitla';
+import { OdaIzinAyarla } from '../islemler/OdaIzinAyarla';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
@@ -33,17 +34,32 @@ import { useDil } from '../../../i18n/DilSaglayici';
 type Props = {
   roomId: string;
   onDegisti?: () => void;
+  onKaydedildi?: (oturmaIzinli: boolean, mikrofonIzinli: boolean) => void;
+  /** Yalnız oda sahibi ayarı değiştirir */
+  sahipMi?: boolean;
+  /** Varsayılan: izinli oturma */
+  oturmaIzinli?: boolean;
+  /** Varsayılan: izinsiz mikrofon */
+  mikrofonIzinli?: boolean;
 };
 
 const KART_W = 280;
 
 /** Host/yardımcı: dock butonu — koltuk izinleri kartı */
-export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
+export function MikrofonIstekPaneli({
+  roomId,
+  onDegisti,
+  sahipMi = false,
+  oturmaIzinli = true,
+  mikrofonIzinli = false,
+  onKaydedildi,
+}: Props) {
   const { t } = useCeviri();
   const { locale } = useDil();
   const [liste, setListe] = useState<MikrofonIstegi[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [acik, setAcik] = useState(false);
+  const [kayit, setKayit] = useState<'oturma' | 'mikrofon' | null>(null);
   const [anchor, setAnchor] = useState<{
     x: number;
     y: number;
@@ -116,6 +132,27 @@ export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
 
   const kapat = useCallback(() => setAcik(false), []);
 
+  const izinKaydet = useCallback(
+    async (oturma: boolean, mikrofon: boolean, alan: 'oturma' | 'mikrofon') => {
+      if (!sahipMi || kayit) return;
+      if (oturma === oturmaIzinli && mikrofon === mikrofonIzinli) return;
+      setKayit(alan);
+      const r = await OdaIzinAyarla({
+        roomId,
+        oturmaIzinli: oturma,
+        mikrofonIzinli: mikrofon,
+      });
+      setKayit(null);
+      if (!r.ok) {
+        Alert.alert(t('sesOda.koltukIzinleri'), r.hata ?? t('sesOda.izinKaydedilemedi'));
+        return;
+      }
+      onKaydedildi?.(oturma, mikrofon);
+      onDegisti?.();
+    },
+    [kayit, mikrofonIzinli, onDegisti, onKaydedildi, oturmaIzinli, roomId, sahipMi, t],
+  );
+
   const acKapa = useCallback(() => {
     if (acik) {
       setAcik(false);
@@ -151,8 +188,8 @@ export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
             : t('sesOda.bekleyenIstekYok')
         }
       >
-        <Ionicons
-          name={acik ? 'hand-left' : 'hand-left-outline'}
+        <MaterialCommunityIcons
+          name={acik ? 'hand-back-left' : 'hand-back-left-outline'}
           size={ODA_DOCK_ICON}
           color={acik ? RenkTokenlari.primarySoft : RenkTokenlari.textMuted}
         />
@@ -182,6 +219,28 @@ export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
               <Text style={styles.baslik}>{t('sesOda.koltukIzinleri')}</Text>
               <Text style={styles.sayiEtiket}>{sayi}</Text>
             </View>
+            {sahipMi ? (
+              <View style={styles.ayarlar}>
+                <AyarSatiri
+                  etiket={t('sesOda.oturmaAyar')}
+                  izinli={oturmaIzinli}
+                  kilitli={kayit != null}
+                  onIzinli={() => void izinKaydet(true, mikrofonIzinli, 'oturma')}
+                  onIzinsiz={() => void izinKaydet(false, mikrofonIzinli, 'oturma')}
+                  izinliEtiket={t('sesOda.izinli')}
+                  izinsizEtiket={t('sesOda.izinsiz')}
+                />
+                <AyarSatiri
+                  etiket={t('sesOda.mikrofonAyar')}
+                  izinli={mikrofonIzinli}
+                  kilitli={kayit != null}
+                  onIzinli={() => void izinKaydet(oturmaIzinli, true, 'mikrofon')}
+                  onIzinsiz={() => void izinKaydet(oturmaIzinli, false, 'mikrofon')}
+                  izinliEtiket={t('sesOda.izinli')}
+                  izinsizEtiket={t('sesOda.izinsiz')}
+                />
+              </View>
+            ) : null}
             {sayi === 0 ? (
               <Text style={styles.bos}>{t('sesOda.bekleyenIstekYok')}</Text>
             ) : (
@@ -196,11 +255,13 @@ export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
                     istek.profile?.username?.trim() ||
                     istek.user_id.slice(0, 8);
                   const koltuk =
-                    typeof istek.requested_seat_index === 'number'
-                      ? t('sesOda.koltukN', {
-                          n: istek.requested_seat_index + 1,
-                        })
-                      : t('sesOda.ilkBosKoltuk');
+                    istek.istek_turu === 'mikrofon'
+                      ? t('sesOda.mikrofonIzni')
+                      : typeof istek.requested_seat_index === 'number'
+                        ? t('sesOda.koltukN', {
+                            n: istek.requested_seat_index + 1,
+                          })
+                        : t('sesOda.ilkBosKoltuk');
                   return (
                     <View key={istek.id} style={styles.satir}>
                       {MedyaUriGuvenli(istek.profile?.avatar_url) ? (
@@ -261,7 +322,89 @@ export function MikrofonIstekPaneli({ roomId, onDegisti }: Props) {
   );
 }
 
+function AyarSatiri({
+  etiket,
+  izinli,
+  kilitli,
+  onIzinli,
+  onIzinsiz,
+  izinliEtiket,
+  izinsizEtiket,
+}: {
+  etiket: string;
+  izinli: boolean;
+  kilitli: boolean;
+  onIzinli: () => void;
+  onIzinsiz: () => void;
+  izinliEtiket: string;
+  izinsizEtiket: string;
+}) {
+  return (
+    <View style={styles.ayarSatir}>
+      <Text style={styles.ayarEtiket}>{etiket}</Text>
+      <View style={styles.ayarSecim}>
+        <Pressable
+          onPress={onIzinli}
+          disabled={kilitli || izinli}
+          style={[styles.ayarBtn, izinli && styles.ayarBtnSecili]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: izinli }}
+        >
+          <Text style={[styles.ayarBtnYazi, izinli && styles.ayarBtnYaziSecili]}>
+            {izinliEtiket}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={onIzinsiz}
+          disabled={kilitli || !izinli}
+          style={[styles.ayarBtn, !izinli && styles.ayarBtnSecili]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: !izinli }}
+        >
+          <Text style={[styles.ayarBtnYazi, !izinli && styles.ayarBtnYaziSecili]}>
+            {izinsizEtiket}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  ayarlar: {
+    gap: 8,
+    marginBottom: 10,
+  },
+  ayarSatir: {
+    gap: 6,
+  },
+  ayarEtiket: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textMuted,
+    fontWeight: '700',
+  },
+  ayarSecim: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  ayarBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  ayarBtnSecili: {
+    backgroundColor: 'rgba(16,185,129,0.32)',
+  },
+  ayarBtnYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textMuted,
+    fontWeight: '700',
+  },
+  ayarBtnYaziSecili: {
+    color: RenkTokenlari.text,
+  },
   buton: {
     width: ODA_DOCK_BTN,
     height: ODA_DOCK_BTN,

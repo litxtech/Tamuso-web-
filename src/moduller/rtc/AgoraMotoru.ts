@@ -195,7 +195,7 @@ export async function AgoraBaglan(input: {
       autoSubscribeVideo: true,
     });
     if (kod < 0) return { ok: false, hata: 'Bağlantı kurulamadı' };
-    eng.muteLocalAudioStream(!(yayinci && (input.micAcik ?? false)));
+    eng.muteLocalAudioStream(!(yayinci && (input.micAcik ?? true)));
     eng.setEnableSpeakerphone(true);
     if (yenileTimer) clearInterval(yenileTimer);
     yenileTimer = setInterval(() => {

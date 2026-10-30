@@ -2,7 +2,7 @@
  * Canlı oda yorum composer — dock ile aynı satırda, klavye üstüne çıkar.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -28,7 +28,7 @@ type Props = {
   onFocus?: () => void;
 };
 
-export function OdaCanliYorumComposer({
+export const OdaCanliYorumComposer = memo(function OdaCanliYorumComposer({
   roomId,
   canSend,
   onNeedUpgrade,
@@ -108,7 +108,7 @@ export function OdaCanliYorumComposer({
         style={styles.input}
         maxLength={500}
         editable
-        multiline
+        multiline={false}
         blurOnSubmit={false}
         onFocus={onFocus}
         onSubmitEditing={() => void gonder()}
@@ -131,7 +131,7 @@ export function OdaCanliYorumComposer({
       </Pressable>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: {
@@ -144,8 +144,9 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     minWidth: 0,
+    height: Platform.OS === 'android' ? 40 : 38,
     minHeight: Platform.OS === 'android' ? 40 : 38,
-    maxHeight: 80,
+    maxHeight: Platform.OS === 'android' ? 40 : 38,
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.18)',

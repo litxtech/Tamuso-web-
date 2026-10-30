@@ -11,6 +11,7 @@ import {
   AjansListeSatir,
 } from '../../../src/moduller/ajanslar/bilesenler/AjansAltEkranKabuk';
 import { useAjansRouteId, ajansHref } from '../../../src/moduller/ajanslar/kancalar/useAjansRouteId';
+import { AjansSahipRozeti } from '../../../src/moduller/ajanslar/bilesenler/AjansSahipRozeti';
 import {
   AjansKurallariKaydet,
   AjansOdemeSablonuKaydet,
@@ -272,8 +273,13 @@ export default function AjansAyarlarEkrani() {
           staff.map((s) => (
             <AjansListeSatir
               key={String(s.user_id)}
-              title={`${s.display_name || s.username} · ${AjansRolEtiket(String(s.role_code), t)}`}
-              subtitle={t('ajans.yetkiToggleSec')}
+              title={String(s.display_name || s.username || '')}
+              subtitle={AjansRolEtiket(String(s.role_code), t)}
+              trailing={
+                String(s.role_code).toUpperCase() === 'OWNER' ? (
+                  <AjansSahipRozeti compact />
+                ) : undefined
+              }
               onPress={() => setSeciliStaff(String(s.user_id))}
             />
           ))

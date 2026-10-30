@@ -39,13 +39,29 @@ export const PROFIL_SELECT = [
 
 export async function ProfilGetir(userId: string): Promise<Profile | null> {
   return PerformansTelemetri.olc('ProfilGetir', async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(PROFIL_SELECT)
-      .eq('id', userId)
-      .maybeSingle();
-    if (error) throw error;
-    return data as unknown as Profile | null;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(PROFIL_SELECT)
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      const profil = data as unknown as Profile | null;
+      if (profil) {
+        const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+        const { ProfilAnlikYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+        const izleyen = CevrimdisiAktifKullanici() ?? profil.id;
+        void ProfilAnlikYaz(izleyen, profil as unknown as Record<string, unknown>);
+      }
+      return profil;
+    } catch (e) {
+      const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+      const { ProfilAnlikOku } = await import('../../cevrimdisi/AnlikGoruntu');
+      const izleyen = CevrimdisiAktifKullanici();
+      const disk = izleyen ? await ProfilAnlikOku(izleyen, userId) : null;
+      if (disk) return disk as unknown as Profile;
+      throw e;
+    }
   });
 }
 

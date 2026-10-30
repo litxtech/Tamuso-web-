@@ -15,7 +15,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ModulHataSiniri } from '../../../../ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useWallet } from '../../../../contexts/AuthContext';
 import { CoinYuklePaneli } from '../../../cuzdan/bilesenler/CoinYuklePaneli';
 import { useCoinYuklePaneli } from '../../../cuzdan/islemler/useCoinYuklePaneli';
 import { registerAstralFalls } from '../AstralFallsKayit';
@@ -65,7 +65,7 @@ export function AstralFallsEkrani({
   adminTestMode = false,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const { patchWallet } = useAuth();
+  const { patchWallet } = useWallet();
   const webRef = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
   const html = useMemo(() => decodeHtmlBundle(ASTRAL_FALLS_HTML_B64), []);

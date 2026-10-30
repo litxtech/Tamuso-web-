@@ -3,17 +3,18 @@
  * Uygulama içinde gezinirken LiveKit açık kalır; dokun = odaya dön.
  */
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   Alert,
   Image,
+  Platform,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
-  Pressable,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { FullWindowOverlay } from 'react-native-screens';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -21,7 +22,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { router, usePathname, useSegments } from 'expo-router';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../../lib/supabase';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -44,21 +45,12 @@ export function AktifSesOdasiMiniBar() {
   const { t } = useCeviri();
   const durum = useAktifSesOdasi();
   const insets = useSafeAreaInsets();
-  const pathname = usePathname() ?? '';
-  const segments = useSegments();
   const { width: W, height: H } = useWindowDimensions();
   const tabAlt = yuzenTabBarToplamYukseklik(insets.bottom);
 
-  const odaEkraninda = useMemo(() => {
-    if (!durum) return false;
-    // segments: ['room', id] — pathname bazen gecikmeli kalır
-    if (segments.includes('room' as never)) return true;
-    if (pathname.includes(`/room/${durum.roomId}`)) return true;
-    if (pathname === '/room/[id]') return true;
-    return false;
-  }, [durum, pathname, segments]);
-
-  const gorunur = !!durum?.arkaPlanda && !odaEkraninda;
+  // iOS tam ekran modal dismiss sonrası rota bir süre 'room' kalıyor.
+  // Pencereyi rotaya değil, küçültme bayrağına bağla.
+  const gorunur = !!durum?.arkaPlanda;
 
   const minX = EDGE_PAD;
   const maxX = Math.max(minX, W - PENCERE_W - EDGE_PAD);
@@ -122,17 +114,8 @@ export function AktifSesOdasiMiniBar() {
 
   const tamamenCik = useCallback(() => {
     if (!durum) return;
-    Alert.alert(t('sesOda.odadanCik'), t('sesOda.ayrilSoru'), [
-      { text: t('sesOda.kal'), style: 'cancel' },
-      {
-        text: t('sesOda.cik'),
-        style: 'destructive',
-        onPress: () => {
-          void SesOdasiArkaPlanTamamenCik();
-        },
-      },
-    ]);
-  }, [durum, t]);
+    void SesOdasiArkaPlanTamamenCik();
+  }, [durum]);
 
   const pan = Gesture.Pan()
     .minDistance(TAP_SLOP)
@@ -162,27 +145,34 @@ export function AktifSesOdasiMiniBar() {
       runOnJS(odayaDon)();
     });
 
+  const kapatGesture = Gesture.Tap().onEnd(() => {
+    runOnJS(tamamenCik)();
+  });
+
   const gesture = Gesture.Exclusive(pan, tap);
 
   const animStyle = useAnimatedStyle(() => ({
-    left: x.value,
-    top: y.value,
+    transform: [{ translateX: x.value }, { translateY: y.value }],
   }));
 
   if (!gorunur || !durum) return null;
 
   const kapak = MedyaUriGuvenli(durum.coverUrl);
 
-  return (
+  const katman = (
     <View style={styles.layer} pointerEvents="box-none" collapsable={false}>
-      <GestureDetector gesture={gesture}>
-        <Animated.View
-          style={[styles.pencereWrap, animStyle]}
-          accessibilityRole="button"
-          accessibilityLabel={t('sesOda.sesDevamOdayaDon')}
-          collapsable={false}
-        >
-          <View style={styles.pencere}>
+      <Animated.View
+        style={[styles.pencereWrap, animStyle]}
+        pointerEvents="box-none"
+        collapsable={false}
+      >
+        <GestureDetector gesture={gesture}>
+          <View
+            style={styles.pencere}
+            accessibilityRole="button"
+            accessibilityLabel={t('sesOda.sesDevamOdayaDon')}
+            collapsable={false}
+          >
             {kapak ? (
               <Image source={{ uri: kapak }} style={styles.kapak} />
             ) : (
@@ -191,19 +181,11 @@ export function AktifSesOdasiMiniBar() {
               </View>
             )}
             <View style={styles.karart} pointerEvents="none" />
-            <View style={styles.ustSatir} pointerEvents="box-none">
+            <View style={styles.ustSatir} pointerEvents="none">
               <View style={styles.livePill}>
                 <View style={styles.liveDot} />
                 <Text style={styles.liveYazi}>{t('sesOda.canli')}</Text>
               </View>
-              <Pressable
-                onPress={tamamenCik}
-                hitSlop={12}
-                style={styles.kapat}
-                accessibilityLabel={t('sesOda.odadanCik')}
-              >
-                <Ionicons name="close" size={14} color="#fff" />
-              </Pressable>
             </View>
             <View style={styles.altSatir} pointerEvents="none">
               <Text style={styles.baslik} numberOfLines={2}>
@@ -217,10 +199,33 @@ export function AktifSesOdasiMiniBar() {
               </Text>
             </View>
           </View>
-        </Animated.View>
-      </GestureDetector>
+        </GestureDetector>
+        <GestureDetector gesture={kapatGesture}>
+          <View
+            style={styles.kapat}
+            collapsable={false}
+            accessibilityRole="button"
+            accessibilityLabel={t('sesOda.odadanCik')}
+          >
+            <Ionicons name="close" size={16} color="#fff" />
+          </View>
+        </GestureDetector>
+      </Animated.View>
     </View>
   );
+
+  // iOS fullScreenModal, root kardeşlerini örter. Pencere ayrı pencerede durur.
+  if (Platform.OS === 'ios') {
+    return (
+      <FullWindowOverlay>
+        <GestureHandlerRootView style={styles.overlayKok} pointerEvents="box-none">
+          {katman}
+        </GestureHandlerRootView>
+      </FullWindowOverlay>
+    );
+  }
+
+  return katman;
 }
 
 const styles = StyleSheet.create({
@@ -229,8 +234,13 @@ const styles = StyleSheet.create({
     zIndex: Z,
     elevation: Z,
   },
+  overlayKok: {
+    ...StyleSheet.absoluteFillObject,
+  },
   pencereWrap: {
     position: 'absolute',
+    left: 0,
+    top: 0,
     width: PENCERE_W,
     height: PENCERE_H,
   },
@@ -292,10 +302,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   kapat: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    zIndex: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.62)',
     alignItems: 'center',
     justifyContent: 'center',
   },

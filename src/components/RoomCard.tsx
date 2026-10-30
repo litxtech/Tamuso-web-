@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCeviri, type CeviriAnahtari } from '../i18n/useCeviri';
 import type { Room } from '../types/models';
 import { OdaTemasiniCoz } from '../moduller/oda-olusturma/katalog/OdaTemaKatalogu';
+import { SayiKisaBicim } from '../tasarim-sistemi/premium/SeviyeXpHesap';
 
 const MODE_KEY: Record<Room['mode'], CeviriAnahtari> = {
   party: 'modlar.parti',
@@ -94,6 +95,7 @@ function AvatarKart({ room, onPress }: { room: Room; onPress: () => void }) {
       <Text style={styles.avatarBaslik} numberOfLines={2}>
         {room.title}
       </Text>
+      <IslemSatiri room={room} kompakt />
       <Text style={styles.avatarAlt} numberOfLines={1}>
         {room.room_code
           ? room.room_code
@@ -180,13 +182,71 @@ function KapakKart({ room, onPress }: { room: Room; onPress: () => void }) {
               <Text style={styles.metaText}>{room.listener_count}</Text>
             </View>
           </View>
+          <IslemSatiri room={room} />
         </View>
       </View>
     </Pressable>
   );
 }
 
+function IslemSatiri({ room, kompakt }: { room: Room; kompakt?: boolean }) {
+  const { t } = useCeviri();
+  const hediye = room.hediye_islem ?? 0;
+  const oyun = room.oyun_islem ?? 0;
+  return (
+    <View style={[styles.islem, kompakt && styles.islemKompakt]}>
+      <View
+        style={styles.islemHucre}
+        accessibilityLabel={t('sesOda.kartHediyeA11y', { n: hediye })}
+      >
+        <Ionicons name="gift" size={kompakt ? 10 : 12} color="#F5E6A8" />
+        <Text style={[styles.islemYazi, kompakt && styles.islemYaziKompakt]}>
+          {SayiKisaBicim(hediye)}
+        </Text>
+      </View>
+      <View
+        style={styles.islemHucre}
+        accessibilityLabel={t('sesOda.kartOyunA11y', { n: oyun })}
+      >
+        <Ionicons
+          name="game-controller"
+          size={kompakt ? 10 : 12}
+          color="#C9B6FF"
+        />
+        <Text style={[styles.islemYazi, kompakt && styles.islemYaziKompakt]}>
+          {SayiKisaBicim(oyun)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  islem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  islemKompakt: {
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 0,
+  },
+  islemHucre: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  islemYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.textOnOverlay,
+    fontWeight: '700',
+  },
+  islemYaziKompakt: {
+    color: RenkTokenlari.text,
+    fontSize: 10,
+  },
   press: { width: '100%' },
 
   /* —— Avatar (kompakt yuvarlak) —— */

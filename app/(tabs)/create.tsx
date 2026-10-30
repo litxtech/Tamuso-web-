@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -21,7 +21,7 @@ import {
   KlavyeScrollView,
   type KlavyeScrollHandle,
 } from '../../src/bilesenler/klavye/KlavyeScrollView';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { createRoom } from '../../src/services/api';
 import type { Room } from '../../src/types/models';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
@@ -43,7 +43,11 @@ import { OdayiSil } from '../../src/moduller/ses-odalari/islemler/OdayiSil';
 import {
   AktifSesOdasiBitir,
 } from '../../src/moduller/ses-odalari/oturum/AktifSesOdasiOturumu';
-import { MedyaOdasiKes } from '../../src/moduller/livekit/MedyaBaglantisi';
+import {
+  MedyaOdasiKes,
+  MedyaSesOturumuIsit,
+} from '../../src/moduller/livekit/MedyaBaglantisi';
+import { LiveKitTokenOncedenAl } from '../../src/moduller/livekit/token/LiveKitTokenAl';
 import {
   OdaKapakSec,
   OdaKapakUriIleYukle,
@@ -81,7 +85,8 @@ export default function CreateRoomScreen() {
     ImagePickerOnIsit({ izinIste: false });
   }, []);
 
-  const { user, isGuest, refreshProfile, refreshWallet, profile } = useAuth();
+  const { user, isGuest, refreshProfile, profile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const scrollRef = useRef<KlavyeScrollHandle>(null);
 
@@ -157,7 +162,7 @@ export default function CreateRoomScreen() {
       return;
     }
     if (kod === 'canli_yayin') {
-      // Stack'te güvenli geçiş — replace fallback (push çökerse)
+      // Stack'te gÃ¼venli geÃ§iÅŸ â€” replace fallback (push Ã§Ã¶kerse)
       try {
         router.push('/canli' as any);
       } catch {
@@ -190,7 +195,7 @@ export default function CreateRoomScreen() {
         void MedyaIzinleriniIste({ mikrofon: true });
 
         const { YaptirimAktifMi } = await import(
-          '../../src/moduller/admin/ses-odalari/AdminSesOdasiIslemleri'
+          '../../src/moduller/medya-yukleme/AdminSesOdasiIslemleri'
         );
         if (await YaptirimAktifMi('room_create_ban')) {
           Alert.alert(
@@ -282,6 +287,13 @@ export default function CreateRoomScreen() {
           ),
         ]);
 
+        const kanal = room.livekit_room_name?.trim() || `voice_${room.id}`;
+        try {
+          LiveKitTokenOncedenAl({ roomName: kanal, role: 'host' });
+          MedyaSesOturumuIsit({ asPublisher: true });
+        } catch {
+          /* Ä±sÄ±tma isteÄŸe baÄŸlÄ± */
+        }
         router.push(`/room/${room.id}` as any);
       } catch (e) {
         const msg = e instanceof Error ? e.message : '';
@@ -702,3 +714,4 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
 });
+

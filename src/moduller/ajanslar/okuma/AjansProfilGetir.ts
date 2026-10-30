@@ -164,7 +164,7 @@ export async function AjansMedyaYukle(input: {
     });
     if (!up.ok) return { ok: false, hata: up.hata };
 
-    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(path);
+    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(up.path);
     const url = `${pub.publicUrl}?t=${Date.now()}`;
 
     const r = await AjansProfilGuncelle({

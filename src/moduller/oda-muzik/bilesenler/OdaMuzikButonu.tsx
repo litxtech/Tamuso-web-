@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import {
   ODA_UST_BTN,
@@ -22,8 +22,8 @@ export function OdaMuzikButonu({ playing, onPress }: Props) {
       accessibilityRole="button"
       hitSlop={6}
     >
-      <Ionicons
-        name={playing ? 'musical-notes' : 'headset-outline'}
+      <MaterialCommunityIcons
+        name={playing ? 'music-note' : 'music-note-outline'}
         size={ODA_UST_ICON}
         color={playing ? RenkTokenlari.primarySoft : RenkTokenlari.text}
       />

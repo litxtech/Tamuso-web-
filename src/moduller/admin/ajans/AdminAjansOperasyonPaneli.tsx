@@ -106,9 +106,9 @@ export function AdminAjansOperasyonPaneli({
 
   return (
     <View style={styles.wrap}>
-      <Text style={AdminStil.sectionLabel}>Operasyon merkezi</Text>
+      <Text style={AdminStil.sectionLabel}>Kilit ve yaptırım</Text>
       <Text style={styles.hint}>
-        Anında uygulanır · build gerekmez · tüm yaptırımlar kayıtlı
+        Durum, özellik kilidi, cüzdan ve ceza burada uygulanır. Her işlem kayda geçer.
       </Text>
 
       <View style={styles.sekmeSatir}>
@@ -194,7 +194,10 @@ export function AdminAjansOperasyonPaneli({
             ))}
           </View>
 
-          <Text style={AdminStil.sectionLabel}>Trust seviyesi</Text>
+          <Text style={AdminStil.sectionLabel}>Güven seviyesi</Text>
+          <Text style={styles.lockAlt}>
+            A güvenilir · B normal · C dikkat · Restricted kısıtlı · Suspended askıda
+          </Text>
           <View style={AdminStil.aksiyonSatir}>
             {(['A', 'B', 'C', 'Restricted', 'Suspended'] as const).map((t) => (
               <Pressable
@@ -225,7 +228,9 @@ export function AdminAjansOperasyonPaneli({
               <View key={f.key} style={styles.lockSatir}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.lockBaslik}>{f.label}</Text>
-                  <Text style={styles.lockAlt}>{f.key}</Text>
+                  <Text style={styles.lockAlt}>
+                    {locked ? 'Kapalı' : 'Açık'}
+                  </Text>
                 </View>
                 <Switch
                   value={!locked}

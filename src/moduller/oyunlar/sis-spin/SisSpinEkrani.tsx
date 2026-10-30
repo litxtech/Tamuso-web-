@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useWallet } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { CanliCoinSimgesi } from '../../cuzdan/bilesenler/CanliCoinSimgesi';
 
@@ -121,7 +121,7 @@ type Props = {
 export function SisSpinEkrani({ onClose, embedded = false }: Props) {
   const insets = useSafeAreaInsets();
   const [alan, setAlan] = useState({ w: 280, h: 280 });
-  const { wallet, refreshWallet } = useAuth();
+  const { wallet, refreshWallet } = useWallet();
   const gercek = wallet?.coins ?? 0;
   const gercekRef = useRef(gercek);
   gercekRef.current = gercek;

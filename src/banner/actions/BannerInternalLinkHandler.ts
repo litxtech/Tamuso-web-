@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 import type { BannerActionType } from '../core/BannerTypes';
 import { OrtamDegiskenleri } from '../../yapilandirma/OrtamDegiskenleri';
 import { isGameVisible } from '../../moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
@@ -92,6 +93,7 @@ function navigateByKind(kind: string, id: string): { ok: boolean; error?: string
     case 'music':
     case 'muzik':
       if (!id) return { ok: false, error: i18n.t('banner.hedefIdYok') };
+      if (Platform.OS === 'ios') return { ok: false, error: i18n.t('banner.gecersizDeepLink') };
       // jobId veya trackId — detay ekranı track bekler; islemler listesine düş
       router.push(`/ai-muzik/islemler` as never);
       return { ok: true };

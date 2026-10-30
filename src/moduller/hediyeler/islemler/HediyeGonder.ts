@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { FinansIdempotencyAnahtariOlustur } from '../../cuzdan/islemler/FinansIdempotencyAnahtariOlustur';
 import { KillSwitchAktifMiSunucu } from '../../ozellik-bayraklari/okuma/KillSwitchAktifMiSunucu';
 import { OzellikBayragiAktifMiSunucu } from '../../ozellik-bayraklari/okuma/OzellikBayragiAktifMiSunucu';
+import type { CoinKaynagi } from '../../../types/models';
 
 export type HediyeGonderSonuc =
   | {
@@ -25,6 +26,10 @@ export async function HediyeGonder(input: {
   idempotencyKey?: string;
   statusId?: string | null;
   liveSessionId?: string | null;
+  /** Harcanacak bakiye: satın alınan (varsayılan), oyun veya ödül coin'i */
+  coinSource?: CoinKaynagi;
+  /** Sunucu kanalı kendisi çözer; mesaj ekranı yalnızca 'message' ipucu verir */
+  channel?: 'message' | 'live' | null;
 }): Promise<HediyeGonderSonuc> {
   if (await KillSwitchAktifMiSunucu('kill_gift_send')) {
     return { ok: false, hata: i18n.t('hediye.gonderimKapali'), kod: 'kill_switch' };
@@ -44,6 +49,8 @@ export async function HediyeGonder(input: {
     p_idempotency_key: key,
     p_status_id: input.statusId ?? null,
     p_live_session_id: input.liveSessionId ?? null,
+    p_coin_source: input.coinSource ?? 'purchased',
+    p_channel: input.channel ?? null,
   });
 
   if (error) return { ok: false, hata: error.message, kod: 'rpc' };

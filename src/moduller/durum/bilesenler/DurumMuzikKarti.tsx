@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -93,6 +94,7 @@ export function DurumMuzikKarti({
   };
 
   const detayaGit = () => {
+    if (Platform.OS === 'ios') return;
     if (payload.track_id) router.push(`/ai-muzik/${payload.track_id}` as Href);
   };
 

@@ -1,6 +1,5 @@
 import { AdminDogrulamaDashboardGetir } from '../dogrulama/AdminDogrulamaIslemleri';
 import type { AdminPlatformOzeti } from '../tipler/PlatformTipleri';
-import { StudioAdminListe } from '../../studio/v2/StudioAdminApi';
 import { AdminSatinAlmaItirazListele } from '../../cuzdan/itiraz/SatinAlmaItirazIslemleri';
 
 export type AdminOnayBalonu = {
@@ -10,25 +9,16 @@ export type AdminOnayBalonu = {
   href: string;
 };
 
-const OYUN_ONAY = new Set(['SUBMITTED', 'IN_REVIEW']);
-
 /** Bekleyen onay kuyrukları. Bir kaynak düşerse diğerleri durur. */
 export async function AdminOnayBalonlariGetir(
   platform?: AdminPlatformOzeti | null,
 ): Promise<AdminOnayBalonu[]> {
-  const [studio, dogrulama, itiraz] = await Promise.all([
-    StudioAdminListe().catch(() => []),
+  const [dogrulama, itiraz] = await Promise.all([
     AdminDogrulamaDashboardGetir().catch(() => null),
     AdminSatinAlmaItirazListele('pending', 40).catch(() => []),
   ]);
 
   const adaylar: AdminOnayBalonu[] = [
-    {
-      id: 'oyun',
-      adet: studio.filter((o) => OYUN_ONAY.has(o.status)).length,
-      etiket: 'Oyun onayı',
-      href: '/admin/studio',
-    },
     {
       id: 'kimlik',
       adet: dogrulama?.pending_kyc ?? 0,

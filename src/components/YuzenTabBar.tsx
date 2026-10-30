@@ -377,6 +377,7 @@ const styles = StyleSheet.create({
   barAndroid: {
     borderTopWidth: StyleSheet.hairlineWidth,
     alignSelf: 'center',
+    overflow: 'hidden',
   },
   iosKapsulDis: {
     alignSelf: 'center',
@@ -425,12 +426,13 @@ const styles = StyleSheet.create({
   createWrap: {
     width: OVAL_TAB ? 44 : 48,
     height: OVAL_TAB ? 44 : 48,
-    marginTop: OVAL_TAB ? 0 : -10,
+    // Android'de negatif margin tab kabuğundan taşıp kaydırılan içeriğin üstüne biniyordu
+    marginTop: 0,
   },
   createBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: OVAL_TAB ? 40 : 44,
+    height: OVAL_TAB ? 40 : 44,
+    borderRadius: OVAL_TAB ? 20 : 22,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: RenkTokenlari.primary,

@@ -30,7 +30,7 @@ import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { yuzenTabBarToplamYukseklik } from '../../../components/YuzenTabBosluk';
 import { kullaniciTemaKodunuAl, temaAcikMi } from '../../../tasarim-sistemi/tema/TemaDurumu';
 import { useTemayaAboneOl } from '../../../tasarim-sistemi/tema/useTemayaAboneOl';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useWallet } from '../../../contexts/WalletProvider';
 import {
   HamburgerIstatistikler,
   HamburgerProfilKarti,
@@ -120,7 +120,7 @@ export function AnaSayfaCekmeceMenu({
   const rtlSv = useSharedValue(rtl ? 1 : 0);
   const menuW = useMemo(() => drawerGenislikHesapla(ekranW, rtl), [ekranW, rtl]);
   const menuWSv = useSharedValue(menuW);
-  const { wallet } = useAuth();
+  const { wallet } = useWallet();
   const rozetSayisi = useHamburgerRozetSayisi(acik);
   const { oda: camOda, ajans: camAjans } = useHamburgerCamBaglantilar(acik);
   const menuGruplari = useMemo(

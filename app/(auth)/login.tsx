@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   I18nManager,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -58,6 +59,7 @@ import { SPOTIFY_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/S
 import { TWITCH_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/TwitchGirisAktif';
 import { X_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/XGirisAktif';
 import { GOOGLE_GIRIS_AKTIF } from '../../src/moduller/kimlik-dogrulama/giris/GoogleGirisAktif';
+import { oauthTarayiciGizleBagla } from '../../src/moduller/kimlik-dogrulama/giris/OAuthTarayici';
 
 const SPOTIFY_GREEN = '#1DB954';
 const TWITCH_PURPLE = '#9146FF';
@@ -103,12 +105,42 @@ export default function LoginScreen() {
   );
   /** Modal native katmanda stack üstünde kalır; blur'da kapatılmazsa kayıt formunu engeller. */
   const [lobiOdakli, setLobiOdakli] = useState(true);
+  /** Android VideoView Chrome kartını yutar; tarayıcı açılırken video ve modal kalkar. */
+  const [tarayiciAcik, setTarayiciAcik] = useState(false);
   const [girisPolitikalari, setGirisPolitikalari] = useState<PolitikaGorunum[]>(
     [],
   );
   const [okunanPolitika, setOkunanPolitika] = useState<PolitikaGorunum | null>(
     null,
   );
+
+  useEffect(() => {
+    oauthTarayiciGizleBagla(() => setTarayiciAcik(true));
+    return () => oauthTarayiciGizleBagla(null);
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    let iptal = false;
+    void import('expo-web-browser')
+      .then((mod) => {
+        try {
+          mod.maybeCompleteAuthSession();
+        } catch {
+          /* native yok */
+        }
+        if (iptal || Platform.OS !== 'android') return;
+        void mod.warmUpAsync().catch(() => undefined);
+      })
+      .catch(() => undefined);
+    return () => {
+      iptal = true;
+      if (Platform.OS !== 'android') return;
+      void import('expo-web-browser')
+        .then((mod) => mod.coolDownAsync())
+        .catch(() => undefined);
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -182,64 +214,55 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  const sosyalBaslat = async (
+    calistir: () => Promise<{
+      error?: string;
+      cancelled?: boolean;
+      redirected?: boolean;
+    }>,
+    hataBaslik: string,
+  ) => {
+    try {
+      const { error, cancelled, redirected } = await calistir();
+      if (cancelled || redirected) return;
+      if (error) {
+        Alert.alert(hataBaslik, error);
+        return;
+      }
+      router.replace('/(tabs)');
+    } finally {
+      if (Platform.OS === 'android') setTarayiciAcik(false);
+    }
+  };
+
   const onApple = async () => {
     setAppleLoading(true);
-    const { error, cancelled, redirected } = await signInWithApple();
+    await sosyalBaslat(() => signInWithApple(), t('auth.appleGirisi'));
     setAppleLoading(false);
-    if (cancelled || redirected) return;
-    if (error) {
-      Alert.alert(t('auth.appleGirisi'), error);
-      return;
-    }
-    router.replace('/(tabs)');
   };
 
   const onSpotify = async () => {
     setSpotifyLoading(true);
-    const { error, cancelled, redirected } = await signInWithSpotify();
+    await sosyalBaslat(() => signInWithSpotify(), t('auth.spotifyGirisi'));
     setSpotifyLoading(false);
-    if (cancelled || redirected) return;
-    if (error) {
-      Alert.alert(t('auth.spotifyGirisi'), error);
-      return;
-    }
-    router.replace('/(tabs)');
   };
 
   const onTwitch = async () => {
     setTwitchLoading(true);
-    const { error, cancelled, redirected } = await signInWithTwitch();
+    await sosyalBaslat(() => signInWithTwitch(), t('auth.twitchGirisi'));
     setTwitchLoading(false);
-    if (cancelled || redirected) return;
-    if (error) {
-      Alert.alert(t('auth.twitchGirisi'), error);
-      return;
-    }
-    router.replace('/(tabs)');
   };
 
   const onX = async () => {
     setXLoading(true);
-    const { error, cancelled, redirected } = await signInWithX();
+    await sosyalBaslat(() => signInWithX(), t('auth.xGirisi'));
     setXLoading(false);
-    if (cancelled || redirected) return;
-    if (error) {
-      Alert.alert(t('auth.xGirisi'), error);
-      return;
-    }
-    router.replace('/(tabs)');
   };
 
   const onGoogle = async () => {
     setGoogleLoading(true);
-    const { error, cancelled, redirected } = await signInWithGoogle();
+    await sosyalBaslat(() => signInWithGoogle(), t('auth.googleGirisi'));
     setGoogleLoading(false);
-    if (cancelled || redirected) return;
-    if (error) {
-      Alert.alert(t('auth.googleGirisi'), error);
-      return;
-    }
-    router.replace('/(tabs)');
   };
 
   const onGuest = async () => {
@@ -279,9 +302,13 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.root}>
-      <GirisLobiArkaPlan medya={medya} aktif={lobiOdakli} />
+      <GirisLobiArkaPlan
+        medya={medya}
+        aktif={lobiOdakli && !tarayiciAcik}
+      />
 
-      {lobiOdakli ? (
+      {(() => {
+        const form = lobiOdakli ? (
         <View style={styles.modalRoot} pointerEvents="box-none">
           <KlavyeGuvenliAlan
             style={[
@@ -486,7 +513,8 @@ export default function LoginScreen() {
                         </Text>
                       </Pressable>
                     ) : null}
-                    {!sosyalGizli && Platform.OS === 'web' ? (
+                    {!sosyalGizli &&
+                    (Platform.OS === 'web' || Platform.OS === 'android') ? (
                       <Pressable
                         onPress={() => void onApple()}
                         disabled={appleLoading}
@@ -584,7 +612,20 @@ export default function LoginScreen() {
             </KlavyeKapatan>
           </KlavyeGuvenliAlan>
         </View>
-      ) : null}
+      ) : null;
+        if (Platform.OS !== 'android') return form;
+        return (
+          <Modal
+            visible={lobiOdakli && !tarayiciAcik}
+            transparent
+            animationType="none"
+            statusBarTranslucent
+            onRequestClose={() => undefined}
+          >
+            <View style={styles.modalHost}>{form}</View>
+          </Modal>
+        );
+      })()}
 
       <PolitikaOkumaPaneli
         politika={okunanPolitika}
@@ -598,6 +639,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: RenkTokenlari.bg,
+  },
+  modalHost: {
+    flex: 1,
   },
   modalRoot: {
     ...StyleSheet.absoluteFill,
@@ -824,21 +868,30 @@ const styles = StyleSheet.create({
   },
   politikaAyir: {
     ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textDim,
+    color: RenkTokenlari.textOnOverlay,
+    opacity: 0.6,
   },
   politikaLink: {
     ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textMuted,
+    color: RenkTokenlari.textOnOverlay,
+    opacity: 0.88,
     textDecorationLine: 'underline',
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   politikaLinkCocuk: {
-    color: RenkTokenlari.primarySoft,
-    fontWeight: '600',
+    opacity: 1,
+    fontWeight: '700',
   },
   destekAlt: {
     ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textDim,
+    color: RenkTokenlari.textOnOverlay,
+    opacity: 0.7,
     textAlign: 'center',
     paddingBottom: BoslukTokenlari.md,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 });

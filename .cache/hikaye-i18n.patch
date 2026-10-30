@@ -1,0 +1,48 @@
+diff --git a/src/i18n/locales/en.ts b/src/i18n/locales/en.ts
+--- a/src/i18n/locales/en.ts
++++ b/src/i18n/locales/en.ts
+@@ -804,6 +804,8 @@ export const en: CeviriSozlugu = {
+     yayinla: "Add to your story",
+     yanitYaz: "Reply…",
+     yanitGonderildi: "Reply sent",
++    yanitHikayesine: "Replied to their story",
++    yanitHikayene: "Replied to your story",
+     hediye: "Send gift",
+     menu: "More",
+     goruntuleyenler: "Viewers",
+diff --git a/src/i18n/locales/es.ts b/src/i18n/locales/es.ts
+--- a/src/i18n/locales/es.ts
++++ b/src/i18n/locales/es.ts
+@@ -800,6 +800,8 @@ export const es: CeviriSozlugu = {
+     yayinla: "Anadir a tu historia",
+     yanitYaz: "Responder…",
+     yanitGonderildi: "Respuesta enviada",
++    yanitHikayesine: "Respondiste a su historia",
++    yanitHikayene: "Respondió a tu historia",
+     hediye: "Enviar regalo",
+     menu: "Mas",
+     goruntuleyenler: "Espectadores",
+diff --git a/src/i18n/locales/pt.ts b/src/i18n/locales/pt.ts
+--- a/src/i18n/locales/pt.ts
++++ b/src/i18n/locales/pt.ts
+@@ -800,6 +800,8 @@ export const pt: CeviriSozlugu = {
+     yayinla: "Adicionar a sua historia",
+     yanitYaz: "Responder…",
+     yanitGonderildi: "Resposta enviada",
++    yanitHikayesine: "Respondeu ao story",
++    yanitHikayene: "Respondeu ao seu story",
+     hediye: "Enviar presente",
+     menu: "Mais",
+     goruntuleyenler: "Visualizadores",
+diff --git a/src/i18n/locales/tr.ts b/src/i18n/locales/tr.ts
+--- a/src/i18n/locales/tr.ts
++++ b/src/i18n/locales/tr.ts
+@@ -800,6 +800,8 @@ export const tr = {
+     yayinla: "Hikayene ekle",
+     yanitYaz: "Yanıtla…",
+     yanitGonderildi: "Yanıt gönderildi",
++    yanitHikayesine: "Hikayesine yanıt",
++    yanitHikayene: "Hikayene yanıt",
+     hediye: "Hediye gönder",
+     menu: "Diğer",
+     goruntuleyenler: "Görüntüleyenler",

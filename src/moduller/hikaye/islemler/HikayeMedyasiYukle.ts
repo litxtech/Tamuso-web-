@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+﻿import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import {
   GaleriAc,
@@ -45,7 +45,7 @@ export type HikayeYerelSecimSonucu =
 
 async function uploadBanKontrol(): Promise<string | null> {
   const { YaptirimAktifMi } = await import(
-    '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+    '../../medya-yukleme/AdminSesOdasiIslemleri'
   );
   if (await YaptirimAktifMi('upload_ban')) {
     return i18n.t('hikaye.uploadBan');
@@ -64,8 +64,8 @@ function publicUrlOlustur(path: string): string | null {
 }
 
 /**
- * Büyük video: JS belleğine almadan FileSystem stream upload.
- * Küçük dosya / hata → klasik ArrayBuffer yolu.
+ * BÃ¼yÃ¼k video: JS belleÄŸine almadan FileSystem stream upload.
+ * KÃ¼Ã§Ã¼k dosya / hata â†’ klasik ArrayBuffer yolu.
  */
 async function videoStreamYukle(opts: {
   uri: string;
@@ -87,7 +87,7 @@ async function videoStreamYukle(opts: {
       };
     }
 
-    // ~4 MB üstü stream — bellek + hız
+    // ~4 MB Ã¼stÃ¼ stream â€” bellek + hÄ±z
     if (bayt != null && bayt < 4 * 1024 * 1024) {
       return { ok: false, fallback: true };
     }
@@ -138,7 +138,7 @@ async function videoStreamYukle(opts: {
   }
 }
 
-/** Yayın anında yükle — seçimde upload yok (video hızı). */
+/** YayÄ±n anÄ±nda yÃ¼kle â€” seÃ§imde upload yok (video hÄ±zÄ±). */
 export async function HikayeYerelMedyaYukle(input: {
   uri: string;
   mime?: string | null;
@@ -169,7 +169,7 @@ export async function HikayeYerelMedyaYukle(input: {
         void UploadActivityBaslat({
           uploadId,
           title: i18n.t('hikaye.videoYukleniyor', {
-            defaultValue: 'Video yükleniyor',
+            defaultValue: 'Video yÃ¼kleniyor',
           }),
         });
       } catch {
@@ -190,7 +190,7 @@ export async function HikayeYerelMedyaYukle(input: {
                   p: number,
                 ) => Promise<void>;
               };
-              // sıkıştırma 0..0.5 bandı
+              // sÄ±kÄ±ÅŸtÄ±rma 0..0.5 bandÄ±
               void UploadActivityIlerleme(uploadId, pct * 0.5);
             } catch {
               /* ignore */
@@ -272,7 +272,7 @@ export async function HikayeYerelMedyaYukle(input: {
         }
         return { ok: false, hata: stream.hata };
       }
-      // fallback → klasik (sıkıştırma DepoyaMedyaYukle'de tekrarlanmasın)
+      // fallback â†’ klasik (sÄ±kÄ±ÅŸtÄ±rma DepoyaMedyaYukle'de tekrarlanmasÄ±n)
     }
 
     const up = await DepoyaMedyaYukle(supabase, {
@@ -300,7 +300,7 @@ export async function HikayeYerelMedyaYukle(input: {
       return { ok: false, hata: up.hata };
     }
 
-    const url = publicUrlOlustur(path);
+    const url = publicUrlOlustur(up.path);
     if (!url) {
       if (uploadId) {
         try {
@@ -343,10 +343,10 @@ export async function HikayeYerelMedyaYukle(input: {
   }
 }
 
-/** Galeri seç — hemen yerel URI döner, upload yok */
+/** Galeri seÃ§ â€” hemen yerel URI dÃ¶ner, upload yok */
 export async function HikayeMedyasiGaleriSec(opts?: {
   allowVideo?: boolean;
-  /** true: yalnızca video galerisi */
+  /** true: yalnÄ±zca video galerisi */
   onlyVideo?: boolean;
 }): Promise<HikayeYerelSecimSonucu> {
   try {
@@ -386,7 +386,7 @@ export async function HikayeMedyasiGaleriSec(opts?: {
   }
 }
 
-/** @deprecated — geriye uyum; seç + yükle (yavaş). Yeni akış: Sec → yayınla Yukle */
+/** @deprecated â€” geriye uyum; seÃ§ + yÃ¼kle (yavaÅŸ). Yeni akÄ±ÅŸ: Sec â†’ yayÄ±nla Yukle */
 export async function HikayeMedyasiGaleriSecVeYukle(opts?: {
   onYuklemeBasladi?: () => void;
   allowVideo?: boolean;
@@ -402,7 +402,7 @@ export async function HikayeMedyasiGaleriSecVeYukle(opts?: {
   });
 }
 
-/** @deprecated — CameraView kullan; ImagePicker kamera yedek */
+/** @deprecated â€” CameraView kullan; ImagePicker kamera yedek */
 export async function HikayeMedyasiKameraSecVeYukle(opts?: {
   onYuklemeBasladi?: () => void;
   video?: boolean;
@@ -411,7 +411,7 @@ export async function HikayeMedyasiKameraSecVeYukle(opts?: {
   try {
     const secim = await KameraAc({
       mediaTypes: opts?.video ? ['videos'] : ['images'],
-      // Galeri/kamera süre limiti yok — 1080p sıkıştırma
+      // Galeri/kamera sÃ¼re limiti yok â€” 1080p sÄ±kÄ±ÅŸtÄ±rma
     });
     if (!secim.ok) return secim;
     opts?.onYuklemeBasladi?.();
@@ -430,3 +430,4 @@ export async function HikayeMedyasiKameraSecVeYukle(opts?: {
     };
   }
 }
+

@@ -26,8 +26,9 @@ export async function CekimTalebiOlustur(input: {
   if (await KillSwitchAktifMiSunucu('kill_withdrawal')) {
     return { ok: false, hata: i18n.t('cuzdanX.cekimGeciciKapali') };
   }
+  // Çift bayrak: ikisi de açık olmalı. Biri kapalıysa çekim kapalıdır.
   const withdrawAcik =
-    (await OzellikBayragiAktifMiSunucu('wallet_withdraw_enabled')) ||
+    (await OzellikBayragiAktifMiSunucu('wallet_withdraw_enabled')) &&
     (await OzellikBayragiAktifMiSunucu('withdrawals_enabled'));
   if (!withdrawAcik) {
     return { ok: false, hata: i18n.t('cuzdanX.cekimKullanilamiyor') };

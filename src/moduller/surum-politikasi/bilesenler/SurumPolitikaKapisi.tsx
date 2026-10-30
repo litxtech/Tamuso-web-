@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, BackHandler, Modal, Platform, StyleSheet, View } from 'react-native';
+import { AppState, BackHandler, Modal, StyleSheet, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { MagazaUrlGecerli } from '../MagazaUrl';
@@ -12,7 +12,7 @@ import { SurumOlayEkle, SurumPolitikasiniYukle } from '../SurumPolitikasiServisi
 import type { SurumKararTuru, SurumPolitikasi } from '../SurumKarari';
 import { GuncellemeEkrani } from './GuncellemeEkrani';
 
-type Gorunum = 'kontrol' | 'kapali' | 'zorunlu' | 'istege_bagli';
+type Gorunum = 'kapali' | 'zorunlu' | 'istege_bagli';
 
 /**
  * Kök kapı. Auth, sekme, deep link ve push'un üstünde durur.
@@ -20,9 +20,7 @@ type Gorunum = 'kontrol' | 'kapali' | 'zorunlu' | 'istege_bagli';
  */
 export function SurumPolitikaKapisi({ children }: { children: React.ReactNode }) {
   const { t } = useCeviri();
-  const [gorunum, setGorunum] = useState<Gorunum>(
-    Platform.OS === 'ios' || Platform.OS === 'android' ? 'kontrol' : 'kapali',
-  );
+  const [gorunum, setGorunum] = useState<Gorunum>('kapali');
   const [policy, setPolicy] = useState<SurumPolitikasi | null>(null);
   const [magazaHatasi, setMagazaHatasi] = useState(false);
   const gosterilen = useRef<Gorunum>('kapali');
@@ -40,14 +38,15 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
     }
     if (tur !== kontrol.current) return;
 
-    setPolicy(sonuc.policy);
-    if (sonraki === 'zorunlu') {
+    if (sonraki === 'zorunlu' && sonuc.policy) {
+      setPolicy(sonuc.policy);
       setGorunum('zorunlu');
       if (gosterilen.current !== 'zorunlu') SurumOlayEkle('force_update_shown', sonuc.policy);
       gosterilen.current = 'zorunlu';
       return;
     }
-    if (sonraki === 'istege_bagli') {
+    if (sonraki === 'istege_bagli' && sonuc.policy) {
+      setPolicy(sonuc.policy);
       setGorunum('istege_bagli');
       if (gosterilen.current !== 'istege_bagli') {
         SurumOlayEkle('optional_update_shown', sonuc.policy);
@@ -55,6 +54,7 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
       gosterilen.current = 'istege_bagli';
       return;
     }
+    setPolicy(null);
     setGorunum('kapali');
     setMagazaHatasi(false);
     gosterilen.current = 'kapali';
@@ -81,7 +81,7 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
   }, [gorunum, uygula]);
 
   useEffect(() => {
-    if (gorunum !== 'zorunlu' && gorunum !== 'kontrol') return;
+    if (gorunum !== 'zorunlu') return;
     const alt = BackHandler.addEventListener('hardwareBackPress', () => true);
     return () => alt.remove();
   }, [gorunum]);
@@ -114,7 +114,7 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
   }, [gorunum, policy]);
 
   const kurulu = KuruluSurumuOku();
-  const acik = gorunum !== 'kapali';
+  const acik = (gorunum === 'zorunlu' || gorunum === 'istege_bagli') && policy != null;
 
   return (
     <View style={styles.kok}>
@@ -130,9 +130,7 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
         }}
         accessibilityViewIsModal
       >
-        {gorunum === 'kontrol' || !policy ? (
-          <View style={styles.kontrol} accessibilityLabel="Tamuso" />
-        ) : (
+        {acik && policy ? (
           <GuncellemeEkrani
             baslik={policy.title || t('surum.hazirBaslik')}
             mesaj={policy.message || t('surum.hazirAlt')}
@@ -145,7 +143,7 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
             onGuncelle={() => void magazaAc()}
             onSonra={gorunum === 'istege_bagli' ? sonra : undefined}
           />
-        )}
+        ) : null}
       </Modal>
     </View>
   );
@@ -153,5 +151,4 @@ export function SurumPolitikaKapisi({ children }: { children: React.ReactNode })
 
 const styles = StyleSheet.create({
   kok: { flex: 1 },
-  kontrol: { flex: 1, backgroundColor: '#080811' },
 });

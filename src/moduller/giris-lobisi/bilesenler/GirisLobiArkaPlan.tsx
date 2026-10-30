@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   Image,
+  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -109,12 +110,20 @@ function UzakVideo({ uri, aktif }: { uri: string; aktif: boolean }) {
 export function GirisLobiArkaPlan({ medya, aktif = true }: Props) {
   const aktifListe = medya.filter((m) => m.public_url);
   const [index, setIndex] = useState(0);
+  /** Android’de VideoView formu ve Chrome kartını örter; form önce çizilsin. */
+  const [videoAcik, setVideoAcik] = useState(Platform.OS !== 'android');
 
   const medyaAnahtar = medya.map((m) => m.id).join('|');
 
   useEffect(() => {
     setIndex(0);
   }, [medyaAnahtar]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const t = setTimeout(() => setVideoAcik(true), 700);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!aktif || aktifListe.length < 2) return;
@@ -144,8 +153,8 @@ export function GirisLobiArkaPlan({ medya, aktif = true }: Props) {
         />
       ) : null}
 
-      {suanki?.tur === 'video' && suankiUri ? (
-        <UzakVideo uri={suankiUri} aktif={aktif} />
+      {videoAcik && aktif && suanki?.tur === 'video' && suankiUri ? (
+        <UzakVideo uri={suankiUri} aktif />
       ) : null}
 
       {suanki?.tur === 'image' && suankiUri ? (

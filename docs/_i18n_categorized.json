@@ -1,0 +1,1078 @@
+{
+  "AUTH": [
+    {
+      "path": "app/(auth)/dogrula-kod.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(auth)/forgot-password.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(auth)/login.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 3,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(auth)/register.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 2,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(auth)/reset-password.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/politika/[kod].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 2,
+      "hasI18n": false
+    },
+    {
+      "path": "app/politika/index.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    }
+  ],
+  "HOME": [
+    {
+      "path": "app/(tabs)/durum.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 4,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(tabs)/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 14,
+      "hasI18n": true
+    },
+    {
+      "path": "app/durum/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/durum/duzenle.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/durum/olustur.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 3,
+      "hasI18n": true
+    },
+    {
+      "path": "app/kesfet.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 2,
+      "hasI18n": true
+    }
+  ],
+  "PROFILE": [
+    {
+      "path": "app/(tabs)/profile.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ajans/profil/[id]/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 24,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/profil/[id]/uyeler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 6,
+      "hasI18n": false
+    },
+    {
+      "path": "app/engellenen-kullanicilar/index.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/hesap-sil/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 26,
+      "hasI18n": true
+    },
+    {
+      "path": "app/islem-hacmi/index.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/kullanici/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 21,
+      "hasI18n": false
+    },
+    {
+      "path": "app/profil-ayarlar/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 2,
+      "hasI18n": true
+    },
+    {
+      "path": "app/profil-duzenle/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 4,
+      "hasI18n": true
+    },
+    {
+      "path": "app/takip/istekler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    },
+    {
+      "path": "app/takip/ortak.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    },
+    {
+      "path": "app/takip/takip-edilenler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    },
+    {
+      "path": "app/takip/takipciler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    }
+  ],
+  "MESSAGING": [
+    {
+      "path": "app/(tabs)/messages.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/mesaj/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 49,
+      "hasI18n": false
+    }
+  ],
+  "VOICE": [
+    {
+      "path": "app/(tabs)/create.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 2,
+      "hasI18n": true
+    },
+    {
+      "path": "app/(tabs)/rooms.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/lobi/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/room/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 118,
+      "hasI18n": false
+    }
+  ],
+  "LIVE": [
+    {
+      "path": "app/ajans/[id]/canli.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 9,
+      "hasI18n": false
+    },
+    {
+      "path": "app/canli/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 17,
+      "hasI18n": false
+    },
+    {
+      "path": "app/canli/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 26,
+      "hasI18n": false
+    }
+  ],
+  "CALLS": [
+    {
+      "path": "app/gorusme/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    }
+  ],
+  "PEOPLE": [
+    {
+      "path": "app/ayarlar/kisiler-aramalar.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/kisiler/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    }
+  ],
+  "WALLET": [
+    {
+      "path": "app/(tabs)/wallet.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 4,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ayarlar/satin-alma-gecmisi.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/cuzdan/takas.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 65,
+      "hasI18n": true
+    }
+  ],
+  "AI_MUSIC": [
+    {
+      "path": "app/ai-muzik/[id].tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 47,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ai-muzik/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 59,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ai-muzik/islemler.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 6,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ai-muzik/kutuphane.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 26,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ai-muzik/pasaport/[id].tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 8,
+      "hasI18n": true
+    }
+  ],
+  "AGENCY": [
+    {
+      "path": "app/ajans/[id]/analitik.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/ayarlar.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 44,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/basvurular.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 4,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/davetler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/destek.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 3,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/duyurular.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/ekipler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 4,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/etkinlikler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/gorevler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 10,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/guvenlik.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 4,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/islemler.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/program.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/uyeler/[userId].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 8,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/[id]/uyeler/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 8,
+      "hasI18n": false
+    },
+    {
+      "path": "app/ajans/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 24,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ajans/teklifler.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 20,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ajans/uye/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 17,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ajans/yonetim/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 4,
+      "hasI18n": true
+    }
+  ],
+  "CITY": [
+    {
+      "path": "app/sehir/[id].tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 34,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sehir/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 27,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sehir/lig.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 4,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sehir/savas.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 11,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sehir/secim/[id].tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 17,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sehir/secim/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 8,
+      "hasI18n": true
+    }
+  ],
+  "GAMES": [
+    {
+      "path": "app/oyun/kaskad.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/oyun/nox.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/oyun/zeus.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/pk/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 6,
+      "hasI18n": true
+    }
+  ],
+  "SETTINGS": [
+    {
+      "path": "app/(tabs)/cihazlar.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ayarlar/gizlilik.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/ayarlar/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/bildirim-ayarlari/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/bildirimler/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/guvenlik/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 24,
+      "hasI18n": true
+    }
+  ],
+  "MODERATION": [
+    {
+      "path": "app/bildir/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 18,
+      "hasI18n": true
+    },
+    {
+      "path": "app/destek/index.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    },
+    {
+      "path": "app/raporlarim/[id].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 8,
+      "hasI18n": false
+    },
+    {
+      "path": "app/raporlarim/index.tsx",
+      "admin": false,
+      "status": "LIKELY_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": true
+    }
+  ],
+  "IDEAS": [
+    {
+      "path": "app/fikirler/[id].tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 7,
+      "hasI18n": true
+    },
+    {
+      "path": "app/fikirler/benim.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 3,
+      "hasI18n": true
+    },
+    {
+      "path": "app/fikirler/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 7,
+      "hasI18n": true
+    },
+    {
+      "path": "app/fikirler/olustur.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 17,
+      "hasI18n": true
+    }
+  ],
+  "HOST_KYC": [
+    {
+      "path": "app/host/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 20,
+      "hasI18n": true
+    },
+    {
+      "path": "app/kyc/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 34,
+      "hasI18n": true
+    },
+    {
+      "path": "app/sertifikasyon/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 44,
+      "hasI18n": true
+    }
+  ],
+  "SHARE_PLATFORM": [
+    {
+      "path": "app/duyuru/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 1,
+      "hasI18n": true
+    },
+    {
+      "path": "app/paylas/[kod].tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/paylasim/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 9,
+      "hasI18n": true
+    },
+    {
+      "path": "app/platform/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 24,
+      "hasI18n": true
+    },
+    {
+      "path": "app/siralamalar/index.tsx",
+      "admin": false,
+      "status": "PARTIAL",
+      "trLiteral": 15,
+      "hasI18n": true
+    },
+    {
+      "path": "app/webview.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    }
+  ],
+  "OTHER_USER": [
+    {
+      "path": "app/index.tsx",
+      "admin": false,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 3,
+      "hasI18n": false
+    }
+  ],
+  "ADMIN": [
+    {
+      "path": "app/admin/ai-muzik.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 38,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/ajanslar/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 46,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/ajanslar/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/bannerlar/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 35,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/bannerlar/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 10,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/bannerlar/otomatik.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 4,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/bannerlar/yeni.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 0,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/ciro.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 7,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/cocuk-koruma.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 7,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/coin-paketleri.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 14,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/coin.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 4,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/cuzdan-yonetimi.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 56,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/destek/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 6,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/destek/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/ekonomi.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 32,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/fikirler/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 36,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/fikirler/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 10,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/fikirler/kategoriler.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 2,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/finans.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 13,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/giris-lobisi.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 25,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/gorusme-guvenlik.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/iletisim.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 8,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 100,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/islem-hacmi/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 40,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kaskad-animasyon-lab.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 3,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kaskad-yonetim.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 93,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kayit-alanlari.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 19,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kisiler-aramalar.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 8,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/komisyonlar.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 26,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kullanicilar/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 72,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kullanicilar/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 27,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kyc/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 35,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/kyc/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 6,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/moderasyon/[id].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 63,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/moderasyon/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 12,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/muzik.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 1,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/odalar.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 63,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/oyun-test.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 5,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/oyunlar.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 24,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/ozellikler.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/paylasim-linkleri.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 13,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/platform-guvenlik.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 38,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/politikalar/[kod].tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 18,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/politikalar/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 10,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/rehber.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 11,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/satin-alma-itirazlar.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 19,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/sehir-secim.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 22,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/sehirler.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 15,
+      "hasI18n": false
+    },
+    {
+      "path": "app/admin/takas/index.tsx",
+      "admin": true,
+      "status": "NOT_TRANSLATED",
+      "trLiteral": 28,
+      "hasI18n": false
+    }
+  ]
+}

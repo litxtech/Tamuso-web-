@@ -15,7 +15,7 @@ import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useCeviri } from '../../src/i18n/useCeviri';
 import { BosDurum } from '../../src/components/BosDurum';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import {
@@ -60,7 +60,8 @@ function etkinlikDurum(
 
 export default function OperasyonHubEkrani() {
   const { t } = useCeviri();
-  const { isGuest, refreshProfile, refreshWallet, profile } = useAuth();
+  const { isGuest, refreshProfile, profile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const eventsOn = OzellikBayragiAktifMi('events_enabled');
   const missionsOn = OzellikBayragiAktifMi('missions_enabled');
@@ -94,13 +95,6 @@ export default function OperasyonHubEkrani() {
       alt: t('platform.bildirimlerAlt'),
       href: '/bildirimler',
       tint: RenkTokenlari.mint,
-    },
-    {
-      icon: 'ribbon-outline' as const,
-      label: t('platform.sertifikasyon'),
-      alt: t('platform.sertifikasyonAlt'),
-      href: '/sertifikasyon',
-      tint: RenkTokenlari.primarySoft,
     },
   ];
 
@@ -179,7 +173,7 @@ export default function OperasyonHubEkrani() {
         <EkranBasligi
           title={t('platform.baslik')}
           subtitle={t('platform.alt')}
-          fallbackHref={adminMi ? '/admin' : undefined}
+          fallbackHref="/(tabs)/profile"
         />
         <ScrollView
           contentContainerStyle={AdminStil.content}

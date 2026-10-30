@@ -21,7 +21,8 @@ export function DusukCihazAnimasyonSiniri(): {
   fullScreenIzinli: boolean;
 } {
   if (!DusukCihazModuAktifMi()) {
-    return { maxKuyruk: 12, maxDurationMs: 8000, fullScreenIzinli: true };
+    // Spam hediyede JS/GPU ısısı — 12 → 6
+    return { maxKuyruk: 6, maxDurationMs: 6000, fullScreenIzinli: true };
   }
-  return { maxKuyruk: 3, maxDurationMs: 1200, fullScreenIzinli: false };
+  return { maxKuyruk: 2, maxDurationMs: 1000, fullScreenIzinli: false };
 }

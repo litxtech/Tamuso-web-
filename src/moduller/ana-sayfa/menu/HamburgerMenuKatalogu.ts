@@ -2,6 +2,7 @@
  * Hamburger menü — tek kaynak katalog (ikon, i18n, href, flag).
  * Sıra / gizleme remote `hamburger_menu_items` ile gelir.
  */
+import { Platform } from 'react-native';
 import type { Ionicons } from '@expo/vector-icons';
 import type { CeviriAnahtari } from '../../../i18n/useCeviri';
 import type { OzellikBayragiAnahtari } from '../../ozellik-bayraklari/OzellikBayragiAnahtarlari';
@@ -28,7 +29,10 @@ export type HamburgerKatalogOgesi = {
   adminOnly?: boolean;
 };
 
-export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = [
+/** iOS paketinde ekranı bulunmayan öğeler; uzak menü ayarıyla açılamaz. */
+const IOS_PAKETINDE_OLMAYAN = new Set(['ai_muzik']);
+
+export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = ([
   {
     itemKey: 'blog',
     icon: 'reader-outline',
@@ -168,38 +172,6 @@ export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = [
     featureFlag: 'ai_music_enabled',
   },
   {
-    itemKey: 'studio',
-    icon: 'sparkles-outline',
-    tint: RenkTokenlari.primarySoft,
-    baslikKey: 'studio.menuBaslik',
-    altKey: 'studio.menuAlt',
-    href: '/studio',
-    defaultGroup: 'kesfet',
-    defaultSort: 115,
-    featureFlag: 'studio_menu_visible',
-  },
-  {
-    itemKey: 'fruit_wheel',
-    icon: 'aperture-outline',
-    tint: '#E6CE92',
-    baslikKey: 'oyun.fwTitle',
-    altKey: 'oyun.fwBody',
-    href: '/oyun/fruit-wheel',
-    defaultGroup: 'kesfet',
-    defaultSort: 117,
-    featureFlag: 'fruit_wheel_enabled',
-  },
-  {
-    itemKey: 'sis_spin',
-    icon: 'aperture-outline',
-    tint: '#ffd700',
-    baslikKey: 'anaSayfa.menuSisSpin',
-    altKey: 'anaSayfa.menuSisSpinAlt',
-    href: '/oyun/sis-spin',
-    defaultGroup: 'kesfet',
-    defaultSort: 116,
-  },
-  {
     itemKey: 'kisiler',
     icon: 'people-outline',
     tint: RenkTokenlari.magenta,
@@ -251,29 +223,13 @@ export const HAMBURGER_MENU_KATALOGU: readonly HamburgerKatalogOgesi[] = [
     defaultGroup: 'yardim',
     defaultSort: 150,
   },
-  {
-    itemKey: 'admin_oyun_test',
-    icon: 'flask-outline',
-    tint: RenkTokenlari.violet,
-    baslikKey: 'anaSayfa.menuOyunTesti',
-    altKey: 'anaSayfa.menuOyunTestiAlt',
-    href: '/admin/oyun-test',
-    defaultGroup: 'yonetim',
-    defaultSort: 160,
-    adminOnly: true,
-  },
-  {
-    itemKey: 'admin_panel',
-    icon: 'shield-checkmark-outline',
-    tint: RenkTokenlari.accent,
-    baslikKey: 'anaSayfa.menuAdminPanel',
-    altKey: 'anaSayfa.menuAdminPanelAlt',
-    href: '/admin',
-    defaultGroup: 'yonetim',
-    defaultSort: 170,
-    adminOnly: true,
-  },
-] as const;
+] as HamburgerKatalogOgesi[]).filter(
+  (o) =>
+    // Personel konsolu ayrı web uygulamasına taşındı (apps/super-admin).
+    // Mobil binary'de admin rotası yok; menüde girişi de yok.
+    !o.adminOnly &&
+    !(Platform.OS === 'ios' && IOS_PAKETINDE_OLMAYAN.has(o.itemKey)),
+);
 
 export function HamburgerKatalogMap(): Map<string, HamburgerKatalogOgesi> {
   return new Map(HAMBURGER_MENU_KATALOGU.map((o) => [o.itemKey, o]));

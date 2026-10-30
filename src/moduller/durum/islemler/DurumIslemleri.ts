@@ -1,8 +1,18 @@
 import { supabase } from '../../../lib/supabase';
+import { uuidGecerliMi } from '../../cevrimdisi/saf/Uuid';
 import type { DurumMuzikPayload } from '../../ai-muzik/tipler';
 import i18n from '../../../i18n';
 
-export type DurumPostKind = 'media' | 'game_win' | 'music';
+export type DurumPostKind = 'media' | 'game_win' | 'music' | 'agency_invite';
+
+export type DurumAjansDavetPayload = {
+  agency_id: string;
+  agency_name: string;
+  invite_code: string;
+  uye_sayisi: number;
+  islem_hacmi: number;
+  dakika: number;
+};
 
 export type DurumOyunKazanciPayload = {
   game_code: string;
@@ -99,6 +109,24 @@ export function DurumOyunKazanciPayloadAl(
   };
 }
 
+export function DurumAjansDavetPayloadAl(
+  oge: Pick<DurumOggesi, 'post_kind' | 'payload'>,
+): DurumAjansDavetPayload | null {
+  if (oge.post_kind !== 'agency_invite' || !oge.payload) return null;
+  const p = oge.payload as Partial<DurumAjansDavetPayload>;
+  const kod = String(p.invite_code ?? '').trim();
+  const ad = String(p.agency_name ?? '').trim();
+  if (!kod || !ad) return null;
+  return {
+    agency_id: String(p.agency_id ?? ''),
+    agency_name: ad,
+    invite_code: kod.toUpperCase(),
+    uye_sayisi: Number(p.uye_sayisi ?? 0),
+    islem_hacmi: Number(p.islem_hacmi ?? 0),
+    dakika: Number(p.dakika ?? 0),
+  };
+}
+
 export function DurumMedyaHttpsMi(url: string | null | undefined): boolean {
   return typeof url === 'string' && /^https?:\/\//i.test(url.trim());
 }
@@ -109,6 +137,7 @@ export function DurumMedyaHttpsMi(url: string | null | undefined): boolean {
  */
 export function DurumMetinGonderisiMi(oge: DurumOggesi): boolean {
   if (DurumOyunKazanciPayloadAl(oge)) return false;
+  if (DurumAjansDavetPayloadAl(oge)) return false;
   if (DurumMuzikPayloadAl(oge)) return false;
   if (oge.media_type === 'audio') return false;
   if ((oge.media_type as string) === 'text') return true;
@@ -146,12 +175,27 @@ export async function DurumAkisiniGetir(
   limit = 40,
   before: string | null = null,
 ): Promise<DurumOggesi[]> {
-  const { data, error } = await supabase.rpc('durum_akisi', {
-    p_limit: limit,
-    p_before: before,
-  });
-  if (error) throw error;
-  return ((data as DurumOggesi[]) ?? []).map(normalizeDurum);
+  try {
+    const { data, error } = await supabase.rpc('durum_akisi', {
+      p_limit: limit,
+      p_before: before,
+    });
+    if (error) throw error;
+    const liste = ((data as DurumOggesi[]) ?? []).map(normalizeDurum);
+    if (!before && liste.length > 0) {
+      const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+      const { DurumAkisYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+      void DurumAkisYaz(CevrimdisiAktifKullanici(), liste);
+    }
+    return liste;
+  } catch (e) {
+    if (before) throw e;
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { DurumAkisOku } = await import('../../cevrimdisi/AnlikGoruntu');
+    const disk = await DurumAkisOku(CevrimdisiAktifKullanici());
+    if (disk && disk.length > 0) return disk as DurumOggesi[];
+    throw e;
+  }
 }
 
 export async function DurumTakipAkisiniGetir(
@@ -223,6 +267,17 @@ export async function DurumOyunKazanciOlustur(input: {
     id: row?.id,
     already: !!row?.already,
   };
+}
+
+export async function DurumAjansDavetOlustur(
+  inviteCode: string,
+): Promise<{ ok: boolean; id?: string; hata?: string }> {
+  const { data, error } = await supabase.rpc('durum_ajans_davet_olustur', {
+    p_invite_code: inviteCode,
+  });
+  if (error) return { ok: false, hata: error.message };
+  const row = data as { ok?: boolean; id?: string };
+  return { ok: !!row?.ok, id: row?.id };
 }
 
 export async function DurumSil(
@@ -332,17 +387,45 @@ export async function DurumYorumlariGetir(id: string): Promise<DurumYorum[]> {
 export async function DurumYorumEkle(
   id: string,
   body: string,
-  opts?: { parentId?: string | null; mediaUrl?: string | null },
-): Promise<{ ok: boolean; id?: string; hata?: string }> {
-  const { data, error } = await supabase.rpc('durum_yorum_ekle', {
-    p_status_id: id,
-    p_body: body || null,
-    p_parent_id: opts?.parentId ?? null,
-    p_media_url: opts?.mediaUrl ?? null,
-  });
-  if (error) return { ok: false, hata: error.message };
-  const row = data as { ok?: boolean; id?: string };
-  return { ok: !!row?.ok, id: row?.id };
+  opts?: {
+    parentId?: string | null;
+    mediaUrl?: string | null;
+    clientId?: string | null;
+  },
+): Promise<{ ok: boolean; id?: string; hata?: string; idempotent?: boolean }> {
+  const dortArg = async () => {
+    const { data, error } = await supabase.rpc('durum_yorum_ekle', {
+      p_status_id: id,
+      p_body: body || null,
+      p_parent_id: opts?.parentId ?? null,
+      p_media_url: opts?.mediaUrl ?? null,
+    });
+    if (error) return { ok: false as const, hata: error.message, idempotent: false };
+    const row = data as { ok?: boolean; id?: string };
+    return { ok: !!row?.ok, id: row?.id, idempotent: false };
+  };
+
+  const clientId = opts?.clientId ?? null;
+  if (clientId && uuidGecerliMi(clientId)) {
+    const { data, error } = await supabase.rpc('durum_yorum_ekle', {
+      p_status_id: id,
+      p_body: body || null,
+      p_parent_id: opts?.parentId ?? null,
+      p_media_url: opts?.mediaUrl ?? null,
+      p_client_id: clientId,
+    });
+    if (!error) {
+      const row = data as { ok?: boolean; id?: string };
+      return { ok: !!row?.ok, id: row?.id, idempotent: true };
+    }
+    const msg = error.message ?? '';
+    const argYok =
+      /client_id|PGRST202|schema cache|Could not find the function|does not exist/i.test(
+        msg,
+      );
+    if (!argYok) return { ok: false, hata: msg, idempotent: true };
+  }
+  return dortArg();
 }
 
 export async function DurumYorumSil(

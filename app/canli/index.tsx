@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
   FlatList,
   Pressable,
   StyleSheet,
@@ -12,7 +13,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Screen } from '../../src/components/Screen';
 import { BosDurum } from '../../src/components/BosDurum';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import {
@@ -24,8 +25,10 @@ import {
   CanliYayinBaslatMotoru,
   CanliYayinOnHazirlik,
   CanliBaslatKilitliMi,
+  CanliYayinBaslatIptalEt,
   type CanliBaslatDurum,
 } from '../../src/moduller/canli-yayin/islemler/CanliYayinBaslatMotoru';
+import { useCanliYayinArkaPlanBitir } from '../../src/moduller/canli-yayin/islemler/useCanliYayinArkaPlanBitir';
 import { CanliGeriSayimKatmani } from '../../src/moduller/canli-yayin/bilesenler/CanliGeriSayimKatmani';
 import {
   CanliYayinTiyatro,
@@ -35,6 +38,21 @@ import { CanliYayinMarkaBasligi } from '../../src/moduller/canli-yayin/bilesenle
 import { CanliYayinStudioKarti } from '../../src/moduller/canli-yayin/bilesenler/CanliYayinStudioKarti';
 import { CanliYayinKarti } from '../../src/moduller/canli-yayin/bilesenler/CanliYayinKarti';
 import { MedyaOdasiKes } from '../../src/moduller/livekit/MedyaBaglantisi';
+import { LiveKitBaglantiYoneticisi } from '../../src/moduller/livekit/baglanti/LiveKitBaglantiYoneticisi';
+import {
+  AktifCanliYayinArkaPlanaAl,
+  AktifCanliYayinArkaPlandaMi,
+  AktifCanliYayinBaslat,
+  AktifCanliYayinBitir,
+  AktifCanliYayinDurumunuAl,
+  AktifCanliYayinGuncelle,
+  AktifCanliYayinKucultmeTazeMi,
+  AktifCanliYayinOneCikar,
+} from '../../src/moduller/canli-yayin/oturum/AktifCanliYayinOturumu';
+import {
+  CanliYayinaGit,
+  CanliYayinListesiniIsit,
+} from '../../src/moduller/canli-yayin/navigasyon/CanliYayinaGit';
 import { OzellikBayragiAktifMi } from '../../src/moduller/ozellik-bayraklari/OzellikBayragiAktifMi';
 import { HediyeAnimasyonKatmani } from '../../src/moduller/hediyeler/bilesenler/HediyeAnimasyonKatmani';
 import { HediyeMagazaBaglamasi } from '../../src/moduller/hediyeler/bilesenler/HediyeMagazaBaglamasi';
@@ -56,31 +74,53 @@ import { useCeviri } from '../../src/i18n/useCeviri';
 
 type CanliSekme = 'hepsi' | 'takip';
 
+function hostOturumuGeriYukle() {
+  const d = AktifCanliYayinDurumunuAl();
+  if (!d || d.rol !== 'host') return null;
+  if (d.mock || LiveKitBaglantiYoneticisi.durumGetir() === 'connected') return d;
+  return null;
+}
+
 export default function CanliYayinEkrani() {
   const { t } = useCeviri();
   const navigation = useNavigation();
-  const { user, isGuest, refreshProfile, refreshWallet, wallet, profile } =
-    useAuth();
+  const { user, isGuest, refreshProfile, profile } = useAuth();
+  const { wallet, refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene, upgradeAc } =
     useMisafirIslemKapisi(isGuest);
   const magaza = useHediyeMagaza();
   const [title, setTitle] = useState('');
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (yayindaRef.current || list.length === 0) return;
+    CanliYayinListesiniIsit(list.map((x: { id: string }) => x.id));
+  }, [list]);
   const [canliSekme, setCanliSekme] = useState<CanliSekme>('hepsi');
-  const [yayinda, setYayinda] = useState(false);
-  const [meta, setMeta] = useState<CanliYayinMeta | null>(null);
+  const [geri] = useState(hostOturumuGeriYukle);
+  const [yayinda, setYayinda] = useState(!!geri);
+  const [meta, setMeta] = useState<CanliYayinMeta | null>(geri?.meta ?? null);
   const [medyaDurum, setMedyaDurum] = useState<string | null>(null);
-  const [medyaMock, setMedyaMock] = useState(false);
+  const [medyaMock, setMedyaMock] = useState(!!geri?.mock);
   const [pkDavetAcik, setPkDavetAcik] = useState(false);
   const [geriSayim, setGeriSayim] = useState<number | null>(null);
-  const [baslatDurum, setBaslatDurum] = useState<CanliBaslatDurum>('idle');
+  const [baslatDurum, setBaslatDurum] = useState<CanliBaslatDurum>(
+    geri ? 'live' : 'idle',
+  );
   /** Stüdyo CameraView — LiveKit öncesi kapat (cihaz kilidi) */
-  const [studioKamera, setStudioKamera] = useState(true);
-  const yayindaRef = useRef(false);
-  const sessionIdRef = useRef<string | null>(null);
+  const [studioKamera, setStudioKamera] = useState(!geri);
+  const yayindaRef = useRef(!!geri);
+  const sessionIdRef = useRef<string | null>(geri?.sessionId ?? null);
   const liveEnabled = OzellikBayragiAktifMi('live_enabled');
   const videoEnabled = OzellikBayragiAktifMi('video_enabled');
+
+  useEffect(() => {
+    // Geri / kaydırma ile küçültünce mini çubuk güncel sayıları göstersin
+    if (meta && AktifCanliYayinDurumunuAl()?.sessionId === meta.id) {
+      AktifCanliYayinGuncelle({ meta });
+    }
+  }, [meta]);
 
   const baslikOnerisi = useMemo(() => {
     const ad = profile?.display_name?.trim() || profile?.username?.trim();
@@ -117,13 +157,18 @@ export default function CanliYayinEkrani() {
   }, [canliSekme]);
 
   const yayiniSonlandir = useCallback(async () => {
+    AktifCanliYayinBitir();
     const sid = sessionIdRef.current;
-    await MedyaOdasiKes();
-    if (yayindaRef.current || sid) {
-      await CanliYayinBitir(sid).catch(() => undefined);
-    }
+    const aktifti = yayindaRef.current || !!sid;
     yayindaRef.current = false;
     sessionIdRef.current = null;
+    const bitirP = aktifti
+      ? CanliYayinBitir(sid).catch(() => undefined)
+      : Promise.resolve();
+    await Promise.all([
+      MedyaOdasiKes({ hizli: true }).catch(() => undefined),
+      bitirP,
+    ]);
     setYayinda(false);
     setMeta(null);
     setMedyaDurum(null);
@@ -134,21 +179,39 @@ export default function CanliYayinEkrani() {
     await load();
   }, [load]);
 
+  useEffect(() => {
+    const d = AktifCanliYayinDurumunuAl();
+    if (!d || d.rol !== 'host') return;
+    const bagli = d.mock || LiveKitBaglantiYoneticisi.durumGetir() === 'connected';
+    if (!bagli) {
+      AktifCanliYayinBitir();
+      return;
+    }
+    AktifCanliYayinOneCikar();
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      void load();
-      void CanliYayinOnHazirlik(videoEnabled);
+      const hostKucuk =
+        AktifCanliYayinDurumunuAl()?.rol === 'host' &&
+        (AktifCanliYayinArkaPlandaMi() || AktifCanliYayinKucultmeTazeMi());
+      if (!yayindaRef.current && !hostKucuk) {
+        void load();
+        void CanliYayinOnHazirlik(videoEnabled);
+      }
       return () => {
         void (async () => {
-          // Aktif yayında blur'da sonlandırma — Keşfet vb. geri dönüşte görüntü kalsın
+          // Aktif yayında veya küçültülmüş host penceresinde blur medyayı kesmesin
           if (yayindaRef.current) return;
+          const kucukHost =
+            AktifCanliYayinDurumunuAl()?.rol === 'host' &&
+            (AktifCanliYayinArkaPlandaMi() || AktifCanliYayinKucultmeTazeMi());
+          if (kucukHost) return;
           const sid = sessionIdRef.current;
-          const aktif = !!sid;
-          if (aktif || CanliBaslatKilitliMi()) {
-            await MedyaOdasiKes();
+          // Liste dışına izlemeye geçince odayı kesme — yeni ekranın bağlantısını düşürür
+          if (sid || CanliBaslatKilitliMi()) {
+            await MedyaOdasiKes({ hizli: true });
             if (sid) await CanliYayinBitir(sid).catch(() => undefined);
-          } else {
-            await MedyaOdasiKes();
           }
           yayindaRef.current = false;
           sessionIdRef.current = null;
@@ -158,8 +221,44 @@ export default function CanliYayinEkrani() {
   );
 
   useEffect(() => {
+    if (!yayinda) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const birak = LiveKitBaglantiYoneticisi.dinle((_durum, detay) => {
+      if (detay === 'disconnected') {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          if (!yayindaRef.current) return;
+          if (LiveKitBaglantiYoneticisi.durumGetir() === 'connected') return;
+          if (AppState.currentState !== 'active') return;
+          void yayiniSonlandir();
+        }, 4000);
+      } else if (detay === 'reconnected' || detay === 'connected') {
+        if (timer) clearTimeout(timer);
+        timer = null;
+      }
+    });
+    return () => {
+      if (timer) clearTimeout(timer);
+      birak();
+    };
+  }, [yayinda, yayiniSonlandir]);
+
+  useCanliYayinArkaPlanBitir(yayinda || baslatDurum !== 'idle', () => {
+    CanliYayinBaslatIptalEt();
+    void yayiniSonlandir();
+  });
+
+  useEffect(() => {
     const unsub = navigation.addListener('beforeRemove', (e) => {
-      if (!yayindaRef.current && baslatDurum === 'idle') return;
+      if (AktifCanliYayinArkaPlandaMi()) return;
+      if (yayindaRef.current) {
+        e.preventDefault();
+        AktifCanliYayinArkaPlanaAl();
+        const action = e.data.action;
+        setTimeout(() => navigation.dispatch(action), 0);
+        return;
+      }
+      if (baslatDurum === 'idle') return;
       e.preventDefault();
       Alert.alert(t('canliYayin.yayiniBitir'), t('canliYayin.yayiniBitirBody'), [
         { text: t('canliYayin.kal'), style: 'cancel' },
@@ -188,23 +287,22 @@ export default function CanliYayinEkrani() {
         return;
       }
       if (CanliBaslatKilitliMi() || loading) return;
-      if (!title.trim()) {
-        Alert.alert(t('canliYayin.baslikGerekli'));
-        return;
-      }
+      const hostAdi =
+        profile?.display_name?.trim() || profile?.username?.trim() || 'Tamuso';
+      // Sunucu (canli_yayin_baslat) 2 karakterden kısa başlığı reddeder.
+      const yayinBasligi =
+        title.trim().length >= 2
+          ? title.trim()
+          : t('canliYayin.varsayilanBaslik', { ad: hostAdi });
 
       setLoading(true);
       setBaslatDurum('preparing');
       setGeriSayim(3);
-      // Expo CameraView'i önce bırak — LiveKit ile kamera kilidi çakışmasın
+      // Stüdyo önizlemesini kapat; motor serbest kalmayı bekler
       setStudioKamera(false);
-      const { KameraOnizlemeSerbestBirak } = await import(
-        '../../src/moduller/livekit/kamera/KameraOnizlemeKilidi'
-      );
-      await KameraOnizlemeSerbestBirak(2_800);
 
       const sonuc = await CanliYayinBaslatMotoru({
-        title: title.trim(),
+        title: yayinBasligi,
         videoEnabled,
         onProgress: (p) => {
           setBaslatDurum(p.durum);
@@ -246,16 +344,24 @@ export default function CanliYayinEkrani() {
         profile?.display_name?.trim() ||
         profile?.username?.trim() ||
         t('gorusme.sen');
-      setMeta({
+      const yeniMeta: CanliYayinMeta = {
         id: sonuc.session.id,
         host_id: user?.id ?? '',
-        title: title.trim(),
+        title: yayinBasligi,
         viewer_count: 0,
         like_count: 0,
         gift_count: 0,
         total_coins_earned: 0,
         hostAd,
         started_at: new Date().toISOString(),
+      };
+      setMeta(yeniMeta);
+      AktifCanliYayinBaslat({
+        sessionId: sonuc.session.id,
+        rol: 'host',
+        hostId: user?.id ?? '',
+        meta: yeniMeta,
+        mock: !!sonuc.mock,
       });
       setYayinda(true);
       setMedyaMock(!!sonuc.mock);
@@ -346,13 +452,8 @@ export default function CanliYayinEkrani() {
             onBitir={() => void bitir()}
             onMeta={(patch) => setMeta((m) => (m ? { ...m, ...patch } : m))}
             pkMac={pkMac}
-            onPk={() => {
-              if (pkMac) {
-                Alert.alert('PK', t('canliYayin.pkZaten'));
-                return;
-              }
-              setPkDavetAcik(true);
-            }}
+            onPk={pkMac ? undefined : () => setPkDavetAcik(true)}
+            onPkBitti={() => void pkYenile()}
           />
           <PkDavetPaneli
             visible={pkDavetAcik}
@@ -370,13 +471,7 @@ export default function CanliYayinEkrani() {
             davet={gelenPkDavet}
             onKapat={pkDavetTemizle}
             onSonuc={(s) => {
-              if (s.status === 'accepted') {
-                void pkYenile();
-                Alert.alert(
-                  t('canliYayin.pkBasladi'),
-                  t('canliYayin.pkBasladiBody'),
-                );
-              }
+              if (s.status === 'accepted') void pkYenile();
             }}
           />
           <HediyeMagazaBaglamasi
@@ -507,7 +602,16 @@ export default function CanliYayinEkrani() {
               <CanliYayinKarti
                 item={item}
                 index={index}
-                onPress={() => router.push(`/canli/${item.id}` as any)}
+                onPress={() =>
+                  CanliYayinaGit(item.id, {
+                    host_id: item.host?.id ?? null,
+                    title: item.title,
+                    hostAd:
+                      item.host?.display_name?.trim() || item.host?.username?.trim() || null,
+                    hostAvatar: item.host?.avatar_url ?? null,
+                    viewer_count: item.viewer_count ?? null,
+                  }, user?.id)
+                }
               />
             )}
           />

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  BackHandler,
   Keyboard,
   Modal,
   Platform,
@@ -30,7 +31,7 @@ import { CevrimdisiOdaNotu } from '../../src/moduller/cevrimdisi/bilesenler/Cevr
 import { MikrofonUiSesiCal } from '../../src/moduller/ses-odalari/ses/MikrofonUiSesi';
 import { useCeviri } from '../../src/i18n/useCeviri';
 import { TamusoBanner } from '../../src/banner';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { supabase } from '../../src/lib/supabase';
 import {
   fetchRoom,
@@ -55,7 +56,7 @@ import { HediyeKatalogunuGetir } from '../../src/moduller/hediyeler/okuma/Hediye
 import { HediyeGonder } from '../../src/moduller/hediyeler/islemler/HediyeGonder';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
-import type { Gift, Profile, Room, RoomSeat } from '../../src/types/models';
+import type { CoinKaynagi, Gift, Profile, Room, RoomSeat } from '../../src/types/models';
 import { ProfilGetir } from '../../src/moduller/kullanici-profili/okuma/ProfilGetir';
 import type { CanliSohbetMesajGorunum } from '../../src/moduller/canli-sohbet/bilesenler/CanliSohbetMesajKarti';
 import { colors, radii, typography } from '../../src/theme/colors';
@@ -130,6 +131,14 @@ import {
 } from '../../src/moduller/ses-odalari/yetki/OdaRolKontrol';
 import { MikrofonIstekPaneli } from '../../src/moduller/ses-odalari/bilesenler/MikrofonIstekPaneli';
 import { OdaDinleyiciPaneli } from '../../src/moduller/ses-odalari/bilesenler/OdaDinleyiciPaneli';
+import {
+  OdaVarlikAyril,
+  OdaVarlikKatil,
+} from '../../src/moduller/ses-odalari/varlik/OdaVarlikKanali';
+import {
+  canliVarlikIdleri,
+  useOdaVarlik,
+} from '../../src/moduller/ses-odalari/varlik/useOdaVarlik';
 import { OdaSesHacmiButonu } from '../../src/moduller/ses-odalari/bilesenler/OdaSesHacmiButonu';
 import { OdaMuzikButonu } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikButonu';
 import { OdaMuzikPlak } from '../../src/moduller/oda-muzik/bilesenler/OdaMuzikPlak';
@@ -282,8 +291,8 @@ export default function RoomScreen() {
     sohbetOturumRef.current = { roomId: id, baslangic: Date.now() };
   }
   const sohbetOturumBaslangic = sohbetOturumRef.current.baslangic;
-  const { user, refreshWallet, adjustWallet, isGuest, refreshProfile, wallet, profile } =
-    useAuth();
+  const { user, isGuest, refreshProfile, profile } = useAuth();
+  const { wallet, refreshWallet, adjustWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, upgradeAc, islemiDene } = useMisafirIslemKapisi(isGuest);
   const coinYukle = useCoinYuklePaneli();
   const { yukseklik: klavyeH, acik: klavyeAcik } = useKlavyeYuksekligi(0);
@@ -318,6 +327,7 @@ export default function RoomScreen() {
   >(null);
   const [cikiyor, setCikiyor] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const [hediyeKaynak, setHediyeKaynak] = useState<CoinKaynagi>('purchased');
   const [hediyeAliciIdler, setHediyeAliciIdler] = useState<string[]>([]);
   const [gameOpen, setGameOpen] = useState(false);
   const [odaKartAcik, setOdaKartAcik] = useState(false);
@@ -365,6 +375,18 @@ export default function RoomScreen() {
   const sahipTahtOnceki = React.useRef<boolean | null>(null);
 
   const isDemo = useMemo(() => id?.startsWith('demo'), [id]);
+
+  /** Anlık varlık: ekran kapanınca çık; küçültülmüş oturumda varlık sürer */
+  React.useEffect(() => {
+    if (isDemo || !id || !user?.id) return;
+    OdaVarlikKatil(id, user.id);
+    return () => {
+      if (AktifSesOdasiDurumunuAl()?.roomId !== id) OdaVarlikAyril(id);
+    };
+  }, [id, isDemo, user?.id]);
+  const odaVarlik = useOdaVarlik(isDemo ? null : id);
+  const canliKisiSayisi = canliVarlikIdleri(odaVarlik)?.length ?? null;
+
   const isPlatformAdmin = AdminYetkisiVarMi(profile);
   const isHost = !!user?.id && !!room?.host_id && user.id === room.host_id;
   const isCohost =
@@ -1189,6 +1211,21 @@ export default function RoomScreen() {
     }
   }, [cikiyor, isDemo, room, muted, t]);
 
+  // Android geri tuşu küçült butonuyla aynı yoldan gitmeli: arkaPlanda bayrağı
+  // navigasyondan önce kurulmazsa blur temizliği oturumu bitirir, pencere açılmaz.
+  // Oyun katmanı kendi geri dinleyicisiyle kapanır.
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android' || isDemo) return;
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (oyunAktif || cikiyor || !room?.id) return false;
+        odayiKucult();
+        return true;
+      });
+      return () => sub.remove();
+    }, [isDemo, oyunAktif, cikiyor, room?.id, odayiKucult]),
+  );
+
   const kaydirX = useSharedValue(0);
   const sagaKaydirCik = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1914,6 +1951,28 @@ export default function RoomScreen() {
         })
         .catch(() => undefined);
 
+      // Ses bağlanmayı oda/koltuk fetch ile PARALEL başlat — waterfall yok
+      const erkenHost =
+        !!user?.id &&
+        !!onbellek?.room.host_id &&
+        user.id === onbellek.room.host_id;
+      const erkenKoltuk =
+        !!user?.id &&
+        !!onbellek &&
+        onbellek.seats.some((seat) => seat.user_id === user.id);
+      const erkenRoomName =
+        onbellek?.room.livekit_room_name?.trim() || `voice_${id}`;
+      const erkenRol = (
+        erkenHost ? 'host' : erkenKoltuk ? 'speaker' : 'listener'
+      ) as 'host' | 'speaker' | 'listener';
+      setLkDurum(t('sesOda.sesBaglaniyor'));
+      const erkenBaglanGirdi = {
+        roomName: erkenRoomName,
+        role: erkenRol,
+        micAcik: erkenHost || erkenKoltuk,
+      };
+      const medyaPromise = MedyaOdasiBaglan(erkenBaglanGirdi);
+
       const [r, s] = await Promise.all([
         onbellek ? Promise.resolve(onbellek.room) : fetchRoom(id),
         onbellek
@@ -1926,6 +1985,7 @@ export default function RoomScreen() {
       if (!r || !r.is_live) {
         setRoom(null);
         void SonGezilendenSil('oda', id);
+        void MedyaOdasiKes({ hizli: true });
         if (!OdaCikisKilidiAktifMi()) {
           Alert.alert(t('sesOda.oda'), t('sesOda.odaArtikCanliDegil'));
           OdadanCikisYonlendir();
@@ -2009,24 +2069,37 @@ export default function RoomScreen() {
           });
       }
 
-      const roomName = r.livekit_room_name ?? `voice_${id}`;
-      setLkDurum(t('sesOda.sesBaglaniyor'));
+      const roomName = r.livekit_room_name?.trim() || `voice_${id}`;
+      const hedefRol = (
+        hostMu ? 'host' : koltukta ? 'speaker' : 'listener'
+      ) as 'host' | 'speaker' | 'listener';
       const baglanGirdi = {
         roomName,
-        role: (hostMu ? 'host' : koltukta ? 'speaker' : 'listener') as
-          | 'host'
-          | 'speaker'
-          | 'listener',
+        role: hedefRol,
         // Host / koltuktaki: mic açık; dinleyici: kapalı
         micAcik: hostMu || koltukta,
       };
-      let medya = await MedyaOdasiBaglan(baglanGirdi);
+
+      let medya = await medyaPromise;
       if (loadNesil !== odaLoadNesil.current) return;
+
+      // Erken tahmin yanlışsa (kanal/rol) tek düzeltme join — aksi halde paralel sonuç yeter
+      const rolUyusmaz =
+        erkenRol !== hedefRol || erkenRoomName !== roomName;
+      if (medya.ok && rolUyusmaz) {
+        medya = await MedyaOdasiBaglan({ ...baglanGirdi, zorla: true });
+        if (loadNesil !== odaLoadNesil.current) return;
+      } else if (!medya.ok && !rolUyusmaz && MedyaOdaBagliMi(roomName)) {
+        medya = { ok: true, saglayici: 'livekit', mock: false, kanal: roomName };
+      } else if (!medya.ok) {
+        medya = await MedyaOdasiBaglan(baglanGirdi);
+        if (loadNesil !== odaLoadNesil.current) return;
+      }
 
       const iptalMetni = t('sesOda.baglantiIptalEdildi');
       // Çift join / koltuk flicker / geçici hata — bir kez sessiz dene (Alert atmadan)
       if (!medya.ok) {
-        await new Promise((r) => setTimeout(r, 550));
+        await new Promise((r) => setTimeout(r, 280));
         if (loadNesil !== odaLoadNesil.current) return;
         if (MedyaOdaBagliMi(roomName)) {
           medya = { ok: true, saglayici: 'livekit', mock: false, kanal: roomName };
@@ -2077,7 +2150,7 @@ export default function RoomScreen() {
           MedyaHoparlorAyarla(true);
           MedyaUzakSesHacmiAyarla(odaSesHacmiRef.current);
           if (micAcikKalacak) MedyaMikrofonAyarla(true);
-        }, 400);
+        }, 220);
         if (medya.mock && r.host_id) KonusmaciSesSeviyesi.mockBaslat(r.host_id);
 
         if (ayniOturum) {
@@ -2229,6 +2302,15 @@ export default function RoomScreen() {
     );
   }, []);
 
+  const hediyeBakiyeleri = useMemo<Record<CoinKaynagi, number>>(
+    () => ({
+      purchased: wallet?.coins ?? 0,
+      game: wallet?.game_coins ?? 0,
+      bonus: wallet?.bonus_coins ?? 0,
+    }),
+    [wallet?.coins, wallet?.game_coins, wallet?.bonus_coins],
+  );
+
   const onSendGift = (gift: Gift, quantity = 1) => {
     if (!user || !room) return;
     const secilen = hediyeAlicilari.filter((a) => hediyeAliciIdler.includes(a.id));
@@ -2238,7 +2320,11 @@ export default function RoomScreen() {
     }
     const adet = Math.max(1, quantity);
     const maliyet = gift.coin_cost * adet * secilen.length;
-    if (maliyet > (wallet?.coins ?? 0)) {
+    if (hediyeKaynak !== 'purchased' && maliyet > hediyeBakiyeleri[hediyeKaynak]) {
+      Alert.alert(t('sesOda.yetersizCoin'), t('cuzdanY.kaynakYetersiz'));
+      return;
+    }
+    if (maliyet > hediyeBakiyeleri[hediyeKaynak]) {
       // Panel içi coin modu — HediyeMagazaPaneli yetmezken coinAc çağırır
       coinYukle.paketleriYenile();
       return;
@@ -2286,6 +2372,7 @@ export default function RoomScreen() {
           receiverId: alici.id,
           roomId: room.id,
           quantity: adet,
+          coinSource: hediyeKaynak,
         });
         if (!sonuc.ok) {
           const yetersiz = /insufficient|yetersiz/i.test(sonuc.hata ?? '');
@@ -2301,7 +2388,9 @@ export default function RoomScreen() {
         giden.push(alici);
       }
       if (harcanan > 0) {
-        adjustWallet({ coins: -harcanan });
+        adjustWallet({
+          [hediyeKaynak === 'game' ? 'game_coins' : hediyeKaynak === 'bonus' ? 'bonus_coins' : 'coins']: -harcanan,
+        });
       }
       void refreshWallet();
       if (giden.length === 0) return;
@@ -2386,11 +2475,19 @@ export default function RoomScreen() {
         onBitti={() => setSahipGiris(null)}
       />
       <SeviyeGirisAnimasyonu
+        key={seviyeGiris?.userId ?? 'bos'}
         gorunur={!!seviyeGiris}
         ad={seviyeGiris?.ad ?? ''}
         level={seviyeGiris?.level ?? 0}
-        kademe={seviyeGiris?.kademe ?? 'bronz'}
+        kademe={seviyeGiris?.kademe ?? 'normal'}
         avatarUrl={seviyeGiris?.avatarUrl}
+        altBosluk={
+          Math.max(insets.bottom, 6) +
+          ODA_DOCK_BTN +
+          52 +
+          (klavyeAcik ? klavyeH : 0) +
+          (chatOpen && !isDemo && !oyunAktif ? (klavyeAcik ? 96 : 156) : 0)
+        }
         onBitti={seviyeGirisBitti}
       />
 
@@ -2601,7 +2698,9 @@ export default function RoomScreen() {
                     },
                   ]}
                 />
-                <Text style={styles.liveText}>{room.listener_count}</Text>
+                <Text style={styles.liveText}>
+                  {canliKisiSayisi ?? room.listener_count}
+                </Text>
               </Pressable>
               <Pressable
                 onPress={odayiKucult}
@@ -2948,6 +3047,9 @@ export default function RoomScreen() {
           visible={giftOpen}
           gifts={gifts}
           coins={wallet?.coins}
+          coinKaynagi={hediyeKaynak}
+          onCoinKaynagiDegis={setHediyeKaynak}
+          coinBakiyeleri={hediyeBakiyeleri}
           aliciAdi={
             hediyeAlicilari
               .filter((a) => hediyeAliciIdler.includes(a.id))

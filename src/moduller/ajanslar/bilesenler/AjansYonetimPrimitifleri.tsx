@@ -20,6 +20,7 @@ import {
 import { premiumCtaGradient } from '../../../tasarim-sistemi/premium/PremiumAmbient';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { AjansSahipRozeti } from './AjansSahipRozeti';
 import { useCeviri } from '../../../i18n/useCeviri';
 
 /** Şeffaf cam kart — Ajansım modern yüzey */
@@ -202,6 +203,7 @@ export function AjansHeroKapak({
   bannerUrl,
   levelLabel,
   verified,
+  sahip,
   meta,
   actionLabel,
   onAction,
@@ -213,6 +215,7 @@ export function AjansHeroKapak({
   bannerUrl?: string | null;
   levelLabel?: string | null;
   verified?: boolean;
+  sahip?: boolean;
   meta?: string;
   actionLabel?: string;
   onAction?: () => void;
@@ -265,6 +268,7 @@ export function AjansHeroKapak({
                     <Text style={styles.badgeYazi}>{t('ajans.dogrulandi')}</Text>
                   </View>
                 ) : null}
+                {sahip ? <AjansSahipRozeti compact /> : null}
               </View>
             </View>
           </View>

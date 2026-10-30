@@ -44,6 +44,8 @@ type Props = {
   ) => Promise<{ etiket: string; metin: string } | null>;
   /** Ajans paket teklifi (Stripe) — ajans sohbetinde */
   onPaketTeklif?: () => void;
+  /** Ajans sahibi değilse çip "Paket iste" olur */
+  paketTalepMi?: boolean;
 };
 
 /**
@@ -56,6 +58,7 @@ export function MesajHizliAksiyonSeridi({
   onMetinPaylas,
   onOzellikDoldur,
   onPaketTeklif,
+  paketTalepMi,
 }: Props) {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
@@ -163,7 +166,9 @@ export function MesajHizliAksiyonSeridi({
           {ajansMi && onPaketTeklif ? (
             <Pressable style={[styles.cip, styles.cipTeklif]} onPress={onPaketTeklif}>
               <Ionicons name="card-outline" size={15} color="#F5C462" />
-              <Text style={styles.cipYazi}>{t('cuzdanX.paketTeklifCip')}</Text>
+              <Text style={styles.cipYazi}>
+                {paketTalepMi ? t('cuzdanX.paketTalepCip') : t('cuzdanX.paketTeklifCip')}
+              </Text>
             </Pressable>
           ) : null}
           {ozel.map((oge) => (

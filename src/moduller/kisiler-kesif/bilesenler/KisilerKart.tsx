@@ -22,12 +22,14 @@ import {
 import type { KisilerKesifKarti } from '../tipler';
 import { ulkeBayragi } from '../utils/KisilerYardimcilar';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { basHarfler, harfRenkleri } from './KisilerKartYuz';
 
 type Props = {
   kart: KisilerKesifKarti;
   genislik: number;
   showPrices: boolean;
   showOnline: boolean;
+  canli?: boolean;
   /** Kapalı aramada da basılabilir — sheet mesaj + bildirim gösterir */
   sesEnabled: boolean;
   videoEnabled: boolean;
@@ -42,6 +44,7 @@ function KisilerKartIc({
   genislik,
   showPrices,
   showOnline,
+  canli = false,
   sesEnabled,
   videoEnabled,
   onProfil,
@@ -53,6 +56,8 @@ function KisilerKartIc({
   const bayrak = ulkeBayragi(kart.public_country_code);
   const isim = kart.display_name?.trim() || kart.username || t('ortak.kullanici');
   const kullanici = kart.username ?? '—';
+  const sesCoin = coinTamSayi(kart.voice_price);
+  const gorCoin = coinTamSayi(kart.video_price);
 
   return (
     <View style={[styles.kart, { width: genislik }]}>
@@ -67,17 +72,24 @@ function KisilerKartIc({
             source={{ uri: kart.avatar_url }}
             style={styles.foto}
             resizeMode="cover"
+            accessibilityLabel={isim}
           />
         ) : (
           <LinearGradient
-            colors={[...RenkTokenlari.gradientPlaceholder]}
+            colors={harfRenkleri(kart.user_id)}
             style={styles.fotoBos}
+            accessibilityLabel={t('kisilerX.profilA11y', { isim })}
           >
-            <Ionicons name="person" size={40} color={RenkTokenlari.textOnOverlay} />
+            <Text style={styles.harf}>{basHarfler(isim)}</Text>
           </LinearGradient>
         )}
 
-        {showOnline && kart.online_display ? (
+        {canli ? (
+          <View style={styles.canliRozet} accessibilityLabel={t('kisiler.canliRozet')}>
+            <View style={styles.canliNokta} />
+            <Text style={styles.canliYazi}>{t('kisiler.canliRozet')}</Text>
+          </View>
+        ) : showOnline && kart.online_display ? (
           <View style={styles.online} accessibilityLabel={t('kisilerX.cevrimici')} />
         ) : null}
 
@@ -105,33 +117,53 @@ function KisilerKartIc({
             @{kullanici}
             {kart.level != null ? ` · ${t('kisilerX.seviye', { n: kart.level })}` : ''}
           </Text>
-          {showPrices && (kart.voice_price != null || kart.video_price != null) ? (
-            <View style={styles.fiyatSatir}>
-              {kart.voice_price != null ? (
-                <Text style={styles.fiyat}>
-                  <Ionicons name="call" size={10} color={RenkTokenlari.mint} />{' '}
-                  {t('kisilerX.coinDk', { n: kart.voice_price })}
-                </Text>
+          {showPrices && (sesCoin != null || gorCoin != null) ? (
+            <View
+              style={styles.fiyatSatir}
+              accessibilityLabel={[
+                sesCoin != null ? t('kisilerX.coinDk', { n: sesCoin }) : null,
+                gorCoin != null ? t('kisilerX.coinDk', { n: gorCoin }) : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            >
+              {sesCoin != null ? (
+                <View style={styles.fiyatParca}>
+                  <Ionicons name="call" size={11} color={RenkTokenlari.mint} />
+                  <Text style={styles.fiyat}>{sesCoin}</Text>
+                </View>
               ) : null}
-              {kart.video_price != null ? (
-                <Text style={styles.fiyat}>
-                  <Ionicons name="videocam" size={10} color={RenkTokenlari.primarySoft} />{' '}
-                  {t('kisilerX.coinDk', { n: kart.video_price })}
-                </Text>
+              {gorCoin != null ? (
+                <View style={styles.fiyatParca}>
+                  <Ionicons name="videocam" size={11} color={RenkTokenlari.primarySoft} />
+                  <Text style={styles.fiyat}>{gorCoin}</Text>
+                </View>
               ) : null}
+              <Text style={styles.fiyatBirim} numberOfLines={1}>
+                {t('kisilerX.coinDkBirim')}
+              </Text>
             </View>
           ) : null}
         </View>
       </Pressable>
 
       <View style={styles.aksiyonlar}>
-        <Aksiyon
-          icon="chatbubble"
-          label={t('kisilerX.mesaj')}
-          enabled={kart.message_enabled}
-          onPress={() => onMesaj(kart.user_id)}
-          tint={RenkTokenlari.primarySoft}
-        />
+        <Pressable
+          onPress={kart.message_enabled ? () => onMesaj(kart.user_id) : undefined}
+          disabled={!kart.message_enabled}
+          accessibilityRole="button"
+          accessibilityLabel={t('kisiler.tanis')}
+          accessibilityState={{ disabled: !kart.message_enabled }}
+          hitSlop={BoslukTokenlari.xs}
+          style={({ pressed }) => [
+            styles.tanis,
+            { opacity: kart.message_enabled ? (pressed ? 0.7 : 1) : 0.35 },
+          ]}
+        >
+          <Text style={styles.tanisYazi} numberOfLines={1}>
+            {t('kisiler.tanis')}
+          </Text>
+        </Pressable>
         <Aksiyon
           icon="call"
           label={t('kisilerX.sesliAra')}
@@ -149,6 +181,13 @@ function KisilerKartIc({
       </View>
     </View>
   );
+}
+
+function coinTamSayi(deger: number | null): number | null {
+  if (deger == null) return null;
+  const n = Number(deger);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n);
 }
 
 function Aksiyon({
@@ -205,6 +244,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  harf: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    color: RenkTokenlari.textOnOverlay,
+  },
+  canliRozet: {
+    position: 'absolute',
+    top: BoslukTokenlari.sm,
+    left: BoslukTokenlari.sm,
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: RenkTokenlari.scrim,
+  },
+  canliNokta: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: RenkTokenlari.magenta,
+  },
+  canliYazi: {
+    fontSize: 10,
+    lineHeight: 12,
+    fontWeight: '700',
+    color: RenkTokenlari.textOnOverlay,
+  },
   online: {
     position: 'absolute',
     top: BoslukTokenlari.sm,
@@ -251,13 +321,29 @@ const styles = StyleSheet.create({
   },
   fiyatSatir: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: BoslukTokenlari.sm,
-    marginTop: BoslukTokenlari.xs,
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    gap: 6,
+    marginTop: 2,
+  },
+  fiyatParca: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   fiyat: {
-    ...TipografiTokenlari.micro,
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
     color: RenkTokenlari.textOnOverlay,
+  },
+  fiyatBirim: {
+    flexShrink: 1,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '500',
+    color: RenkTokenlari.textOnOverlay,
+    opacity: 0.9,
   },
   aksiyonlar: {
     flexDirection: 'row',
@@ -269,6 +355,21 @@ const styles = StyleSheet.create({
     backgroundColor: RenkTokenlari.bgElevated,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: RenkTokenlari.divider,
+  },
+  tanis: {
+    flex: 1,
+    minHeight: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.sm,
+    borderRadius: YaricapTokenlari.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: RenkTokenlari.primary,
+  },
+  tanisYazi: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    color: RenkTokenlari.textOnPrimary,
   },
   btn: {
     width: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,

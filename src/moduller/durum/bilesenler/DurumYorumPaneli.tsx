@@ -18,7 +18,6 @@ import { useKlavyeYuksekligi } from '../../../bilesenler/klavye/useKlavyeYuksekl
 import { ProfilAvatarKucuk } from '../../canli-sohbet/bilesenler/ProfilAvatarKucuk';
 import {
   DurumYorumBegeniToggle,
-  DurumYorumEkle,
   DurumYorumSil,
   DurumYorumlariGetir,
   type DurumYorum,
@@ -41,6 +40,7 @@ import {
   YaricapTokenlari,
 } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { useAuth } from '../../../contexts/AuthContext';
 
 type Props = {
   visible: boolean;
@@ -51,9 +51,11 @@ type Props = {
   onProfil?: (userId: string) => void;
 };
 
+type YerelYorum = DurumYorum & { yerelDurum?: 'bekliyor' | 'hata' };
+
 type Satir =
-  | { kind: 'root'; yorum: DurumYorum; yanitlar: DurumYorum[] }
-  | { kind: 'reply'; yorum: DurumYorum; rootId: string };
+  | { kind: 'root'; yorum: YerelYorum; yanitlar: YerelYorum[] }
+  | { kind: 'reply'; yorum: YerelYorum; rootId: string };
 
 export function DurumYorumPaneli({
   visible,
@@ -64,10 +66,11 @@ export function DurumYorumPaneli({
   onProfil,
 }: Props) {
   const { t } = useCeviri();
+  const { profile } = useAuth();
   useUnvanKatalog();
   const insets = useSafeAreaInsets();
   const { yukseklik: klavyeH, acik: klavyeAcik } = useKlavyeYuksekligi(0);
-  const [yorumlar, setYorumlar] = useState<DurumYorum[]>([]);
+  const [yorumlar, setYorumlar] = useState<YerelYorum[]>([]);
   const [metin, setMetin] = useState('');
   const [medyaUrl, setMedyaUrl] = useState<string | null>(null);
   const [yanitHedef, setYanitHedef] = useState<DurumYorum | null>(null);
@@ -80,9 +83,14 @@ export function DurumYorumPaneli({
   const yukle = async () => {
     setYukleniyor(true);
     try {
-      setYorumlar(await DurumYorumlariGetir(statusId));
+      const gelen = await DurumYorumlariGetir(statusId);
+      setYorumlar((onceki) => {
+        const bekleyen = onceki.filter((y) => y.yerelDurum);
+        const ids = new Set(gelen.map((y) => y.id));
+        return [...bekleyen.filter((y) => !ids.has(y.id)), ...gelen];
+      });
     } catch {
-      setYorumlar([]);
+      /* eldeki liste ve bekleyen yorum kalsın */
     } finally {
       setYukleniyor(false);
     }
@@ -91,6 +99,31 @@ export function DurumYorumPaneli({
   useEffect(() => {
     if (visible) void yukle();
   }, [visible, statusId]);
+
+  useEffect(() => {
+    let iptal = false;
+    let birak: (() => void) | undefined;
+    void import('../../cevrimdisi/IslemKuyrugu').then(({ IslemKuyrukSonucDinle }) => {
+      if (iptal) return;
+      birak = IslemKuyrukSonucDinle((olay) => {
+        if (!olay.idempotencyKey.startsWith('comment:')) return;
+        const id = olay.idempotencyKey.slice('comment:'.length);
+        if (olay.ertele) return;
+        if (olay.ok) {
+          setYorumlar((prev) => prev.filter((y) => y.id !== id));
+          void yukle();
+          return;
+        }
+        setYorumlar((prev) =>
+          prev.map((y) => (y.id === id ? { ...y, yerelDurum: 'hata' } : y)),
+        );
+      });
+    });
+    return () => {
+      iptal = true;
+      birak?.();
+    };
+  }, [statusId]);
 
   const satirlar = useMemo(() => {
     const roots = yorumlar.filter((y) => !y.parent_id);
@@ -116,13 +149,46 @@ export function DurumYorumPaneli({
   const gonder = async () => {
     if (!gonderilebilir || busy) return;
     setBusy(true);
-    const r = await DurumYorumEkle(statusId, metin.trim(), {
+    const { yerliUuid } = await import('../../cevrimdisi/saf/Uuid');
+    const yerelId = yerliUuid();
+    const { DurumYorumVeyaKuyruk } = await import('../../cevrimdisi/SosyalKuyruk');
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const r = await DurumYorumVeyaKuyruk({
+      userId: CevrimdisiAktifKullanici(),
+      statusId,
+      body: metin.trim(),
       parentId: yanitHedef?.parent_id ?? yanitHedef?.id ?? null,
       mediaUrl: medyaUrl,
+      localId: yerelId,
     });
     setBusy(false);
     if (!r.ok) {
-      Alert.alert(t('durumX.yorum'), r.hata ?? t('durumX.gonderilemedi'));
+      Alert.alert(t('durumX.yorum'), r.hata ?? t('cevrimdisi.yorumGonderilemedi'));
+      return;
+    }
+    if (r.queued) {
+      setYorumlar((prev) => [
+        {
+          id: yerelId,
+          user_id: CevrimdisiAktifKullanici() ?? '',
+          body: metin.trim(),
+          parent_id: yanitHedef?.parent_id ?? yanitHedef?.id ?? null,
+          media_url: medyaUrl,
+          like_count: 0,
+          liked_by_me: false,
+          created_at: new Date().toISOString(),
+          display_name: profile?.display_name?.trim() || t('cevrimdisi.bekliyor'),
+          username: profile?.username ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+          yerelDurum: 'bekliyor',
+          public_user_id: null,
+          is_mine: true,
+        },
+        ...prev,
+      ]);
+      setMetin('');
+      setMedyaUrl(null);
+      setYanitHedef(null);
       return;
     }
     setMetin('');
@@ -216,6 +282,12 @@ export function DurumYorumPaneli({
                 nameStyle={styles.satirIsim}
               />
             </Pressable>
+            {y.yerelDurum === 'bekliyor' ? (
+              <Text style={styles.yerelDurum}>{t('cevrimdisi.bekliyor')}</Text>
+            ) : null}
+            {y.yerelDurum === 'hata' ? (
+              <Text style={styles.yerelHata}>{t('cevrimdisi.yorumGonderilemedi')}</Text>
+            ) : null}
             {y.body ? (
               <>
                 <MesajBaglantiliMetin
@@ -663,6 +735,16 @@ const styles = StyleSheet.create({
     ...TipografiTokenlari.body,
     fontSize: 15,
     lineHeight: 20,
+  },
+  yerelDurum: {
+    color: RenkTokenlari.textMuted,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  yerelHata: {
+    color: RenkTokenlari.danger,
+    fontSize: 12,
+    marginBottom: 4,
   },
   gonder: {
     width: 42,

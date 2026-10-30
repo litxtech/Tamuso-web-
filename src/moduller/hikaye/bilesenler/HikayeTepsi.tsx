@@ -8,7 +8,6 @@ import type { HikayeTepsiOgesi } from '../tipler';
 import { useHikayeTepsi } from '../kancalar/useHikayeTepsi';
 import { HikayeAnalitik } from '../islemler/HikayeAnalitik';
 import { HikayeTepsiAvatar } from './HikayeTepsiAvatar';
-import { HikayeTepsiSkeleton } from './HikayeTepsiSkeleton';
 
 type Props = {
   enabled?: boolean;
@@ -21,7 +20,7 @@ type Props = {
  */
 export function HikayeTepsi({ enabled = true }: Props) {
   const { t } = useCeviri();
-  const { enabled: bayrakAcik, ogeler, yukleniyor } = useHikayeTepsi({
+  const { enabled: bayrakAcik, ogeler } = useHikayeTepsi({
     enabled,
   });
 
@@ -95,10 +94,7 @@ export function HikayeTepsi({ enabled = true }: Props) {
 
   if (!bayrakAcik) return null;
 
-  if (yukleniyor && ogeler.length === 0) {
-    return <HikayeTepsiSkeleton />;
-  }
-
+  // Boşken iskelet halkalar bir kare görünüp kaybolmasın.
   if (ogeler.length === 0) return null;
 
   return (

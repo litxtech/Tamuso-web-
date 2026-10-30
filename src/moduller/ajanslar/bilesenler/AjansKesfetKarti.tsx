@@ -12,6 +12,7 @@ import type { AjansListeKart } from '../okuma/AjansProfilGetir';
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { AjansSahipRozeti } from './AjansSahipRozeti';
 
 type Props = {
   ajans: AjansListeKart;
@@ -69,11 +70,7 @@ export function AjansKesfetKarti({ ajans, sahipMi, onPress }: Props) {
                 </Text>
               ) : null}
             </View>
-            {sahipMi ? (
-              <View style={styles.sahipRozet}>
-                <Text style={styles.sahipYazi}>{t('ajans.senin')}</Text>
-              </View>
-            ) : null}
+            {sahipMi ? <AjansSahipRozeti compact /> : null}
           </View>
 
           <View style={styles.statSatir}>

@@ -29,8 +29,8 @@ export function FruitWheelKazanan({
   payoutText,
   title,
 }: Props) {
-  const scale = useSharedValue(0.35);
-  const slide = useSharedValue(28);
+  const scale = useSharedValue(0.86);
+  const slide = useSharedValue(10);
   const spin = useSharedValue(0);
   const flash = useSharedValue(0);
   const glow = useSharedValue(0.4);
@@ -38,15 +38,13 @@ export function FruitWheelKazanan({
 
   useEffect(() => {
     scale.value = withSequence(
-      withTiming(1.55, { duration: 220, easing: Easing.out(Easing.cubic) }),
-      withTiming(1.05, { duration: 180, easing: Easing.inOut(Easing.quad) }),
-      withTiming(1, { duration: 120 }),
+      withTiming(1.08, { duration: 90, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 80 }),
     );
-    slide.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) });
+    slide.value = withTiming(0, { duration: 120, easing: Easing.out(Easing.cubic) });
     flash.value = withSequence(
-      withTiming(1, { duration: 90 }),
-      withTiming(0.15, { duration: 280 }),
-      withTiming(0, { duration: 400 }),
+      withTiming(1, { duration: 50 }),
+      withTiming(0, { duration: 160 }),
     );
     glow.value = withRepeat(
       withSequence(withTiming(1, { duration: 280 }), withTiming(0.45, { duration: 280 })),
@@ -54,13 +52,13 @@ export function FruitWheelKazanan({
       false,
     );
     if (fruitId === 'cherry') {
-      slide.value = withSequence(withTiming(14, { duration: 120 }), withTiming(0, { duration: 160 }));
+      slide.value = withSequence(withTiming(8, { duration: 70 }), withTiming(0, { duration: 80 }));
     } else if (fruitId === 'strawberry' || fruitId === 'watermelon') {
-      slide.value = withSequence(withTiming(-12, { duration: 200 }), withTiming(0, { duration: 160 }));
+      slide.value = withSequence(withTiming(-8, { duration: 80 }), withTiming(0, { duration: 80 }));
     } else if (fruitId === 'lemon' || fruitId === 'orange' || fruitId === 'pineapple' || fruitId === 'kiwi') {
-      spin.value = withTiming(fruitId === 'kiwi' ? 360 : 200, { duration: 520, easing: Easing.out(Easing.cubic) });
+      spin.value = withTiming(fruitId === 'kiwi' ? 180 : 90, { duration: 180, easing: Easing.out(Easing.cubic) });
     } else if (fruitId === 'grape') {
-      slide.value = withRepeat(withTiming(6, { duration: 110 }), 4, true);
+      slide.value = withTiming(0, { duration: 100 });
     }
   }, [flash, fruitId, glow, scale, slide, spin]);
 
@@ -134,7 +132,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    bottom: 100,
+    bottom: 108,
+    zIndex: 30,
     alignItems: 'center',
     paddingVertical: 18,
     paddingHorizontal: 16,
@@ -152,7 +151,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     top: 6,
   },
-  flash: { ...StyleSheet.absoluteFillObject },
+  flash: { ...StyleSheet.absoluteFill, zIndex: 1 },
   badge: {
     position: 'absolute',
     top: 10,

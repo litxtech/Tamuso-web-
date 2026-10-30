@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   hit: {
     maxWidth: 168,
     flexShrink: 1,
+    minWidth: 0,
   },
   cerceve: {
     borderRadius: 22,

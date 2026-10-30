@@ -25,7 +25,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../../contexts/AuthContext';
 import { ModulHataSiniri } from '../../../../ortak/hata-sinirlari/ModulHataSiniri';
 import { AdminYetkisiVarMi } from '../../../admin/yetki/AdminYetkisiVarMi';
 import { CoinYuklePaneli } from '../../../cuzdan/bilesenler/CoinYuklePaneli';
@@ -153,8 +153,8 @@ function KozmikKaskadEkraniGovde({
   embedded = false,
 }: KozmikKaskadEkraniProps) {
   const insets = useSafeAreaInsets();
-  const { wallet, profile, patchWallet, refreshWallet, refreshProfile, isGuest, user } =
-    useAuth();
+  const { profile, refreshProfile, isGuest, user } = useAuth();
+  const { wallet, patchWallet, refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const {
     acik: coinYukleAcik,

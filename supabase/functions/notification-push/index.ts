@@ -33,6 +33,10 @@ type PushOpts = {
   channelId?: string;
   sound?: string;
   badge?: number;
+  /** Expo / FCM interactive actions (dm | follow | follow_request) */
+  categoryId?: string;
+  /** iOS conversation grouping */
+  threadId?: string;
 };
 
 let cachedFcmToken: { token: string; exp: number } | null = null;
@@ -159,6 +163,15 @@ async function fcmGonder(
               ...(opts?.sound ? { sound: opts.sound } : {}),
               ...(badge !== undefined ? { notification_count: badge } : {}),
               default_vibrate_timings: true,
+              ...(opts?.channelId === 'arama'
+                ? {
+                    notification_priority: 'PRIORITY_MAX',
+                    visibility: 'PUBLIC',
+                    // sticky-ish ringing until dismissed / answered
+                    sticky: true,
+                    tag: data.call_id ? `call_${data.call_id}` : 'incoming_call',
+                  }
+                : {}),
             },
           },
           apns: {
@@ -166,6 +179,10 @@ async function fcmGonder(
               aps: {
                 sound: opts?.sound ?? 'default',
                 ...(badge !== undefined ? { badge } : {}),
+                ...(opts?.categoryId ? { category: opts.categoryId } : {}),
+                ...(opts?.threadId
+                  ? { 'thread-id': opts.threadId }
+                  : {}),
               },
             },
           },
@@ -249,6 +266,8 @@ async function expoGonder(
     channelId,
     priority: 'high' as const,
     ...(badge !== undefined ? { badge } : {}),
+    ...(opts?.categoryId ? { categoryId: opts.categoryId } : {}),
+    ...(opts?.threadId ? { threadId: opts.threadId } : {}),
   }));
 
   const pushRes = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -370,16 +389,47 @@ function mesajBildirimiMi(
   if (
     type === 'dm' ||
     type === 'direct_message' ||
-    type === 'message' ||
-    type === 'incoming_call'
+    type === 'message'
   ) {
     return true;
   }
-  if (deepLink?.includes('/mesaj/') || deepLink?.includes('/gorusme/')) {
+  // incoming_call ayrı kanal — mesaj kanalına koyma
+  if (deepLink?.includes('/mesaj/')) {
     return true;
   }
   return false;
 }
+
+function aramaBildirimiMi(
+  deepLink: string | null,
+  payload: Record<string, unknown> | null,
+): boolean {
+  const type = String(payload?.type ?? '');
+  if (type === 'incoming_call') return true;
+  if (deepLink?.includes('/gorusme/') && type !== 'missed_call') {
+    // gorusme deep link + ringing push
+    if (payload?.call_id || payload?.callId) return true;
+  }
+  return false;
+}
+
+/** Interactive notification category for Expo / FCM */
+function kategoriIdAl(
+  deepLink: string | null,
+  payload: Record<string, unknown> | null,
+): string | undefined {
+  const type = String(payload?.type ?? '');
+  if (mesajBildirimiMi(deepLink, payload)) return 'dm';
+  if (type === 'follow_request') return 'follow_request';
+  if (type === 'new_follower' || type === 'follow') return 'follow';
+  return undefined;
+}
+
+/** Mesaj bildirimi — native ses dosyası (app.config sounds) */
+const MESAJ_SESI = 'mesaj_uc_ton.wav';
+const MESAJ_KANAL = 'mesaj';
+const ARAMA_SESI = 'gelen_arama.wav';
+const ARAMA_KANAL = 'arama';
 
 /** Kullanıcı başına okunmamış gelen kutu sayısı (ikon rozeti) */
 async function okunmamisSayilariAl(
@@ -409,10 +459,6 @@ async function okunmamisSayilariAl(
   return map;
 }
 
-/** Mesaj bildirimi — native ses dosyası (app.config sounds) */
-const MESAJ_SESI = 'mesaj_uc_ton.wav';
-const MESAJ_KANAL = 'mesaj';
-
 function loadFirebaseSa(): FirebaseSa | null {
   const raw = Deno.env.get('FIREBASE_SERVICE_ACCOUNT_JSON');
   if (!raw) return null;
@@ -426,8 +472,9 @@ function loadFirebaseSa(): FirebaseSa | null {
 }
 
 /**
- * notification_outbox → Android FCM (Firebase) + Expo Push.
- * iOS ikon rozeti: aps.badge / Expo badge = okunmamış user_notifications.
+ * notification_outbox → claim(processing) → Android FCM / Expo Push.
+ * Claim: trigger + client kick aynı satırı iki kez göndermez.
+ * iOS badge: aps.badge / Expo badge = okunmamış user_notifications.
  * Auth: PUSH_WORKER_SECRET | push_worker_config.cron_secret | service_role | user JWT
  */
 Deno.serve(async (req) => {
@@ -498,21 +545,20 @@ Deno.serve(async (req) => {
       : {};
     const limit = Math.min(Math.max(body.limit ?? 50, 1), 100);
 
-    const { data: pending, error: pendErr } = await admin
-      .from('notification_outbox')
-      .select('id, user_id, title, body, deep_link, payload')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(limit);
+    // Atomik claim — trigger + client worker aynı satırı iki kez göndermesin
+    const { data: claimed, error: claimErr } = await admin.rpc(
+      'notification_outbox_claim',
+      { p_limit: limit },
+    );
 
-    if (pendErr) {
+    if (claimErr) {
       return Response.json(
-        { error: pendErr.message },
+        { error: claimErr.message },
         { status: 500, headers: corsHeaders },
       );
     }
 
-    const rows = (pending as OutboxRow[]) ?? [];
+    const rows = (claimed as OutboxRow[]) ?? [];
     if (rows.length === 0) {
       return Response.json(
         {
@@ -542,8 +588,12 @@ Deno.serve(async (req) => {
 
     const fcmByUser = new Map<string, string[]>();
     const expoByUser = new Map<string, string[]>();
+    const seenToken = new Set<string>();
     for (const t of (tokens as PushTokenRow[]) ?? []) {
       if (!t.push_token) continue;
+      const key = `${t.user_id}:${t.push_token}`;
+      if (seenToken.has(key)) continue;
+      seenToken.add(key);
       if (t.push_provider === 'fcm') {
         const list = fcmByUser.get(t.user_id) ?? [];
         list.push(t.push_token);
@@ -568,7 +618,13 @@ Deno.serve(async (req) => {
       async (row): Promise<RowSonuc> => {
         const uid = row.user_id;
         const fcmTargets = uid ? fcmByUser.get(uid) ?? [] : [];
-        const expoTargets = uid ? expoByUser.get(uid) ?? [] : [];
+        // FCM varsa Expo atla — Android'de aynı cihaza çift kanal gidebiliyordu
+        const expoTargets =
+          fcmTargets.length > 0
+            ? []
+            : uid
+              ? expoByUser.get(uid) ?? []
+              : [];
         const badge = uid ? unreadByUser.get(uid) ?? 1 : 1;
         const data = dataStringMap(row.deep_link, row.id, row.payload, badge);
 
@@ -583,7 +639,8 @@ Deno.serve(async (req) => {
                 worker_error: 'no_push_token',
               },
             })
-            .eq('id', row.id);
+            .eq('id', row.id)
+            .eq('status', 'processing');
           return { sent: false, fcm: 0, expo: 0 };
         }
 
@@ -592,18 +649,30 @@ Deno.serve(async (req) => {
         let rowFcm = 0;
         let rowExpo = 0;
         const isMesaj = mesajBildirimiMi(row.deep_link, row.payload);
+        const isArama = aramaBildirimiMi(row.deep_link, row.payload);
+        const categoryId = isArama
+          ? undefined
+          : kategoriIdAl(row.deep_link, row.payload);
+        const threadId =
+          typeof row.payload?.thread_id === 'string'
+            ? row.payload.thread_id
+            : undefined;
+        if (categoryId) data.categoryId = categoryId;
         const pushOpts: PushOpts = {
-          ...(isMesaj
-            ? { channelId: MESAJ_KANAL, sound: MESAJ_SESI }
-            : { channelId: 'genel', sound: 'default' }),
+          ...(isArama
+            ? { channelId: ARAMA_KANAL, sound: ARAMA_SESI }
+            : isMesaj
+              ? { channelId: MESAJ_KANAL, sound: MESAJ_SESI }
+              : { channelId: 'genel', sound: 'default' }),
           badge,
+          ...(categoryId ? { categoryId } : {}),
+          ...(threadId ? { threadId } : {}),
         };
 
         if (fcmTargets.length > 0) {
           if (!firebaseSa) {
             errors.push('fcm_no_service_account');
           } else {
-            // Token'lar kullanıcı başına sınırlı — sıralı yeterli
             for (const tok of fcmTargets) {
               const r = await fcmGonder(
                 firebaseSa,
@@ -649,7 +718,8 @@ Deno.serve(async (req) => {
               status: 'sent',
               processed_at: new Date().toISOString(),
             })
-            .eq('id', row.id);
+            .eq('id', row.id)
+            .eq('status', 'processing');
           return { sent: true, fcm: rowFcm, expo: rowExpo };
         }
 
@@ -663,7 +733,8 @@ Deno.serve(async (req) => {
               worker_error: errors.join(' | ').slice(0, 500) || 'send_failed',
             },
           })
-          .eq('id', row.id);
+          .eq('id', row.id)
+          .eq('status', 'processing');
         return { sent: false, fcm: rowFcm, expo: rowExpo };
       },
     );

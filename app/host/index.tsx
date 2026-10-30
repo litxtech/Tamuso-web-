@@ -1,17 +1,24 @@
-import React, { useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useCeviri } from '../../src/i18n/useCeviri';
-import type { CeviriAnahtari } from '../../src/i18n/useCeviri';
-import { BosDurum } from '../../src/components/BosDurum';
-import { TextField } from '../../src/components/TextField';
-import { GradientButton } from '../../src/components/GradientButton';
-import { KlavyeKapatan } from '../../src/components/KlavyeKapatan';
-import { KlavyeScrollView } from '../../src/bilesenler/klavye/KlavyeScrollView';
+import {
+  KlavyeScrollView,
+  type KlavyeScrollHandle,
+} from '../../src/bilesenler/klavye/KlavyeScrollView';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import {
@@ -21,66 +28,47 @@ import {
 import {
   HostBasvurularimiGetir,
   HostProfilimiGetir,
+  type HostBasvurusu,
   type HostProfil,
 } from '../../src/moduller/hostlar/okuma/HostProfiliniGetir';
+import {
+  BekleyenAjansBasvurusu,
+  HostAsamasiBul,
+} from '../../src/moduller/hostlar/yardimcilar/HostAsamasi';
+import { HostHeroKarti } from '../../src/moduller/hostlar/bilesenler/HostHeroKarti';
+import { HostFaydaListesi } from '../../src/moduller/hostlar/bilesenler/HostFaydaListesi';
+import { HostYolSecimi } from '../../src/moduller/hostlar/bilesenler/HostYolSecimi';
+import { HostPaneli } from '../../src/moduller/hostlar/bilesenler/HostPaneli';
+import { HostBasvuruGecmisi } from '../../src/moduller/hostlar/bilesenler/HostBasvuruGecmisi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
   BoslukTokenlari,
+  screenPaddingHorizontal,
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 
-type CevirFn = (key: CeviriAnahtari, opts?: Record<string, unknown>) => string;
-
-function hostDurum(status: string, t: CevirFn) {
-  const map: Record<string, CeviriAnahtari> = {
-    pending: 'host.durumIncelemede',
-    active: 'host.durumAktif',
-    suspended: 'host.durumAskida',
-    rejected: 'host.durumReddedildi',
-  };
-  const key = map[status];
-  return key ? t(key) : status;
-}
-
-function basvuruYol(path: string, t: CevirFn) {
-  const map: Record<string, CeviriAnahtari> = {
-    independent: 'host.yolBagimsiz',
-    join_agency: 'host.yolAjans',
-  };
-  const key = map[path];
-  return key ? t(key) : path;
-}
-
-function basvuruDurum(status: string, t: CevirFn) {
-  const map: Record<string, CeviriAnahtari> = {
-    pending: 'host.appBeklemede',
-    agency_review: 'host.appAjans',
-    platform_review: 'host.appPlatform',
-    approved: 'host.appOnaylandi',
-    rejected: 'host.appReddedildi',
-  };
-  const key = map[status];
-  return key ? t(key) : status;
-}
-
 export default function HostEkrani() {
   const { t } = useCeviri();
-  const { isGuest, refreshProfile, refreshWallet, profile } = useAuth();
+  const { isGuest, refreshProfile, profile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
-  const [invite, setInvite] = useState('');
+  const scrollRef = useRef<KlavyeScrollHandle>(null);
   const [host, setHost] = useState<HostProfil | null>(null);
-  const [apps, setApps] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [basvurular, setBasvurular] = useState<HostBasvurusu[]>([]);
+  const [ilkYukleme, setIlkYukleme] = useState(true);
+  const [yenileniyor, setYenileniyor] = useState(false);
+  const [islem, setIslem] = useState<'bagimsiz' | 'ajans' | null>(null);
+  const [davetKodu, setDavetKodu] = useState('');
 
   const load = useCallback(async () => {
-    try {
-      setHost(await HostProfilimiGetir());
-      setApps(await HostBasvurularimiGetir());
-    } catch {
-      setHost(null);
-      setApps([]);
-    }
+    const [h, b] = await Promise.allSettled([
+      HostProfilimiGetir(),
+      HostBasvurularimiGetir(),
+    ]);
+    setHost(h.status === 'fulfilled' ? h.value : null);
+    setBasvurular(b.status === 'fulfilled' ? b.value : []);
+    setIlkYukleme(false);
   }, []);
 
   useFocusEffect(
@@ -89,17 +77,26 @@ export default function HostEkrani() {
     }, [load]),
   );
 
+  const yenile = useCallback(async () => {
+    setYenileniyor(true);
+    await Promise.allSettled([load(), refreshProfile()]);
+    setYenileniyor(false);
+  }, [load, refreshProfile]);
+
+  const asama = HostAsamasiBul(host, Boolean(profile?.is_host));
+  const bekleyenAjans = BekleyenAjansBasvurusu(basvurular);
+
   const bagimsiz = () => {
     islemiDene('canli_ac', async () => {
-      setLoading(true);
+      setIslem('bagimsiz');
       const a = await HostBasvurusuOlustur({ path: 'independent' });
       if (!a.ok) {
-        setLoading(false);
+        setIslem(null);
         Alert.alert(t('host.alertBasvuru'), a.hata);
         return;
       }
       const b = await HostBagimsizAktifEt();
-      setLoading(false);
+      setIslem(null);
       if (!b.ok) {
         Alert.alert(t('host.alertOnay'), b.hata);
         await load();
@@ -113,21 +110,24 @@ export default function HostEkrani() {
 
   const ajansaKatil = () => {
     islemiDene('canli_ac', async () => {
-      if (!invite.trim()) {
+      const kod = davetKodu.trim();
+      if (!kod) {
         Alert.alert(t('host.alertDavetGerekli'));
         return;
       }
-      setLoading(true);
+      setIslem('ajans');
       const sonuc = await HostBasvurusuOlustur({
         path: 'join_agency',
-        inviteCode: invite.trim(),
+        inviteCode: kod,
       });
-      setLoading(false);
+      setIslem(null);
       if (!sonuc.ok) {
         Alert.alert(t('host.alertBasvuru'), sonuc.hata);
         return;
       }
+      setDavetKodu('');
       Alert.alert(t('host.alertGonderildiBaslik'), t('host.alertGonderildiBody'), [
+        { text: t('ortak.tamam') },
         {
           text: t('host.paneleGit'),
           onPress: () => router.push('/ajans/uye' as any),
@@ -137,93 +137,78 @@ export default function HostEkrani() {
     });
   };
 
-  const hostMu = Boolean(profile?.is_host);
-  const durumMetni = host
-    ? hostDurum(host.status, t)
-    : hostMu
-      ? t('host.durumAktif')
-      : t('host.henuzDegil');
+  const yolSecimiModu =
+    bekleyenAjans || asama === 'ajans' || asama === 'askida'
+      ? null
+      : asama === 'bagimsiz'
+        ? 'sadeceAjans'
+        : 'tam';
 
   return (
     <Screen edges={['top']}>
       <ModulHataSiniri modulAdi="hostlar">
         <EkranBasligi title={t('host.baslik')} subtitle={t('host.alt')} />
-        <KlavyeScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.content}
-        >
-          <KlavyeKapatan style={styles.formWrap}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('host.durumun')}</Text>
-            <Text style={styles.statusLine}>
-              {hostMu ? t('host.hesapAktif') : t('host.hesapYok')}
-            </Text>
-            <Text style={styles.cardMeta}>
-              {t('host.profilDurum', { durum: durumMetni })}
-            </Text>
-            {host?.agency_id ? (
-              <GradientButton
-                title={t('host.ajansPaneli')}
-                variant="ghost"
-                onPress={() => router.push('/ajans/uye' as any)}
+        {ilkYukleme ? (
+          <ActivityIndicator color={RenkTokenlari.primarySoft} style={styles.yukleniyor} />
+        ) : (
+          <KlavyeScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+            refreshControl={
+              <RefreshControl
+                refreshing={yenileniyor}
+                onRefresh={() => void yenile()}
+                tintColor={RenkTokenlari.primarySoft}
+                colors={[RenkTokenlari.primary]}
+              />
+            }
+          >
+            <HostHeroKarti asama={asama} basvuruBekliyor={!!bekleyenAjans} />
+
+            {asama === 'askida' ? (
+              <Pressable
+                onPress={() => router.push('/destek' as any)}
+                style={({ pressed }) => [styles.bilgi, pressed && styles.pressed]}
+                accessibilityRole="button"
+              >
+                <Ionicons name="chatbubbles-outline" size={20} color={RenkTokenlari.primarySoft} />
+                <Text style={styles.bilgiBaslik}>{t('host.destegeYaz')}</Text>
+                <Ionicons name="chevron-forward" size={18} color={RenkTokenlari.textDim} />
+              </Pressable>
+            ) : null}
+
+            {bekleyenAjans ? (
+              <View style={[styles.bilgi, styles.bilgiUyari]}>
+                <Ionicons name="hourglass-outline" size={20} color={RenkTokenlari.warning} />
+                <View style={styles.bilgiMetin}>
+                  <Text style={styles.bilgiBaslik}>{t('host.bekleyenAjansBaslik')}</Text>
+                  <Text style={styles.bilgiGovde}>{t('host.bekleyenAjansBody')}</Text>
+                </View>
+              </View>
+            ) : null}
+
+            {asama === 'bagimsiz' || asama === 'ajans' ? (
+              <HostPaneli host={host} ajansHostu={asama === 'ajans'} />
+            ) : null}
+
+            {asama === 'yok' ? <HostFaydaListesi /> : null}
+
+            {yolSecimiModu ? (
+              <HostYolSecimi
+                mod={yolSecimiModu}
+                islem={islem}
+                davetKodu={davetKodu}
+                davetKoduDegisti={setDavetKodu}
+                onBagimsiz={bagimsiz}
+                onAjans={ajansaKatil}
+                scrollRef={scrollRef}
               />
             ) : null}
-            {host ? (
-              <View style={styles.stats}>
-                <View style={styles.stat}>
-                  <Text style={styles.statValue}>
-                    {Math.floor(host.total_live_seconds / 3600)}
-                  </Text>
-                  <Text style={styles.statLabel}>{t('host.saatCanli')}</Text>
-                </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statValue}>{host.gift_income_diamonds}</Text>
-                  <Text style={styles.statLabel}>{t('host.elmas')}</Text>
-                </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statValue}>{host.pk_wins}</Text>
-                  <Text style={styles.statLabel}>{t('host.pkGalibiyet')}</Text>
-                </View>
-              </View>
-            ) : null}
-          </View>
 
-          <GradientButton
-            title={t('host.bagimsizOl')}
-            onPress={bagimsiz}
-            loading={loading}
-          />
-
-          <TextField
-            label={t('host.davetKodu')}
-            value={invite}
-            onChangeText={setInvite}
-            autoCapitalize="characters"
-            placeholder={t('host.phDavet')}
-          />
-          <GradientButton
-            title={t('host.ajansaKatil')}
-            variant="ghost"
-            onPress={ajansaKatil}
-          />
-
-          <Text style={styles.section}>{t('host.basvurular')}</Text>
-          {apps.length === 0 ? (
-            <BosDurum
-              icon="document-text-outline"
-              title={t('host.bosBaslik')}
-              body={t('host.bosBody')}
-            />
-          ) : (
-            apps.map((a) => (
-              <View key={a.id} style={styles.appCard}>
-                <Text style={styles.appTitle}>{basvuruYol(a.path, t)}</Text>
-                <Text style={styles.appMeta}>{basvuruDurum(a.status, t)}</Text>
-              </View>
-            ))
-          )}
-          </KlavyeKapatan>
-        </KlavyeScrollView>
+            <HostBasvuruGecmisi basvurular={basvurular} asama={asama} />
+          </KlavyeScrollView>
+        )}
         <HesabiTamamlaKarti
           visible={upgradeAcik}
           onClose={upgradeKapat}
@@ -238,58 +223,38 @@ export default function HostEkrani() {
 }
 
 const styles = StyleSheet.create({
+  yukleniyor: { marginTop: BoslukTokenlari.xxxl },
   content: {
     flexGrow: 1,
-    paddingHorizontal: BoslukTokenlari.xl,
-    paddingBottom: BoslukTokenlari.xxl,
+    paddingHorizontal: screenPaddingHorizontal,
+    paddingTop: BoslukTokenlari.xs,
+    paddingBottom: BoslukTokenlari.xxxl,
+    gap: BoslukTokenlari.lg,
   },
-  formWrap: {
-    flexGrow: 1,
-    gap: BoslukTokenlari.md,
-  },
-  card: {
-    padding: BoslukTokenlari.lg,
-    borderRadius: YaricapTokenlari.lg,
-    backgroundColor: RenkTokenlari.bgCard,
-    borderWidth: 1,
-    borderColor: RenkTokenlari.border,
-    gap: BoslukTokenlari.sm,
-  },
-  cardTitle: { ...TipografiTokenlari.h2, color: RenkTokenlari.text },
-  statusLine: {
-    ...TipografiTokenlari.body,
-    color: RenkTokenlari.primarySoft,
-    fontWeight: '700',
-  },
-  cardMeta: { ...TipografiTokenlari.caption, color: RenkTokenlari.textMuted },
-  stats: {
+  pressed: { opacity: 0.88 },
+  bilgi: {
     flexDirection: 'row',
-    gap: BoslukTokenlari.sm,
-    marginTop: BoslukTokenlari.sm,
-  },
-  stat: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: BoslukTokenlari.md,
-    borderRadius: YaricapTokenlari.sm,
-    backgroundColor: RenkTokenlari.surface,
-    gap: 2,
-  },
-  statValue: { ...TipografiTokenlari.h2, color: RenkTokenlari.text },
-  statLabel: { ...TipografiTokenlari.micro, color: RenkTokenlari.textDim },
-  section: {
-    ...TipografiTokenlari.h2,
-    color: RenkTokenlari.text,
-    marginTop: BoslukTokenlari.sm,
-  },
-  appCard: {
+    gap: BoslukTokenlari.md,
     padding: BoslukTokenlari.lg,
     borderRadius: YaricapTokenlari.md,
     backgroundColor: RenkTokenlari.bgCard,
     borderWidth: 1,
     borderColor: RenkTokenlari.border,
-    gap: BoslukTokenlari.xs,
   },
-  appTitle: { ...TipografiTokenlari.body, color: RenkTokenlari.text, fontWeight: '600' },
-  appMeta: { ...TipografiTokenlari.caption, color: RenkTokenlari.textMuted },
+  bilgiUyari: {
+    alignItems: 'flex-start',
+    borderColor: `${RenkTokenlari.warning}59`,
+  },
+  bilgiMetin: { flex: 1, gap: 2 },
+  bilgiBaslik: {
+    ...TipografiTokenlari.body,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
+    flex: 1,
+  },
+  bilgiGovde: {
+    ...TipografiTokenlari.caption,
+    color: RenkTokenlari.textMuted,
+  },
 });

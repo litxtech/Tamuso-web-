@@ -1,0 +1,1068 @@
+{
+  "cuzdanY": {
+    "cuzdanim": {
+      "tr": "Cüzdanım",
+      "en": "My Wallet",
+      "es": "Mi billetera",
+      "pt": "Minha carteira",
+      "ar": "محفظتي",
+      "fr": "Mon portefeuille",
+      "fil": "Aking Wallet"
+    },
+    "coin": {
+      "tr": "Coin",
+      "en": "Coins",
+      "es": "Coins",
+      "pt": "Coins",
+      "ar": "Coin",
+      "fr": "Coins",
+      "fil": "Coins"
+    },
+    "coinYukle": {
+      "tr": "Coin Yükle",
+      "en": "Get Coins",
+      "es": "Obtener Coins",
+      "pt": "Obter Coins",
+      "ar": "الحصول على Coin",
+      "fr": "Obtenir des Coins",
+      "fil": "Kumuha ng Coins"
+    },
+    "bolumSatinAlinan": {
+      "tr": "Satın Alınan Coin'ler",
+      "en": "Purchased Coins",
+      "es": "Coins comprados",
+      "pt": "Coins comprados",
+      "ar": "Coin المشتراة",
+      "fr": "Coins achetés",
+      "fil": "Mga Biniling Coin"
+    },
+    "bolumSatinAlinanAlt": {
+      "tr": "Tamuso içerisindeki desteklenen özelliklerde kullanılabilir. Doğrudan nakit olarak çekilemez.",
+      "en": "Can be used for supported features within Tamuso. Cannot be withdrawn as cash.",
+      "es": "Se pueden usar en las funciones compatibles de Tamuso. No se pueden retirar como efectivo.",
+      "pt": "Podem ser usados nos recursos compatíveis do Tamuso. Não podem ser sacados como dinheiro.",
+      "ar": "يمكن استخدامها في الميزات المدعومة داخل Tamuso. لا يمكن سحبها نقدًا.",
+      "fr": "Utilisables pour les fonctionnalités prises en charge dans Tamuso. Ne peuvent pas être retirés en espèces.",
+      "fil": "Magagamit sa mga suportadong feature sa loob ng Tamuso. Hindi maaaring i-withdraw bilang cash."
+    },
+    "bolumOyun": {
+      "tr": "Oyunlardan Kazanılan Coin'ler",
+      "en": "Coins Won in Games",
+      "es": "Coins ganados en juegos",
+      "pt": "Coins ganhos em jogos",
+      "ar": "Coin المكتسبة من الألعاب",
+      "fr": "Coins gagnés dans les jeux",
+      "fil": "Mga Coin na Napanalunan sa Laro"
+    },
+    "bolumOyunAlt": {
+      "tr": "Bu Coin'ler oyun ödülü olarak kazanılmıştır. Doğrudan nakit olarak çekilemez. Uygun sanal hediyeler göndermek için kullanılabilir.",
+      "en": "These Coins were won as game rewards. They cannot be withdrawn as cash. They can be used to send eligible virtual gifts.",
+      "es": "Estos Coins se ganaron como premios de juego. No se pueden retirar como efectivo. Se pueden usar para enviar regalos virtuales elegibles.",
+      "pt": "Estes Coins foram ganhos como prêmios de jogos. Não podem ser sacados como dinheiro. Podem ser usados para enviar presentes virtuais elegíveis.",
+      "ar": "تم ربح هذه الـ Coin كمكافآت ألعاب. لا يمكن سحبها نقدًا. يمكن استخدامها لإرسال هدايا افتراضية مؤهلة.",
+      "fr": "Ces Coins ont été gagnés comme récompenses de jeu. Ils ne peuvent pas être retirés en espèces. Ils peuvent servir à envoyer des cadeaux virtuels éligibles.",
+      "fil": "Ang mga Coin na ito ay napanalunan bilang gantimpala sa laro. Hindi maaaring i-withdraw bilang cash. Magagamit sa pagpapadala ng mga kwalipikadong virtual na regalo."
+    },
+    "odulCoinSatir": {
+      "tr": "Ödül ve promosyon Coin'leri: {{adet}}. Nakde çevrilemez; bu Coin'lerle gönderilen hediyeler gelir oluşturmaz.",
+      "en": "Reward and promotional Coins: {{adet}}. Not convertible to cash; gifts sent with these Coins do not generate earnings.",
+      "es": "Coins de recompensa y promoción: {{adet}}. No convertibles en efectivo; los regalos enviados con ellos no generan ganancias.",
+      "pt": "Coins de recompensa e promoção: {{adet}}. Não conversíveis em dinheiro; presentes enviados com eles não geram ganhos.",
+      "ar": "Coin المكافآت والعروض: {{adet}}. لا يمكن تحويلها إلى نقد، والهدايا المرسلة بها لا تولّد أرباحًا.",
+      "fr": "Coins de récompense et promotionnels : {{adet}}. Non convertibles en espèces ; les cadeaux envoyés avec ces Coins ne génèrent pas de revenus.",
+      "fil": "Mga reward at promo na Coin: {{adet}}. Hindi mapapalitan ng cash; ang mga regalong ipinadala gamit ang mga ito ay hindi lumilikha ng kita."
+    },
+    "bolumYayinci": {
+      "tr": "Yayıncı Kazançları",
+      "en": "Creator Earnings",
+      "es": "Ganancias de creador",
+      "pt": "Ganhos de criador",
+      "ar": "أرباح صانع المحتوى",
+      "fr": "Revenus du créateur",
+      "fil": "Kita ng Creator"
+    },
+    "kazancYuklenemedi": {
+      "tr": "Kazanç bilgileri şu anda yüklenemedi. Daha sonra tekrar deneyin.",
+      "en": "Earnings information could not be loaded right now. Please try again later.",
+      "es": "No se pudo cargar la información de ganancias. Inténtalo más tarde.",
+      "pt": "Não foi possível carregar as informações de ganhos. Tente novamente mais tarde.",
+      "ar": "تعذّر تحميل معلومات الأرباح حاليًا. حاول مرة أخرى لاحقًا.",
+      "fr": "Impossible de charger les informations de revenus pour le moment. Réessayez plus tard.",
+      "fil": "Hindi ma-load ang impormasyon ng kita ngayon. Subukang muli mamaya."
+    },
+    "cekilebilir": {
+      "tr": "Çekilebilir bakiye",
+      "en": "Withdrawable balance",
+      "es": "Saldo retirable",
+      "pt": "Saldo disponível para saque",
+      "ar": "الرصيد القابل للسحب",
+      "fr": "Solde retirable",
+      "fil": "Balanseng maaaring i-withdraw"
+    },
+    "toplamUygunGelir": {
+      "tr": "Toplam paylaşılabilir gelir",
+      "en": "Total shareable revenue",
+      "es": "Ingresos compartibles totales",
+      "pt": "Receita compartilhável total",
+      "ar": "إجمالي الإيرادات القابلة للمشاركة",
+      "fr": "Revenu partageable total",
+      "fil": "Kabuuang naibabahaging kita"
+    },
+    "yayinciPayi": {
+      "tr": "Yayıncı payı (%{{oran}})",
+      "en": "Creator share ({{oran}}%)",
+      "es": "Parte del creador ({{oran}} %)",
+      "pt": "Parte do criador ({{oran}}%)",
+      "ar": "حصة صانع المحتوى ({{oran}}%)",
+      "fr": "Part du créateur ({{oran}} %)",
+      "fil": "Bahagi ng creator ({{oran}}%)"
+    },
+    "bekleyen": {
+      "tr": "Bekleyen",
+      "en": "Pending",
+      "es": "Pendiente",
+      "pt": "Pendente",
+      "ar": "قيد الانتظار",
+      "fr": "En attente",
+      "fil": "Nakabinbin"
+    },
+    "odemede": {
+      "tr": "Ödeme sürecinde",
+      "en": "In payout",
+      "es": "En proceso de pago",
+      "pt": "Em pagamento",
+      "ar": "قيد الدفع",
+      "fr": "En cours de paiement",
+      "fil": "Pinoproseso ang bayad"
+    },
+    "tamamlanan": {
+      "tr": "Tamamlanan ödemeler",
+      "en": "Completed payouts",
+      "es": "Pagos completados",
+      "pt": "Pagamentos concluídos",
+      "ar": "المدفوعات المكتملة",
+      "fr": "Paiements effectués",
+      "fil": "Mga nakumpletong bayad"
+    },
+    "cekimKullanilamiyor": {
+      "tr": "Para çekme işlemleri şu anda kullanılamıyor",
+      "en": "Withdrawals are currently unavailable",
+      "es": "Los retiros no están disponibles en este momento",
+      "pt": "Os saques estão indisponíveis no momento",
+      "ar": "عمليات السحب غير متاحة حاليًا",
+      "fr": "Les retraits sont actuellement indisponibles",
+      "fil": "Kasalukuyang hindi available ang pag-withdraw"
+    },
+    "gelirMetni": {
+      "tr": "Uygun sanal hediyelerden elde edilen paylaşılabilir gelirin %40'ı içerik üreticisine, %60'ı Tamuso platformuna aittir. Kazançlar, geçerli ödeme ve gelir paylaşım koşullarına göre hesaplanır.",
+      "en": "40% of the shareable revenue from eligible virtual gifts belongs to the creator and 60% to the Tamuso platform. Earnings are calculated under the applicable payout and revenue-sharing terms.",
+      "es": "El 40 % de los ingresos compartibles de los regalos virtuales elegibles corresponde al creador y el 60 % a la plataforma Tamuso. Las ganancias se calculan según los términos de pago y reparto de ingresos vigentes.",
+      "pt": "40% da receita compartilhável de presentes virtuais elegíveis pertence ao criador e 60% à plataforma Tamuso. Os ganhos são calculados conforme os termos de pagamento e de compartilhamento de receita vigentes.",
+      "ar": "40% من الإيرادات القابلة للمشاركة من الهدايا الافتراضية المؤهلة تعود لصانع المحتوى و60% لمنصة Tamuso. تُحسب الأرباح وفق شروط الدفع ومشاركة الإيرادات السارية.",
+      "fr": "40 % du revenu partageable issu des cadeaux virtuels éligibles revient au créateur et 60 % à la plateforme Tamuso. Les revenus sont calculés selon les conditions de paiement et de partage des revenus en vigueur.",
+      "fil": "40% ng naibabahaging kita mula sa mga kwalipikadong virtual na regalo ay para sa creator at 60% ay para sa Tamuso platform. Kinakalkula ang kita ayon sa umiiral na mga tuntunin sa bayad at hatian ng kita."
+    },
+    "kazancDetaylari": {
+      "tr": "Kazanç detayları ve ödemeler",
+      "en": "Earnings details and payouts",
+      "es": "Detalles de ganancias y pagos",
+      "pt": "Detalhes de ganhos e pagamentos",
+      "ar": "تفاصيل الأرباح والمدفوعات",
+      "fr": "Détails des revenus et paiements",
+      "fil": "Detalye ng kita at mga bayad"
+    },
+    "onemliBilgiler": {
+      "tr": "Önemli bilgiler",
+      "en": "Important information",
+      "es": "Información importante",
+      "pt": "Informações importantes",
+      "ar": "معلومات مهمة",
+      "fr": "Informations importantes",
+      "fil": "Mahalagang impormasyon"
+    },
+    "metinCoin": {
+      "tr": "Coin'ler Tamuso içerisinde kullanılan sanal varlıklardır. Doğrudan nakde çevrilemez.",
+      "en": "Coins are virtual items used within Tamuso. They cannot be directly converted into cash.",
+      "es": "Los Coins son elementos virtuales que se usan dentro de Tamuso. No se pueden convertir directamente en efectivo.",
+      "pt": "Coins são itens virtuais usados dentro do Tamuso. Não podem ser convertidos diretamente em dinheiro.",
+      "ar": "الـ Coin عناصر افتراضية تُستخدم داخل Tamuso. لا يمكن تحويلها مباشرة إلى نقد.",
+      "fr": "Les Coins sont des éléments virtuels utilisés dans Tamuso. Ils ne peuvent pas être convertis directement en espèces.",
+      "fil": "Ang mga Coin ay mga virtual na item na ginagamit sa loob ng Tamuso. Hindi ito direktang mapapalitan ng cash."
+    },
+    "metinOyunCoin": {
+      "tr": "Oyunlardan kazandığın Coin'ler doğrudan nakit olarak çekilemez. Bu Coin'leri desteklenen sanal hediyeler için kullanabilirsin. Oyun Coin'leriyle gönderilen hediyeler alıcıya çekilebilir gelir oluşturmaz.",
+      "en": "Coins you win in games cannot be withdrawn as cash. You can use these Coins for supported virtual gifts. Gifts sent with game Coins do not create withdrawable earnings for the recipient.",
+      "es": "Los Coins que ganas en juegos no se pueden retirar como efectivo. Puedes usarlos para regalos virtuales compatibles. Los regalos enviados con Coins de juego no generan ganancias retirables para quien los recibe.",
+      "pt": "Os Coins que você ganha em jogos não podem ser sacados como dinheiro. Você pode usá-los em presentes virtuais compatíveis. Presentes enviados com Coins de jogos não geram ganhos sacáveis para quem recebe.",
+      "ar": "لا يمكن سحب الـ Coin التي تربحها من الألعاب نقدًا. يمكنك استخدامها للهدايا الافتراضية المدعومة. الهدايا المرسلة بـ Coin الألعاب لا تولّد أرباحًا قابلة للسحب للمستلم.",
+      "fr": "Les Coins gagnés dans les jeux ne peuvent pas être retirés en espèces. Vous pouvez les utiliser pour les cadeaux virtuels pris en charge. Les cadeaux envoyés avec des Coins de jeu ne génèrent pas de revenus retirables pour le destinataire.",
+      "fil": "Ang mga Coin na napanalunan mo sa laro ay hindi maaaring i-withdraw bilang cash. Magagamit mo ang mga ito sa mga suportadong virtual na regalo. Ang mga regalong ipinadala gamit ang game Coin ay hindi lumilikha ng maaaring i-withdraw na kita para sa tatanggap."
+    },
+    "metinYayinci": {
+      "tr": "Uygun hediyelerden elde edilen paylaşılabilir gelirin %40'ı içerik üreticisine, %60'ı Tamuso platformuna aittir.",
+      "en": "40% of the shareable revenue from eligible gifts belongs to the creator and 60% to the Tamuso platform.",
+      "es": "El 40 % de los ingresos compartibles de los regalos elegibles corresponde al creador y el 60 % a la plataforma Tamuso.",
+      "pt": "40% da receita compartilhável de presentes elegíveis pertence ao criador e 60% à plataforma Tamuso.",
+      "ar": "40% من الإيرادات القابلة للمشاركة من الهدايا المؤهلة تعود لصانع المحتوى و60% لمنصة Tamuso.",
+      "fr": "40 % du revenu partageable issu des cadeaux éligibles revient au créateur et 60 % à la plateforme Tamuso.",
+      "fil": "40% ng naibabahaging kita mula sa mga kwalipikadong regalo ay para sa creator at 60% ay para sa Tamuso platform."
+    },
+    "metinOdeme": {
+      "tr": "Minimum ödeme tutarı $25.00'dır. Uygun kazançlar 15 günlük dönemlerde işleme alınır. Banka transfer süresi ödeme yöntemine ve ülkeye göre değişebilir.",
+      "en": "The minimum payout amount is $25.00. Eligible earnings are processed in 15-day periods. Bank transfer times may vary by payment method and country.",
+      "es": "El importe mínimo de pago es de $25.00. Las ganancias elegibles se procesan en periodos de 15 días. El plazo de la transferencia bancaria puede variar según el método de pago y el país.",
+      "pt": "O valor mínimo de pagamento é US$ 25,00. Os ganhos elegíveis são processados em períodos de 15 dias. O prazo da transferência bancária pode variar conforme o método de pagamento e o país.",
+      "ar": "الحد الأدنى لمبلغ الدفع هو 25.00 دولارًا. تُعالج الأرباح المؤهلة في فترات مدتها 15 يومًا. قد تختلف مدة التحويل البنكي حسب طريقة الدفع والبلد.",
+      "fr": "Le montant minimum de paiement est de 25,00 $. Les revenus éligibles sont traités par périodes de 15 jours. Le délai du virement bancaire peut varier selon le mode de paiement et le pays.",
+      "fil": "Ang minimum na halaga ng bayad ay $25.00. Pinoproseso ang mga kwalipikadong kita sa bawat 15 araw. Maaaring mag-iba ang tagal ng bank transfer ayon sa paraan ng pagbabayad at bansa."
+    },
+    "metinGuvenlik": {
+      "tr": "Şüpheli işlemler güvenlik incelemesine alınabilir. Dolandırıcılık, izinsiz ödeme yöntemi kullanımı, yapay hediye işlemleri ve kara para aklama faaliyetleri yasaktır. Doğrulanan ciddi ihlallerde hesaplar kalıcı olarak kapatılabilir ve hukuken gerekli durumlarda yetkili mercilere bildirim yapılabilir.",
+      "en": "Suspicious transactions may be placed under security review. Fraud, unauthorized use of payment methods, artificial gift transactions and money laundering are prohibited. Accounts may be permanently closed for verified serious violations, and reports may be made to the competent authorities where legally required.",
+      "es": "Las transacciones sospechosas pueden someterse a revisión de seguridad. Están prohibidos el fraude, el uso no autorizado de métodos de pago, las transacciones artificiales de regalos y el blanqueo de capitales. Las cuentas pueden cerrarse de forma permanente ante infracciones graves verificadas y, cuando la ley lo exija, se podrá informar a las autoridades competentes.",
+      "pt": "Transações suspeitas podem passar por análise de segurança. Fraude, uso não autorizado de meios de pagamento, transações artificiais de presentes e lavagem de dinheiro são proibidos. Contas podem ser encerradas permanentemente em caso de violações graves verificadas e, quando exigido por lei, as autoridades competentes podem ser notificadas.",
+      "ar": "قد تخضع المعاملات المشبوهة لمراجعة أمنية. يُحظر الاحتيال واستخدام وسائل الدفع دون إذن ومعاملات الهدايا المصطنعة وغسل الأموال. قد تُغلق الحسابات نهائيًا عند ثبوت مخالفات جسيمة، وقد يتم إبلاغ الجهات المختصة عندما يقتضي القانون ذلك.",
+      "fr": "Les transactions suspectes peuvent faire l'objet d'un examen de sécurité. La fraude, l'utilisation non autorisée de moyens de paiement, les transactions de cadeaux artificielles et le blanchiment d'argent sont interdits. Les comptes peuvent être fermés définitivement en cas d'infraction grave avérée et un signalement peut être fait aux autorités compétentes lorsque la loi l'exige.",
+      "fil": "Maaaring isailalim sa security review ang mga kahina-hinalang transaksyon. Ipinagbabawal ang panloloko, hindi awtorisadong paggamit ng paraan ng pagbabayad, artipisyal na transaksyon ng regalo at money laundering. Maaaring permanenteng isara ang mga account sa napatunayang malubhang paglabag, at maaaring iulat sa mga awtoridad kapag kinakailangan ng batas."
+    },
+    "iosYalnizAppStoreBaslik": {
+      "tr": "Coin'ler App Store üzerinden satın alınır",
+      "en": "Coins are purchased through the App Store",
+      "es": "Los Coins se compran a través de la App Store",
+      "pt": "Os Coins são comprados pela App Store",
+      "ar": "يتم شراء الـ Coin عبر App Store",
+      "fr": "Les Coins s'achètent via l'App Store",
+      "fil": "Binibili ang mga Coin sa App Store"
+    },
+    "iosYalnizAppStore": {
+      "tr": "Bu cihazda Coin satın alımları yalnızca App Store uygulama içi satın alma ile yapılır.",
+      "en": "On this device, Coins can only be purchased with App Store in-app purchase.",
+      "es": "En este dispositivo, los Coins solo se pueden comprar mediante compras dentro de la app de la App Store.",
+      "pt": "Neste dispositivo, os Coins só podem ser comprados por compra no app da App Store.",
+      "ar": "على هذا الجهاز، يمكن شراء الـ Coin فقط عبر الشراء داخل التطبيق من App Store.",
+      "fr": "Sur cet appareil, les Coins ne peuvent être achetés que par achat intégré via l'App Store.",
+      "fil": "Sa device na ito, mabibili lamang ang mga Coin sa pamamagitan ng in-app purchase ng App Store."
+    },
+    "cuzdanaGit": {
+      "tr": "Cüzdanıma git",
+      "en": "Go to My Wallet",
+      "es": "Ir a Mi billetera",
+      "pt": "Ir para Minha carteira",
+      "ar": "الانتقال إلى محفظتي",
+      "fr": "Aller à Mon portefeuille",
+      "fil": "Pumunta sa Aking Wallet"
+    },
+    "ajansTeklifIosBaslik": {
+      "tr": "Ajans paket teklifi",
+      "en": "Agency package offer",
+      "es": "Oferta de paquete de agencia",
+      "pt": "Oferta de pacote da agência",
+      "ar": "عرض باقة الوكالة",
+      "fr": "Offre de forfait d'agence",
+      "fil": "Alok na package ng ahensya"
+    },
+    "kaynakSatinAlinan": {
+      "tr": "Satın alınan",
+      "en": "Purchased",
+      "es": "Comprados",
+      "pt": "Comprados",
+      "ar": "مشتراة",
+      "fr": "Achetés",
+      "fil": "Binili"
+    },
+    "kaynakOyun": {
+      "tr": "Oyun Coin'i",
+      "en": "Game Coins",
+      "es": "Coins de juego",
+      "pt": "Coins de jogo",
+      "ar": "Coin الألعاب",
+      "fr": "Coins de jeu",
+      "fil": "Game Coin"
+    },
+    "kaynakOdul": {
+      "tr": "Ödül Coin'i",
+      "en": "Reward Coins",
+      "es": "Coins de recompensa",
+      "pt": "Coins de recompensa",
+      "ar": "Coin المكافآت",
+      "fr": "Coins de récompense",
+      "fil": "Reward Coin"
+    },
+    "hediyeNotSatinAlinan": {
+      "tr": "Satın alınan Coin'lerle gönderilen uygun hediyeler alıcı için paylaşılabilir gelir oluşturabilir.",
+      "en": "Eligible gifts sent with purchased Coins may generate shareable revenue for the recipient.",
+      "es": "Los regalos elegibles enviados con Coins comprados pueden generar ingresos compartibles para quien los recibe.",
+      "pt": "Presentes elegíveis enviados com Coins comprados podem gerar receita compartilhável para quem recebe.",
+      "ar": "قد تولّد الهدايا المؤهلة المرسلة بـ Coin مشتراة إيرادات قابلة للمشاركة للمستلم.",
+      "fr": "Les cadeaux éligibles envoyés avec des Coins achetés peuvent générer un revenu partageable pour le destinataire.",
+      "fil": "Ang mga kwalipikadong regalong ipinadala gamit ang biniling Coin ay maaaring lumikha ng naibabahaging kita para sa tatanggap."
+    },
+    "hediyeNotGelirYok": {
+      "tr": "Oyun Coin'leriyle veya ödül Coin'leriyle gönderilen hediyeler alıcıya çekilebilir gelir oluşturmaz.",
+      "en": "Gifts sent with game Coins or reward Coins do not create withdrawable earnings for the recipient.",
+      "es": "Los regalos enviados con Coins de juego o de recompensa no generan ganancias retirables para quien los recibe.",
+      "pt": "Presentes enviados com Coins de jogo ou de recompensa não geram ganhos sacáveis para quem recebe.",
+      "ar": "الهدايا المرسلة بـ Coin الألعاب أو المكافآت لا تولّد أرباحًا قابلة للسحب للمستلم.",
+      "fr": "Les cadeaux envoyés avec des Coins de jeu ou de récompense ne génèrent pas de revenus retirables pour le destinataire.",
+      "fil": "Ang mga regalong ipinadala gamit ang game Coin o reward Coin ay hindi lumilikha ng maaaring i-withdraw na kita para sa tatanggap."
+    },
+    "kaynakYetersiz": {
+      "tr": "Seçilen bakiyede yeterli Coin yok. Başka bir bakiye seçebilirsin.",
+      "en": "The selected balance does not have enough Coins. You can choose another balance.",
+      "es": "El saldo seleccionado no tiene suficientes Coins. Puedes elegir otro saldo.",
+      "pt": "O saldo selecionado não tem Coins suficientes. Você pode escolher outro saldo.",
+      "ar": "الرصيد المحدد لا يحتوي على Coin كافية. يمكنك اختيار رصيد آخر.",
+      "fr": "Le solde sélectionné ne contient pas assez de Coins. Vous pouvez choisir un autre solde.",
+      "fil": "Kulang ang Coin sa napiling balanse. Maaari kang pumili ng ibang balanse."
+    },
+    "hediyeGeliriBilgi": {
+      "tr": "Gelir payı Yayıncı Kazançları bölümünde gösterilir.",
+      "en": "Your revenue share is shown under Creator Earnings.",
+      "es": "Tu parte de los ingresos se muestra en Ganancias de creador.",
+      "pt": "Sua parte da receita aparece em Ganhos de criador.",
+      "ar": "تظهر حصتك من الإيرادات في قسم أرباح صانع المحتوى.",
+      "fr": "Votre part des revenus apparaît dans Revenus du créateur.",
+      "fil": "Makikita ang iyong bahagi ng kita sa Kita ng Creator."
+    },
+    "hataAcikTalep": {
+      "tr": "Açık bir ödeme talebin zaten var.",
+      "en": "You already have an open payout request.",
+      "es": "Ya tienes una solicitud de pago abierta.",
+      "pt": "Você já tem uma solicitação de pagamento aberta.",
+      "ar": "لديك بالفعل طلب دفع مفتوح.",
+      "fr": "Vous avez déjà une demande de paiement en cours.",
+      "fil": "Mayroon ka nang bukas na kahilingan sa bayad."
+    },
+    "hataKyc": {
+      "tr": "Ödeme talebi için kimlik doğrulamanın onaylanmış olması gerekir.",
+      "en": "Your identity verification must be approved before requesting a payout.",
+      "es": "Tu verificación de identidad debe estar aprobada para solicitar un pago.",
+      "pt": "Sua verificação de identidade precisa estar aprovada para solicitar um pagamento.",
+      "ar": "يجب اعتماد التحقق من هويتك قبل طلب الدفع.",
+      "fr": "Votre vérification d'identité doit être approuvée avant de demander un paiement.",
+      "fil": "Kailangang aprubado ang iyong identity verification bago humiling ng bayad."
+    },
+    "hataBanka": {
+      "tr": "Ödeme talebi için banka hesabı bilgilerini eklemelisin.",
+      "en": "Add your bank account details before requesting a payout.",
+      "es": "Añade los datos de tu cuenta bancaria antes de solicitar un pago.",
+      "pt": "Adicione os dados da sua conta bancária antes de solicitar um pagamento.",
+      "ar": "أضف بيانات حسابك البنكي قبل طلب الدفع.",
+      "fr": "Ajoutez vos coordonnées bancaires avant de demander un paiement.",
+      "fil": "Idagdag ang detalye ng iyong bank account bago humiling ng bayad."
+    },
+    "hataGuvenlik": {
+      "tr": "Hesabın güvenlik incelemesinde. İnceleme tamamlanana kadar ödeme talebi oluşturulamaz.",
+      "en": "Your account is under security review. Payout requests are unavailable until the review is complete.",
+      "es": "Tu cuenta está en revisión de seguridad. No puedes solicitar pagos hasta que termine la revisión.",
+      "pt": "Sua conta está em análise de segurança. Não é possível solicitar pagamentos até a análise terminar.",
+      "ar": "حسابك قيد المراجعة الأمنية. لا يمكن إنشاء طلب دفع حتى تكتمل المراجعة.",
+      "fr": "Votre compte fait l'objet d'un examen de sécurité. Les demandes de paiement sont indisponibles jusqu'à la fin de l'examen.",
+      "fil": "Nasa security review ang iyong account. Hindi ka makakahiling ng bayad hangga't hindi tapos ang review."
+    },
+    "hataMinimum": {
+      "tr": "Çekilebilir bakiye minimum ödeme tutarı olan $25.00'ın altında. Bakiye sonraki döneme devreder.",
+      "en": "Your withdrawable balance is below the $25.00 minimum payout. It carries over to the next period.",
+      "es": "Tu saldo retirable es inferior al pago mínimo de $25.00. Se traslada al siguiente periodo.",
+      "pt": "Seu saldo disponível está abaixo do pagamento mínimo de US$ 25,00. Ele passa para o próximo período.",
+      "ar": "رصيدك القابل للسحب أقل من الحد الأدنى للدفع البالغ 25.00 دولارًا. يُرحّل إلى الفترة التالية.",
+      "fr": "Votre solde retirable est inférieur au paiement minimum de 25,00 $. Il est reporté à la période suivante.",
+      "fil": "Mas mababa sa $25.00 na minimum na bayad ang iyong balanseng maaaring i-withdraw. Malilipat ito sa susunod na panahon."
+    },
+    "hataIptal": {
+      "tr": "Bu talep artık iptal edilemez.",
+      "en": "This request can no longer be cancelled.",
+      "es": "Esta solicitud ya no se puede cancelar.",
+      "pt": "Esta solicitação não pode mais ser cancelada.",
+      "ar": "لم يعد بالإمكان إلغاء هذا الطلب.",
+      "fr": "Cette demande ne peut plus être annulée.",
+      "fil": "Hindi na maaaring kanselahin ang kahilingang ito."
+    },
+    "hataGenel": {
+      "tr": "İşlem tamamlanamadı. Daha sonra tekrar deneyin.",
+      "en": "The action could not be completed. Please try again later.",
+      "es": "No se pudo completar la acción. Inténtalo más tarde.",
+      "pt": "Não foi possível concluir a ação. Tente novamente mais tarde.",
+      "ar": "تعذّر إكمال العملية. حاول مرة أخرى لاحقًا.",
+      "fr": "L'action n'a pas pu être effectuée. Réessayez plus tard.",
+      "fil": "Hindi natapos ang aksyon. Subukang muli mamaya."
+    },
+    "odemeBekliyor": {
+      "tr": "Bekliyor",
+      "en": "Pending",
+      "es": "Pendiente",
+      "pt": "Pendente",
+      "ar": "قيد الانتظار",
+      "fr": "En attente",
+      "fil": "Nakabinbin"
+    },
+    "odemeInceleniyor": {
+      "tr": "İnceleniyor",
+      "en": "Under review",
+      "es": "En revisión",
+      "pt": "Em análise",
+      "ar": "قيد المراجعة",
+      "fr": "En cours d'examen",
+      "fil": "Sinusuri"
+    },
+    "odemeOnaylandi": {
+      "tr": "Onaylandı",
+      "en": "Approved",
+      "es": "Aprobado",
+      "pt": "Aprovado",
+      "ar": "تمت الموافقة",
+      "fr": "Approuvé",
+      "fil": "Naaprubahan"
+    },
+    "odemeBankayaGonderildi": {
+      "tr": "Bankaya Gönderildi",
+      "en": "Sent to bank",
+      "es": "Enviado al banco",
+      "pt": "Enviado ao banco",
+      "ar": "أُرسل إلى البنك",
+      "fr": "Envoyé à la banque",
+      "fil": "Naipadala sa bangko"
+    },
+    "odemeTamamlandi": {
+      "tr": "Tamamlandı",
+      "en": "Completed",
+      "es": "Completado",
+      "pt": "Concluído",
+      "ar": "مكتمل",
+      "fr": "Terminé",
+      "fil": "Nakumpleto"
+    },
+    "odemeBasarisiz": {
+      "tr": "Başarısız",
+      "en": "Failed",
+      "es": "Fallido",
+      "pt": "Falhou",
+      "ar": "فشل",
+      "fr": "Échoué",
+      "fil": "Nabigo"
+    },
+    "odemeIptal": {
+      "tr": "İptal edildi",
+      "en": "Cancelled",
+      "es": "Cancelado",
+      "pt": "Cancelado",
+      "ar": "أُلغي",
+      "fr": "Annulé",
+      "fil": "Kinansela"
+    },
+    "odemeGuvenlikIncelemesi": {
+      "tr": "Güvenlik incelemesinde",
+      "en": "Under security review",
+      "es": "En revisión de seguridad",
+      "pt": "Em análise de segurança",
+      "ar": "قيد المراجعة الأمنية",
+      "fr": "Examen de sécurité en cours",
+      "fil": "Nasa security review"
+    },
+    "kazancUygunDegil": {
+      "tr": "Paylaşılabilir gelir oluşturmaz",
+      "en": "Does not generate shareable revenue",
+      "es": "No genera ingresos compartibles",
+      "pt": "Não gera receita compartilhável",
+      "ar": "لا يولّد إيرادات قابلة للمشاركة",
+      "fr": "Ne génère pas de revenu partageable",
+      "fil": "Hindi lumilikha ng naibabahaging kita"
+    },
+    "kazancOdendi": {
+      "tr": "Ödendi",
+      "en": "Paid",
+      "es": "Pagado",
+      "pt": "Pago",
+      "ar": "مدفوع",
+      "fr": "Payé",
+      "fil": "Bayad na"
+    },
+    "kazancOdemede": {
+      "tr": "Ödeme sürecinde",
+      "en": "In payout",
+      "es": "En proceso de pago",
+      "pt": "Em pagamento",
+      "ar": "قيد الدفع",
+      "fr": "En cours de paiement",
+      "fil": "Pinoproseso ang bayad"
+    },
+    "kazancBeklemede": {
+      "tr": "Güvenlik incelemesinde",
+      "en": "Under security review",
+      "es": "En revisión de seguridad",
+      "pt": "Em análise de segurança",
+      "ar": "قيد المراجعة الأمنية",
+      "fr": "Examen de sécurité en cours",
+      "fil": "Nasa security review"
+    },
+    "kazancDonemSurecek": {
+      "tr": "Dönem devam ediyor",
+      "en": "Period in progress",
+      "es": "Periodo en curso",
+      "pt": "Período em andamento",
+      "ar": "الفترة جارية",
+      "fr": "Période en cours",
+      "fil": "Kasalukuyang panahon"
+    },
+    "kazancCekilebilir": {
+      "tr": "Çekilebilir",
+      "en": "Withdrawable",
+      "es": "Retirable",
+      "pt": "Disponível para saque",
+      "ar": "قابل للسحب",
+      "fr": "Retirable",
+      "fil": "Maaaring i-withdraw"
+    },
+    "kanalCanli": {
+      "tr": "Canlı yayın",
+      "en": "Live stream",
+      "es": "Transmisión en vivo",
+      "pt": "Transmissão ao vivo",
+      "ar": "البث المباشر",
+      "fr": "Live",
+      "fil": "Live stream"
+    },
+    "kanalSesliOda": {
+      "tr": "Sesli oda",
+      "en": "Voice room",
+      "es": "Sala de voz",
+      "pt": "Sala de voz",
+      "ar": "غرفة صوتية",
+      "fr": "Salon vocal",
+      "fil": "Voice room"
+    },
+    "kanalGonderi": {
+      "tr": "Gönderi",
+      "en": "Post",
+      "es": "Publicación",
+      "pt": "Publicação",
+      "ar": "منشور",
+      "fr": "Publication",
+      "fil": "Post"
+    },
+    "kanalMesaj": {
+      "tr": "Mesaj",
+      "en": "Message",
+      "es": "Mensaje",
+      "pt": "Mensagem",
+      "ar": "رسالة",
+      "fr": "Message",
+      "fil": "Mensahe"
+    },
+    "kanalGorusme": {
+      "tr": "Sesli/görüntülü görüşme",
+      "en": "Voice/video call",
+      "es": "Llamada de voz/video",
+      "pt": "Chamada de voz/vídeo",
+      "ar": "مكالمة صوتية/مرئية",
+      "fr": "Appel audio/vidéo",
+      "fil": "Voice/video call"
+    },
+    "kanalDiger": {
+      "tr": "Diğer",
+      "en": "Other",
+      "es": "Otro",
+      "pt": "Outro",
+      "ar": "أخرى",
+      "fr": "Autre",
+      "fil": "Iba pa"
+    },
+    "nedenOyunCoin": {
+      "tr": "Oyun Coin'leriyle gönderildiği için gelir oluşturmaz.",
+      "en": "Sent with game Coins, so it does not generate earnings.",
+      "es": "Enviado con Coins de juego, por lo que no genera ganancias.",
+      "pt": "Enviado com Coins de jogo, por isso não gera ganhos.",
+      "ar": "أُرسل بـ Coin الألعاب، لذلك لا يولّد أرباحًا.",
+      "fr": "Envoyé avec des Coins de jeu : ne génère pas de revenus.",
+      "fil": "Ipinadala gamit ang game Coin, kaya hindi lumilikha ng kita."
+    },
+    "nedenOdulCoin": {
+      "tr": "Ödül Coin'leriyle gönderildiği için gelir oluşturmaz.",
+      "en": "Sent with reward Coins, so it does not generate earnings.",
+      "es": "Enviado con Coins de recompensa, por lo que no genera ganancias.",
+      "pt": "Enviado com Coins de recompensa, por isso não gera ganhos.",
+      "ar": "أُرسل بـ Coin المكافآت، لذلك لا يولّد أرباحًا.",
+      "fr": "Envoyé avec des Coins de récompense : ne génère pas de revenus.",
+      "fil": "Ipinadala gamit ang reward Coin, kaya hindi lumilikha ng kita."
+    },
+    "nedenKendine": {
+      "tr": "Kendi hesabına gönderilen hediyeler gelir oluşturmaz.",
+      "en": "Gifts sent to your own account do not generate earnings.",
+      "es": "Los regalos enviados a tu propia cuenta no generan ganancias.",
+      "pt": "Presentes enviados para a sua própria conta não geram ganhos.",
+      "ar": "الهدايا المرسلة إلى حسابك لا تولّد أرباحًا.",
+      "fr": "Les cadeaux envoyés à votre propre compte ne génèrent pas de revenus.",
+      "fil": "Ang mga regalong ipinadala sa sarili mong account ay hindi lumilikha ng kita."
+    },
+    "odemeTalebi": {
+      "tr": "Ödeme talebi",
+      "en": "Payout request",
+      "es": "Solicitud de pago",
+      "pt": "Solicitação de pagamento",
+      "ar": "طلب دفع",
+      "fr": "Demande de paiement",
+      "fil": "Kahilingan sa bayad"
+    },
+    "odemeTalebiOnay": {
+      "tr": "{{tutar}} tutarındaki çekilebilir bakiyen için ödeme talebi oluşturulsun mu?",
+      "en": "Create a payout request for your withdrawable balance of {{tutar}}?",
+      "es": "¿Crear una solicitud de pago por tu saldo retirable de {{tutar}}?",
+      "pt": "Criar uma solicitação de pagamento do seu saldo disponível de {{tutar}}?",
+      "ar": "هل تريد إنشاء طلب دفع لرصيدك القابل للسحب البالغ {{tutar}}؟",
+      "fr": "Créer une demande de paiement pour votre solde retirable de {{tutar}} ?",
+      "fil": "Gumawa ng kahilingan sa bayad para sa iyong balanseng {{tutar}}?"
+    },
+    "talepGonder": {
+      "tr": "Talep gönder",
+      "en": "Submit request",
+      "es": "Enviar solicitud",
+      "pt": "Enviar solicitação",
+      "ar": "إرسال الطلب",
+      "fr": "Envoyer la demande",
+      "fil": "Ipadala ang kahilingan"
+    },
+    "talepAlindi": {
+      "tr": "Talebin alındı. Durumunu bu ekrandan takip edebilirsin.",
+      "en": "Your request was received. You can track its status on this screen.",
+      "es": "Recibimos tu solicitud. Puedes seguir su estado en esta pantalla.",
+      "pt": "Recebemos sua solicitação. Você pode acompanhar o status nesta tela.",
+      "ar": "تم استلام طلبك. يمكنك متابعة حالته من هذه الشاشة.",
+      "fr": "Votre demande a été reçue. Vous pouvez suivre son statut sur cet écran.",
+      "fil": "Natanggap ang iyong kahilingan. Masusubaybayan mo ang status nito sa screen na ito."
+    },
+    "talepIptal": {
+      "tr": "Talebi iptal et",
+      "en": "Cancel request",
+      "es": "Cancelar solicitud",
+      "pt": "Cancelar solicitação",
+      "ar": "إلغاء الطلب",
+      "fr": "Annuler la demande",
+      "fil": "Kanselahin ang kahilingan"
+    },
+    "talepIptalSoru": {
+      "tr": "Bu ödeme talebi iptal edilsin mi? Tutar çekilebilir bakiyene geri döner.",
+      "en": "Cancel this payout request? The amount returns to your withdrawable balance.",
+      "es": "¿Cancelar esta solicitud de pago? El importe vuelve a tu saldo retirable.",
+      "pt": "Cancelar esta solicitação de pagamento? O valor volta para o seu saldo disponível.",
+      "ar": "هل تريد إلغاء طلب الدفع هذا؟ سيعود المبلغ إلى رصيدك القابل للسحب.",
+      "fr": "Annuler cette demande de paiement ? Le montant revient sur votre solde retirable.",
+      "fil": "Kanselahin ang kahilingang ito? Babalik ang halaga sa iyong balanseng maaaring i-withdraw."
+    },
+    "kesintiler": {
+      "tr": "Kesintiler",
+      "en": "Deductions",
+      "es": "Deducciones",
+      "pt": "Deduções",
+      "ar": "الخصومات",
+      "fr": "Déductions",
+      "fil": "Mga bawas"
+    },
+    "guvenlikBekletme": {
+      "tr": "Güvenlik incelemesindeki tutar",
+      "en": "Amount under security review",
+      "es": "Importe en revisión de seguridad",
+      "pt": "Valor em análise de segurança",
+      "ar": "المبلغ قيد المراجعة الأمنية",
+      "fr": "Montant en examen de sécurité",
+      "fil": "Halagang nasa security review"
+    },
+    "odemeBilgileri": {
+      "tr": "Ödeme bilgileri",
+      "en": "Payout details",
+      "es": "Detalles de pago",
+      "pt": "Detalhes do pagamento",
+      "ar": "تفاصيل الدفع",
+      "fr": "Détails du paiement",
+      "fil": "Detalye ng bayad"
+    },
+    "minimumOdeme": {
+      "tr": "Minimum ödeme",
+      "en": "Minimum payout",
+      "es": "Pago mínimo",
+      "pt": "Pagamento mínimo",
+      "ar": "الحد الأدنى للدفع",
+      "fr": "Paiement minimum",
+      "fil": "Minimum na bayad"
+    },
+    "mevcutDonem": {
+      "tr": "Mevcut dönem",
+      "en": "Current period",
+      "es": "Periodo actual",
+      "pt": "Período atual",
+      "ar": "الفترة الحالية",
+      "fr": "Période en cours",
+      "fil": "Kasalukuyang panahon"
+    },
+    "sonrakiIslem": {
+      "tr": "Sonraki işlem tarihi",
+      "en": "Next processing date",
+      "es": "Próxima fecha de procesamiento",
+      "pt": "Próxima data de processamento",
+      "ar": "تاريخ المعالجة التالي",
+      "fr": "Prochaine date de traitement",
+      "fil": "Susunod na petsa ng pagproseso"
+    },
+    "odemeYontemi": {
+      "tr": "Ödeme yöntemi",
+      "en": "Payout method",
+      "es": "Método de pago",
+      "pt": "Método de pagamento",
+      "ar": "طريقة الدفع",
+      "fr": "Mode de paiement",
+      "fil": "Paraan ng bayad"
+    },
+    "bankaHavalesi": {
+      "tr": "Banka havalesi",
+      "en": "Bank transfer",
+      "es": "Transferencia bancaria",
+      "pt": "Transferência bancária",
+      "ar": "تحويل بنكي",
+      "fr": "Virement bancaire",
+      "fil": "Bank transfer"
+    },
+    "transferUcreti": {
+      "tr": "Transfer ücreti",
+      "en": "Transfer fee",
+      "es": "Comisión de transferencia",
+      "pt": "Taxa de transferência",
+      "ar": "رسوم التحويل",
+      "fr": "Frais de virement",
+      "fil": "Bayad sa transfer"
+    },
+    "ucretYok": {
+      "tr": "Ücret alınmaz",
+      "en": "No fee",
+      "es": "Sin comisión",
+      "pt": "Sem taxa",
+      "ar": "بدون رسوم",
+      "fr": "Aucuns frais",
+      "fil": "Walang bayad"
+    },
+    "minimumAltiDevreder": {
+      "tr": "Minimum tutarın altındaki bakiye sonraki ödeme dönemine devreder.",
+      "en": "A balance below the minimum carries over to the next payout period.",
+      "es": "Un saldo inferior al mínimo se traslada al siguiente periodo de pago.",
+      "pt": "Um saldo abaixo do mínimo passa para o próximo período de pagamento.",
+      "ar": "يُرحّل الرصيد الأقل من الحد الأدنى إلى فترة الدفع التالية.",
+      "fr": "Un solde inférieur au minimum est reporté à la période de paiement suivante.",
+      "fil": "Ang balanseng mas mababa sa minimum ay malilipat sa susunod na panahon ng bayad."
+    },
+    "odemeTalebiOlustur": {
+      "tr": "Ödeme talebi oluştur",
+      "en": "Request payout",
+      "es": "Solicitar pago",
+      "pt": "Solicitar pagamento",
+      "ar": "طلب الدفع",
+      "fr": "Demander un paiement",
+      "fil": "Humiling ng bayad"
+    },
+    "kimlikDogrulama": {
+      "tr": "Kimlik doğrulama",
+      "en": "Identity verification",
+      "es": "Verificación de identidad",
+      "pt": "Verificação de identidade",
+      "ar": "التحقق من الهوية",
+      "fr": "Vérification d'identité",
+      "fil": "Identity verification"
+    },
+    "bankaBilgileri": {
+      "tr": "Banka hesabı bilgileri",
+      "en": "Bank account details",
+      "es": "Datos de la cuenta bancaria",
+      "pt": "Dados da conta bancária",
+      "ar": "بيانات الحساب البنكي",
+      "fr": "Coordonnées bancaires",
+      "fil": "Detalye ng bank account"
+    },
+    "odemeTaleplerim": {
+      "tr": "Ödeme taleplerim",
+      "en": "My payout requests",
+      "es": "Mis solicitudes de pago",
+      "pt": "Minhas solicitações de pagamento",
+      "ar": "طلبات الدفع الخاصة بي",
+      "fr": "Mes demandes de paiement",
+      "fil": "Aking mga kahilingan sa bayad"
+    },
+    "kazancKaynaklari": {
+      "tr": "Kazanç kaynakları",
+      "en": "Earnings sources",
+      "es": "Fuentes de ganancias",
+      "pt": "Fontes de ganhos",
+      "ar": "مصادر الأرباح",
+      "fr": "Sources de revenus",
+      "fil": "Pinagmulan ng kita"
+    },
+    "tumu": {
+      "tr": "Tümü",
+      "en": "All",
+      "es": "Todo",
+      "pt": "Tudo",
+      "ar": "الكل",
+      "fr": "Tout",
+      "fil": "Lahat"
+    },
+    "kazancKaydiYok": {
+      "tr": "Henüz kazanç kaydı yok.",
+      "en": "No earnings yet.",
+      "es": "Aún no hay ganancias.",
+      "pt": "Ainda não há ganhos.",
+      "ar": "لا توجد أرباح بعد.",
+      "fr": "Aucun revenu pour le moment.",
+      "fil": "Wala pang kita."
+    },
+    "coinMiktari": {
+      "tr": "Coin miktarı",
+      "en": "Coin amount",
+      "es": "Cantidad de Coins",
+      "pt": "Quantidade de Coins",
+      "ar": "عدد الـ Coin",
+      "fr": "Nombre de Coins",
+      "fil": "Dami ng Coin"
+    },
+    "coinKaynagi": {
+      "tr": "Coin kaynağı",
+      "en": "Coin source",
+      "es": "Origen de los Coins",
+      "pt": "Origem dos Coins",
+      "ar": "مصدر الـ Coin",
+      "fr": "Origine des Coins",
+      "fil": "Pinagmulan ng Coin"
+    },
+    "paylasilabilirGelir": {
+      "tr": "Paylaşılabilir gelir",
+      "en": "Shareable revenue",
+      "es": "Ingresos compartibles",
+      "pt": "Receita compartilhável",
+      "ar": "الإيرادات القابلة للمشاركة",
+      "fr": "Revenu partageable",
+      "fil": "Naibabahaging kita"
+    },
+    "platformPayi": {
+      "tr": "Tamuso platform payı",
+      "en": "Tamuso platform share",
+      "es": "Parte de la plataforma Tamuso",
+      "pt": "Parte da plataforma Tamuso",
+      "ar": "حصة منصة Tamuso",
+      "fr": "Part de la plateforme Tamuso",
+      "fil": "Bahagi ng Tamuso platform"
+    },
+    "netKazanc": {
+      "tr": "Net kazanç",
+      "en": "Net earnings",
+      "es": "Ganancia neta",
+      "pt": "Ganho líquido",
+      "ar": "صافي الأرباح",
+      "fr": "Revenu net",
+      "fil": "Netong kita"
+    },
+    "odemeDonemi": {
+      "tr": "Ödeme dönemi",
+      "en": "Payout period",
+      "es": "Periodo de pago",
+      "pt": "Período de pagamento",
+      "ar": "فترة الدفع",
+      "fr": "Période de paiement",
+      "fil": "Panahon ng bayad"
+    },
+    "ledgerKaynakAyrimi": {
+      "tr": "Oyun ödülü ayrı bakiyeye aktarıldı",
+      "en": "Game reward moved to its separate balance",
+      "es": "Premio de juego movido a su saldo separado",
+      "pt": "Prêmio de jogo movido para o saldo separado",
+      "ar": "نُقلت مكافأة اللعبة إلى رصيدها المنفصل",
+      "fr": "Récompense de jeu transférée vers son solde séparé",
+      "fil": "Inilipat ang gantimpala sa laro sa hiwalay na balanse"
+    },
+    "ledgerEskiBakiyeAyrimi": {
+      "tr": "Bakiye kaynaklarına göre ayrıldı",
+      "en": "Balance separated by source",
+      "es": "Saldo separado por origen",
+      "pt": "Saldo separado por origem",
+      "ar": "فُصل الرصيد حسب المصدر",
+      "fr": "Solde séparé par origine",
+      "fil": "Pinaghiwalay ang balanse ayon sa pinagmulan"
+    },
+    "ledgerTakasIadesi": {
+      "tr": "Kapatılan takas teklifinin iadesi",
+      "en": "Refund for a closed exchange offer",
+      "es": "Reembolso por una oferta de intercambio cerrada",
+      "pt": "Reembolso de uma oferta de troca encerrada",
+      "ar": "استرداد عرض تبادل مغلق",
+      "fr": "Remboursement d'une offre d'échange fermée",
+      "fil": "Refund para sa isinarang alok na palitan"
+    },
+    "ledgerMeyveCarkiBahis": {
+      "tr": "Fruit Wheel seçimi",
+      "en": "Fruit Wheel selection",
+      "es": "Selección en Fruit Wheel",
+      "pt": "Seleção no Fruit Wheel",
+      "ar": "اختيار في Fruit Wheel",
+      "fr": "Sélection Fruit Wheel",
+      "fil": "Pagpili sa Fruit Wheel"
+    },
+    "ledgerMeyveCarkiIade": {
+      "tr": "Fruit Wheel seçim iadesi",
+      "en": "Fruit Wheel selection refund",
+      "es": "Reembolso de selección en Fruit Wheel",
+      "pt": "Reembolso de seleção no Fruit Wheel",
+      "ar": "استرداد اختيار Fruit Wheel",
+      "fr": "Remboursement de sélection Fruit Wheel",
+      "fil": "Refund ng pagpili sa Fruit Wheel"
+    },
+    "ledgerMeyveCarkiKazanc": {
+      "tr": "Fruit Wheel ödülü",
+      "en": "Fruit Wheel reward",
+      "es": "Premio de Fruit Wheel",
+      "pt": "Prêmio do Fruit Wheel",
+      "ar": "مكافأة Fruit Wheel",
+      "fr": "Récompense Fruit Wheel",
+      "fil": "Gantimpala sa Fruit Wheel"
+    },
+    "birimOyunCoin": {
+      "tr": "oyun Coin'i",
+      "en": "game Coins",
+      "es": "Coins de juego",
+      "pt": "Coins de jogo",
+      "ar": "Coin الألعاب",
+      "fr": "Coins de jeu",
+      "fil": "game Coin"
+    },
+    "birimOdulCoin": {
+      "tr": "ödül Coin'i",
+      "en": "reward Coins",
+      "es": "Coins de recompensa",
+      "pt": "Coins de recompensa",
+      "ar": "Coin المكافآت",
+      "fr": "Coins de récompense",
+      "fil": "reward Coin"
+    },
+    "storeUrunuYok": {
+      "tr": "Bu paket mağazada bulunamadı ({{sku}}). Daha sonra tekrar deneyin.",
+      "en": "This package was not found in the store ({{sku}}). Please try again later.",
+      "es": "No se encontró este paquete en la tienda ({{sku}}). Inténtalo más tarde.",
+      "pt": "Este pacote não foi encontrado na loja ({{sku}}). Tente novamente mais tarde.",
+      "ar": "لم يتم العثور على هذه الباقة في المتجر ({{sku}}). حاول مرة أخرى لاحقًا.",
+      "fr": "Ce pack est introuvable dans la boutique ({{sku}}). Réessayez plus tard.",
+      "fil": "Hindi nakita ang package na ito sa store ({{sku}}). Subukang muli mamaya."
+    },
+    "satinAlmaIslenemedi": {
+      "tr": "Satın alma işlenemedi. Ücret alındıysa Coin'ler doğrulama sonrasında hesabına eklenir.",
+      "en": "The purchase could not be processed. If you were charged, the Coins will be added after verification.",
+      "es": "No se pudo procesar la compra. Si se realizó el cargo, los Coins se añadirán tras la verificación.",
+      "pt": "Não foi possível processar a compra. Se houve cobrança, os Coins serão adicionados após a verificação.",
+      "ar": "تعذّرت معالجة عملية الشراء. إذا تم خصم المبلغ، ستُضاف الـ Coin بعد التحقق.",
+      "fr": "L'achat n'a pas pu être traité. Si vous avez été débité, les Coins seront ajoutés après vérification.",
+      "fil": "Hindi naproseso ang pagbili. Kung nasingil ka, idadagdag ang mga Coin pagkatapos ng beripikasyon."
+    },
+    "satinAlmaIptalHata": {
+      "tr": "Satın alma iptal edildi veya tamamlanamadı.",
+      "en": "The purchase was cancelled or could not be completed.",
+      "es": "La compra se canceló o no se pudo completar.",
+      "pt": "A compra foi cancelada ou não pôde ser concluída.",
+      "ar": "أُلغيت عملية الشراء أو تعذّر إكمالها.",
+      "fr": "L'achat a été annulé ou n'a pas pu être finalisé.",
+      "fil": "Kinansela o hindi natapos ang pagbili."
+    },
+    "satinAlmaDogrulamaBekliyor": {
+      "tr": "Satın alman doğrulanıyor. Doğrulama tamamlandığında Coin'ler hesabına eklenecek.",
+      "en": "Your purchase is being verified. Coins will be added to your account once verification is complete.",
+      "es": "Estamos verificando tu compra. Los Coins se añadirán a tu cuenta cuando termine la verificación.",
+      "pt": "Sua compra está sendo verificada. Os Coins serão adicionados à sua conta quando a verificação terminar.",
+      "ar": "جارٍ التحقق من عملية الشراء. ستُضاف الـ Coin إلى حسابك عند اكتمال التحقق.",
+      "fr": "Votre achat est en cours de vérification. Les Coins seront ajoutés à votre compte une fois la vérification terminée.",
+      "fil": "Bine-verify ang iyong pagbili. Idadagdag ang mga Coin sa iyong account kapag tapos na ang beripikasyon."
+    }
+  },
+  "oyunY": {
+    "olasilikBaslik": {
+      "tr": "Olasılıklar ve beklenen iade",
+      "en": "Odds and expected return",
+      "es": "Probabilidades y retorno esperado",
+      "pt": "Probabilidades e retorno esperado",
+      "ar": "الاحتمالات والعائد المتوقع",
+      "fr": "Probabilités et retour attendu",
+      "fil": "Tsansa at inaasahang balik"
+    },
+    "olasilikAciklama": {
+      "tr": "Her turda kazanan meyve sunucuda, aşağıdaki olasılıklarla rastgele belirlenir. Değerler sunucudaki güncel yapılandırmadan okunur.",
+      "en": "In each round, the winning fruit is chosen at random on the server with the probabilities below. Values are read from the current server configuration.",
+      "es": "En cada ronda, la fruta ganadora se elige al azar en el servidor con las probabilidades indicadas. Los valores se leen de la configuración actual del servidor.",
+      "pt": "Em cada rodada, a fruta vencedora é escolhida aleatoriamente no servidor com as probabilidades abaixo. Os valores vêm da configuração atual do servidor.",
+      "ar": "في كل جولة، تُختار الفاكهة الفائزة عشوائيًا على الخادم وفق الاحتمالات أدناه. تُقرأ القيم من إعدادات الخادم الحالية.",
+      "fr": "À chaque manche, le fruit gagnant est tiré au hasard sur le serveur selon les probabilités ci-dessous. Les valeurs proviennent de la configuration actuelle du serveur.",
+      "fil": "Sa bawat round, random na pinipili sa server ang nanalong prutas ayon sa mga tsansa sa ibaba. Kinukuha ang mga halaga sa kasalukuyang configuration ng server."
+    },
+    "olasilikYuklenemedi": {
+      "tr": "Olasılık bilgileri şu anda yüklenemedi.",
+      "en": "Odds could not be loaded right now.",
+      "es": "No se pudieron cargar las probabilidades.",
+      "pt": "Não foi possível carregar as probabilidades.",
+      "ar": "تعذّر تحميل الاحتمالات حاليًا.",
+      "fr": "Impossible de charger les probabilités pour le moment.",
+      "fil": "Hindi ma-load ang mga tsansa ngayon."
+    },
+    "meyve": {
+      "tr": "Meyve",
+      "en": "Fruit",
+      "es": "Fruta",
+      "pt": "Fruta",
+      "ar": "الفاكهة",
+      "fr": "Fruit",
+      "fil": "Prutas"
+    },
+    "carpan": {
+      "tr": "Çarpan",
+      "en": "Multiplier",
+      "es": "Multiplicador",
+      "pt": "Multiplicador",
+      "ar": "المضاعف",
+      "fr": "Multiplicateur",
+      "fil": "Multiplier"
+    },
+    "olasilik": {
+      "tr": "Olasılık",
+      "en": "Probability",
+      "es": "Probabilidad",
+      "pt": "Probabilidade",
+      "ar": "الاحتمال",
+      "fr": "Probabilité",
+      "fil": "Tsansa"
+    },
+    "beklenenIade": {
+      "tr": "Beklenen iade",
+      "en": "Expected return",
+      "es": "Retorno esperado",
+      "pt": "Retorno esperado",
+      "ar": "العائد المتوقع",
+      "fr": "Retour attendu",
+      "fil": "Inaasahang balik"
+    },
+    "bagimsizTur": {
+      "tr": "Her tur bağımsızdır. Yöneticiler tur sonuçlarını belirleyemez veya değiştiremez. Önceki sonuçlar sonraki turları etkilemez.",
+      "en": "Every round is independent. Administrators cannot set or change round results. Previous results do not affect later rounds.",
+      "es": "Cada ronda es independiente. Los administradores no pueden fijar ni cambiar los resultados. Los resultados anteriores no afectan a las rondas siguientes.",
+      "pt": "Cada rodada é independente. Administradores não podem definir nem alterar resultados. Resultados anteriores não afetam as próximas rodadas.",
+      "ar": "كل جولة مستقلة. لا يمكن للمشرفين تحديد نتائج الجولات أو تغييرها. النتائج السابقة لا تؤثر على الجولات اللاحقة.",
+      "fr": "Chaque manche est indépendante. Les administrateurs ne peuvent ni fixer ni modifier les résultats. Les résultats précédents n'influencent pas les manches suivantes.",
+      "fil": "Bawat round ay hiwalay. Hindi maaaring itakda o baguhin ng mga administrator ang resulta. Hindi naaapektuhan ng mga naunang resulta ang mga susunod na round."
+    },
+    "oyunCoinUyari": {
+      "tr": "Oyun kazançları Oyun Coin'i bakiyene eklenir. Oyun Coin'leri nakde çevrilemez, satın alınamaz ve gerçek para ödülü değildir.",
+      "en": "Game winnings are added to your Game Coin balance. Game Coins cannot be converted to cash, cannot be purchased and are not real-money prizes.",
+      "es": "Las ganancias de juego se añaden a tu saldo de Coins de juego. Los Coins de juego no se pueden convertir en efectivo, no se pueden comprar y no son premios en dinero real.",
+      "pt": "Os ganhos em jogos são adicionados ao seu saldo de Coins de jogo. Coins de jogo não podem ser convertidos em dinheiro, não podem ser comprados e não são prêmios em dinheiro real.",
+      "ar": "تُضاف أرباح الألعاب إلى رصيد Coin الألعاب. لا يمكن تحويل Coin الألعاب إلى نقد ولا شراؤها، وهي ليست جوائز بأموال حقيقية.",
+      "fr": "Les gains de jeu sont ajoutés à votre solde de Coins de jeu. Les Coins de jeu ne sont pas convertibles en espèces, ne peuvent pas être achetés et ne constituent pas des prix en argent réel.",
+      "fil": "Idinadagdag ang panalo sa laro sa iyong Game Coin balance. Ang Game Coin ay hindi mapapalitan ng cash, hindi mabibili at hindi premyong totoong pera."
+    },
+    "oyunCoinKisa": {
+      "tr": "Oyun Coin",
+      "en": "Game Coins",
+      "es": "Coins de juego",
+      "pt": "Coins de jogo",
+      "ar": "Coin الألعاب",
+      "fr": "Coins de jeu",
+      "fil": "Game Coin"
+    }
+  }
+}

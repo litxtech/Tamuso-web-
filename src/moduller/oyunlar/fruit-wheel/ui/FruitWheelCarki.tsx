@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -52,11 +52,15 @@ type TikOlayi = {
     locationY?: number;
     offsetX?: number;
     offsetY?: number;
+    pageX?: number;
+    pageY?: number;
     clientX?: number;
     clientY?: number;
   };
   currentTarget?: unknown;
 };
+
+type Kutu = { x: number; y: number };
 
 function sayiMi(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
@@ -90,7 +94,7 @@ function hitFruitId(x: number, y: number, size: number, rotationDeg: number): Fr
   const dx = x - cx;
   const dy = y - cy;
   const r = Math.sqrt(dx * dx + dy * dy);
-  if (r < size * 0.1 || r > size * 0.5) return null;
+  if (r < size * 0.08 || r > size * 0.52) return null;
   const deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
   const rot = ((rotationDeg % 360) + 360) % 360;
   const local = ((deg - rot) % 360 + 360) % 360;
@@ -251,9 +255,13 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
   const spunKey = useRef<string | null>(null);
   const onSettledRef = useRef(onSettled);
   onSettledRef.current = onSettled;
+  const bildirBitis = useCallback(() => {
+    onSettledRef.current?.();
+  }, []);
   const onFruitPressRef = useRef(onFruitPress);
   onFruitPressRef.current = onFruitPress;
   const tikRef = useRef<View>(null);
+  const kutuRef = useRef<Kutu | null>(null);
   const fruitsRef = useRef(fruits);
   fruitsRef.current = fruits;
 
@@ -307,20 +315,21 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
     const currentMod = ((current % 360) + 360) % 360;
     const slot = ((plan.rest % 360) + 360) % 360;
     const forward = (slot - currentMod + 360) % 360;
-    const turns = Math.max(4, Math.min(plan.turns, 5));
+    const turns = 4;
     const target = current + turns * 360 + forward;
     fruitWheelSes('wheel-start');
     rotation.value = withSequence(
-      withTiming(current - 6, { duration: 70, easing: Easing.out(Easing.quad) }),
+      withTiming(current - 4, { duration: 50, easing: Easing.out(Easing.quad) }),
       withTiming(target + plan.overshoot, {
-        duration: 2200,
-        easing: Easing.bezier(0.05, 0.85, 0.12, 1),
+        duration: 1680,
+        easing: Easing.bezier(0.08, 0.82, 0.16, 1),
       }),
-      withTiming(target, { duration: 220, easing: Easing.out(Easing.cubic) }, (done) => {
-        if (done) runOnJS(onSettledRef.current)();
+      withTiming(target, { duration: 200, easing: Easing.out(Easing.cubic) }, (finished) => {
+        'worklet';
+        if (finished) runOnJS(bildirBitis)();
       }),
     );
-  }, [spinning, targetFruitId, roundNo, rotation]);
+  }, [bildirBitis, spinning, targetFruitId, roundNo, rotation]);
 
   const wheelStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
@@ -341,18 +350,53 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
         tier: 'NORMAL' as const,
       }));
 
-  const onDiscPress = useCallback(
-    (e: TikOlayi) => {
+  const bahisUygula = useCallback(
+    (x: number, y: number) => {
       if (!interactive || spinning) return;
-      const nokta = tikNoktasi(e, tikRef.current);
-      if (!nokta) return;
-      const id = hitFruitId(nokta.x, nokta.y, size, rotation.value);
+      const id = hitFruitId(x, y, size, rotation.value);
       if (!id) return;
       const fruit = fruitsRef.current.find((f) => f.id === id);
       if (fruit && fruit.enabled === false) return;
       onFruitPressRef.current?.(id);
     },
     [interactive, rotation, size, spinning],
+  );
+
+  const kutuYaz = useCallback((x: number, y: number) => {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    kutuRef.current = { x, y };
+  }, []);
+
+  const onDiscPress = useCallback(
+    (e: TikOlayi) => {
+      if (!interactive || spinning) return;
+      const ne = e.nativeEvent;
+      const pageX = ne?.pageX;
+      const pageY = ne?.pageY;
+      const yerel = tikNoktasi(e, tikRef.current);
+      const yerelGecerli =
+        yerel != null && (Platform.OS !== 'android' || yerel.x > 1 || yerel.y > 1);
+      if (yerelGecerli && yerel) {
+        bahisUygula(yerel.x, yerel.y);
+        return;
+      }
+      const sayfadan = (kutu: Kutu) => {
+        if (!sayiMi(pageX) || !sayiMi(pageY)) return;
+        bahisUygula(pageX - kutu.x, pageY - kutu.y);
+      };
+      if (kutuRef.current) {
+        sayfadan(kutuRef.current);
+        return;
+      }
+      const node = tikRef.current as
+        | { measureInWindow?: (cb: (x: number, y: number, w: number, h: number) => void) => void }
+        | null;
+      node?.measureInWindow?.((x, y) => {
+        kutuYaz(x, y);
+        sayfadan({ x, y });
+      });
+    },
+    [bahisUygula, interactive, kutuYaz, spinning],
   );
 
   return (
@@ -411,7 +455,7 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
             stake={stakes[fruit.id] ?? 0}
             dim={Boolean(winnerFruitId) && winnerFruitId !== fruit.id}
             win={winnerFruitId === fruit.id}
-            selected={selectedFruitId === fruit.id}
+            selected={selectedFruitId === fruit.id || (stakes[fruit.id] ?? 0) > 0}
           />
         ))}
       </Animated.View>
@@ -426,9 +470,17 @@ export const FruitWheelCarki = React.memo(function FruitWheelCarki({
       {interactive ? (
         <Pressable
           ref={tikRef}
-          style={StyleSheet.absoluteFill}
+          collapsable={false}
+          style={styles.tik}
           disabled={spinning}
-          onPress={onDiscPress}
+          android_ripple={{ color: 'transparent' }}
+          onLayout={() => {
+            const node = tikRef.current as
+              | { measureInWindow?: (cb: (x: number, y: number, w: number, h: number) => void) => void }
+              | null;
+            node?.measureInWindow?.((x, y) => kutuYaz(x, y));
+          }}
+          onPressIn={onDiscPress}
         />
       ) : null}
     </View>
@@ -494,6 +546,11 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  tik: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 30,
+    backgroundColor: 'transparent',
   },
   pointer: {
     position: 'absolute',

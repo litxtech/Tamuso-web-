@@ -12,9 +12,11 @@ import {
   type Participant,
   type RemoteAudioTrack,
   type RemoteVideoTrack,
+  type RoomOptions,
   type VideoTrack,
 } from 'livekit-client';
 import { KonusmaciSesSeviyesi } from '../ses/KonusmaciSesSeviyesi';
+import { CanliOlcumIsaretle } from '../../canli-yayin/olcum/CanliIzlemeOlcum';
 // Native kontrol — VideoViewAl ile aynı kaynak
 import { LiveKitNativeVarMi } from '../bilesenler/LiveKitVideoViewAl';
 import {
@@ -123,6 +125,15 @@ const ANDROID_CIKIS_ONCELIK = [
  */
 const ANDROID_UZAK_SES_MAX = 3.5;
 
+/** İlk kare: receiver stats yoklama aralığı */
+const ILK_KARE_ARALIK_MS = 100;
+/** Stats hiç okunamazsa (eski native) video bu süre sonra görünür sayılır */
+const ILK_KARE_STATSIZ_MS = 900;
+/** Çözülen kare sayısı hiç artmazsa kapak en geç bu süre sonra kalkar */
+const ILK_KARE_AZAMI_MS = 2_500;
+/** prepareConnection ile ısıtılmış oda — bölge URL'si bu süre geçerli sayılır */
+const HAZIR_ODA_OMRU_MS = 4 * 60_000;
+
 type LiveKitNative = {
   AndroidAudioTypePresets: { communication: unknown; media: unknown };
   AudioSession: {
@@ -164,14 +175,24 @@ function livekitNativeAl(): LiveKitNative | null {
 
 type BaglantiDurumu = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
 type Dinleyici = (durum: BaglantiDurumu, detay?: string) => void;
-type VideoDinleyici = (state: {
+export type LiveKitVideoDurumu = {
   localVideo: LocalVideoTrack | null;
   remoteVideo: RemoteVideoTrack | null;
   remoteIds: string[];
   /** user = ön (ayna), environment = arka (düz) */
   kameraFacing: 'user' | 'environment';
   nesil: number;
-}) => void;
+  /** Uzak videoda en az bir kare çözüldü */
+  uzakIlkKare: boolean;
+  /** Uzak video yayını: yok / var ama kapalı (mute) / açık */
+  uzakKamera: 'yok' | 'kapali' | 'var';
+  uzakKatilimciVar: boolean;
+  baglanti: BaglantiDurumu;
+  /** Odaya bağlanılan an (ms) — "görüntü yok" kararı için bekleme payı */
+  baglantiAni: number | null;
+  yenidenBaglaniyor: boolean;
+};
+type VideoDinleyici = (state: LiveKitVideoDurumu) => void;
 
 type MedyaBolumIstegi = { numAudios?: number; numVideos?: number };
 
@@ -306,6 +327,17 @@ class LiveKitBaglantiYoneticisiImpl {
   private onKamera: LocalVideoTrack | null = null;
   private kameraAcma: Promise<LocalVideoTrack | null> | null = null;
   private kameraNesil = 0;
+  /** İlk karesi çözülmüş uzak video track sid'leri (konuk / PK'da birden çok video) */
+  private ilkKareSidler = new Set<string>();
+  private yenidenBaglaniyor = false;
+  private baglantiAni: number | null = null;
+  /** Aktif oda canlı yayın izleyici bağlantısı mı (yayın hakkı yok) */
+  private canliIzleyiciOdasi = false;
+  /** Arka planda kapanan odalar — aynı odaya yeniden girişte beklenir */
+  private kapananOdalar = new Map<string, Promise<void>>();
+  /** prepareConnection yapılmış, henüz katılınmamış izleyici odası */
+  private hazirOda: { room: Room; url: string; zaman: number } | null = null;
+  private sesHazirlikIs: { imza: string; is: Promise<void> } | null = null;
 
   /** Track'e yazılacak seviye (Android dinleyicide boost; yayıncıda AEC için 1×) */
   private uzakSesUygulanacak(): number {
@@ -342,8 +374,10 @@ class LiveKitBaglantiYoneticisiImpl {
     );
   }
 
-  private async bagliOlanaKadarBekle(timeoutMs = 12_000): Promise<boolean> {
-    const room = this.room;
+  private async bagliOlanaKadarBekle(
+    timeoutMs = 12_000,
+    room: Room | null = this.room,
+  ): Promise<boolean> {
     if (!room) return false;
     if (room.state === ConnectionState.Connected) return true;
 
@@ -449,16 +483,173 @@ class LiveKitBaglantiYoneticisiImpl {
 
   private yayinla(detay?: string) {
     this.dinleyiciler.forEach((fn) => fn(this.durum, detay));
+    // Video sahnesi bağlantı aşamasını da izler (bağlanıyor / koptu / yeniden)
+    this.yayinlaVideo();
   }
 
-  private videoDurumu() {
+  private videoDurumu(): LiveKitVideoDurumu {
+    const remoteVideo = this.remoteVideoTrack();
     return {
       localVideo: this.localVideoTrack() ?? this.onKameraCanli(),
-      remoteVideo: this.remoteVideoTrack(),
+      remoteVideo,
       remoteIds: this.remoteParticipantIds(),
       kameraFacing: this.kameraFacing,
       nesil: this.onizlemeNesil,
+      uzakIlkKare:
+        !!remoteVideo?.sid && this.ilkKareSidler.has(remoteVideo.sid),
+      uzakKamera: this.uzakKameraDurumu(),
+      uzakKatilimciVar: (this.room?.remoteParticipants.size ?? 0) > 0,
+      baglanti: this.durum,
+      baglantiAni: this.baglantiAni,
+      yenidenBaglaniyor: this.yenidenBaglaniyor,
     };
+  }
+
+  private uzakKameraDurumu(): 'yok' | 'kapali' | 'var' {
+    if (!this.room) return 'yok';
+    let sonuc: 'yok' | 'kapali' = 'yok';
+    for (const p of this.room.remoteParticipants.values()) {
+      for (const pub of p.trackPublications.values()) {
+        if (pub.kind !== Track.Kind.Video) continue;
+        if (!pub.isMuted) return 'var';
+        sonuc = 'kapali';
+      }
+    }
+    return sonuc;
+  }
+
+  /**
+   * Uzak videoda çözülen ilk kareyi bekler (receiver stats `framesDecoded`).
+   * VideoView boş/siyah karede açılmasın; kapak ilk kare gelince kalkar.
+   */
+  private ilkKareIzle(room: Room, track: RemoteVideoTrack, roomName: string): void {
+    const sid = track.sid;
+    if (!sid || this.ilkKareSidler.has(sid)) return;
+    const basla = Date.now();
+    let statsVar = false;
+    const hazir = () => {
+      if (this.room !== room || this.ilkKareSidler.has(sid)) return;
+      this.ilkKareSidler.add(sid);
+      CanliOlcumIsaretle('ilkKare', roomName);
+      this.yayinlaVideo();
+    };
+    type StatsRapor = { forEach: (cb: (s: Record<string, unknown>) => void) => void };
+    const bak = async () => {
+      if (this.room !== room || room.state === ConnectionState.Disconnected) return;
+      if (this.ilkKareSidler.has(sid)) return;
+      try {
+        const receiver = (
+          track as unknown as { receiver?: { getStats?: () => Promise<StatsRapor> } }
+        ).receiver;
+        const rapor = await receiver?.getStats?.();
+        let kare = 0;
+        rapor?.forEach((s) => {
+          if (s.type !== 'inbound-rtp') return;
+          if ((s.kind ?? s.mediaType) !== 'video') return;
+          statsVar = true;
+          kare = Math.max(kare, Number(s.framesDecoded ?? 0));
+        });
+        if (kare > 0) {
+          hazir();
+          return;
+        }
+      } catch {
+        /* stats okunamadı — süre yedeği */
+      }
+      const gecen = Date.now() - basla;
+      if ((!statsVar && gecen >= ILK_KARE_STATSIZ_MS) || gecen >= ILK_KARE_AZAMI_MS) {
+        hazir();
+        return;
+      }
+      setTimeout(() => void bak(), ILK_KARE_ARALIK_MS);
+    };
+    void bak();
+  }
+
+  /** Oda ayarları — hazır (prepareConnection) oda ile bağlanılan oda aynı olmalı */
+  private odaSecenekleri(tur: {
+    gorusme: boolean;
+    sesOdasi: boolean;
+    videoYayin: boolean;
+  }): RoomOptions {
+    const { gorusme, sesOdasi, videoYayin } = tur;
+    // Canlı (yayıncı veya izleyici): RN VideoView boyutu geç gelir.
+    // adaptiveStream / dynacast ilk kareyi saniyelerce tutar.
+    const canliVideo = !sesOdasi && !gorusme;
+    return {
+      // livekit-client ≥2.19.2 tek PeerConnection yolu RN'de (özellikle iOS) uzak
+      // videoyu siyah bırakıyor; ses ve kare çözümü sürüyor (client-sdk-js#1977).
+      ...(canliVideo && Platform.OS !== 'web' ? { singlePeerConnection: false } : null),
+      adaptiveStream:
+        canliVideo || sesOdasi ? false : { pixelDensity: 'screen' },
+      dynacast: !canliVideo && !sesOdasi,
+      stopLocalTrackOnUnpublish: true,
+      audioCaptureDefaults: {
+        ...SES_ODA_CAPTURE,
+      },
+      videoCaptureDefaults: gorusme
+        ? {
+            facingMode: 'user',
+            resolution: GORUSME_VIDEO.resolution,
+          }
+        : {
+            facingMode: 'user',
+            resolution: VideoPresets.h720.resolution,
+          },
+      publishDefaults: gorusme
+        ? {
+            ...SES_ODA_PUBLISH,
+            simulcast: true,
+            videoSimulcastLayers: GORUSME_VIDEO_SIMULCAST,
+            videoEncoding: GORUSME_VIDEO.encoding,
+            degradationPreference: 'maintain-framerate',
+          }
+        : videoYayin
+          ? {
+              ...CANLI_YAYIN_PUBLISH,
+              simulcast: false,
+              videoEncoding: VideoPresets.h720.encoding,
+              degradationPreference: 'maintain-framerate',
+            }
+          : SES_ODA_PUBLISH,
+    };
+  }
+
+  /**
+   * Canlı liste görünürken: LiveKit Cloud bölge seçimi + DNS/TLS ısıtması.
+   * Odaya katılmaz, medya açmaz; tek hazır oda tutulur. İlk izleyici bağlantısı onu kullanır.
+   */
+  izleyiciBaglantisiniHazirla(url: string, token: string): void {
+    if (Platform.OS === 'web' || !url || !token) return;
+    const mevcut = this.hazirOda;
+    if (
+      mevcut &&
+      mevcut.url === url &&
+      Date.now() - mevcut.zaman < HAZIR_ODA_OMRU_MS
+    ) {
+      return;
+    }
+    globalsKaydet();
+    if (!livekitNativeAl()) return;
+    let room: Room;
+    try {
+      room = new Room(
+        this.odaSecenekleri({ gorusme: false, sesOdasi: false, videoYayin: false }),
+      );
+    } catch {
+      return;
+    }
+    this.hazirOda = { room, url, zaman: Date.now() };
+    void room.prepareConnection(url, token).catch(() => undefined);
+  }
+
+  private hazirOdaAl(url: string): Room | null {
+    const hazir = this.hazirOda;
+    this.hazirOda = null;
+    if (!hazir || hazir.url !== url) return null;
+    if (Date.now() - hazir.zaman >= HAZIR_ODA_OMRU_MS) return null;
+    if (hazir.room.state !== ConnectionState.Disconnected) return null;
+    return hazir.room;
   }
 
   private onKameraCanli(): LocalVideoTrack | null {
@@ -702,6 +893,26 @@ class LiveKitBaglantiYoneticisiImpl {
     return this.remoteParticipantIds()[0] ?? null;
   }
 
+  /**
+   * Connect öncesi AudioSession ısıt — odaya girişte ilk saniye sessizlik olmasın.
+   * Bağlantı açmaz; yalnızca native oturumu hazırlar.
+   */
+  async sesOturumuIsit(opts?: {
+    sesOdasi?: boolean;
+    asPublisher?: boolean;
+    gorusmeModu?: boolean;
+  }): Promise<void> {
+    if (Platform.OS === 'web') return;
+    if (typeof opts?.sesOdasi === 'boolean') this.sesOdasiModu = opts.sesOdasi;
+    if (typeof opts?.asPublisher === 'boolean') this.asPublisher = opts.asPublisher;
+    if (typeof opts?.gorusmeModu === 'boolean') this.gorusmeModu = opts.gorusmeModu;
+    this.canliYayinModu = !this.gorusmeModu && !this.sesOdasiModu;
+    globalsKaydet();
+    const native = livekitNativeAl();
+    if (!native) return;
+    await this.sesOturumuHazirla(native).catch(() => undefined);
+  }
+
   async baglan(input: {
     url: string;
     token: string;
@@ -760,8 +971,16 @@ class LiveKitBaglantiYoneticisiImpl {
     } else if (!ayniOdaCanli || input.zorla) {
       this.micIstenenAcik = true;
     }
-    // Rol / mod değişince ses profilini yeniden kur
-    this.sonSesImza = null;
+    // Profil imzası aynıysa ısıtılmış oturumu koru (navigasyon warmup)
+    {
+      const iletisim =
+        this.gorusmeModu ||
+        this.asPublisher ||
+        this.sesOdasiModu ||
+        this.canliYayinModu;
+      const imza = `${Platform.OS}:${iletisim ? 'com' : 'duck'}:${this.asPublisher ? 1 : 0}`;
+      if (this.sonSesImza !== imza) this.sonSesImza = null;
+    }
 
     // Aynı oda bağlı / bağlanıyor / reconnecting iken disconnect etme —
     // "leave while reconnect" ve ICE/WS race üretir. Rol yükseltmede (zorla)
@@ -848,12 +1067,38 @@ class LiveKitBaglantiYoneticisiImpl {
       }
     }
 
+    const gorusme = !!input.gorusmeModu;
+    // Canlı izleyici video:true → sesOdasi=false (MedyaBaglantisi).
+    // Eski: !publishVideo ile izleyiciyi ses odası sanıyordu.
+    const sesOdasi =
+      typeof input.sesOdasi === 'boolean'
+        ? input.sesOdasi
+        : !gorusme && !input.publishVideo;
+    const videoYayin = !!input.publishVideo && !gorusme;
+    const canliIzleyici = !sesOdasi && !gorusme && !videoYayin && !input.asPublisher;
+
+    // Farklı odaya geçiş: eski odanın sunucuda düşmesini bekleme (STATE_MISMATCH
+    // yalnız aynı odaya yeniden join'de oluşur) — yayından yayına geçiş saniyeler sürmesin.
+    // Eski oda canlı izleyiciyse kapanışı tamamen arka plana alınır (uzak ses hemen susar).
+    const farkliOda = !!this.roomName && this.roomName !== input.roomName;
+    const eskiCanliIzleyici = this.canliIzleyiciOdasi;
     await this.baglantiyiKesIc({
       rolSifirla: false,
       kameraKoru: !!input.publishVideo,
+      hizli: farkliOda,
+      arkaPlanda: farkliOda && eskiCanliIzleyici,
+      sesKoru: farkliOda && eskiCanliIzleyici && canliIzleyici,
     });
     if (nesil !== this.baglantiNesil) {
       return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
+    }
+    // Aynı odadan az önce çıkıldıysa sunucudaki eski katılım düşsün (DUPLICATE_IDENTITY)
+    const kapanan = this.kapananOdalar.get(input.roomName);
+    if (kapanan) {
+      await Promise.race([kapanan, new Promise((r) => setTimeout(r, 3_500))]);
+      if (nesil !== this.baglantiNesil) {
+        return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
+      }
     }
 
     // baglantiyiKesIc odayı keser; rol bayrakları bu join için yeniden yazılır
@@ -885,6 +1130,8 @@ class LiveKitBaglantiYoneticisiImpl {
 
     try {
       // Web: tarayıcı WebRTC (livekit-client). Native AudioSession yalnız iOS/Android.
+      // Canlı izleyici: ses oturumu bağlantıyla paralel hazırlanır — video sesi beklemez.
+      let sesHazirlik: Promise<void> | null = null;
       if (Platform.OS !== 'web') {
         globalsKaydet();
         const native = livekitNativeAl();
@@ -894,7 +1141,11 @@ class LiveKitBaglantiYoneticisiImpl {
           this.yayinla('native-missing');
           return { ok: false, hata: SesHataMetni() };
         }
-        await this.sesOturumuHazirla(native);
+        if (canliIzleyici) {
+          sesHazirlik = this.sesOturumuHazirla(native).catch(() => undefined);
+        } else {
+          await this.sesOturumuHazirla(native);
+        }
       }
 
       if (nesil !== this.baglantiNesil) {
@@ -902,57 +1153,38 @@ class LiveKitBaglantiYoneticisiImpl {
         return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
       }
 
-      const gorusme = !!input.gorusmeModu;
-      // Canlı izleyici video:true → sesOdasi=false (MedyaBaglantisi).
-      // Eski: !publishVideo ile izleyiciyi ses odası sanıyordu.
-      const sesOdasi =
-        typeof input.sesOdasi === 'boolean'
-          ? input.sesOdasi
-          : !gorusme && !input.publishVideo;
-      const videoYayin = !!input.publishVideo && !gorusme;
-      // Canlı (yayıncı veya izleyici): RN VideoView boyutu geç gelir.
-      // adaptiveStream / dynacast ilk kareyi saniyelerce tutar.
-      const canliVideo = !sesOdasi && !gorusme;
-      const room = new Room({
-        adaptiveStream:
-          canliVideo || sesOdasi ? false : { pixelDensity: 'screen' },
-        dynacast: !canliVideo && !sesOdasi,
-        stopLocalTrackOnUnpublish: true,
-        audioCaptureDefaults: {
-          ...SES_ODA_CAPTURE,
-        },
-        videoCaptureDefaults: gorusme
-          ? {
-              facingMode: 'user',
-              resolution: GORUSME_VIDEO.resolution,
-            }
-          : {
-              facingMode: 'user',
-              resolution: VideoPresets.h720.resolution,
-            },
-        publishDefaults: gorusme
-          ? {
-              ...SES_ODA_PUBLISH,
-              simulcast: true,
-              videoSimulcastLayers: GORUSME_VIDEO_SIMULCAST,
-              videoEncoding: GORUSME_VIDEO.encoding,
-              degradationPreference: 'maintain-framerate',
-            }
-          : videoYayin
-            ? {
-                ...CANLI_YAYIN_PUBLISH,
-                simulcast: false,
-                videoEncoding: VideoPresets.h720.encoding,
-                degradationPreference: 'maintain-framerate',
-              }
-            : SES_ODA_PUBLISH,
-      });
+      const room =
+        (canliIzleyici ? this.hazirOdaAl(input.url) : null) ??
+        new Room(this.odaSecenekleri({ gorusme, sesOdasi, videoYayin }));
       motorYenilemesiniSar(room);
       this.room = room;
+      this.canliIzleyiciOdasi = canliIzleyici;
+      this.ilkKareSidler.clear();
+      this.baglantiAni = null;
+      this.yenidenBaglaniyor = false;
 
       const yenile = () => this.yayinlaVideo();
 
+      room.on(RoomEvent.SignalConnected, () => {
+        CanliOlcumIsaretle('sinyal', input.roomName);
+      });
       room.on(RoomEvent.TrackSubscribed, (track, _pub, participant) => {
+        // Arka planda kapanan eski oda: geç gelen track çalınmaz (çift ses)
+        if (this.room !== room) {
+          try {
+            track.mediaStreamTrack.enabled = false;
+          } catch {
+            /* ignore */
+          }
+          return;
+        }
+        if (
+          track.kind === Track.Kind.Video &&
+          participant?.identity !== room.localParticipant.identity
+        ) {
+          CanliOlcumIsaretle('videoAbone', input.roomName);
+          this.ilkKareIzle(room, track as RemoteVideoTrack, input.roomName);
+        }
         if (track.kind === Track.Kind.Audio) {
           const kendi =
             !!participant?.identity &&
@@ -998,6 +1230,7 @@ class LiveKitBaglantiYoneticisiImpl {
         if (Platform.OS === 'web' && track.kind === Track.Kind.Audio) {
           this.webUzakSesiKopar(track as RemoteAudioTrack);
         }
+        if (track.sid) this.ilkKareSidler.delete(track.sid);
         yenile();
       });
       room.on(RoomEvent.TrackPublished, (pub, participant) => {
@@ -1027,6 +1260,7 @@ class LiveKitBaglantiYoneticisiImpl {
       room.on(RoomEvent.LocalTrackPublished, yenile);
       room.on(RoomEvent.LocalTrackUnpublished, yenile);
       room.on(RoomEvent.ParticipantConnected, (p) => {
+        if (this.room !== room) return;
         try {
           const kendi = p.identity === room.localParticipant.identity;
           p.setVolume(kendi ? 0 : Math.min(1, this.uzakSesUygulanacak()));
@@ -1046,6 +1280,7 @@ class LiveKitBaglantiYoneticisiImpl {
       room.on(RoomEvent.Disconnected, () => {
         if (this.room === room) {
           this.durum = 'disconnected';
+          this.yenidenBaglaniyor = false;
           this.speakerGuvenliTemizle();
           try {
             if (this.kasitliKes) {
@@ -1060,14 +1295,19 @@ class LiveKitBaglantiYoneticisiImpl {
         }
       });
       room.on(RoomEvent.Reconnecting, () => {
-        if (this.room === room) this.yayinla('reconnecting');
+        if (this.room !== room) return;
+        this.yenidenBaglaniyor = true;
+        this.yayinla('reconnecting');
       });
       room.on(RoomEvent.SignalReconnecting, () => {
-        if (this.room === room) this.yayinla('signal-reconnecting');
+        if (this.room !== room) return;
+        this.yenidenBaglaniyor = true;
+        this.yayinla('signal-reconnecting');
       });
       room.on(RoomEvent.Reconnected, () => {
         if (this.room !== room) return;
         this.durum = 'connected';
+        this.yenidenBaglaniyor = false;
         this.yayinla('reconnected');
         void this.hoparlorGucluAc().catch(() => undefined);
         this.uzakSesleriGucluAc();
@@ -1078,12 +1318,15 @@ class LiveKitBaglantiYoneticisiImpl {
         this.yayinlaVideo();
       });
 
+      CanliOlcumIsaretle('baglantiBasla', input.roomName);
       try {
         await room.connect(input.url, input.token, {
           autoSubscribe: true,
           maxRetries: 5,
           peerConnectionTimeout: 20_000,
         });
+        if (this.room === room) this.baglantiAni = Date.now();
+        CanliOlcumIsaretle('odaBagli', input.roomName);
       } catch (connectErr) {
         // baglantiyiKes nesil artırır → kasıtlı iptal; LeaveRequest burada beklenen
         if (nesil !== this.baglantiNesil || this.kasitliKes) {
@@ -1101,17 +1344,37 @@ class LiveKitBaglantiYoneticisiImpl {
         return { ok: false, hata: i18n.t('sesOda.baglantiIptalEdildi') };
       }
 
+      if (sesHazirlik) await sesHazirlik;
       await this.tarayiciSesiniAc();
 
-      // PC + native audio engine otursun — erken publish "engine not connected" üretir
-      await this.motorHazirOlanaKadarBekle(nesil);
+      // Ses odası dinleyici: uzak sesi HEMEN aç — motor/mic bekleme yok.
+      // Yayıncı: kısa motor hazırlığı (erken publish "engine not connected" üretir).
+      if (this.asPublisher) {
+        await this.motorHazirOlanaKadarBekle(nesil);
+      }
 
       await this.hoparlorGucluAc();
       this.uzakSesleriGucluAc();
 
+      // Dinleyici: bağlı say + dön — mic/kamera yolu uzak sesi geciktirmesin
+      if (!this.asPublisher) {
+        void this.mikrofonuGuvenliKapat().catch(() => undefined);
+        this.durum = 'connected';
+        this.mock = false;
+        this.yayinla('connected');
+        this.yayinlaVideo();
+        setTimeout(() => {
+          if (nesil !== this.baglantiNesil) return;
+          if (this.room?.state !== ConnectionState.Connected) return;
+          void this.hoparlorGucluAc().catch(() => undefined);
+          this.uzakSesleriGucluAc();
+        }, 280);
+        return { ok: true };
+      }
+
       // Kamera, mic'ten BAĞIMSIZ — mute host da görüntü yayınlayabilsin.
       // Yakalama geri sayımda başladıysa burada yalnız publish edilir.
-      if (this.asPublisher && input.publishVideo) {
+      if (input.publishVideo) {
         if (nesil !== this.baglantiNesil) {
           await this.odayiGuvenliKes(room);
           if (this.room === room) this.room = null;
@@ -1127,11 +1390,11 @@ class LiveKitBaglantiYoneticisiImpl {
         }
       }
 
-      if (this.asPublisher && this.micIstenenAcik) {
+      if (this.micIstenenAcik) {
         const micOk = await this.mikrofonGucluAc();
         if (!micOk) {
           // Bir kez daha dene — engine gecikmeli açılabiliyor
-          await new Promise((r) => setTimeout(r, 500));
+          await new Promise((r) => setTimeout(r, 350));
           if (nesil === this.baglantiNesil) {
             const tekrar = await this.mikrofonGucluAc();
             if (!tekrar) {
@@ -1143,9 +1406,8 @@ class LiveKitBaglantiYoneticisiImpl {
             }
           }
         }
-      } else if (!this.asPublisher || !this.micIstenenAcik) {
-        // Dinleyici veya mute: OS/capture sızmasın
-        await this.mikrofonuGuvenliKapat();
+      } else {
+        void this.mikrofonuGuvenliKapat().catch(() => undefined);
       }
 
       // Android: kamera media moda düşürmesin.
@@ -1157,15 +1419,15 @@ class LiveKitBaglantiYoneticisiImpl {
       // iOS: hoparlörden sonra videoChat / voiceChat. Kamera voiceChat'i ezer.
       if (Platform.OS === 'ios' && this.canliYayinModu) {
         await IosCanliYayinOturumu(this.asPublisher);
-        if (this.asPublisher && this.micIstenenAcik) {
+        if (this.micIstenenAcik) {
           const mic = room.localParticipant.getTrackPublication(
             Track.Source.Microphone,
           );
           if (mic?.track && !mic.isMuted) await this.canliMikrofonuYenile(mic.track);
         }
-      } else if (Platform.OS === 'ios' && this.asPublisher) {
+      } else if (Platform.OS === 'ios') {
         IosYankIptaliAc();
-      } else if (this.canliYayinModu && this.asPublisher && this.micIstenenAcik) {
+      } else if (this.canliYayinModu && this.micIstenenAcik) {
         const mic = room.localParticipant.getTrackPublication(
           Track.Source.Microphone,
         );
@@ -1183,7 +1445,7 @@ class LiveKitBaglantiYoneticisiImpl {
           await this.mikrofonDurumunuDogrula().catch((e) => {
             console.warn('[LiveKit] gecikmeli mic', e);
           });
-          if (this.asPublisher && input.publishVideo && !this.localVideoTrack()) {
+          if (input.publishVideo && !this.localVideoTrack()) {
             this.kameraArkaPlandaDene(5);
           }
           await this.hoparlorGucluAc();
@@ -1195,7 +1457,6 @@ class LiveKitBaglantiYoneticisiImpl {
           if (
             nesil === this.baglantiNesil &&
             this.canliYayinModu &&
-            this.asPublisher &&
             this.micIstenenAcik
           ) {
             const mic = this.room?.localParticipant?.getTrackPublication(
@@ -1208,7 +1469,7 @@ class LiveKitBaglantiYoneticisiImpl {
           this.uzakSesleriGucluAc();
           this.yayinlaVideo();
         })();
-      }, 700);
+      }, 450);
       return { ok: true };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -1235,10 +1496,7 @@ class LiveKitBaglantiYoneticisiImpl {
    * Ses odası misafir: media + duck — harici müzik devam eder.
    * iOS: setupIOSAudioManagement otomatik; manuel setApple YOK (sıfır sample bug).
    */
-  private async sesOturumuHazirla(
-    native: LiveKitNative,
-    zorla = false,
-  ): Promise<void> {
+  private sesImzasi(): string {
     // Ses odası ve canlı yayın: yayıncı + dinleyici aynı communication profili.
     // media/duck uzak Opus'u düşürür — canlı izleyici hostu duymaz.
     const iletisim =
@@ -1247,7 +1505,35 @@ class LiveKitBaglantiYoneticisiImpl {
       this.sesOdasiModu ||
       this.canliYayinModu;
     const profil = iletisim ? 'com' : 'duck';
-    const imza = `${Platform.OS}:${profil}:${this.asPublisher ? 1 : 0}`;
+    return `${Platform.OS}:${profil}:${this.asPublisher ? 1 : 0}`;
+  }
+
+  /** Aynı profil için uçuştaki hazırlık paylaşılır — ısıtma + bağlan çift configure etmesin */
+  private sesOturumuHazirla(
+    native: LiveKitNative,
+    zorla = false,
+  ): Promise<void> {
+    if (zorla) return this.sesOturumuHazirlaIc(native, true);
+    const imza = this.sesImzasi();
+    const ucusta = this.sesHazirlikIs;
+    if (ucusta && ucusta.imza === imza) return ucusta.is;
+    const is: Promise<void> = this.sesOturumuHazirlaIc(native, false).finally(() => {
+      if (this.sesHazirlikIs?.is === is) this.sesHazirlikIs = null;
+    });
+    this.sesHazirlikIs = { imza, is };
+    return is;
+  }
+
+  private async sesOturumuHazirlaIc(
+    native: LiveKitNative,
+    zorla: boolean,
+  ): Promise<void> {
+    const iletisim =
+      this.gorusmeModu ||
+      this.asPublisher ||
+      this.sesOdasiModu ||
+      this.canliYayinModu;
+    const imza = this.sesImzasi();
     if (!zorla && this.audioSessionAcik && this.sonSesImza === imza) {
       await native.AudioSession.startAudioSession().catch(() => undefined);
       return;
@@ -1636,21 +1922,21 @@ class LiveKitBaglantiYoneticisiImpl {
   /**
    * Connect sonrası native audio engine / PC'nin publish kabul etmesi için kısa bekleme.
    * Erken setMicrophoneEnabled → "engine not connected within timeout".
+   * Yalnız yayıncılar çağırır — dinleyici yolu uzak sesi bekletmez.
    */
   private async motorHazirOlanaKadarBekle(nesil: number): Promise<void> {
     const room = this.room;
     if (!room) return;
     const basla = Date.now();
-    // Dinleyici: daha kısa bekle — uzak ses gecikmesin
-    const limitMs = this.asPublisher ? 2500 : 1200;
+    const limitMs = 1_600;
     while (Date.now() - basla < limitMs) {
       if (nesil !== this.baglantiNesil) return;
       if (room.state === ConnectionState.Connected) {
-        await new Promise((r) => setTimeout(r, this.asPublisher ? 220 : 80));
+        await new Promise((r) => setTimeout(r, 120));
         if (nesil !== this.baglantiNesil) return;
         if (room.state === ConnectionState.Connected) return;
       }
-      await new Promise((r) => setTimeout(r, 80));
+      await new Promise((r) => setTimeout(r, 60));
     }
   }
 
@@ -2031,7 +2317,10 @@ class LiveKitBaglantiYoneticisiImpl {
   async baglantiyiKes(hizli = false) {
     this.baglantiNesil += 1;
     try {
-      await this.sirayaAl(() => this.baglantiyiKesIc({ hizli }));
+      // Canlı izleyici çıkışı sıradaki bağlantıyı (başka yayın) bekletmesin
+      await this.sirayaAl(() =>
+        this.baglantiyiKesIc({ hizli, arkaPlanda: this.canliIzleyiciOdasi }),
+      );
     } catch {
       /* caller'a unhandled rejection sızmasın */
     }
@@ -2104,47 +2393,107 @@ class LiveKitBaglantiYoneticisiImpl {
     }
   }
 
+  /**
+   * Canlı izleyici odasını beklemeden bırak: uzak ses/görüntü hemen kapanır,
+   * sunucudan çıkış arka planda sürer. Aynı odaya dönüş `kapananOdalar` ile bekler.
+   */
+  private odayiArkaPlandaKapat(room: Room, roomName: string | null): void {
+    try {
+      for (const p of room.remoteParticipants.values()) {
+        try {
+          p.setVolume(0);
+        } catch {
+          /* ignore */
+        }
+        for (const pub of p.trackPublications.values()) {
+          try {
+            if (pub.track) pub.track.mediaStreamTrack.enabled = false;
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    if (this.room === room) this.room = null;
+    const is = (async () => {
+      if (
+        room.state === ConnectionState.Connecting ||
+        room.state === ConnectionState.Reconnecting ||
+        room.state === ConnectionState.SignalReconnecting
+      ) {
+        await this.bagliOlanaKadarBekle(8_000, room);
+      }
+      if (room.state !== ConnectionState.Disconnected) {
+        await this.odayiGuvenliKes(room);
+        await this.odaDuseneKadarBekle(room, 3_000);
+      }
+    })().catch(() => undefined);
+    if (!roomName) return;
+    this.kapananOdalar.set(roomName, is);
+    void is.finally(() => {
+      if (this.kapananOdalar.get(roomName) === is) this.kapananOdalar.delete(roomName);
+    });
+  }
+
   private async baglantiyiKesIc(opts?: {
     rolSifirla?: boolean;
     hizli?: boolean;
     kameraKoru?: boolean;
+    /** Oda kapanışını bekleme (yalnız canlı izleyici odası) */
+    arkaPlanda?: boolean;
+    /** Hemen yeni odaya bağlanılacak — Android ses oturumunu kapatıp açma */
+    sesKoru?: boolean;
   }) {
     const rolSifirla = opts?.rolSifirla !== false;
     const hizli = !!opts?.hizli;
     this.kasitliKes = true;
     if (!opts?.kameraKoru) this.onKamerayiDurdur();
+    /** Gerçek oda vardıysa oturumu kapat; yoksa navigasyon ısıtmasını koru */
+    let odaVardi = false;
     try {
       const room = this.room;
-      // Connecting/Reconnecting iken disconnect → LeaveRequest + STATE_MISMATCH.
-      // Önce Connected|Disconnected terminal state; sonra temiz kes.
-      if (
-        room &&
-        (room.state === ConnectionState.Connecting ||
-          room.state === ConnectionState.Reconnecting ||
-          room.state === ConnectionState.SignalReconnecting)
-      ) {
-        await this.bagliOlanaKadarBekle(hizli ? 700 : 12_000);
-      }
-      // Hâlâ mid-flight (yavaş ICE) — kısa ikinci bekleme
-      if (
-        room &&
-        (room.state === ConnectionState.Reconnecting ||
-          room.state === ConnectionState.SignalReconnecting)
-      ) {
-        await this.bagliOlanaKadarBekle(hizli ? 400 : 8_000);
-      }
-      // room'u disconnect bitmeden null'lama — paralel baglan eski WS ile yarışmasın
-      if (room && room.state !== ConnectionState.Disconnected) {
-        await this.odayiGuvenliKes(room);
-        await this.odaDuseneKadarBekle(room, hizli ? 800 : 3_000);
+      odaVardi = !!room;
+      if (room && opts?.arkaPlanda) {
+        this.odayiArkaPlandaKapat(room, this.roomName);
+      } else {
+        // Connecting/Reconnecting iken disconnect → LeaveRequest + STATE_MISMATCH.
+        // Önce Connected|Disconnected terminal state; sonra temiz kes.
+        if (
+          room &&
+          (room.state === ConnectionState.Connecting ||
+            room.state === ConnectionState.Reconnecting ||
+            room.state === ConnectionState.SignalReconnecting)
+        ) {
+          await this.bagliOlanaKadarBekle(hizli ? 700 : 12_000);
+        }
+        // Hâlâ mid-flight (yavaş ICE) — kısa ikinci bekleme
+        if (
+          room &&
+          (room.state === ConnectionState.Reconnecting ||
+            room.state === ConnectionState.SignalReconnecting)
+        ) {
+          await this.bagliOlanaKadarBekle(hizli ? 400 : 8_000);
+        }
+        // room'u disconnect bitmeden null'lama — paralel baglan eski WS ile yarışmasın
+        if (room && room.state !== ConnectionState.Disconnected) {
+          await this.odayiGuvenliKes(room);
+          await this.odaDuseneKadarBekle(room, hizli ? 800 : 3_000);
+        }
       }
       if (this.room === room) this.room = null;
+      this.canliIzleyiciOdasi = false;
+      this.ilkKareSidler.clear();
+      this.baglantiAni = null;
+      this.yenidenBaglaniyor = false;
     } catch {
       /* ignore */
       if (this.room) this.room = null;
     }
     try {
-      if (!opts?.kameraKoru && this.audioSessionAcik) {
+      // Isıtılmış (oda yok) oturumu silme — join öncesi warmup boşa gitmesin
+      if (!opts?.kameraKoru && !opts?.sesKoru && this.audioSessionAcik && odaVardi) {
         // iOS: registerGlobals/setupIOSAudioManagement oturumu yönetir —
         // agresif stop sonraki odada uzak sesi kırabilir. Android'de kapat.
         if (Platform.OS === 'android') {
@@ -2205,6 +2554,13 @@ Object.setPrototypeOf(
   LiveKitBaglantiYoneticisi,
   LiveKitBaglantiYoneticisiImpl.prototype,
 );
+// Yeni public API'yi instance'a da yaz — HMR'de "undefined is not a function" olmasın
+(
+  LiveKitBaglantiYoneticisi as LiveKitBaglantiYoneticisiImpl
+).sesOturumuIsit =
+  LiveKitBaglantiYoneticisiImpl.prototype.sesOturumuIsit.bind(
+    LiveKitBaglantiYoneticisi,
+  );
 if (Platform.OS !== 'web') {
   globalKayit.__tamusoLiveKitAppStateSub?.remove();
   globalKayit.__tamusoLiveKitAppState = true;

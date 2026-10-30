@@ -10,6 +10,7 @@ import {
   Modal,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,12 +18,12 @@ import {
   View,
   type ListRenderItem,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../../components/Screen';
-import { EkranBasligi } from '../../../components/EkranBasligi';
+import { EkranBasligi, TamusoScreenHeader } from '../../../components/EkranBasligi';
 import { ModulHataSiniri } from '../../../ortak/hata-sinirlari/ModulHataSiniri';
 import { KlavyeGuvenliAlan } from '../../../bilesenler/klavye/KlavyeGuvenliAlan';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
@@ -47,13 +48,55 @@ import type {
 } from '../tipler';
 import { KisilerKart } from './KisilerKart';
 import { KisilerAramaOnaySheet } from './KisilerAramaOnaySheet';
+import {
+  KisilerKesfetSeritleri,
+  type CanliOzet,
+} from './KisilerKesfetSeritleri';
 import { KISILER_ULKE_LISTESI, ulkeBayragi } from '../utils/KisilerYardimcilar';
 import { useCeviri } from '../../../i18n/useCeviri';
+import { AnalyticsOlayEkle } from '../../guvenlik/analytics/AnalyticsOlayEkle';
+import { CanliYayinlariGetir } from '../../canli-yayin/islemler/CanliYayinIslemleri';
+import { CanliYayinaGit } from '../../canli-yayin/navigasyon/CanliYayinaGit';
+import {
+  SehirYukselenleriGetir,
+  type SehirYukselen,
+} from '../../sehirler/islemler/SehirModernIslemleri';
+import { SehirAdiAra } from '../../sehirler/okuma/SehirleriGetir';
+import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 
 type AramaHedefi = {
   userId: string;
   callType: 'audio' | 'video';
 };
+
+function canliOzetle(rows: unknown[]): CanliOzet[] {
+  const out: CanliOzet[] = [];
+  for (const raw of rows) {
+    if (!raw || typeof raw !== 'object') continue;
+    const row = raw as {
+      id?: string;
+      host_id?: string;
+      title?: string | null;
+      viewer_count?: number | null;
+      host?:
+        | { display_name?: string | null; username?: string | null; avatar_url?: string | null }
+        | { display_name?: string | null; username?: string | null; avatar_url?: string | null }[]
+        | null;
+    };
+    if (!row.id || !row.host_id) continue;
+    const host = Array.isArray(row.host) ? row.host[0] : row.host;
+    const ad = host?.display_name?.trim() || host?.username?.trim() || '';
+    out.push({
+      id: row.id,
+      hostId: row.host_id,
+      ad,
+      avatar: host?.avatar_url ?? null,
+      baslik: row.title?.trim() || null,
+      izleyici: Number.isFinite(Number(row.viewer_count)) ? Number(row.viewer_count) : 0,
+    });
+  }
+  return out;
+}
 
 function kisilerTekille(liste: KisilerKesifKarti[]): KisilerKesifKarti[] {
   const seen = new Set<string>();
@@ -90,7 +133,12 @@ export function KisilerKesifEkrani() {
   const [ulkeArama, setUlkeArama] = useState('');
   const [onay, setOnay] = useState<AramaHedefi | null>(null);
   const [aramaBusy, setAramaBusy] = useState(false);
+  const [canlilar, setCanlilar] = useState<CanliOzet[]>([]);
+  const [sehirler, setSehirler] = useState<SehirYukselen[]>([]);
+  const [sehirArama, setSehirArama] = useState<SehirYukselen[]>([]);
+  const [vurguCanli, setVurguCanli] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sehirIstekRef = useRef(0);
   const [aramaDebounced, setAramaDebounced] = useState('');
   const cursorRef = useRef<number | null>(null);
   const loadingMoreRef = useRef(false);
@@ -180,20 +228,96 @@ export function KisilerKesifEkrani() {
     void yukle();
   }, [yukle]);
 
+  const raylariYukle = useCallback(async () => {
+    const isler: Promise<void>[] = [];
+    if (OzellikBayragiAktifMi('live_enabled')) {
+      isler.push(
+        CanliYayinlariGetir(8)
+          .then((rows) => setCanlilar(canliOzetle(rows as unknown[])))
+          .catch(() => setCanlilar([])),
+      );
+    }
+    if (OzellikBayragiAktifMi('city_league_enabled')) {
+      isler.push(
+        SehirYukselenleriGetir(8)
+          .then(setSehirler)
+          .catch(() => setSehirler([])),
+      );
+    }
+    await Promise.all(isler);
+  }, []);
+
+  useEffect(() => {
+    void AnalyticsOlayEkle('discover_opened', { screen: 'kisiler' });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void raylariYukle();
+    }, [raylariYukle]),
+  );
+
   const onAramaDegis = (metin: string) => {
     setArama(metin);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setAramaDebounced(metin.trim().length >= 2 ? metin.trim() : '');
+      const q = metin.trim();
+      const lower = q.toLocaleLowerCase();
+      if (['canlı', 'canli', 'live'].includes(lower)) {
+        setVurguCanli(true);
+        sehirIstekRef.current += 1;
+        setSehirArama([]);
+        setAramaDebounced('');
+        void AnalyticsOlayEkle('discover_search', { screen: 'kisiler', kind: 'live' });
+        return;
+      }
+      const ulkeEslesen = KISILER_ULKE_LISTESI().find(
+        (u) => u.name.toLocaleLowerCase() === lower,
+      );
+      if (ulkeEslesen && q.length >= 3) {
+        setUlke(ulkeEslesen.code);
+        sehirIstekRef.current += 1;
+        setSehirArama([]);
+        setAramaDebounced('');
+        void AnalyticsOlayEkle('discover_search', { screen: 'kisiler', kind: 'country' });
+        return;
+      }
+      setAramaDebounced(q.length >= 2 ? q : '');
+      if (q.length < 2) {
+        sehirIstekRef.current += 1;
+        setSehirArama([]);
+        return;
+      }
+      const sehirIstek = ++sehirIstekRef.current;
+      void SehirAdiAra(q).then((rows) => {
+        if (sehirIstek !== sehirIstekRef.current) return;
+        setSehirArama(
+          rows.map((s) => ({
+            id: s.id,
+            name: s.name,
+            slug: s.slug,
+            power_score: s.power_score,
+            supporter_count: s.supporter_count,
+            delta_24h: 0,
+          })),
+        );
+        void AnalyticsOlayEkle('discover_search', {
+          screen: 'kisiler',
+          kind: rows.length > 0 ? 'city' : 'person',
+        });
+      });
     }, 350);
   };
 
   const profilAc = useCallback((userId: string) => {
+    void AnalyticsOlayEkle('discover_profile_opened', { screen: 'kisiler' });
     router.push(`/kullanici/${userId}` as any);
   }, []);
 
   const mesajAc = useCallback(
     async (userId: string) => {
+      void Haptics.selectionAsync();
+      void AnalyticsOlayEkle('discover_intro_clicked', { screen: 'kisiler' });
       if (!featRef.current?.message_enabled) return;
       const r = await OzelSohbetAcVeyaGetir(userId);
       if (!r.ok) {
@@ -206,12 +330,35 @@ export function KisilerKesifEkrani() {
   );
 
   const sesAc = useCallback((userId: string) => {
+    void AnalyticsOlayEkle('discover_voice_clicked', { screen: 'kisiler' });
     setOnay({ userId, callType: 'audio' });
   }, []);
 
   const videoAc = useCallback((userId: string) => {
+    void AnalyticsOlayEkle('discover_video_clicked', { screen: 'kisiler' });
     setOnay({ userId, callType: 'video' });
   }, []);
+
+  const canliAc = useCallback((sessionId: string) => {
+    void Haptics.selectionAsync();
+    void AnalyticsOlayEkle('discover_live_opened', { screen: 'kisiler' });
+    CanliYayinaGit(sessionId);
+  }, []);
+
+  const sehirAc = useCallback((cityId: string) => {
+    void Haptics.selectionAsync();
+    void AnalyticsOlayEkle('discover_city_opened', { screen: 'kisiler' });
+    router.push(`/sehir/${cityId}` as any);
+  }, []);
+
+  const canliHostlar = useMemo(
+    () => new Set(canlilar.map((c) => c.hostId)),
+    [canlilar],
+  );
+  const cevrimiciler = useMemo(
+    () => items.filter((k) => k.online_display).slice(0, 12),
+    [items],
+  );
 
   const sekmeler = useMemo(() => {
     const list: { id: KisilerKesifSekmesi; label: string }[] = [
@@ -274,6 +421,7 @@ export function KisilerKesifEkrani() {
         genislik={kartGen}
         showPrices={showPrices}
         showOnline={showOnline}
+        canli={canliHostlar.has(item.user_id)}
         sesEnabled={sesGlob && item.call_availability !== 'BUSY'}
         videoEnabled={videoGlob && item.call_availability !== 'BUSY'}
         onProfil={profilAc}
@@ -283,6 +431,7 @@ export function KisilerKesifEkrani() {
       />
     ),
     [
+      canliHostlar,
       kartGen,
       mesajAc,
       profilAc,
@@ -316,11 +465,11 @@ export function KisilerKesifEkrani() {
       <ModulHataSiniri modulAdi="kisiler-kesif">
         <KlavyeGuvenliAlan style={styles.kok}>
           <View style={styles.sabitUst}>
-            <EkranBasligi
+            <TamusoScreenHeader
+              compact
               title={t('kisiler.baslik')}
-              subtitle={t('kisiler.altBaslik')}
               fallbackHref="/(tabs)"
-              right={
+              rightAction={
                 <Pressable
                   onPress={() => router.push('/ayarlar/kisiler-aramalar' as any)}
                   accessibilityLabel={t('ayarlar.kisilerAramalar')}
@@ -334,145 +483,210 @@ export function KisilerKesifEkrani() {
                   />
                 </Pressable>
               }
-            />
-
-            <View style={styles.headerGlass}>
-              <View style={styles.aramaWrap}>
-                <Ionicons name="search" size={16} color={RenkTokenlari.textMuted} />
-                <TextInput
-                  value={arama}
-                  onChangeText={onAramaDegis}
-                  placeholder={t('kisiler.araPlaceholder')}
-                  placeholderTextColor={RenkTokenlari.textMuted}
-                  style={styles.arama}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  returnKeyType="search"
-                />
-              </View>
-
-              <View style={styles.sekmeler}>
-                {sekmeler.map((s) => {
-                  const aktif = tab === s.id;
-                  return (
-                    <Pressable
-                      key={s.id}
+              search={
+                <View style={styles.ustKontroller}>
+                  <View style={styles.aramaWrap}>
+                    <Ionicons name="search" size={16} color={RenkTokenlari.textMuted} />
+                    <TextInput
+                      value={arama}
+                      onChangeText={onAramaDegis}
+                      placeholder={t('kisiler.araPlaceholder')}
+                      placeholderTextColor={RenkTokenlari.textMuted}
+                      accessibilityLabel={t('kisiler.araPlaceholder')}
+                      style={styles.arama}
+                      autoCorrect={false}
+                      autoCapitalize="none"
+                      returnKeyType="search"
+                    />
+                    {arama.length > 0 ? (
+                      <Pressable
+                        onPress={() => {
+                          setArama('');
+                          setAramaDebounced('');
+                          sehirIstekRef.current += 1;
+                          setSehirArama([]);
+                        }}
+                        hitSlop={8}
+                        accessibilityLabel={t('kisilerX.temizle')}
+                      >
+                        <Ionicons name="close-circle" size={16} color={RenkTokenlari.textMuted} />
+                      </Pressable>
+                    ) : null}
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={styles.cipSatir}
+                  >
+                    {sekmeler.map((s) => (
+                      <FiltreCip
+                        key={s.id}
+                        label={s.label}
+                        aktif={tab === s.id}
+                        onPress={() => {
+                          void Haptics.selectionAsync();
+                          setTab(s.id);
+                          void AnalyticsOlayEkle('discover_filter_used', {
+                            screen: 'kisiler',
+                            filter: s.id,
+                          });
+                        }}
+                      />
+                    ))}
+                    {feat?.online_filter_enabled ? (
+                      <FiltreCip
+                        label={t('kisilerX.cevrimici')}
+                        aktif={onlineOnly}
+                        onPress={() => {
+                          void Haptics.selectionAsync();
+                          setOnlineOnly((v) => !v);
+                          void AnalyticsOlayEkle('discover_filter_used', {
+                            screen: 'kisiler',
+                            filter: 'online',
+                          });
+                        }}
+                      />
+                    ) : null}
+                    {OzellikBayragiAktifMi('live_enabled') ? (
+                      <FiltreCip
+                        label={t('kisiler.cipCanli')}
+                        aktif={vurguCanli}
+                        onPress={() => {
+                          void Haptics.selectionAsync();
+                          setVurguCanli((v) => !v);
+                          void AnalyticsOlayEkle('discover_filter_used', {
+                            screen: 'kisiler',
+                            filter: 'live',
+                          });
+                        }}
+                      />
+                    ) : null}
+                    {feat?.country_filter_enabled ? (
+                      <FiltreCip
+                        label={ulke ? `${ulkeBayragi(ulke)} ${ulke}` : t('kisilerX.ulke')}
+                        aktif={!!ulke}
+                        onPress={() => setUlkeSheet(true)}
+                      />
+                    ) : null}
+                    <FiltreCip
+                      label={t('kisiler.cipDunya')}
+                      aktif={!ulke}
                       onPress={() => {
                         void Haptics.selectionAsync();
-                        setTab(s.id);
+                        setUlke(null);
+                        void AnalyticsOlayEkle('discover_world_opened', { screen: 'kisiler' });
                       }}
-                      style={[styles.sekme, aktif && styles.sekmeAktif]}
-                    >
-                      <Text
-                        style={[styles.sekmeYazi, aktif && styles.sekmeYaziAktif]}
-                        numberOfLines={1}
-                      >
-                        {s.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <View style={styles.filtreler}>
-                {feat?.country_filter_enabled ? (
-                  <FiltreCip
-                    label={ulke ? `${ulkeBayragi(ulke)} ${ulke}` : t('kisilerX.ulke')}
-                    aktif={!!ulke}
-                    onPress={() => setUlkeSheet(true)}
-                  />
-                ) : null}
-                {feat?.online_filter_enabled ? (
-                  <FiltreCip
-                    label={t('kisilerX.cevrimici')}
-                    aktif={onlineOnly}
-                    onPress={() => setOnlineOnly((v) => !v)}
-                  />
-                ) : null}
-                {(ulke || onlineOnly) && (
-                  <FiltreCip
-                    label={t('kisilerX.temizle')}
-                    aktif={false}
-                    onPress={() => {
-                      setUlke(null);
-                      setOnlineOnly(false);
-                    }}
-                  />
-                )}
-              </View>
-
-              {tab === 'for_you' && feat?.personalized_enabled ? (
-                <Text style={styles.info} numberOfLines={2}>
-                  {t('kisilerX.onerilerInfo')}
-                </Text>
-              ) : null}
-            </View>
+                    />
+                    {(ulke || onlineOnly || vurguCanli) && (
+                      <FiltreCip
+                        label={t('kisilerX.temizle')}
+                        aktif={false}
+                        onPress={() => {
+                          setUlke(null);
+                          setOnlineOnly(false);
+                          setVurguCanli(false);
+                        }}
+                      />
+                    )}
+                  </ScrollView>
+                </View>
+              }
+            />
           </View>
 
           <View style={styles.govde}>
-            {loading && items.length === 0 ? (
-              <View style={styles.iskelet}>
-                {[0, 1, 2, 3].map((i) => (
-                  <View key={i} style={[styles.iskeletKart, { width: kartGen }]} />
-                ))}
-              </View>
-            ) : hata ? (
-              <View style={styles.bos}>
-                <Text style={styles.bosBaslik}>{hata}</Text>
-                <Pressable style={styles.cta} onPress={() => void yukle({ refresh: true })}>
-                  <Text style={styles.ctaYazi}>{t('ortak.tekrarDene')}</Text>
-                </Pressable>
-              </View>
-            ) : items.length === 0 ? (
-              <View style={styles.bos}>
-                <Text style={styles.bosBaslik}>{t('kisilerX.filtreBos')}</Text>
-                <Pressable
-                  style={styles.cta}
-                  onPress={() => {
-                    setUlke(null);
-                    setOnlineOnly(false);
-                    setArama('');
-                    setAramaDebounced('');
+            <FlatList
+              style={styles.listeAlani}
+              data={items}
+              keyExtractor={(item) => item.user_id}
+              renderItem={renderKart}
+              numColumns={2}
+              columnWrapperStyle={styles.satir}
+              contentContainerStyle={[styles.liste, { paddingBottom: listeAltBosluk }]}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              initialNumToRender={6}
+              maxToRenderPerBatch={8}
+              windowSize={7}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => {
+                    void raylariYukle();
+                    void yukle({ refresh: true });
                   }}
-                >
-                  <Text style={styles.ctaYazi}>{t('kisilerX.filtreleriTemizle')}</Text>
-                </Pressable>
-              </View>
-            ) : (
-              <FlatList
-                style={styles.listeAlani}
-                data={items}
-                keyExtractor={(item) => item.user_id}
-                renderItem={renderKart}
-                numColumns={2}
-                columnWrapperStyle={styles.satir}
-                contentContainerStyle={[styles.liste, { paddingBottom: listeAltBosluk }]}
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="on-drag"
-                initialNumToRender={6}
-                maxToRenderPerBatch={8}
-                windowSize={7}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={() => void yukle({ refresh: true })}
-                    tintColor={RenkTokenlari.primary}
+                  tintColor={RenkTokenlari.primary}
+                />
+              }
+              onEndReached={() => {
+                if (cursor != null && !loadingMore) void yukle({ more: true });
+              }}
+              onEndReachedThreshold={0.4}
+              ListHeaderComponent={
+                <View>
+                  <KisilerKesfetSeritleri
+                    canlilar={canlilar}
+                    sehirler={sehirArama.length > 0 ? sehirArama : sehirler}
+                    cevrimiciler={cevrimiciler}
+                    vurguCanli={vurguCanli}
+                    onlineOnly={onlineOnly}
+                    aramaMetni={arama}
+                    onProfil={profilAc}
+                    onCanli={canliAc}
+                    onSehir={sehirAc}
                   />
-                }
-                onEndReached={() => {
-                  if (cursor != null && !loadingMore) void yukle({ more: true });
-                }}
-                onEndReachedThreshold={0.4}
-                ListFooterComponent={
-                  loadingMore ? (
-                    <ActivityIndicator
-                      color={RenkTokenlari.primary}
-                      style={styles.sayfaYukleniyor}
-                    />
-                  ) : null
-                }
-              />
-            )}
+                  {items.length > 0 || loading ? (
+                    <Text style={styles.bolumBaslik}>
+                      {onlineOnly ? t('kisilerX.cevrimici') : t('kisiler.seninIcin')}
+                    </Text>
+                  ) : null}
+                </View>
+              }
+              ListEmptyComponent={
+                loading ? (
+                  <View style={styles.iskelet}>
+                    {[0, 1, 2, 3].map((i) => (
+                      <View key={i} style={[styles.iskeletKart, { width: kartGen }]} />
+                    ))}
+                  </View>
+                ) : (
+                  <View style={styles.bos}>
+                    <Text style={styles.bosBaslik}>
+                      {hata ?? t('kisilerX.filtreBos')}
+                    </Text>
+                    <Pressable
+                      style={styles.cta}
+                      onPress={() => {
+                        if (hata) {
+                          void yukle({ refresh: true });
+                          return;
+                        }
+                        setUlke(null);
+                        setOnlineOnly(false);
+                        setVurguCanli(false);
+                        setArama('');
+                        setAramaDebounced('');
+                        sehirIstekRef.current += 1;
+                        setSehirArama([]);
+                      }}
+                    >
+                      <Text style={styles.ctaYazi}>
+                        {hata ? t('ortak.tekrarDene') : t('kisilerX.filtreleriTemizle')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                )
+              }
+              ListFooterComponent={
+                loadingMore ? (
+                  <ActivityIndicator
+                    color={RenkTokenlari.primary}
+                    style={styles.sayfaYukleniyor}
+                  />
+                ) : null
+              }
+            />
           </View>
         </KlavyeGuvenliAlan>
 
@@ -565,6 +779,8 @@ const styles = StyleSheet.create({
   sabitUst: {
     backgroundColor: RenkTokenlari.bg,
     zIndex: 2,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: RenkTokenlari.border,
   },
   filtreDugme: {
     width: HeaderTokenlari.touchTarget,
@@ -572,15 +788,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerGlass: {
-    marginHorizontal: BoslukTokenlari.lg,
-    marginBottom: BoslukTokenlari.sm,
-    borderRadius: YaricapTokenlari.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: RenkTokenlari.border,
-    backgroundColor: RenkTokenlari.bgCard,
-    paddingHorizontal: BoslukTokenlari.md,
-    paddingVertical: BoslukTokenlari.sm,
+  ustKontroller: {
     gap: BoslukTokenlari.sm,
   },
   govde: {
@@ -595,10 +803,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: BoslukTokenlari.sm,
-    minHeight: HeaderTokenlari.touchTarget,
+    minHeight: 40,
     backgroundColor: RenkTokenlari.pressFill,
-    borderRadius: YaricapTokenlari.md,
+    borderRadius: YaricapTokenlari.pill,
     paddingHorizontal: BoslukTokenlari.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: RenkTokenlari.border,
   },
   arama: {
     flex: 1,
@@ -607,71 +817,51 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.text,
     paddingVertical: 0,
   },
-  sekmeler: {
+  cipSatir: {
     flexDirection: 'row',
-    gap: BoslukTokenlari.sm,
-  },
-  sekme: {
-    flex: 1,
-    minHeight: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: BoslukTokenlari.sm,
-    borderRadius: YaricapTokenlari.pill,
-    backgroundColor: RenkTokenlari.pressFill,
+    gap: 6,
+    paddingRight: BoslukTokenlari.sm,
   },
-  sekmeAktif: {
-    backgroundColor: RenkTokenlari.primary,
-  },
-  sekmeYazi: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textMuted,
-    fontWeight: '600',
-  },
-  sekmeYaziAktif: {
-    color: RenkTokenlari.textOnPrimary,
-  },
-  filtreler: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: BoslukTokenlari.sm,
+  bolumBaslik: {
+    ...TipografiTokenlari.caption,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
+    marginTop: BoslukTokenlari.sm,
+    marginBottom: BoslukTokenlari.sm,
   },
   filtre: {
-    minHeight: HeaderTokenlari.touchTarget - BoslukTokenlari.sm,
+    minHeight: 32,
     justifyContent: 'center',
-    paddingHorizontal: BoslukTokenlari.md,
+    paddingHorizontal: 12,
     borderRadius: YaricapTokenlari.pill,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: RenkTokenlari.border,
     backgroundColor: RenkTokenlari.pressFill,
   },
   filtreAktif: {
-    borderColor: RenkTokenlari.mint,
-    backgroundColor: RenkTokenlari.pressFill,
+    borderColor: RenkTokenlari.primary,
+    backgroundColor: 'rgba(232,64,145,0.14)',
   },
   filtreYazi: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
+    fontWeight: '600',
   },
   filtreYaziAktif: {
-    color: RenkTokenlari.mint,
-  },
-  info: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textMuted,
+    color: RenkTokenlari.primarySoft,
   },
   liste: {
     paddingHorizontal: BoslukTokenlari.lg,
+    paddingTop: BoslukTokenlari.sm,
   },
   satir: {
     gap: BoslukTokenlari.md,
     marginBottom: BoslukTokenlari.md,
   },
   iskelet: {
-    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: BoslukTokenlari.lg,
     gap: BoslukTokenlari.md,
   },
   iskeletKart: {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as Linking from 'expo-linking';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../contexts/AuthContext';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { useMisafirIslemKapisi } from '../../misafir-hesabi/islemler/useMisafirIslemKapisi';
@@ -40,7 +40,8 @@ function ayniCoinPaketKanaliniTemizle() {
 export function useCoinYuklePaneli() {
   const { t, dil } = useCeviri();
   const loc = DIL_LOCALE_MAP[dil];
-  const { adjustWallet, refreshWallet, isGuest } = useAuth();
+  const { isGuest } = useAuth();
+  const { adjustWallet, refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, upgradeAc, islemiDene } =
     useMisafirIslemKapisi(isGuest);
   const [acik, setAcik] = useState(false);

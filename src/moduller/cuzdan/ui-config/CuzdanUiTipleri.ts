@@ -172,5 +172,4 @@ export const CUZDAN_ROUTE_WHITELIST = [
   '/cuzdan/takas',
   '/kyc',
   '/(tabs)/wallet',
-  '/admin/finans',
 ] as const;

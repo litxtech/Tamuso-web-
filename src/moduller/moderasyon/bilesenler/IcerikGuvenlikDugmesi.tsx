@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   IcerikBildirPaneli,
   type IcerikBildirTuru,
@@ -22,8 +22,10 @@ type Props = {
   isGuest?: boolean;
   /** Kart üzerinde koyu overlay için */
   koyu?: boolean;
-  /** Küçük sade metin buton (oda içi) · ikon: sadece bayrak */
-  varyant?: 'ucNokta' | 'metin' | 'ikon';
+  /** Küçük sade metin buton (oda içi) · ikon: sadece bayrak · yok: yalnızca panel */
+  varyant?: 'ucNokta' | 'metin' | 'ikon' | 'yok';
+  /** Artınca bildir paneli açılır (üst menüden) */
+  acikSinyal?: number;
   hitSlop?: number;
 };
 
@@ -39,11 +41,16 @@ export function IcerikGuvenlikDugmesi({
   isGuest,
   koyu = true,
   varyant = 'ucNokta',
+  acikSinyal = 0,
   hitSlop = 8,
 }: Props) {
   const { t } = useCeviri();
   const [menuAcik, setMenuAcik] = useState(false);
   const [bildirAcik, setBildirAcik] = useState(false);
+
+  useEffect(() => {
+    if (acikSinyal > 0) setBildirAcik(true);
+  }, [acikSinyal]);
 
   const bildirAc = () => {
     setMenuAcik(false);
@@ -52,7 +59,7 @@ export function IcerikGuvenlikDugmesi({
 
   return (
     <>
-      {varyant === 'metin' ? (
+      {varyant === 'yok' ? null : varyant === 'metin' ? (
         <Pressable
           onPress={(e) => {
             e.stopPropagation?.();
@@ -74,9 +81,13 @@ export function IcerikGuvenlikDugmesi({
           hitSlop={hitSlop}
           accessibilityLabel={t('bildir.baslik')}
           accessibilityRole="button"
-          style={styles.ikonBtn}
+          style={[styles.ikonTaban, styles.ikonKare]}
         >
-          <Ionicons name="flag-outline" size={12} color="rgba(255,255,255,0.7)" />
+          <MaterialCommunityIcons
+            name="flag-outline"
+            size={12}
+            color="rgba(255,255,255,0.7)"
+          />
         </Pressable>
       ) : (
         <Pressable
@@ -166,15 +177,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'rgba(255,255,255,0.88)',
   },
-  ikonBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  ikonTaban: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.12)',
+  },
+  ikonKare: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   backdrop: {
     flex: 1,

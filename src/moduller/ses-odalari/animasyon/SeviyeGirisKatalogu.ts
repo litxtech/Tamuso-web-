@@ -1,12 +1,12 @@
 /**
- * Seviyeye göre odaya giriş animasyon eşikleri.
- * 10+ kullanıcı odaya girince herkese gösterilir.
- * Altın/Efsane: tam ekran sinematik; Bronz/Gümüş: üst banner.
+ * Seviyeye göre odaya giriş animasyon kademeleri.
+ * Herkes için giriş şeridi; 10+ kullanıcılar VIP kademede.
+ * Normal: cam şerit; Bronz/Gümüş: VIP şerit; Altın/Efsane: hero kart.
  */
 
 import i18n from '../../../i18n';
 
-export type SeviyeGirisKademe = 'bronz' | 'gumus' | 'altin' | 'efsane';
+export type SeviyeGirisKademe = 'normal' | 'bronz' | 'gumus' | 'altin' | 'efsane';
 
 export type SeviyeGirisOgesi = {
   userId: string;
@@ -16,11 +16,14 @@ export type SeviyeGirisOgesi = {
   kademe: SeviyeGirisKademe;
 };
 
-/** Giriş animasyonu için minimum seviye */
+/** VIP giriş animasyonu için minimum seviye */
 export const SEVIYE_GIRIS_ESIGI = 10;
 
-export function SeviyeGirisKademesiniCoz(level: number): SeviyeGirisKademe | null {
-  if (!level || level < SEVIYE_GIRIS_ESIGI) return null;
+/** Kuyrukta bekleyebilecek en fazla normal giriş — kalabalık odada spam olmasın */
+export const NORMAL_GIRIS_KUYRUK_SINIRI = 3;
+
+export function SeviyeGirisKademesiniCoz(level: number): SeviyeGirisKademe {
+  if (!level || level < SEVIYE_GIRIS_ESIGI) return 'normal';
   if (level >= 50) return 'efsane';
   if (level >= 30) return 'altin';
   if (level >= 20) return 'gumus';
@@ -58,16 +61,24 @@ export function SeviyeGirisAltMetin(kademe: SeviyeGirisKademe, level: number): s
   }
 }
 
+/** Şerit üzerinde ismin yanındaki kısa metin */
+export function SeviyeGirisKisaMetin(): string {
+  return i18n.t('sesOda.girisOdayaGirdi');
+}
+
+/** Giriş + bekleme + çıkış toplam süresi */
 export function SeviyeGirisSuresiMs(kademe: SeviyeGirisKademe): number {
   switch (kademe) {
     case 'efsane':
-      return 3400;
+      return 3600;
     case 'altin':
-      return 3000;
+      return 3200;
     case 'gumus':
+      return 2800;
+    case 'bronz':
       return 2600;
     default:
-      return 2400;
+      return 2100;
   }
 }
 
@@ -76,6 +87,7 @@ export const SEVIYE_GIRIS_RENKLERI: Record<
   SeviyeGirisKademe,
   readonly [string, string, string]
 > = {
+  normal: ['#BFE9FF', '#7AA7FF', '#6A5CFF'],
   bronz: ['#E8C49A', '#D4A574', '#8B5E3C'],
   gumus: ['#F5F8FF', '#C5D0E4', '#6E7A90'],
   altin: ['#FFF3B0', '#F0B429', '#C99214'],
@@ -93,6 +105,13 @@ export const SEVIYE_GIRIS_ISIN: Record<
     parcacik: string;
   }
 > = {
+  normal: {
+    sol: 'rgba(122,167,255,0.24)',
+    sag: 'rgba(106,92,255,0.16)',
+    core: ['rgba(191,233,255,0.4)', 'rgba(122,167,255,0.18)', 'transparent'],
+    halka: 'rgba(122,167,255,0.5)',
+    parcacik: '#BFE9FF',
+  },
   bronz: {
     sol: 'rgba(212,165,116,0.28)',
     sag: 'rgba(139,94,60,0.18)',

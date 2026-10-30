@@ -47,7 +47,8 @@ function yerelVideoAyar(): { track: MediaStreamTrack; width: number | null; heig
   const lp = LiveKitBaglantiYoneticisi.oda()?.localParticipant;
   const yayin = lp?.getTrackPublication(Track.Source.Camera);
   const track = yayin?.track?.mediaStreamTrack;
-  if (!track || track.readyState !== 'live') return null;
+  // Android native readyState cihaz diliyle küçültülür (Türkçe "lıve") — yalnız 'ended' güvenilir
+  if (!track || track.readyState === 'ended') return null;
   let width: number | null = null;
   let height: number | null = null;
   try {
@@ -70,7 +71,7 @@ function kayitAkisi(video: MediaStreamTrack): MediaStream | null {
     ?.localParticipant?.getTrackPublication(Track.Source.Microphone)
     ?.track?.mediaStreamTrack;
   const parcalar = [video];
-  if (mic && mic.readyState === 'live') parcalar.push(mic);
+  if (mic && mic.readyState !== 'ended') parcalar.push(mic);
   return new Ctor(parcalar);
 }
 

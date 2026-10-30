@@ -60,4 +60,16 @@ export function MesajSayfaOnbellekSil(threadId: string): void {
   void AsyncStorage.removeItem(anahtar(threadId)).catch(() => null);
 }
 
+/** Çıkış — sayfa önbelleği kullanıcı önekli değil; bellek ve disk birlikte silinir. */
+export async function MesajSayfaOnbellekHepsiniSil(): Promise<void> {
+  bellek.clear();
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const hit = keys.filter((k) => k.startsWith(PREFIX));
+    if (hit.length > 0) await AsyncStorage.multiRemove(hit);
+  } catch {
+    /* çıkış sürer */
+  }
+}
+
 export const MESAJ_SAYFA_BOYUTU = 20;

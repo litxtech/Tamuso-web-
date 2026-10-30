@@ -72,7 +72,6 @@ function KonusmaciKartiIc({
   hostId,
   tahtMi = false,
   olcek,
-  halo = false,
   yogun = false,
   onPress,
   onLongPress,
@@ -121,22 +120,6 @@ function KonusmaciKartiIc({
       ]}
     >
       <View style={styles.avatarKutu}>
-        {halo && !yogun ? (
-          <View
-            pointerEvents="none"
-            style={[
-              styles.haloHalka,
-              {
-                width: avatarBoy + 12,
-                height: avatarBoy + 12,
-                borderRadius: (avatarBoy + 12) / 2,
-                borderColor: tahtMi || hostMu
-                  ? 'rgba(240,180,41,0.45)'
-                  : 'rgba(196,59,255,0.35)',
-              },
-            ]}
-          />
-        ) : null}
         {dolu ? (
           <KonusmaciAktiflikEfekti
             userId={seat.user_id}
@@ -187,9 +170,9 @@ function KonusmaciKartiIc({
               ]}
             >
               <Ionicons
-                name={tahtMi ? 'ribbon-outline' : 'add'}
+                name={seat.is_locked ? 'lock-closed' : tahtMi ? 'ribbon-outline' : 'add'}
                 size={tahtMi ? (yogun ? 16 : 20) : yogun ? 12 : 14}
-                color={tahtMi ? RenkTokenlari.accent : RenkTokenlari.textMuted}
+                color={seat.is_locked || tahtMi ? RenkTokenlari.accent : RenkTokenlari.textMuted}
               />
             </View>
           </KonusmaciAktiflikEfekti>
@@ -242,12 +225,7 @@ function KonusmaciKartiIc({
           {ad}
         </Text>
       )}
-      {!yogun && hostMu ? (
-        <View style={styles.hostRozet}>
-          <Ionicons name="ribbon" size={8} color={RenkTokenlari.accent} />
-          <Text style={styles.hostYazi}>{t('sesOda.sahipRozet')}</Text>
-        </View>
-      ) : !yogun && yardimciMu ? (
+      {!yogun && yardimciMu ? (
         <View style={styles.cohostRozet}>
           <Ionicons name="shield-checkmark" size={8} color="#8ec8ff" />
           <Text style={styles.cohostYazi}>ADMIN</Text>
@@ -270,6 +248,7 @@ function ayniKart(a: Props, b: Props) {
     a.seat.user_id === b.seat.user_id &&
     a.seat.is_muted === b.seat.is_muted &&
     a.seat.is_mic_locked === b.seat.is_mic_locked &&
+    a.seat.is_locked === b.seat.is_locked &&
     a.seat.is_cohost === b.seat.is_cohost &&
     a.seat.seat_index === b.seat.seat_index &&
     a.seat.profile?.avatar_url === b.seat.profile?.avatar_url &&
@@ -299,11 +278,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
     zIndex: 4,
-  },
-  haloHalka: {
-    position: 'absolute',
-    borderWidth: 1.5,
-    opacity: 0.9,
   },
   avatar: {
     backgroundColor: RenkTokenlari.seatEmpty,
@@ -379,24 +353,6 @@ const styles = StyleSheet.create({
     color: 'rgba(220,215,230,0.9)',
     fontSize: 8,
     fontWeight: '700',
-  },
-  hostRozet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 6,
-    backgroundColor: 'rgba(240,180,41,0.22)',
-    borderWidth: 1,
-    borderColor: 'rgba(240,180,41,0.35)',
-  },
-  hostYazi: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.accent,
-    fontSize: 7,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
   cohostRozet: {
     flexDirection: 'row',

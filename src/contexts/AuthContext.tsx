@@ -10,7 +10,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import i18n from '../i18n';
 import { supabase } from '../lib/supabase';
-import type { Profile, Wallet } from '../types/models';
+import type { Profile } from '../types/models';
 import { EmailIleGirisYap } from '../moduller/kimlik-dogrulama/giris/EmailIleGirisYap';
 import { EmailIleKayitOl } from '../moduller/kimlik-dogrulama/giris/EmailIleKayitOl';
 import { AppleIleGirisYap } from '../moduller/kimlik-dogrulama/giris/AppleIleGirisYap';
@@ -37,31 +37,11 @@ import {
   AuthContext,
   type AuthContextValue,
 } from './AuthContextNesnesi';
-
-function tamSayi(deger: unknown, yedek = 0): number {
-  const n = typeof deger === 'number' ? deger : Number(deger);
-  if (!Number.isFinite(n)) return yedek;
-  return Math.max(0, Math.floor(n));
-}
-
-function cuzdanSatiri(row: {
-  user_id: string;
-  coins: unknown;
-  diamonds: unknown;
-  updated_at?: string | null;
-}): Wallet {
-  return {
-    user_id: row.user_id,
-    coins: tamSayi(row.coins),
-    diamonds: tamSayi(row.diamonds),
-    updated_at: row.updated_at || new Date().toISOString(),
-  };
-}
+import { WalletProvider } from './WalletProvider';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
   const korumaKontrolRef = useRef(false);
 
@@ -100,13 +80,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    const { data: authData } = await supabase.auth.getUser();
-    const uid = authData.user?.id;
+    let authUser: { id: string; email?: string | null; identities?: { provider?: string }[]; user_metadata?: Record<string, unknown> } | null = null;
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      authUser = authData.user;
+    } catch {
+      authUser = null;
+    }
+    if (!authUser?.id) {
+      const { data: yerel } = await supabase.auth.getSession();
+      authUser = yerel.session?.user ?? null;
+    }
+    const uid = authUser?.id;
     if (!uid) {
       setProfile(null);
       return;
     }
-    const { data } = await supabase
+    const { data, error: profilHata } = await supabase
       .from('profiles')
       .select(
         [
@@ -145,6 +135,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('id', uid)
       .maybeSingle();
     let next = (data as unknown as Profile) ?? null;
+    if ((!next || profilHata) && !next?.banned_at) {
+      const { ProfilAnlikOku } = await import('../moduller/cevrimdisi/AnlikGoruntu');
+      const disk = await ProfilAnlikOku(uid, uid);
+      if (disk && !next) next = disk as unknown as Profile;
+    } else if (next) {
+      const { ProfilAnlikYaz } = await import('../moduller/cevrimdisi/AnlikGoruntu');
+      void ProfilAnlikYaz(uid, next as unknown as Record<string, unknown>);
+    }
 
     if (next?.banned_at) {
       setProfile(null);
@@ -159,8 +157,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Hesap tamamlanmis ama is_guest bayragi takili kalmissa duzelt
     const emailKimligiVar = Boolean(
-      authData.user?.email ||
-        authData.user?.identities?.some(
+      authUser?.email ||
+        authUser?.identities?.some(
           (i) =>
             i.provider === 'email' ||
             i.provider === 'spotify' ||
@@ -172,8 +170,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ),
     );
     const metaMisafirDegil =
-      authData.user?.user_metadata?.is_guest === false ||
-      authData.user?.user_metadata?.is_guest === 'false';
+      authUser?.user_metadata?.is_guest === false ||
+      authUser?.user_metadata?.is_guest === 'false';
     if (next?.is_guest === true && (emailKimligiVar || metaMisafirDegil)) {
       const { error } = await supabase
         .from('profiles')
@@ -189,61 +187,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setProfile(next);
   }, []);
-
-  const refreshWallet = useCallback(async () => {
-    const { data: oturum } = await supabase.auth.getSession();
-    const uid = oturum.session?.user?.id;
-    if (!uid) {
-      setWallet(null);
-      return;
-    }
-    const { data, error } = await supabase
-      .from('wallets')
-      .select('user_id, coins, diamonds, updated_at')
-      .eq('user_id', uid)
-      .maybeSingle();
-    if (error) return;
-    if (!data) {
-      setWallet({
-        user_id: uid,
-        coins: 0,
-        diamonds: 0,
-        updated_at: new Date().toISOString(),
-      });
-      return;
-    }
-    setWallet(
-      cuzdanSatiri(
-        data as {
-          user_id: string;
-          coins: unknown;
-          diamonds: unknown;
-          updated_at?: string | null;
-        },
-      ),
-    );
-  }, []);
-
-  const patchWallet = useCallback(
-    (patch: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => {
-      setWallet((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          coins:
-            patch.coins !== undefined
-              ? Math.max(0, Math.floor(patch.coins))
-              : prev.coins,
-          diamonds:
-            patch.diamonds !== undefined
-              ? Math.max(0, Math.floor(patch.diamonds))
-              : prev.diamonds,
-          updated_at: new Date().toISOString(),
-        };
-      });
-    },
-    [],
-  );
 
   const patchProfile = useCallback(
     (patch: Partial<Pick<Profile, 'avatar_url' | 'cover_url'>>) => {
@@ -262,67 +205,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
-
-  const adjustWallet = useCallback(
-    (delta: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => {
-      setWallet((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          coins:
-            delta.coins !== undefined
-              ? Math.max(0, Math.floor(prev.coins + delta.coins))
-              : prev.coins,
-          diamonds:
-            delta.diamonds !== undefined
-              ? Math.max(0, Math.floor(prev.diamonds + delta.diamonds))
-              : prev.diamonds,
-          updated_at: new Date().toISOString(),
-        };
-      });
-    },
-    [],
-  );
-
-  // Cuzdan realtime — harcama / yukleme her ekranda aninda
-  useEffect(() => {
-    const uid = session?.user?.id;
-    if (!uid) return;
-
-    const channel = supabase
-      .channel(`wallet-live-${uid}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'wallets',
-          filter: `user_id=eq.${uid}`,
-        },
-        (payload) => {
-          const row = payload.new as {
-            user_id?: string;
-            coins?: unknown;
-            diamonds?: unknown;
-            updated_at?: string | null;
-          } | null;
-          if (!row?.user_id || row.coins == null || row.diamonds == null) return;
-          setWallet(
-            cuzdanSatiri({
-              user_id: row.user_id,
-              coins: row.coins,
-              diamonds: row.diamonds,
-              updated_at: row.updated_at,
-            }),
-          );
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [session?.user?.id]);
 
   useEffect(() => {
     void GirisLobisiOnbellekIsit();
@@ -373,29 +255,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const onChange = (state: AppStateStatus) => {
       if (state === 'active' && session?.user) {
         void oturumuEngelDurumundaKapat();
-        void refreshWallet();
       }
     };
     const sub = AppState.addEventListener('change', onChange);
     return () => sub.remove();
-  }, [session?.user, oturumuEngelDurumundaKapat, refreshWallet]);
+  }, [session?.user, oturumuEngelDurumundaKapat]);
 
   useEffect(() => {
     if (!session?.user) {
       setProfile(null);
-      setWallet(null);
+      void import('../moduller/cevrimdisi/CevrimdisiOturum').then((m) =>
+        m.CevrimdisiOturumBagla(null),
+      );
       return;
     }
     void refreshProfile();
-    void refreshWallet();
     void CihazOturumuKaydet();
+    void import('../moduller/cevrimdisi/CevrimdisiOturum').then((m) =>
+      m.CevrimdisiOturumBagla(session.user.id),
+    );
     // Cikis sonrasi lobi medyasi aninda gelsin
     void GirisLobisiOnbellekIsit();
     // Uygulama tamamen kapatılıp açıldıysa takılı görüşmeleri bitir (1 kez / process)
     void import('../moduller/gorusme/oturum/GorusmeOturumYoneticisi').then(
       (m) => m.GorusmeUygulamaAcilisTemizligi(),
     );
-  }, [session?.user?.id, refreshProfile, refreshWallet]);
+  }, [session?.user?.id, refreshProfile]);
 
   const oturumEngelMesaji = (kod: string, mesaj?: string) => {
     if (kod === 'deleted') {
@@ -683,15 +568,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       user: session?.user ?? null,
       profile,
-      wallet,
       loading,
       isGuest: !!isGuest,
       refreshProfile,
-      refreshWallet,
       misafirBayraginiKaldir,
-      patchWallet,
       patchProfile,
-      adjustWallet,
       signIn,
       signInWithApple,
       signInWithSpotify,
@@ -711,15 +592,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [
       session,
       profile,
-      wallet,
       loading,
       isGuest,
       refreshProfile,
-      refreshWallet,
       misafirBayraginiKaldir,
-      patchWallet,
       patchProfile,
-      adjustWallet,
       signIn,
       signInWithApple,
       signInWithSpotify,
@@ -738,7 +615,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <WalletProvider userId={session?.user?.id ?? null}>
+        {children}
+      </WalletProvider>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
@@ -746,3 +629,5 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+
+export { useWallet } from './WalletProvider';

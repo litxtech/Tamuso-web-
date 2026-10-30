@@ -28,7 +28,6 @@ import { KullaniciGuvenlikMenusu } from '../../src/moduller/moderasyon/bilesenle
 import {
   DurumAkisiniGetir,
   DurumTakipAkisiniGetir,
-  DurumBegeniToggle,
   DurumGoruntulemeKaydet,
   DurumSil,
   type DurumOggesi,
@@ -82,7 +81,7 @@ export default function DurumAkisEkrani() {
   useTemayaAboneOl();
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
-  const { isGuest } = useAuth();
+  const { isGuest, user } = useAuth();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const magaza = useHediyeMagaza();
 
@@ -305,7 +304,14 @@ export default function DurumAkisEkrani() {
 
         void (async () => {
           try {
-            const r = await DurumBegeniToggle(oge.id);
+            const { DurumBegeniVeyaKuyruk } = await import(
+              '../../src/moduller/cevrimdisi/SosyalKuyruk'
+            );
+            const r = await DurumBegeniVeyaKuyruk({
+              userId: user?.id,
+              statusId: oge.id,
+              liked: sonrakiLiked,
+            });
             if (!r.ok) {
               itemGuncelle(oge.id, {
                 liked_by_me: oncekiLiked,
@@ -374,6 +380,42 @@ export default function DurumAkisEkrani() {
     [itemKaldir, t],
   );
 
+  const cevrimdisiKaydet = useCallback(
+    (oge: DurumOggesi) => {
+      const uid = user?.id;
+      if (!uid) return;
+      void (async () => {
+        const { CevrimdisiIcerikKaydet } = await import(
+          '../../src/moduller/cevrimdisi/CevrimdisiKaydet'
+        );
+        const tur =
+          oge.media_type === 'video'
+            ? 'video'
+            : oge.media_type === 'image'
+              ? 'image'
+              : oge.media_type === 'audio'
+                ? 'audio'
+                : 'text';
+        const r = await CevrimdisiIcerikKaydet({
+          userId: uid,
+          id: oge.id,
+          url: oge.media_url,
+          tur,
+          baslik: oge.caption,
+        });
+        Alert.alert(
+          t('durum.gonderi'),
+          r.ok
+            ? t('cevrimdisi.kaydedildi')
+            : r.hata === 'disk'
+              ? t('cevrimdisi.diskYetersiz')
+              : t('cevrimdisi.senkronHata'),
+        );
+      })();
+    },
+    [t, user?.id],
+  );
+
   const menuAc = useCallback(
     (oge: DurumOggesi) => {
       if (oge.is_mine) {
@@ -389,6 +431,10 @@ export default function DurumAkisEkrani() {
           });
         }
         buttons.push(
+          {
+            text: t('cevrimdisi.kaydetCevrimdisi'),
+            onPress: () => cevrimdisiKaydet(oge),
+          },
           {
             text: t('ortak.paylas'),
             onPress: () =>
@@ -406,6 +452,10 @@ export default function DurumAkisEkrani() {
       }
       Alert.alert(t('durum.gonderi'), undefined, [
         {
+          text: t('cevrimdisi.kaydetCevrimdisi'),
+          onPress: () => cevrimdisiKaydet(oge),
+        },
+        {
           text: t('ortak.paylas'),
           onPress: () =>
             islemiDene('mesaj_gonder', () => setPaylasStatusId(oge.id)),
@@ -418,7 +468,7 @@ export default function DurumAkisEkrani() {
         { text: t('ortak.vazgec'), style: 'cancel' },
       ]);
     },
-    [islemiDene, sil, t],
+    [cevrimdisiKaydet, islemiDene, sil, t],
   );
 
   const listFooter = useMemo(() => {

@@ -91,6 +91,7 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
     baslik: 'Ajans',
     flagKeys: [
       'agency_enabled',
+      'agency_meetings_enabled',
       'agency_verification_v2_enabled',
       'agency_verification_financial_locks',
       'agency_verification_sync_wallet_kyc',
@@ -121,17 +122,6 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
       'kozmik_kaskad_enabled',
       'zeus_enabled',
       'nox_reels_enabled',
-      'studio_enabled',
-      'studio_menu_visible',
-      'new_game_creation_enabled',
-      'game_testing_enabled',
-      'game_submission_enabled',
-      'game_publishing_enabled',
-      'ai_generation_enabled',
-      'meshy_enabled',
-      'elevenlabs_enabled',
-      'playcanvas_enabled',
-      'creator_rewards_enabled',
     ],
   },
   {
@@ -229,6 +219,7 @@ export const ADMIN_OZELLIK_GRUPLARI: AdminOzellikGrubu[] = [
       'kill_people_paid_calls',
       'kill_offline_outbox',
       'kill_stories',
+      'kill_agency_meetings',
     ],
   },
 ];
@@ -297,6 +288,10 @@ const OZELLIK_METINLERI: Record<string, AdminOzellikMetni> = {
   agency_enabled: {
     baslik: 'Ajanslar',
     aciklama: 'Ajans ve host yönetimi özelliklerini kontrol eder.',
+  },
+  agency_meetings_enabled: {
+    baslik: 'Ajans görüşmeleri',
+    aciklama: 'Doğrulanmış ajansların toplantı ve görüşme odalarını açar. Kapalıyken mevcut ajans paneli durur.',
   },
   agency_verification_v2_enabled: {
     baslik: 'Ajans doğrulama V2',
@@ -475,50 +470,6 @@ const OZELLIK_METINLERI: Record<string, AdminOzellikMetni> = {
   games_enabled: {
     baslik: 'Oyunlar',
     aciklama: 'Tüm oyun platformunu (katalog ve giriş) açar veya kapatır.',
-  },
-  studio_enabled: {
-    baslik: 'Tamuso Studio',
-    aciklama: 'Oyun oluşturma stüdyosunun tamamını açar veya kapatır.',
-  },
-  studio_menu_visible: {
-    baslik: 'Studio menüsü',
-    aciklama: 'Hamburger menüde Tamuso Studio öğesini gösterir.',
-  },
-  new_game_creation_enabled: {
-    baslik: 'Yeni oyun taslağı',
-    aciklama: 'Kullanıcının yeni oyun taslağı oluşturmasını açar.',
-  },
-  game_testing_enabled: {
-    baslik: 'Oyun testi',
-    aciklama: 'Taslak test oturumu. Bu sürümde oynanabilir önizleme yok.',
-  },
-  game_submission_enabled: {
-    baslik: 'Oyunu incelemeye gönderme',
-    aciklama: 'Yayın öncesi gönderim. Bu sürümde inceleme kuyruğu yok.',
-  },
-  game_publishing_enabled: {
-    baslik: 'Oyun yayınlama',
-    aciklama: 'Onaylı oyunu yayına alma. Bu sürümde yayın motoru yok.',
-  },
-  ai_generation_enabled: {
-    baslik: 'Studio yapay zekâ',
-    aciklama: 'Oyun planı üretimini açar. 3D veya ses üretmez.',
-  },
-  meshy_enabled: {
-    baslik: '3D model üretimi',
-    aciklama: 'Meshy bayrağı. Bu sürümde 3D üretim bağlı değil.',
-  },
-  elevenlabs_enabled: {
-    baslik: 'Ses üretimi',
-    aciklama: 'ElevenLabs bayrağı. Bu sürümde ses üretimi bağlı değil.',
-  },
-  playcanvas_enabled: {
-    baslik: 'Oyun önizlemesi',
-    aciklama: 'PlayCanvas bayrağı. Bu sürümde oynanabilir önizleme yok.',
-  },
-  creator_rewards_enabled: {
-    baslik: 'Creator ödülü',
-    aciklama: 'Ödül programı bayrağı. Kazanç garanti edilmez ve bu sürümde ödeme yok.',
   },
   kozmik_kaskad_enabled: {
     baslik: 'Kozmik Kaskad',
@@ -773,6 +724,10 @@ const KILL_METINLERI: Record<string, AdminOzellikMetni> = {
   kill_stories: {
     baslik: 'Hikayeler kapat',
     aciklama: 'Hikaye tepsi/oluşturma/izleyiciyi acil kapatır.',
+  },
+  kill_agency_meetings: {
+    baslik: 'Ajans görüşmelerini durdur',
+    aciklama: 'Yeni ajans toplantısı ve odaya katılımı acil keser. Mevcut ajans, canlı yayın ve 1:1 arama durmaz.',
   },
 };
 

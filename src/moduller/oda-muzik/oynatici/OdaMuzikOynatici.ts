@@ -16,14 +16,20 @@ const PLAYER_OPTS = {
   updateInterval: 8000,
 } as const;
 
+let sonSesToparla = 0;
+
+/** Tam configureAudio yok — oda müziğiyle birlikte ses grafiğini yıkıp cihazı ısıtıyor. */
 function livekitSesToparla() {
   if (Platform.OS !== 'ios') return;
+  const simdi = Date.now();
+  if (simdi - sonSesToparla < 4000) return;
+  sonSesToparla = simdi;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { MedyaSesOturumunuYenile } = require('../../livekit/MedyaBaglantisi') as {
       MedyaSesOturumunuYenile: (zorla?: boolean) => void;
     };
-    MedyaSesOturumunuYenile(true);
+    MedyaSesOturumunuYenile(false);
   } catch {
     /* ignore */
   }
@@ -172,6 +178,18 @@ export async function OdaMuzikSessionUygula(session: RoomMusicSession | null) {
 
   targetVolume = session.normal_volume || cfg.default_normal_volume;
   const url = session.track.audio_url;
+  const wantPosOn = serverPositionMs(session) / 1000;
+  const curOn = Number(player?.currentTime ?? 0);
+  if (
+    player &&
+    currentUrl === url &&
+    session.state === 'PLAYING' &&
+    player.playing &&
+    Math.abs(curOn - wantPosOn) <= 1.5
+  ) {
+    return;
+  }
+
   const gen = ++generation;
 
   if (currentUrl !== url || !player) {
@@ -218,7 +236,6 @@ export async function OdaMuzikSessionUygula(session: RoomMusicSession | null) {
         } catch {
           /* noop */
         }
-        livekitSesToparla();
       }, 400);
     }
   } else if (session.state === 'PAUSED' || session.state === 'STOPPED') {
@@ -267,6 +284,17 @@ export function OdaMuzikPozisyonMs(): number {
 
 export function OdaMuzikCalıyorMu(): boolean {
   return !!player && !!currentUrl;
+}
+
+/** Ses oturumu yenilenince iOS müziği keser — aynı parçayı sürdür, grafiği kurma. */
+export function OdaMuzikDevamEttir() {
+  if (!player || !currentUrl) return;
+  try {
+    if (!player.playing) player.play();
+    uygulaVolume();
+  } catch {
+    /* noop */
+  }
 }
 
 export function OdaMuzikDuckBaslat() {

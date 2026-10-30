@@ -58,6 +58,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403, headers: corsHeaders });
     }
 
+    // Granular RBAC: require admin.admins.create (SUPER_ADMIN bypasses via RPC)
+    const { data: canCreate, error: permErr } = await userClient.rpc(
+      'admin_has_permission',
+      { p_permission: 'admin.admins.create' },
+    );
+    if (permErr || canCreate !== true) {
+      return Response.json(
+        { error: 'Forbidden: missing permission admin.admins.create' },
+        { status: 403, headers: corsHeaders },
+      );
+    }
+
     const body = (await req.json()) as Body;
     const email = (body.email ?? '').trim().toLowerCase();
     const password = body.password ?? '';

@@ -6,6 +6,7 @@
 import { supabase } from '../../../../lib/supabase';
 import { GameLogger } from '../../cekirdek/OyunLogger';
 import { oyunRpcRetryIle } from './OyunAgIstek';
+import { STORM_KING_PAKETTE } from '../../storm-king/StormKingPaket';
 import type {
   GameCode,
   GameControlConfig,
@@ -18,24 +19,54 @@ export type GameControlBundle = {
   override: GameControlOverride | null;
 };
 
-/** Uygulamada listelenmeye uygun oyun kodları (kapalı / bakım hariç). */
+/** Kullanıcıya açık oyunlar. Kapalı / bakım kodları sorgu zaten eler. */
+const KULLANICI_OYUNLARI = new Set<string>(STORM_KING_PAKETTE ? ['fruit_wheel', 'storm_king'] : ['fruit_wheel']);
+
+export function KullaniciOyunuMu(kod: string | null | undefined): boolean {
+  return !!kod && KULLANICI_OYUNLARI.has(kod);
+}
+
+/** Sunucunun bahis/spin kapısında baktığı oyun bayrağı. */
+const OYUN_BAYRAGI: Record<string, string> = {
+  fruit_wheel: 'fruit_wheel_enabled',
+  storm_king: 'storm_king_enabled',
+};
+
+function KullaniciOyunlariniSuz(kodlar: GameCode[]): GameCode[] {
+  return kodlar.filter((kod) => KULLANICI_OYUNLARI.has(kod));
+}
+
+/** Uygulamada listelenmeye uygun oyun kodları (kapalı / bakım / bayrağı kapalı hariç). */
 export async function listVisibleGameCodes(): Promise<RpcResult<GameCode[]>> {
   try {
-    const { data, error } = await oyunRpcRetryIle(() =>
+    const [cfgRes, bayrakRes] = await Promise.all([
+      oyunRpcRetryIle(() =>
+        supabase
+          .from('game_control_configs')
+          .select('game_code, is_enabled, mode')
+          .eq('is_enabled', true)
+          .neq('mode', 'MAINTENANCE')
+          .order('game_code', { ascending: true }),
+      ),
       supabase
-        .from('game_control_configs')
-        .select('game_code, is_enabled, mode')
-        .eq('is_enabled', true)
-        .neq('mode', 'MAINTENANCE')
-        .order('game_code', { ascending: true }),
-    );
+        .from('feature_flags')
+        .select('key, enabled')
+        .in('key', Object.values(OYUN_BAYRAGI)),
+    ]);
 
-    if (error) {
-      GameLogger.warn('listVisibleGameCodes', { hata: error.message });
-      return { ok: false, hata: error.message ?? 'listVisibleGameCodes' };
+    if (cfgRes.error) {
+      GameLogger.warn('listVisibleGameCodes', { hata: cfgRes.error.message });
+      return { ok: false, hata: cfgRes.error.message ?? 'listVisibleGameCodes' };
     }
 
-    const codes = ((data ?? []) as Array<{ game_code: GameCode }>).map((r) => r.game_code);
+    const kapaliBayraklar = new Set(
+      ((bayrakRes.data ?? []) as Array<{ key: string; enabled: boolean }>)
+        .filter((b) => !b.enabled)
+        .map((b) => b.key),
+    );
+    const codes = KullaniciOyunlariniSuz(
+      ((cfgRes.data ?? []) as Array<{ game_code: GameCode }>).map((r) => r.game_code),
+    ).filter((kod) => !kapaliBayraklar.has(OYUN_BAYRAGI[kod] ?? ''));
     return { ok: true, data: codes };
   } catch (e) {
     const hata = e instanceof Error ? e.message : 'listVisibleGameCodes başarısız';
@@ -45,8 +76,9 @@ export async function listVisibleGameCodes(): Promise<RpcResult<GameCode[]>> {
 }
 
 export async function isGameVisible(gameCode: GameCode): Promise<boolean> {
+  if (!KullaniciOyunuMu(gameCode)) return false;
   const res = await listVisibleGameCodes();
-  // Ağ kopunca oyunu kapalı gösterme — spin endpoint zaten bayrağı zorlar.
+  // Ağ kopunca meyve oyununu kapalı gösterme — spin endpoint zaten bayrağı zorlar.
   if (!res.ok) return true;
   return res.data.includes(gameCode);
 }

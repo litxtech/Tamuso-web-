@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import i18n from '../../../i18n';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../contexts/AuthContext';
 import { useMisafirIslemKapisi } from '../../misafir-hesabi/islemler/useMisafirIslemKapisi';
 import { useCoinYuklePaneli } from '../../cuzdan/islemler/useCoinYuklePaneli';
-import type { Gift } from '../../../types/models';
+import type { CoinKaynagi, Gift } from '../../../types/models';
 import { HediyeKatalogunuGetir } from '../okuma/HediyeKatalogunuGetir';
 import { HEDIYE_FALLBACK_50 } from '../katalog/HediyeFallback50';
 import { HediyeAdiCevir } from '../katalog/HediyeAdiCevir';
@@ -19,8 +19,15 @@ type GonderBaglam = {
   liveSessionId?: string | null;
   pkAlicilar?: HediyePkAlici[];
   animasyon?: boolean;
+  channel?: 'message' | 'live' | null;
   onBasarili?: (gift: Gift, adet: number) => void;
 };
+
+const KAYNAK_ALANI = {
+  purchased: 'coins',
+  game: 'game_coins',
+  bonus: 'bonus_coins',
+} as const satisfies Record<CoinKaynagi, 'coins' | 'game_coins' | 'bonus_coins'>;
 
 /**
  * Sesli oda / canlı / mesaj / profil / durum — ortak hediye mağazası.
@@ -28,8 +35,8 @@ type GonderBaglam = {
  * Coin yükleme hediye Modal içinde (ikinci Modal yok — iOS).
  */
 export function useHediyeMagaza() {
-  const { wallet, adjustWallet, refreshWallet, isGuest, user, profile } =
-    useAuth();
+  const { isGuest, user, profile } = useAuth();
+  const { wallet, adjustWallet, refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, upgradeAc, islemiDene } =
     useMisafirIslemKapisi(isGuest);
   const coinYuklePaneli = useCoinYuklePaneli();
@@ -38,6 +45,7 @@ export function useHediyeMagaza() {
   const [gonderiyor, setGonderiyor] = useState(false);
   const gonderKilit = useRef(false);
   const [gifts, setGifts] = useState<Gift[]>(HEDIYE_FALLBACK_50);
+  const [coinKaynagi, setCoinKaynagi] = useState<CoinKaynagi>('purchased');
   const [hedef, setHedef] = useState<{
     receiverId: string;
     roomId?: string | null;
@@ -46,9 +54,19 @@ export function useHediyeMagaza() {
     pkAlicilar?: HediyePkAlici[];
     aliciAdi?: string | null;
     animasyon?: boolean;
+    channel?: 'message' | 'live' | null;
     onBasarili?: (gift: Gift, adet: number) => void;
   } | null>(null);
   const [seciliPkAliciId, setSeciliPkAliciId] = useState<string | null>(null);
+
+  const coinBakiyeleri = useMemo<Record<CoinKaynagi, number>>(
+    () => ({
+      purchased: wallet?.coins ?? 0,
+      game: wallet?.game_coins ?? 0,
+      bonus: wallet?.bonus_coins ?? 0,
+    }),
+    [wallet?.coins, wallet?.game_coins, wallet?.bonus_coins],
+  );
 
   useEffect(() => {
     void HediyeKatalogunuGetir()
@@ -67,6 +85,7 @@ export function useHediyeMagaza() {
       liveSessionId?: string | null;
       pkAlicilar?: HediyePkAlici[];
       animasyon?: boolean;
+      channel?: 'message' | 'live' | null;
       onBasarili?: (gift: Gift, adet: number) => void;
     }) => {
       const pkListe = (opts.pkAlicilar ?? []).filter(
@@ -88,6 +107,7 @@ export function useHediyeMagaza() {
       islemiDene('hediye_gonder', () => {
         const secili = pkListe.find((a) => a.id === varsayilanId);
         setSeciliPkAliciId(varsayilanId);
+        setCoinKaynagi('purchased');
         setHedef({
           receiverId: varsayilanId,
           roomId: opts.roomId ?? null,
@@ -96,6 +116,7 @@ export function useHediyeMagaza() {
           pkAlicilar: pkListe.length > 1 ? pkListe : undefined,
           aliciAdi: secili?.ad ?? opts.aliciAdi,
           animasyon: opts.animasyon !== false,
+          channel: opts.channel ?? null,
           onBasarili: opts.onBasarili,
         });
         setAcik(true);
@@ -128,8 +149,9 @@ export function useHediyeMagaza() {
         receiverId,
         liveSessionId,
       };
+      const kaynak = coinKaynagi;
       const maliyet = gift.coin_cost * adet;
-      const bakiye = wallet?.coins ?? 0;
+      const bakiye = coinBakiyeleri[kaynak];
 
       if (user?.id && receiverId === user.id) {
         Alert.alert(i18n.t('hediye.baslik'), i18n.t('hediye.kendineGonderemezsin'));
@@ -137,8 +159,12 @@ export function useHediyeMagaza() {
       }
 
       if (maliyet > bakiye) {
-        // HediyeMagazaPaneli yetmez → panel içi coin moda geçer
-        paketleriYenile?.(true);
+        if (kaynak === 'purchased') {
+          // HediyeMagazaPaneli yetmez → panel içi coin moda geçer
+          paketleriYenile?.(true);
+        } else {
+          Alert.alert(i18n.t('hediye.yetersizCoin'), i18n.t('cuzdanY.kaynakYetersiz'));
+        }
         return;
       }
 
@@ -180,14 +206,18 @@ export function useHediyeMagaza() {
               quantity: adet,
               statusId: baglam.statusId ?? null,
               liveSessionId,
+              coinSource: kaynak,
+              channel: baglam.channel ?? null,
             });
             if (!sonuc.ok) {
               const yetersiz = /insufficient|yetersiz/i.test(sonuc.hata);
               if (yetersiz) {
-                paketleriYenile?.();
+                if (kaynak === 'purchased') paketleriYenile?.();
                 Alert.alert(
                   i18n.t('hediye.yetersizCoin'),
-                  i18n.t('hediye.yetersizCoinBody'),
+                  kaynak === 'purchased'
+                    ? i18n.t('hediye.yetersizCoinBody')
+                    : i18n.t('cuzdanY.kaynakYetersiz'),
                 );
                 return;
               }
@@ -195,7 +225,7 @@ export function useHediyeMagaza() {
               return;
             }
             if (sonuc.coinsSpent > 0) {
-              adjustWallet({ coins: -sonuc.coinsSpent });
+              adjustWallet({ [KAYNAK_ALANI[kaynak]]: -sonuc.coinsSpent });
             }
             void refreshWallet();
             baglam.onBasarili?.(gift, adet);
@@ -213,7 +243,8 @@ export function useHediyeMagaza() {
       adjustWallet,
       refreshWallet,
       profile,
-      wallet?.coins,
+      coinKaynagi,
+      coinBakiyeleri,
       paketleriYenile,
       user?.id,
     ],
@@ -236,6 +267,9 @@ export function useHediyeMagaza() {
     gonderiyor,
     gifts,
     coins: wallet?.coins,
+    coinKaynagi,
+    setCoinKaynagi,
+    coinBakiyeleri,
     aliciAdi: seciliPk?.ad ?? hedef?.aliciAdi,
     pkAlicilar: hedef?.pkAlicilar,
     seciliPkAliciId,

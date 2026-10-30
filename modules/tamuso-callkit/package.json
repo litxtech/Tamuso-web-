@@ -1,0 +1,15 @@
+{
+  "name": "tamuso-callkit",
+  "version": "1.0.0",
+  "description": "Tamuso CallKit and PushKit bridge",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {},
+  "keywords": ["react-native", "expo", "callkit", "pushkit"],
+  "license": "MIT",
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

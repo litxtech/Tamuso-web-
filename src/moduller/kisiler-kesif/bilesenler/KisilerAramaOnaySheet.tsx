@@ -26,7 +26,7 @@ import {
 import type { KisilerAramaOnizleme } from '../tipler';
 import { saniyeMetni } from '../utils/KisilerYardimcilar';
 import { useCeviri } from '../../../i18n/useCeviri';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useWallet } from '../../../contexts/AuthContext';
 
 type Props = {
   visible: boolean;
@@ -46,7 +46,7 @@ export function KisilerAramaOnaySheet({
   busy,
 }: Props) {
   const { t } = useCeviri();
-  const { wallet, refreshWallet } = useAuth();
+  const { wallet, refreshWallet } = useWallet();
   const [onizleme, setOnizleme] = useState<KisilerAramaOnizleme | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const kapaliBildirimRef = useRef<string | null>(null);

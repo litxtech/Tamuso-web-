@@ -29,7 +29,8 @@ import Animated, {
 import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { CanliHediyeSimgesi } from '../../cuzdan/bilesenler/CanliCoinSimgesi';
 import { CoinPaketMagaza } from '../../cuzdan/bilesenler/CoinPaketMagaza';
-import type { CoinPackage, Gift } from '../../../types/models';
+import type { CoinKaynagi, CoinPackage, Gift } from '../../../types/models';
+import { HediyeCoinKaynagiSecici } from './HediyeCoinKaynagiSecici';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import {
@@ -87,6 +88,10 @@ type Props = {
   onCoinPaketHazirla?: () => void;
   /** Gönderim sürerken buton kilidi */
   gonderiyor?: boolean;
+  /** Verilirse kullanıcı hangi coin bakiyesinden göndereceğini seçer */
+  coinKaynagi?: CoinKaynagi;
+  onCoinKaynagiDegis?: (k: CoinKaynagi) => void;
+  coinBakiyeleri?: Record<CoinKaynagi, number>;
 };
 
 type KartProps = {
@@ -134,7 +139,7 @@ const HediyeKart = React.memo(function HediyeKart({
 export function HediyeMagazaPaneli({
   visible,
   gifts,
-  coins,
+  coins: coinsProp,
   aliciAdi,
   pkAlicilar,
   seciliPkAliciId,
@@ -148,7 +153,11 @@ export function HediyeMagazaPaneli({
   onCoinBuy,
   onCoinPaketHazirla,
   gonderiyor = false,
+  coinKaynagi,
+  onCoinKaynagiDegis,
+  coinBakiyeleri,
 }: Props) {
+  const coins = coinBakiyeleri && coinKaynagi ? coinBakiyeleri[coinKaynagi] : coinsProp;
   const { t } = useCeviri();
   const { height: ekranYuk } = useWindowDimensions();
   const locale = DIL_LOCALE_MAP[AktifDil()];
@@ -163,12 +172,25 @@ export function HediyeMagazaPaneli({
   const kapatRef = useRef(onClose);
   kapatRef.current = onClose;
   const translateY = useSharedValue(0);
+  const kapatZaman = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gorunurOnce = useRef(false);
 
   const kapat = useCallback(() => {
+    if (kapatZaman.current) {
+      clearTimeout(kapatZaman.current);
+      kapatZaman.current = null;
+    }
     kapatRef.current();
   }, []);
 
   const sayfayiKapat = useCallback(() => {
+    if (kapatZaman.current) clearTimeout(kapatZaman.current);
+    // Android'de withTiming bitiş callback'i sık düşer; panel açık sanılır,
+    // translateY ekran dışında kalır ve hediye bir daha açılmaz.
+    kapatZaman.current = setTimeout(() => {
+      kapatZaman.current = null;
+      kapatRef.current();
+    }, 280);
     translateY.value = withTiming(
       Math.max(ekranYuk, 480),
       { duration: 200, easing: Easing.out(Easing.cubic) },
@@ -178,10 +200,16 @@ export function HediyeMagazaPaneli({
     );
   }, [ekranYuk, kapat, translateY]);
 
-  useEffect(() => {
-    if (!visible) return;
+  if (visible && !gorunurOnce.current) {
     translateY.value = 0;
-  }, [translateY, visible]);
+  }
+  gorunurOnce.current = visible;
+
+  useEffect(() => {
+    return () => {
+      if (kapatZaman.current) clearTimeout(kapatZaman.current);
+    };
+  }, []);
 
   const asagiKaydir = useMemo(
     () =>
@@ -193,13 +221,7 @@ export function HediyeMagazaPaneli({
         })
         .onEnd((e) => {
           if (translateY.value > 72 || e.velocityY > 900) {
-            translateY.value = withTiming(
-              Math.max(ekranYuk, 480),
-              { duration: 200, easing: Easing.out(Easing.cubic) },
-              (bitti) => {
-                if (bitti) runOnJS(kapat)();
-              },
-            );
+            runOnJS(sayfayiKapat)();
             return;
           }
           translateY.value = withTiming(0, {
@@ -207,7 +229,7 @@ export function HediyeMagazaPaneli({
             easing: Easing.out(Easing.cubic),
           });
         }),
-    [ekranYuk, kapat, translateY],
+    [sayfayiKapat, translateY],
   );
 
   const sheetSuruk = useAnimatedStyle(() => ({
@@ -221,7 +243,7 @@ export function HediyeMagazaPaneli({
   const sheetPadBottom = odaAlici
     ? BoslukTokenlari.md
     : ANDROID
-      ? Math.max(insets.bottom, 10) + 14
+      ? 10
       : Math.max(insets.bottom, 8) + BoslukTokenlari.md;
 
   const sirali = useMemo(
@@ -321,8 +343,6 @@ export function HediyeMagazaPaneli({
     [secili?.id, coins],
   );
 
-  if (!visible) return null;
-
   return (
     <Modal
       visible={visible}
@@ -339,6 +359,7 @@ export function HediyeMagazaPaneli({
       hardwareAccelerated
       presentationStyle="overFullScreen"
     >
+      {visible ? (
       <GestureHandlerRootView style={[styles.root, { paddingBottom: sheetLift }]}>
         <Pressable
           style={styles.perde}
@@ -420,9 +441,18 @@ export function HediyeMagazaPaneli({
 
             {coinModu && coinPackages && onCoinBuy ? (
               <ScrollView
-                style={styles.coinScroll}
+                style={[
+                  styles.coinScroll,
+                  { maxHeight: Math.round(ekranYuk * (ANDROID ? 0.52 : 0.62)) },
+                ]}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.coinScrollIc}
+                contentContainerStyle={[
+                  styles.coinScrollIc,
+                  {
+                    paddingBottom:
+                      Math.max(insets.bottom, 12) + (ANDROID ? 36 : 16),
+                  },
+                ]}
                 keyboardShouldPersistTaps="handled"
               >
                 <CoinPaketMagaza
@@ -618,6 +648,14 @@ export function HediyeMagazaPaneli({
                   </ScrollView>
                 </View>
 
+                {coinBakiyeleri && coinKaynagi && onCoinKaynagiDegis ? (
+                  <HediyeCoinKaynagiSecici
+                    kaynak={coinKaynagi}
+                    bakiyeler={coinBakiyeleri}
+                    onDegis={onCoinKaynagiDegis}
+                  />
+                ) : null}
+
                 <View style={styles.altBar}>
                   <Pressable
                     style={styles.bakiye}
@@ -658,6 +696,9 @@ export function HediyeMagazaPaneli({
                       style={styles.gonder}
                     >
                       <Text
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.72}
                         style={[
                           styles.gonderYazi,
                           yetmez && { color: '#1A1208' },
@@ -681,6 +722,7 @@ export function HediyeMagazaPaneli({
           </View>
         </Animated.View>
       </GestureHandlerRootView>
+      ) : null}
     </Modal>
   );
 }
@@ -693,8 +735,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.28)',
   },
   sheet: {
-    maxHeight: '72%',
-    minHeight: '52%',
+    maxHeight: ANDROID ? '80%' : '72%',
+    minHeight: ANDROID ? '46%' : '52%',
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
     overflow: 'hidden',
@@ -795,7 +837,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   gridWrap: {
-    height: ANDROID ? 240 : 268,
+    flexGrow: 1,
+    flexShrink: 1,
+    minHeight: ANDROID ? 132 : 180,
+    maxHeight: ANDROID ? 188 : 268,
     paddingHorizontal: BoslukTokenlari.xs,
   },
   gridEsnek: {

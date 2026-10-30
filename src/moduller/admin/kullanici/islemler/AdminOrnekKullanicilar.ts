@@ -48,8 +48,23 @@ export function AdminOrnekKullaniciEkle(): Promise<AdminIslemSonucu> {
 }
 
 /** Tüm örnek profilleri kalıcı siler */
-export function AdminOrnekKullaniciSil(): Promise<AdminIslemSonucu> {
-  return ornekFonksiyonCagir('purge');
+export async function AdminOrnekKullaniciSil(): Promise<AdminIslemSonucu> {
+  const kenar = await ornekFonksiyonCagir('purge');
+  const { data, error } = await supabase.rpc('admin_ornek_kullanicilari_sil');
+  if (error && !kenar.ok) {
+    return { ok: false, hata: error.message };
+  }
+  if (error) return kenar;
+  const veri = (data ?? {}) as Record<string, unknown>;
+  const kenarVeri = kenar.ok ? (kenar.veri ?? {}) : {};
+  return {
+    ok: true,
+    veri: {
+      ...kenarVeri,
+      ...veri,
+      silinen: Number(veri.silinen ?? kenarVeri.silinen ?? 0),
+    },
+  };
 }
 
 export function AdminOrnekKullaniciDurum(): Promise<AdminIslemSonucu> {

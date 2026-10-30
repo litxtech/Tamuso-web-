@@ -41,13 +41,14 @@ async function bekleyenleriTemizle(
   iap: typeof import('expo-iap'),
   sku: string,
   pkgId: string,
-): Promise<void> {
+): Promise<boolean> {
   let pending: PurchaseLike[] = [];
   try {
     pending = (await iap.getAvailablePurchases()) as PurchaseLike[];
   } catch {
-    return;
+    return true;
   }
+  let temiz = true;
   for (const p of pending ?? []) {
     if (p.productId !== sku) continue;
     const txnId = p.transactionId ?? p.id ?? null;
@@ -64,18 +65,19 @@ async function bekleyenleriTemizle(
       continue;
     }
 
-    // Daha önce doğrulanmamışsa idempotent verify (coin kaçmasın), sonra finish
-    try {
-      await IapReceiptDogrula({
-        packageId: pkgId,
-        store: Platform.OS === 'ios' ? 'apple' : 'google',
-        productId: sku,
-        transactionId: txnId ?? undefined,
-        purchaseToken: p.purchaseToken ?? undefined,
-        idempotencyKey: FinansIdempotencyAnahtariOlustur('coin_purchase_drain'),
-      });
-    } catch {
-      /* verify başarısız olsa da kuyruğu temizle — yeni sheet açılsın */
+    // Ödemesi alınmış ama coin'i yazılmamış işlem kapatılırsa kullanıcı kaybeder:
+    // yalnızca sunucu onaylarsa veya kesin reddederse kapat.
+    const sonuc = await IapReceiptDogrula({
+      packageId: pkgId,
+      store: Platform.OS === 'ios' ? 'apple' : 'google',
+      productId: sku,
+      transactionId: txnId ?? undefined,
+      purchaseToken: p.purchaseToken ?? undefined,
+      idempotencyKey: FinansIdempotencyAnahtariOlustur('coin_purchase_drain'),
+    });
+    if (!sonuc.ok && !sonuc.kesin) {
+      temiz = false;
+      continue;
     }
     try {
       await iap.finishTransaction({
@@ -87,6 +89,7 @@ async function bekleyenleriTemizle(
     }
     if (txnId) IapTxnIsle(txnId);
   }
+  return temiz;
 }
 
 /**
@@ -125,7 +128,7 @@ export async function IapIleCoinSatinAl(
 
   const sku = IapUrunId(pkg);
   if (!sku) {
-    return { ok: false, hata: i18n.t('aiMuzik.storeUrunuYok', { sku: '?' }), kod: 'store' };
+    return { ok: false, hata: i18n.t('cuzdanY.storeUrunuYok', { sku: '?' }), kod: 'store' };
   }
 
   let iap: typeof import('expo-iap');
@@ -199,22 +202,19 @@ export async function IapIleCoinSatinAl(
           return;
         }
 
-        // 2) requestPurchase öncesi replay — verify+finish, promise'i çözme
+        // 2) requestPurchase öncesi replay — verify, onaylanırsa finish; promise'i çözme
         if (!purchaseArmed) {
-          try {
-            await IapReceiptDogrula({
-              packageId: pkg.id,
-              store: Platform.OS === 'ios' ? 'apple' : 'google',
-              productId,
-              transactionId: txnId ?? undefined,
-              purchaseToken: purchase.purchaseToken ?? undefined,
-              idempotencyKey: FinansIdempotencyAnahtariOlustur(
-                'coin_purchase_drain',
-              ),
-            });
-          } catch {
-            /* */
-          }
+          const onceki = await IapReceiptDogrula({
+            packageId: pkg.id,
+            store: Platform.OS === 'ios' ? 'apple' : 'google',
+            productId,
+            transactionId: txnId ?? undefined,
+            purchaseToken: purchase.purchaseToken ?? undefined,
+            idempotencyKey: FinansIdempotencyAnahtariOlustur(
+              'coin_purchase_drain',
+            ),
+          });
+          if (!onceki.ok && !onceki.kesin) return;
           try {
             await finishTransaction({ purchase, isConsumable: true });
           } catch {
@@ -224,11 +224,20 @@ export async function IapIleCoinSatinAl(
           return;
         }
 
-        // 3) Çok eski txn (armed'dan önce) — Apple bazen eskiyi tekrar basar
+        // 3) Çok eski txn (armed'dan önce) — Apple bazen eskiyi tekrar basar; sunucu idempotent
         const txnMs = Number(
           (purchase as { transactionDate?: number }).transactionDate ?? 0,
         );
         if (txnMs > 0 && armedAt.ms > 0 && txnMs + 2000 < armedAt.ms) {
+          const eski = await IapReceiptDogrula({
+            packageId: pkg.id,
+            store: Platform.OS === 'ios' ? 'apple' : 'google',
+            productId,
+            transactionId: txnId ?? undefined,
+            purchaseToken: purchase.purchaseToken ?? undefined,
+            idempotencyKey: FinansIdempotencyAnahtariOlustur('coin_purchase_drain'),
+          });
+          if (!eski.ok && !eski.kesin) return;
           try {
             await finishTransaction({ purchase, isConsumable: true });
           } catch {
@@ -246,6 +255,12 @@ export async function IapIleCoinSatinAl(
           purchaseToken: purchase.purchaseToken ?? undefined,
           idempotencyKey,
         });
+
+        if (!verify.ok && !verify.kesin) {
+          // İşlem açık kalır; mağaza bir sonraki açılışta yeniden iletir ve tekrar doğrulanır.
+          done({ ok: false, hata: i18n.t('cuzdanY.satinAlmaDogrulamaBekliyor'), kod: 'verify' });
+          return;
+        }
 
         try {
           await finishTransaction({ purchase, isConsumable: true });
@@ -266,7 +281,7 @@ export async function IapIleCoinSatinAl(
           hata:
             e instanceof Error
               ? e.message
-              : i18n.t('aiMuzik.satinAlmaIslenemedi'),
+              : i18n.t('cuzdanY.satinAlmaIslenemedi'),
           kod: 'verify',
         });
       }
@@ -274,7 +289,7 @@ export async function IapIleCoinSatinAl(
 
     const subErr = purchaseErrorListener((err) => {
       if (!purchaseArmed) return;
-      const msg = err?.message ?? i18n.t('aiMuzik.satinAlmaIptalHata');
+      const msg = err?.message ?? i18n.t('cuzdanY.satinAlmaIptalHata');
       const cancel = /cancel|user.?cancel/i.test(msg);
       done({ ok: false, hata: msg, kod: cancel ? 'cancel' : 'store' });
     });
@@ -282,7 +297,11 @@ export async function IapIleCoinSatinAl(
     void (async () => {
       try {
         // Önce bitmemiş txn'leri temizle — aksi halde 2. alım sheet atlar
-        await bekleyenleriTemizle(iap, sku, pkg.id);
+        const temiz = await bekleyenleriTemizle(iap, sku, pkg.id);
+        if (!temiz) {
+          done({ ok: false, hata: i18n.t('cuzdanY.satinAlmaDogrulamaBekliyor'), kod: 'verify' });
+          return;
+        }
 
         // Fiyat cache'te varsa ürün zaten biliniyor — ekstra fetchProducts gecikmesi yok
         if (!MagazaSkuCacheteMi(sku)) {
@@ -290,7 +309,7 @@ export async function IapIleCoinSatinAl(
           if (!products?.length) {
             done({
               ok: false,
-              hata: i18n.t('aiMuzik.storeUrunuYok', { sku }),
+              hata: i18n.t('cuzdanY.storeUrunuYok', { sku }),
               kod: 'store',
             });
             return;

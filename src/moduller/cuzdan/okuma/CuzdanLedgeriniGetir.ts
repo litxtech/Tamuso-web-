@@ -42,8 +42,19 @@ const SEBEP_ANAHTAR: Record<string, string> = {
   kaskad_refund: 'cuzdan.ledgerKaskadRefund',
   zeus_bet: 'cuzdan.ledgerZeusBet',
   zeus_win: 'cuzdan.ledgerZeusWin',
+  storm_king_bet: 'cuzdan.ledgerStormKingBet',
+  storm_king_win: 'cuzdan.ledgerStormKingWin',
+  storm_king_refund: 'cuzdan.ledgerStormKingRefund',
+  storm_king_refund_win: 'cuzdan.ledgerStormKingRefundWin',
   live_gift: 'cuzdan.ledgerLiveGift',
   status_gift: 'cuzdan.ledgerStatusGift',
+  source_reclass_out: 'cuzdanY.ledgerKaynakAyrimi',
+  source_reclass_in: 'cuzdanY.ledgerKaynakAyrimi',
+  legacy_source_split: 'cuzdanY.ledgerEskiBakiyeAyrimi',
+  trade_hold_refund: 'cuzdanY.ledgerTakasIadesi',
+  fruit_wheel_selection: 'cuzdanY.ledgerMeyveCarkiBahis',
+  fruit_wheel_selection_refund: 'cuzdanY.ledgerMeyveCarkiIade',
+  fruit_wheel_payout: 'cuzdanY.ledgerMeyveCarkiKazanc',
 };
 
 const REF_ANAHTAR: Record<string, string> = {
@@ -56,6 +67,7 @@ const REF_ANAHTAR: Record<string, string> = {
   withdraw: 'cuzdan.refWithdrawal',
   game_session: 'cuzdan.refGameSession',
   kaskad_round: 'cuzdan.refKaskadRound',
+  storm_king_spin: 'cuzdan.refStormKing',
   admin: 'cuzdan.refAdmin',
   agency: 'cuzdan.refAgency',
   agency_transfer: 'cuzdan.refAgencyTransfer',
@@ -94,6 +106,8 @@ export function LedgerBirimEtiketi(currency: string): string {
   if (currency === 'coins' || currency === 'coin') {
     return i18n.t('cuzdan.birimCoin') as string;
   }
+  if (currency === 'game_coins') return i18n.t('cuzdanY.birimOyunCoin') as string;
+  if (currency === 'bonus_coins') return i18n.t('cuzdanY.birimOdulCoin') as string;
   return currency;
 }
 

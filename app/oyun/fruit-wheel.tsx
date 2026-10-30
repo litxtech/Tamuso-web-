@@ -1,27 +1,23 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useCeviri } from '../../src/i18n/useCeviri';
 import { FruitWheelEkrani } from '../../src/moduller/oyunlar/fruit-wheel/ekranlar/FruitWheelEkrani';
 import { registerFruitWheel } from '../../src/moduller/oyunlar/fruit-wheel/FruitWheelKayit';
-import { isGameVisible } from '../../src/moduller/oyunlar/ortak/servisler/OyunKontrolServisi';
+import { useGorunurOyunKodlari } from '../../src/moduller/oyunlar/ortak/hooks/useGorunurOyunKodlari';
 import { koyuSahneKilidiCik, koyuSahneKilidiGir } from '../../src/tasarim-sistemi/tema/TemaDurumu';
 
 export default function FruitWheelSayfa() {
   const { t } = useCeviri();
   const { user } = useAuth();
-  const [kapali, setKapali] = useState(false);
+  const gorunur = useGorunurOyunKodlari();
+  const kapali = !gorunur.loading && !gorunur.isVisible('fruit_wheel');
 
   useEffect(() => {
     registerFruitWheel();
     koyuSahneKilidiGir();
-    let alive = true;
-    void isGameVisible('fruit_wheel').then((ok) => {
-      if (alive && !ok) setKapali(true);
-    });
     return () => {
-      alive = false;
       koyuSahneKilidiCik();
     };
   }, []);

@@ -1,4 +1,4 @@
-import i18n from '../../../i18n';
+﻿import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { GaleriAc } from '../../../ortak/medya/ImagePickerHazirMi';
 import { DepoyaMedyaYukle } from '../../../ortak/medya/DepoyaMedyaYukle';
@@ -11,12 +11,12 @@ export type SecilenProfilMedya = {
   mimeType?: string | null;
 };
 
-/** Storage bucket limiti (016_profil_medya) — 5 MiB */
+/** Storage bucket limiti (016_profil_medya) â€” 5 MiB */
 const PROFIL_MEDYA_MAX_BAYT = 5 * 1024 * 1024;
 
 /**
- * Galeriden profil görseli seçer (yüklemez). Kayıt öncesi önizleme için.
- * Kapak daha agresif sıkıştırılır; crop ile yeniden encode tetiklenir.
+ * Galeriden profil gÃ¶rseli seÃ§er (yÃ¼klemez). KayÄ±t Ã¶ncesi Ã¶nizleme iÃ§in.
+ * Kapak daha agresif sÄ±kÄ±ÅŸtÄ±rÄ±lÄ±r; crop ile yeniden encode tetiklenir.
  */
 export async function ProfilMedyasiSec(
   tur: ProfilMedyaTuru,
@@ -49,7 +49,7 @@ export async function ProfilMedyasiSec(
 }
 
 /**
- * Yerel URI'yi Supabase storage'a yükler; profiles.avatar_url / cover_url günceller.
+ * Yerel URI'yi Supabase storage'a yÃ¼kler; profiles.avatar_url / cover_url gÃ¼nceller.
  */
 export async function ProfilMedyasiUriIleYukle(
   tur: ProfilMedyaTuru,
@@ -61,7 +61,7 @@ export async function ProfilMedyasiUriIleYukle(
     if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
     const { YaptirimAktifMi } = await import(
-      '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+      '../../medya-yukleme/AdminSesOdasiIslemleri'
     );
     if (await YaptirimAktifMi('upload_ban')) {
       return {
@@ -70,24 +70,9 @@ export async function ProfilMedyasiUriIleYukle(
       };
     }
 
-    // Gerçek JPEG + boyut küçültme (HEIC’i jpeg diye yaftalamak yetmez)
     const hazir = await ProfilGorseliniHazirla(uri, tur);
     const yuklenecekUri = hazir?.uri ?? uri;
-    const hamMime = (hazir?.mimeType ?? mimeType ?? '').toLowerCase();
-    const heicMi =
-      !hazir &&
-      (hamMime.includes('heic') ||
-        hamMime.includes('heif') ||
-        /\.heic($|\?)/i.test(uri) ||
-        /\.heif($|\?)/i.test(uri));
-    if (heicMi) {
-      return {
-        ok: false,
-        hata: i18n.t('auth.medyaHeicDesteklenmiyor'),
-      };
-    }
-
-    const guvenliMime = hazir?.mimeType ?? 'image/jpeg';
+    const guvenliMime = hazir?.mimeType ?? mimeType ?? 'image/jpeg';
     const path = `${uid}/${tur}-${Date.now()}.jpg`;
 
     const up = await DepoyaMedyaYukle(supabase, {
@@ -107,7 +92,7 @@ export async function ProfilMedyasiUriIleYukle(
       };
     }
 
-    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(path);
+    const { data: pub } = supabase.storage.from('profile-media').getPublicUrl(up.path);
     const url = `${pub.publicUrl}?t=${Date.now()}`;
     const column = tur === 'avatar' ? 'avatar_url' : 'cover_url';
 
@@ -134,7 +119,7 @@ export async function ProfilMedyasiUriIleYukle(
 }
 
 /**
- * Galeriinden seçip Supabase storage'a yükler; profiles.avatar_url / cover_url günceller.
+ * Galeriinden seÃ§ip Supabase storage'a yÃ¼kler; profiles.avatar_url / cover_url gÃ¼nceller.
  */
 export async function ProfilMedyasiYukle(
   tur: ProfilMedyaTuru,
@@ -150,3 +135,4 @@ export async function ProfilMedyasiYukle(
   if (!yukleme.ok) return yukleme;
   return yukleme;
 }
+

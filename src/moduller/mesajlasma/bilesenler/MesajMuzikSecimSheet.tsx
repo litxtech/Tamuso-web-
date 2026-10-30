@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -83,9 +84,11 @@ export function MesajMuzikSecimSheet({ visible, onClose, onSec }: Props) {
           MusicLibraryList({ tab: 'all', limit: 60 }).catch(
             () => [] as MusicLibraryItem[],
           ),
-          AiMuzikParcalariGetir({ tab: 'all_owned', limit: 60 }).catch(
-            () => [] as AiMuzikTrackOzet[],
-          ),
+          Platform.OS === 'ios'
+            ? Promise.resolve([] as AiMuzikTrackOzet[])
+            : AiMuzikParcalariGetir({ tab: 'all_owned', limit: 60 }).catch(
+                () => [] as AiMuzikTrackOzet[],
+              ),
         ]);
 
         if (iptal) return;
@@ -158,15 +161,17 @@ export function MesajMuzikSecimSheet({ visible, onClose, onSec }: Props) {
         ) : gorunen.length === 0 ? (
           <View style={styles.bosWrap}>
             <Text style={styles.bos}>{t('mesajV2.musicUnavailable')}</Text>
-            <Pressable
-              style={styles.kutuphaneBtn}
-              onPress={() => {
-                onClose();
-                router.push('/ai-muzik/kutuphane' as any);
-              }}
-            >
-              <Text style={styles.kutuphaneYazi}>{t('aiMuzik.kutuphane')}</Text>
-            </Pressable>
+            {Platform.OS !== 'ios' ? (
+              <Pressable
+                style={styles.kutuphaneBtn}
+                onPress={() => {
+                  onClose();
+                  router.push('/ai-muzik/kutuphane' as any);
+                }}
+              >
+                <Text style={styles.kutuphaneYazi}>{t('aiMuzik.kutuphane')}</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : (
           <FlatList

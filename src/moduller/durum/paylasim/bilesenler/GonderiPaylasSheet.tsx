@@ -30,6 +30,7 @@ import { useCeviri } from '../../../../i18n/useCeviri';
 import { MesajComposerLinkOnizleme } from '../../../mesajlasma/bilesenler/MesajComposerLinkOnizleme';
 import { OzellikBayragiAktifMi } from '../../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { router } from 'expo-router';
+import { SeoAdresiniPaylas } from '../../../seo/SeoPaylasimAdresi';
 
 type Props = {
   visible: boolean;
@@ -235,6 +236,23 @@ export function GonderiPaylasSheet({
         >
           <View style={styles.handle} />
           <Text style={styles.baslik}>{t('durumX.gonderiyiPaylas')}</Text>
+
+          <Pressable
+            style={styles.hikayeBtn}
+            onPress={() => {
+              void (async () => {
+                const sonuc = await SeoAdresiniPaylas('post', statusId);
+                if (sonuc === 'yok') {
+                  Alert.alert(t('ortak.paylas'), t('profil.baglantiKapali'));
+                }
+              })();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t('durumX.baglantiyiPaylas')}
+          >
+            <Ionicons name="link-outline" size={20} color={RenkTokenlari.primary} />
+            <Text style={styles.hikayeYazi}>{t('durumX.baglantiyiPaylas')}</Text>
+          </Pressable>
 
           {OzellikBayragiAktifMi('stories_enabled') ? (
             <Pressable

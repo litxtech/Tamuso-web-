@@ -10,6 +10,7 @@ import React, {
 import { AppState, type AppStateStatus } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { mesajRealtimeDebounce } from '../gercek-zamanli/mesajRealtimeDebounce';
 import { MesajKonulariniGetir } from '../okuma/MesajKonulariniGetir';
 
 type MesajOkunmamisContextValue = {
@@ -80,6 +81,15 @@ export function MesajOkunmamisSaglayici({
     }
     void yenile();
 
+    /**
+     * Tablo-geniş Realtime fan-out var; sunucu filtresi (üyelik) gelene kadar
+     * yenilemeyi debounce et — her INSERT için RPC fırtınası olmasın.
+     * Kendi gönderdiğin mesaj rozeti şişirmesin.
+     */
+    const yenileGecikmeli = mesajRealtimeDebounce(() => {
+      if (odakli.current) void yenile();
+    }, 1500);
+
     const topic = `dm-tab-badge-${userId}`;
     for (const ch of supabase.getChannels()) {
       if (ch.topic === `realtime:${topic}` || ch.topic === topic) {
@@ -92,15 +102,16 @@ export function MesajOkunmamisSaglayici({
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'direct_messages' },
-        () => {
-          if (odakli.current) void yenile();
+        (payload: { new?: { sender_id?: string } }) => {
+          if (payload?.new?.sender_id === userId) return;
+          yenileGecikmeli();
         },
       )
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'message_threads' },
+        { event: 'UPDATE', schema: 'public', table: 'message_threads' },
         () => {
-          if (odakli.current) void yenile();
+          yenileGecikmeli();
         },
       )
       .subscribe();

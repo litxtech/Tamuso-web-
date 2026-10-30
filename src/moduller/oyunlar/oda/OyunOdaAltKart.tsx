@@ -1,15 +1,13 @@
 /**
- * Ses odası oyun kartı — aşağıdan kayar, oda layout'una dokunmaz.
+ * Ses odası oyun kartı — oda layout'una dokunmaz, açılışta bekletmez.
  * Koltuk / dock yerinde kalır; kart butonların üstünden açılır, hiçbirini taşımaz.
  */
 
 import React, { useEffect } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 
@@ -20,6 +18,8 @@ type Props = {
   /** Alt köşeleri düzleştirir; kart telefonun altına kadar iner. */
   dibine?: boolean;
   oyunModu?: boolean;
+  /** Tam ekran oyun kartında köşe yuvarlağını kapatır; süslü çerçeve kesilmez. */
+  kare?: boolean;
   onGapPress?: () => void;
   children: React.ReactNode;
 };
@@ -29,35 +29,19 @@ export function OyunOdaAltKart({
   bottomGap = 0,
   dibine = false,
   oyunModu = false,
+  kare = false,
   onGapPress,
   children,
 }: Props) {
-  const { height } = useWindowDimensions();
-  const slide = useSharedValue(height);
   const gap = useSharedValue(topGap);
   const bottom = useSharedValue(bottomGap);
 
   useEffect(() => {
-    // Kısa mesafe + hızlı easing — kart hemen hissedilsin
-    slide.value = height * 0.28;
-    slide.value = withTiming(0, {
-      duration: 200,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [height, slide]);
-
-  useEffect(() => {
-    gap.value = withTiming(topGap, {
-      duration: 160,
-      easing: Easing.out(Easing.cubic),
-    });
+    gap.value = topGap;
   }, [gap, topGap]);
 
   useEffect(() => {
-    bottom.value = withTiming(bottomGap, {
-      duration: 160,
-      easing: Easing.out(Easing.cubic),
-    });
+    bottom.value = bottomGap;
   }, [bottom, bottomGap]);
 
   const gapStil = useAnimatedStyle(() => ({
@@ -67,7 +51,6 @@ export function OyunOdaAltKart({
   const kartStil = useAnimatedStyle(() => ({
     top: gap.value,
     bottom: bottom.value,
-    transform: [{ translateY: slide.value }],
   }));
 
   return (
@@ -82,7 +65,14 @@ export function OyunOdaAltKart({
         />
       </Animated.View>
       <Animated.View
-        style={[styles.kart, oyunModu && styles.kartOyun, dibine && styles.kartDibine, kartStil]}
+        style={[
+          styles.kart,
+          { top: topGap, bottom: bottomGap },
+          oyunModu && styles.kartOyun,
+          dibine && styles.kartDibine,
+          kare && styles.kartKare,
+          kartStil,
+        ]}
       >
         {!oyunModu ? <View style={styles.handle} /> : null}
         <View style={styles.icerik}>{children}</View>
@@ -94,9 +84,8 @@ export function OyunOdaAltKart({
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFill,
-    zIndex: 400,
-    elevation: 400,
-    overflow: 'hidden',
+    zIndex: 40,
+    elevation: 24,
   },
   gapWrap: {
     position: 'absolute',
@@ -107,6 +96,7 @@ const styles = StyleSheet.create({
   },
   gap: {
     flex: 1,
+    height: '100%',
     backgroundColor: 'rgba(4, 6, 14, 0.18)',
   },
   gapOyun: {
@@ -129,6 +119,12 @@ const styles = StyleSheet.create({
   },
   kartOyun: {
     borderColor: 'rgba(232, 197, 71, 0.28)',
+  },
+  kartKare: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   kartDibine: {
     borderBottomLeftRadius: 0,

@@ -25,6 +25,7 @@ const BOY: Record<'sm' | 'md' | 'lg', number> = {
 export function SeviyeTaci({
   level,
   size = 'sm',
+  animasyonluMu = true,
   gizli = false,
   avatarBoy,
   children,
@@ -48,7 +49,13 @@ export function SeviyeTaci({
   }
 
   return (
-    <AvatarTacHalkasi size={boy} level={level} yogunluk="oda" gizli={gizli}>
+    <AvatarTacHalkasi
+      size={boy}
+      level={level}
+      yogunluk="oda"
+      gizli={gizli}
+      animasyonlu={animasyonluMu}
+    >
       {children}
     </AvatarTacHalkasi>
   );

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   Linking,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -30,6 +31,10 @@ import {
   RaporAlindiMesajCocuk,
 } from '../../src/moduller/moderasyon/islemler/ModerasyonIslemleri';
 import { AdminStil } from '../../src/moduller/admin/bilesenler/AdminStil';
+import {
+  AdminPaneliAc,
+  AdminWebAdresiVarMi,
+} from '../../src/moduller/admin/web/AdminWebAdresi';
 import { RenkTokenlari } from '../../src/tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../src/tasarim-sistemi/TipografiTokenlari';
 import {
@@ -71,7 +76,8 @@ export default function GuvenlikMerkeziEkrani() {
   const [cocukDetay, setCocukDetay] = useState('');
   const [cocukBusy, setCocukBusy] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
-  const adminMi = profile?.is_admin === true;
+  // Personel konsolu yalnızca web'de açılır (iOS binary'sinde personel girişi yok).
+  const adminMi = Platform.OS === 'web' && profile?.is_admin === true;
 
   const olayAdi = useCallback(
     (type: string) => {
@@ -202,7 +208,7 @@ export default function GuvenlikMerkeziEkrani() {
         <EkranBasligi
           title={t('guvenlik.baslik')}
           subtitle={t('guvenlik.altBaslik')}
-          fallbackHref={adminMi ? '/admin' : undefined}
+          fallbackHref="/(tabs)/profile"
         />
         <KlavyeScrollView
           contentContainerStyle={AdminStil.content}
@@ -326,11 +332,13 @@ export default function GuvenlikMerkeziEkrani() {
               label={t('ayarlar.canliDestek')}
               onPress={() => router.push('/destek' as any)}
             />
-            {adminMi ? (
+            {adminMi && AdminWebAdresiVarMi() ? (
               <LinkSatir
                 icon="shield-half-outline"
                 label={t('guvenlik.adminKuyruk')}
-                onPress={() => router.push('/admin/moderasyon' as any)}
+                onPress={() => {
+                  void AdminPaneliAc('/moderasyon');
+                }}
               />
             ) : null}
             <LinkSatir

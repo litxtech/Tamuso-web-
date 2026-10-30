@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
       .trim()
       .toUpperCase() || null;
     const ajansSatis = (url.searchParams.get('ajans_satis') ?? '').trim().toUpperCase() || null;
+    const ajansDavet = (url.searchParams.get('ajans') ?? '').trim().toUpperCase() || null;
     const forceLanding = url.searchParams.get('landing') === '1';
     const ua = req.headers.get('user-agent') ?? '';
     const platform = platformFromUa(ua);
@@ -126,6 +127,30 @@ Deno.serve(async (req) => {
       const pay =
         `${supabaseUrl.replace(/\/$/, '')}/functions/v1/ajans-pay?c=${encodeURIComponent(ajansSatis)}`;
       return Response.redirect(pay, 302);
+    }
+
+    if (ajansDavet) {
+      const scheme = Deno.env.get('APP_SCHEME') ?? 'muta';
+      const deep = `${scheme}://ajans/katil?kod=${encodeURIComponent(ajansDavet)}`;
+      const landing = `<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>${appName}</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#12040C;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{max-width:420px;width:100%;background:linear-gradient(160deg,#2A1C34,#16101F);border:1px solid #3d2a48;border-radius:20px;padding:28px}
+a{display:block;text-align:center;text-decoration:none;padding:14px 16px;border-radius:14px;font-weight:700;color:#fff;background:#E84091}
+</style></head>
+<body><div class="card"><h1>${appName}</h1><p>Ajans daveti</p><a href="${deep}">Ajansa katıl</a></div>
+<script>location.replace(${JSON.stringify(deep)})</script>
+</body></html>`;
+      return new Response(landing, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+        },
+      });
     }
 
     const admin = createClient(supabaseUrl, serviceKey);

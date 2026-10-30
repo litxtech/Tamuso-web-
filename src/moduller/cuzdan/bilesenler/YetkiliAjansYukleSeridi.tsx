@@ -101,6 +101,7 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
         return;
       }
       router.push(`/mesaj/${r.threadId}` as any);
+      if (r.talep) Alert.alert(t('cuzdanX.alertMesaj'), t('cuzdanX.ajansTalepIletildi'));
       return;
     }
     const r = await AjansSohbetAcVeyaGetir(ajans.id);
@@ -113,11 +114,7 @@ export function YetkiliAjansYukleSeridi({ locked, onPaketleriYenile }: Props) {
   };
 
   const magazaEtiket =
-    Platform.OS === 'ios'
-      ? t('cuzdanX.appleOdeme')
-      : Platform.OS === 'android'
-        ? t('cuzdanX.googleOdeme')
-        : t('cuzdanX.magazaOdeme');
+    Platform.OS === 'android' ? t('cuzdanX.googleOdeme') : t('cuzdanX.magazaOdeme');
 
   return (
     <View style={styles.wrap}>

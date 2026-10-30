@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ProfilAvatarKucuk } from '../../../canli-sohbet/bilesenler/ProfilAvatarKucuk';
 import {
+  DurumAjansDavetPayloadAl,
   DurumMedyaHttpsMi,
   DurumMuzikPayloadAl,
   DurumOyunKazanciPayloadAl,
@@ -19,6 +20,7 @@ import {
 import { DurumMuzikKarti } from '../../bilesenler/DurumMuzikKarti';
 import { DurumSesKarti } from '../../bilesenler/DurumSesKarti';
 import { DurumOyunKazanciKart } from '../../bilesenler/DurumOyunKazanciKart';
+import { DurumAjansDavetKarti } from '../../bilesenler/DurumAjansDavetKarti';
 import { DurumVideoOnizleme } from '../../bilesenler/DurumVideoOnizleme';
 import { RenkTokenlari } from '../../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../../tasarim-sistemi/TipografiTokenlari';
@@ -97,19 +99,22 @@ function PaylasilanGonderiKartiIc({
     onizleme.media_type !== 'text' &&
     onizleme.media_type !== 'audio' &&
     onizleme.post_kind !== 'game_win' &&
-    onizleme.post_kind !== 'music';
+    onizleme.post_kind !== 'music' &&
+    onizleme.post_kind !== 'agency_invite';
   const isText =
     !isAudio &&
     (onizleme.media_type === 'text' ||
       (!https &&
         onizleme.post_kind !== 'game_win' &&
-        onizleme.post_kind !== 'music'));
+        onizleme.post_kind !== 'music' &&
+        onizleme.post_kind !== 'agency_invite'));
 
   const fakeOge = {
     post_kind: onizleme.post_kind ?? 'media',
     payload: onizleme.payload ?? {},
   } as DurumOggesi;
   const kazanc = DurumOyunKazanciPayloadAl(fakeOge);
+  const ajansDavet = DurumAjansDavetPayloadAl(fakeOge);
   const muzik = DurumMuzikPayloadAl(fakeOge);
   const ses = DurumSesPayloadAl({
     media_type: onizleme.media_type === 'audio' ? 'audio' : 'text',
@@ -177,6 +182,10 @@ function PaylasilanGonderiKartiIc({
         {kazanc ? (
           <View style={styles.medyaWrap}>
             <DurumOyunKazanciKart payload={kazanc} />
+          </View>
+        ) : ajansDavet ? (
+          <View style={styles.medyaWrap}>
+            <DurumAjansDavetKarti payload={ajansDavet} />
           </View>
         ) : muzik ? (
           <View style={styles.medyaWrap}>

@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase';
+import { OdaIslemOzetleriniBagla } from '../../ses-odalari/okuma/OdaIslemOzeti';
 import type { Profile, Room, RoomMode } from '../../../types/models';
 import { PerformansTelemetri } from '../../../ortak/performans/PerformansTelemetri';
 import { CanliFeedCache } from '../onbellek/CanliFeedCache';
@@ -23,6 +24,10 @@ export type FeedOggesi = {
   kendim?: boolean;
   /** Ses odası önizleme — koltuktaki / üye avatarları (max 6) */
   uye_avatarlari?: (string | null)[];
+  /** Toplam hediye coin */
+  hediye_islem?: number;
+  /** Toplam oyun harcama coin */
+  oyun_islem?: number;
 };
 
 type LiveRow = {
@@ -91,6 +96,8 @@ function odaOgayaCevir(
     created_at: r.created_at,
     kendim,
     uye_avatarlari: avatars.slice(0, 6),
+    hediye_islem: r.hediye_islem ?? 0,
+    oyun_islem: r.oyun_islem ?? 0,
   };
 }
 
@@ -320,7 +327,16 @@ async function canliFeedGetirIc(
     ),
   ];
 
-  const odaRows = (odalarRes.data as unknown as Room[]) ?? [];
+  const odaHam = (odalarRes.data as unknown as Room[]) ?? [];
+  const kendiHam = (kendiOdaRes.data as Room | null) ?? null;
+  const ozetli = await OdaIslemOzetleriniBagla(
+    kendiHam ? [...odaHam, kendiHam] : odaHam,
+  );
+  const ozetHarita = new Map(ozetli.map((r) => [r.id, r]));
+  const odaRows = odaHam.map((r) => ozetHarita.get(r.id) ?? r);
+  const kendiOdaZengin = kendiHam
+    ? (ozetHarita.get(kendiHam.id) ?? kendiHam)
+    : null;
   const odaIds = [
     ...new Set(
       [
@@ -377,7 +393,7 @@ async function canliFeedGetirIc(
   }
 
   // Kendi canlı odası limit dışı kalmasın — her zaman ekle / sabitle
-  const kendiOda = kendiOdaRes.data as Room | null;
+  const kendiOda = kendiOdaZengin;
   if (kendiOda && uid) {
     const oge = odaOgayaCevir(kendiOda, true, avatarHarita.get(kendiOda.id));
     if (!gorulen.has(oge.id)) {
@@ -414,7 +430,17 @@ async function canliFeedGetirIc(
   }
 
   const sonuc = feedSirala(ogeler, uid).slice(0, limit);
+  const sorguHatali = !!odalarRes.error && !!canliRes.error;
+  if (sorguHatali) {
+    const { FeedAnlikOku } = await import('../../cevrimdisi/AnlikGoruntu');
+    const disk = await FeedAnlikOku(uid);
+    if (disk && disk.length > 0) return disk as FeedOggesi[];
+  }
   CanliFeedCache.yaz(odaLimit, uid, uyeAvatar, sonuc);
+  if (!sorguHatali && sonuc.length > 0) {
+    const { FeedAnlikYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+    void FeedAnlikYaz(uid, sonuc);
+  }
   return sonuc;
 }
 

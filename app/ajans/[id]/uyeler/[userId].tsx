@@ -10,6 +10,7 @@ import {
   AjansKart,
 } from '../../../../src/moduller/ajanslar/bilesenler/AjansAltEkranKabuk';
 import { useAjansRouteId } from '../../../../src/moduller/ajanslar/kancalar/useAjansRouteId';
+import { AjansSahipRozeti } from '../../../../src/moduller/ajanslar/bilesenler/AjansSahipRozeti';
 import {
   AjansCrmGuncelle,
   AjansStaffAta,
@@ -81,6 +82,7 @@ export default function AjansUyeDetayEkrani() {
       <AjansBolumBaslik>{t('ajans.genelBolum')}</AjansBolumBaslik>
       <AjansKart>
         <Text style={styles.ad}>{profile?.display_name || '—'}</Text>
+        {String(detay?.role ?? '').toUpperCase() === 'OWNER' ? <AjansSahipRozeti /> : null}
         <Text style={styles.alt}>@{profile?.username || '—'} · ID {profile?.public_user_id || '—'}</Text>
         <Text style={styles.alt}>
           {t('ajans.rolDurum', {

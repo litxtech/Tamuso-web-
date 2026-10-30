@@ -159,42 +159,8 @@ async function enPopulerCanliBanner(): Promise<BannerCampaign | null> {
 }
 
 async function enCokCoinOyunBanner(): Promise<BannerCampaign | null> {
-  // Son 7 günde oturum sayısı / entry coin — en aktif oyun
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { data } = await supabase
-    .from('game_sessions')
-    .select('game_code, entry_amount')
-    .gte('created_at', since)
-    .limit(200);
-
-  const skor = new Map<string, number>();
-  for (const row of data ?? []) {
-    const kod = String((row as { game_code?: string }).game_code ?? '');
-    if (!kod) continue;
-    const entry = Number((row as { entry_amount?: number }).entry_amount ?? 0);
-    skor.set(kod, (skor.get(kod) ?? 0) + 1 + entry / 10);
-  }
-
-  let enIyi: string | null = null;
-  let enSkor = 0;
-  for (const [kod, s] of skor) {
-    if (s > enSkor) {
-      enSkor = s;
-      enIyi = kod;
-    }
-  }
-
-  // Veri yoksa katalogdan Zeus / Kaskad sırayla
-  const kod =
-    enIyi && (enIyi === 'zeus' || enIyi === 'kozmik_kaskad')
-      ? enIyi
-      : skor.has('zeus')
-        ? 'zeus'
-        : skor.has('kozmik_kaskad')
-          ? 'kozmik_kaskad'
-          : 'zeus';
-
-  const kart = OYUN_KART_KATALOGU[kod as 'zeus' | 'kozmik_kaskad'];
+  const kod = 'fruit_wheel' as const;
+  const kart = OYUN_KART_KATALOGU[kod];
   if (!kart) return null;
 
   // Yerel asset URI webview/https kontrolüne takılmasın — degrade kullan

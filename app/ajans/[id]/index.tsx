@@ -168,6 +168,7 @@ export default function AjansKontrolMerkeziEkrani() {
                 bannerUrl={a.banner_url}
                 levelLabel={seviyeEtiket(a.level_code)}
                 verified={!!a.is_verified}
+                sahip={izinler?.role === 'OWNER'}
                 meta={t('ajans.metaUye', {
                   id: a.agency_public_id,
                   count: kpi.uyeler,
@@ -183,6 +184,21 @@ export default function AjansKontrolMerkeziEkrani() {
                     : undefined
                 }
               />
+
+              <AjansKart>
+                <AjansListeSatir
+                  title={t('ajans.gorusmeMerkez')}
+                  subtitle={t('ajans.gorusmeBolum')}
+                  onPress={() => router.push(ajansHref(id, 'gorusmeler') as any)}
+                />
+                {izinler?.role === 'OWNER' ? (
+                  <AjansListeSatir
+                    title={t('ajans.sertifikaBaslik')}
+                    subtitle={t('ajans.sertifikaAlt')}
+                    onPress={() => router.push(ajansHref(id, 'sertifika') as any)}
+                  />
+                ) : null}
+              </AjansKart>
 
               {seviye ? (
                 <AjansKart>

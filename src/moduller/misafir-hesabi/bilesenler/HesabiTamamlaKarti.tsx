@@ -12,7 +12,7 @@ import { GradientButton } from '../../../components/GradientButton';
 import { KlavyeKapatan } from '../../../components/KlavyeKapatan';
 import { KlavyeGuvenliAlan } from '../../../bilesenler/klavye/KlavyeGuvenliAlan';
 import { TamusoModal } from '../../../bilesenler/yuzey/TamusoModal';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../contexts/AuthContext';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { YaricapTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
@@ -30,7 +30,8 @@ type Props = {
  */
 export function HesabiTamamlaKarti({ visible, onClose, onCompleted }: Props) {
   const { t } = useCeviri();
-  const { misafirBayraginiKaldir, refreshProfile, refreshWallet } = useAuth();
+  const { misafirBayraginiKaldir, refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const [ad, setAd] = useState('');
   const [soyad, setSoyad] = useState('');
   const [email, setEmail] = useState('');

@@ -145,6 +145,12 @@ export default function AyarlarEkrani() {
               onPress={() => router.push('/ayarlar/unvanlarim' as any)}
             />
             <ListeSatiri
+              icon="cloud-offline-outline"
+              label={t('cevrimdisi.veriBaslik')}
+              value={t('cevrimdisi.veriAlt')}
+              onPress={() => router.push('/ayarlar/veri-cevrimdisi' as any)}
+            />
+            <ListeSatiri
               icon="language-outline"
               label={t('ayarlar.dil')}
               value={dilDegeri}

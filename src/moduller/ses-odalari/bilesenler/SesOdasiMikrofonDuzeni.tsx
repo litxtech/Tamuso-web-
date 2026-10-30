@@ -404,13 +404,13 @@ function SesOdasiMikrofonDuzeniIc({
   const duzen = duzeniYogunlastir(hamDuzen, seviye);
 
   const seat0 = seats.find((s) => s.seat_index === 0) ?? null;
-  const hostSeat =
-    hostId != null ? seats.find((s) => s.user_id === hostId) ?? null : null;
-  const taht = (seat0?.user_id ? seat0 : null) ?? hostSeat ?? seat0;
+  // Taht her zaman 0. koltuk. Lider başka koltuğa geçince orada görünür;
+  // boş taht kilitli kalır, liderin oturduğu koltuk taht kartına taşınmaz.
+  const taht = seat0;
 
   const sirali = [...seats].sort((a, b) => a.seat_index - b.seat_index);
   const diger = sirali
-    .filter((s) => s.seat_index !== 0 && s.id !== taht?.id)
+    .filter((s) => s.seat_index !== 0)
     .sort((a, b) => a.seat_index - b.seat_index);
 
   // 12+ koltuk: Bigo/YoYo yoğun salon — host üstte, 4–5 kolon kompakt ızgara.

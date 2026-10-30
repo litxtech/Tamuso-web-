@@ -62,6 +62,10 @@ import {
 } from '../../src/moduller/ana-sayfa/depolama/SonGezilenDepolama';
 import { SesOdasinaHrefIleGit } from '../../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
 import {
+  CanliYayinaGit,
+  CanliYayinListesiniIsit,
+} from '../../src/moduller/canli-yayin/navigasyon/CanliYayinaGit';
+import {
   AnaSayfaCekmeceMenu,
   AnaSayfaProfilMenuDugmesi,
   type AnaSayfaMenuOgesi,
@@ -146,12 +150,24 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { profile, signOut } = useAuth();
   const navigation = useNavigation();
-  const isAdmin = AdminYetkisiVarMi(profile);
+  // Personel konsolu yalnızca web'de açılır (iOS binary'sinde personel girişi yok).
+  const isAdmin = Platform.OS === 'web' && AdminYetkisiVarMi(profile);
   const { okunmamis, yenile: bildirimYenile } = useBildirimler();
   const { yonetimHref } = useAjansYonetim();
   const { surum: bayrakSurum } = useOzellikBayraklari();
   const [menuSurum, setMenuSurum] = useState(HamburgerMenuCacheSurum);
   const [feed, setFeed] = useState<FeedOggesi[]>([]);
+
+  useEffect(() => {
+    const canliIdler = feed
+      .filter((x) => x.tur === 'canli')
+      .map((x) => x.href.match(/^\/canli\/([^/?#]+)/)?.[1] ?? '')
+      .filter(Boolean);
+    if (canliIdler.length > 0) CanliYayinListesiniIsit(canliIdler, 3);
+  }, [feed]);
+  const [eskiVeri, setEskiVeri] = useState(false);
+  const [eskiZaman, setEskiZaman] = useState<string | null>(null);
+  const [eskiNeden, setEskiNeden] = useState<'zayif' | 'offline'>('offline');
   const [sonGezilen, setSonGezilen] = useState<SonGezilenKayit[]>([]);
   /** İlk açılış iskeleti — odak dönüşünde tekrar açılmaz */
   const [loading, setLoading] = useState(true);
@@ -163,6 +179,7 @@ export default function HomeScreen() {
   const odakli = useRef(false);
   const kaydiriyor = useRef(false);
   const ilkYuklemeBitti = useRef(false);
+  const [ilkHazir, setIlkHazir] = useState(false);
   const loadNesil = useRef(0);
   const listeRef = useRef<FlatList<FeedIzgaraOgesi>>(null);
 
@@ -197,6 +214,7 @@ export default function HomeScreen() {
         if (onbellek && onbellek.length > 0) {
           setFeed(onbellek);
           setLoading(false);
+          setIlkHazir(true);
         } else {
           setLoading(true);
         }
@@ -239,6 +257,7 @@ export default function HomeScreen() {
         }
         return data;
       });
+      setEskiVeri(false);
       const aktifCanli = data
         .filter((f) => f.tur === 'canli')
         .map((f) => f.id.replace(/^canli:/, ''));
@@ -256,9 +275,22 @@ export default function HomeScreen() {
         sonGezilenAyniMi(onceki, gezilen) ? onceki : gezilen,
       );
       if (mod === 'ilk') void CihazPushTokeniniKaydet();
-    } catch {
+    } catch (e) {
       if (nesil !== loadNesil.current) return;
-      if (mod === 'ilk') setFeed([]);
+      const mesaj = e instanceof Error ? e.message : '';
+      setEskiNeden(mesaj === 'feed-timeout' ? 'zayif' : 'offline');
+      setEskiVeri(true);
+      const { FeedAnlikOku, FeedAnlikZamani } = await import(
+        '../../src/moduller/cevrimdisi/AnlikGoruntu'
+      );
+      const zaman = await FeedAnlikZamani(profile?.id);
+      if (nesil === loadNesil.current) setEskiZaman(zaman);
+      if (mod === 'ilk') {
+        const disk = await FeedAnlikOku(profile?.id);
+        if (Array.isArray(disk) && disk.length > 0) {
+          setFeed((onceki) => (onceki.length > 0 ? onceki : (disk as FeedOggesi[])));
+        }
+      }
       void SonGezilenleriGetir()
         .then((g) => {
           if (nesil === loadNesil.current) setSonGezilen(g);
@@ -269,6 +301,7 @@ export default function HomeScreen() {
       if (mod === 'ilk') setLoading(false);
       if (mod === 'pull') setRefreshing(false);
       ilkYuklemeBitti.current = true;
+      setIlkHazir(true);
     }
   }, [profile?.id]);
 
@@ -313,10 +346,10 @@ export default function HomeScreen() {
       return () => {
         odakli.current = false;
         kaydiriyor.current = false;
-        // Yarım kalan istek finally'de loading'i kaçırmasın
+        // Nesli artır: iptal olan istek finally'de boş ekranı boyamasın.
+        // loading'i burada false yapmak, feed boşken boş durum kartını bir kare gösterir.
         loadNesil.current += 1;
         setRefreshing(false);
-        setLoading(false);
         clearInterval(timer);
       };
     }, [load, bildirimYenile]),
@@ -548,21 +581,50 @@ export default function HomeScreen() {
     [sesSayisi, yayinSayisi, t],
   );
 
-  const kartAc = useCallback((oge: FeedIzgaraOgesi) => {
-    router.push(oge.oge.href as any);
-  }, []);
+  const feedCanliyaGit = useCallback((oge: FeedOggesi): boolean => {
+    const sessionId = oge.href.match(/^\/canli\/([^/?#]+)/)?.[1];
+    if (!sessionId) return false;
+    CanliYayinaGit(sessionId, {
+      host_id: oge.host?.id ?? null,
+      title: oge.title,
+      hostAd: oge.host?.display_name?.trim() || oge.host?.username?.trim() || null,
+      hostAvatar: oge.host?.avatar_url ?? oge.cover_url ?? null,
+      viewer_count: oge.listener_count,
+    }, profile?.id);
+    return true;
+  }, [profile?.id]);
 
-  const feedOgeAc = useCallback((oge: FeedOggesi) => {
-    if (oge.tur === 'oda' || /\/(?:lobi|room)\//.test(oge.href)) {
-      void SesOdasinaHrefIleGit(oge.href);
-      return;
-    }
-    router.push(oge.href as any);
-  }, []);
+  const kartAc = useCallback(
+    (oge: FeedIzgaraOgesi) => {
+      if (feedCanliyaGit(oge.oge)) return;
+      router.push(oge.oge.href as any);
+    },
+    [feedCanliyaGit],
+  );
+
+  const feedOgeAc = useCallback(
+    (oge: FeedOggesi) => {
+      if (oge.tur === 'oda' || /\/(?:lobi|room)\//.test(oge.href)) {
+        void SesOdasinaHrefIleGit(oge.href);
+        return;
+      }
+      if (feedCanliyaGit(oge)) return;
+      router.push(oge.href as any);
+    },
+    [feedCanliyaGit],
+  );
 
   const sonGezilenAc = useCallback((oge: SonGezilenGorunum) => {
     if (oge.tur === 'oda' || /\/(?:lobi|room)\//.test(oge.href)) {
       void SesOdasinaHrefIleGit(oge.href);
+      return;
+    }
+    if (oge.tur === 'canli') {
+      CanliYayinaGit(oge.id, {
+        title: oge.title,
+        hostAd: oge.hostAd ?? null,
+        hostAvatar: oge.hostAvatar ?? null,
+      });
       return;
     }
     router.push(oge.href as any);
@@ -622,6 +684,21 @@ export default function HomeScreen() {
             onPress={() => router.push('/bildirimler' as any)}
           />
         </View>
+        {eskiVeri ? (
+          <Text style={styles.eskiNot}>
+            {eskiNeden === 'zayif'
+              ? t('cevrimdisi.zayifAg')
+              : t('cevrimdisi.cevrimdisi')}
+            {eskiZaman
+              ? ` · ${t('cevrimdisi.sonGuncelleme', {
+                  zaman: new Date(eskiZaman).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
+                })}`
+              : ''}
+          </Text>
+        ) : null}
 
         <AnaSayfaAramaOnerileri
           sorgu={arama}
@@ -640,7 +717,7 @@ export default function HomeScreen() {
           }}
           onCanliSec={(c) => {
             setArama('');
-            router.push(`/canli/${c.id}` as any);
+            CanliYayinaGit(c.id);
           }}
         />
 
@@ -672,7 +749,7 @@ export default function HomeScreen() {
       </View>
     );
 
-    if (loading && feed.length === 0) {
+    if ((!ilkHazir || loading) && feed.length === 0) {
       return (
         <View>
           {ustChrome}
@@ -732,6 +809,7 @@ export default function HomeScreen() {
     filtreler,
     filtre,
     loading,
+    ilkHazir,
     feed.length,
     sonGezilenGorunum,
     sonGezilenAc,
@@ -740,6 +818,9 @@ export default function HomeScreen() {
     feedOgeAc,
     izgara.length,
     bayrakSurum,
+    eskiVeri,
+    eskiZaman,
+    eskiNeden,
   ]);
 
   return (
@@ -786,11 +867,11 @@ export default function HomeScreen() {
           }}
         >
           <View style={styles.root}>
-            <AnaSayfaAtmosfer />
+            <AnaSayfaAtmosfer yumusakMorIsik />
 
             <FlatList
                 ref={listeRef}
-                data={loading && feed.length === 0 ? [] : feedRows}
+                data={(!ilkHazir || loading) && feed.length === 0 ? [] : feedRows}
                 keyExtractor={(item) => item.key}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.list}
@@ -832,7 +913,7 @@ export default function HomeScreen() {
                   </View>
                 }
                 ListEmptyComponent={
-                  loading && feed.length === 0 ? null : filtre === 'tumu' && !arama.trim() ? (
+                  (!ilkHazir || loading) && feed.length === 0 ? null : filtre === 'tumu' && !arama.trim() ? (
                     <View style={{ height: 8 }} />
                   ) : (
                   <View>
@@ -904,6 +985,7 @@ export default function HomeScreen() {
                               oge={oge.oge}
                               index={kartIndex}
                               aktif={false}
+                              eskiVeri={eskiVeri}
                               onPress={() => kartAc(oge)}
                             />
                           </View>
@@ -929,6 +1011,12 @@ const styles = StyleSheet.create({
   ustChrome: {
     marginHorizontal: -BoslukTokenlari.lg,
     backgroundColor: 'transparent',
+  },
+  eskiNot: {
+    color: RenkTokenlari.textMuted,
+    fontSize: 12,
+    paddingHorizontal: BoslukTokenlari.lg,
+    paddingBottom: 6,
   },
   ustAksiyon: {
     flexDirection: 'row',

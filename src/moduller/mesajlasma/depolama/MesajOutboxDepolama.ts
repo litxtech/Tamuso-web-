@@ -16,6 +16,7 @@ import {
 import type { DirektMesaj } from '../okuma/MesajlariGetir';
 
 const SURUM = 'v1';
+const MAKS_DENEME = 6;
 const ANAHTAR_ON_EK = `@muta/mesaj_outbox_${SURUM}`;
 
 export type MesajOutboxDurum = 'QUEUED' | 'SENDING' | 'FAILED';
@@ -81,14 +82,16 @@ async function disktenOku(userId: string): Promise<MesajOutboxKayit[]> {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (x): x is MesajOutboxKayit =>
-        !!x &&
-        typeof x === 'object' &&
-        typeof (x as MesajOutboxKayit).client_id === 'string' &&
-        typeof (x as MesajOutboxKayit).thread_id === 'string' &&
-        typeof (x as MesajOutboxKayit).status === 'string',
-    );
+    return parsed
+      .filter(
+        (x): x is MesajOutboxKayit =>
+          !!x &&
+          typeof x === 'object' &&
+          typeof (x as MesajOutboxKayit).client_id === 'string' &&
+          typeof (x as MesajOutboxKayit).thread_id === 'string' &&
+          typeof (x as MesajOutboxKayit).status === 'string',
+      )
+      .map((k) => (k.status === 'SENDING' ? { ...k, status: 'QUEUED' as const } : k));
   } catch {
     return [];
   }
@@ -230,6 +233,7 @@ export async function MesajOutboxFlush(userId: string): Promise<void> {
     const adaylar = list
       .filter(
         (k) =>
+          k.retry_count < MAKS_DENEME &&
           (k.status === 'QUEUED' || k.status === 'FAILED') &&
           (!k.next_attempt_at || Date.parse(k.next_attempt_at) <= now),
       )
@@ -238,8 +242,49 @@ export async function MesajOutboxFlush(userId: string): Promise<void> {
     for (const kayit of adaylar) {
       if (aktifUserId && aktifUserId !== userId) break;
       await MesajOutboxGuncelle(userId, kayit.client_id, { status: 'SENDING' });
+      let payload = kayit.payload;
+      const meta = payload.mediaMeta;
+      if (meta && meta.pending_upload === true && typeof meta.local_uri === 'string') {
+        const tur = payload.messageType === 'video' ? 'video' : 'image';
+        if (tur === 'video') {
+          const tip = String(AgBaglantisiIzleyici.sonDurum()?.tip ?? '').toUpperCase();
+          const { CevrimdisiAyarOku } = await import('../../cevrimdisi/AyarDeposu');
+          const ayar = await CevrimdisiAyarOku(userId);
+          if (ayar.videoOnbellek !== 'wifi_ve_mobil' && tip !== 'WIFI') {
+            await MesajOutboxGuncelle(userId, kayit.client_id, {
+              status: 'QUEUED',
+              next_attempt_at: new Date(Date.now() + 30_000).toISOString(),
+            });
+            continue;
+          }
+        }
+        const { DmMedyaUriYukle } = await import('../islemler/DmMedyasiYukle');
+        const up = await DmMedyaUriYukle({
+          uri: meta.local_uri,
+          tur,
+          mimeType: typeof meta.mime === 'string' ? meta.mime : null,
+        });
+        if (!up.ok) {
+          const retry = kayit.retry_count + 1;
+          await MesajOutboxGuncelle(userId, kayit.client_id, {
+            status: retry >= MAKS_DENEME ? 'FAILED' : 'FAILED',
+            retry_count: retry,
+            next_attempt_at: new Date(Date.now() + backoffMs(retry)).toISOString(),
+            last_error: up.hata,
+          });
+          flushSonucYayinla({ clientId: kayit.client_id, ok: false, hata: up.hata });
+          continue;
+        }
+        payload = {
+          ...payload,
+          mediaUrl: up.url,
+          messageType: up.messageType,
+          mediaMeta: { ...meta, pending_upload: false },
+        };
+        await MesajOutboxGuncelle(userId, kayit.client_id, { payload });
+      }
       const sonuc = await MesajGonder({
-        ...kayit.payload,
+        ...payload,
         clientId: kayit.client_id,
         threadId: kayit.thread_id,
       });

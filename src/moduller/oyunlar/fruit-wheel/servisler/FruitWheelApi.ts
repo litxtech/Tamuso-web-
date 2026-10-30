@@ -12,10 +12,23 @@ function asState(data: unknown): FruitWheelState | Fail {
   return row;
 }
 
+let onbellek: FruitWheelState | null = null;
+
+export function fruitWheelOnbellek(): FruitWheelState | null {
+  return onbellek;
+}
+
+/** Oda açılınca turu ısıt — çark ekranı boş beklemesin. */
+export function fruitWheelIsit(): void {
+  void fruitWheelSync();
+}
+
 export async function fruitWheelSync(): Promise<FruitWheelState | Fail> {
   const { data, error } = await oyunRpcRetryIle(() => supabase.rpc('fruit_wheel_sync'));
   if (error) return { ok: false, code: 'network' };
-  return asState(data);
+  const state = asState(data);
+  if (state.ok) onbellek = state;
+  return state;
 }
 
 export async function fruitWheelHeartbeat(): Promise<void> {

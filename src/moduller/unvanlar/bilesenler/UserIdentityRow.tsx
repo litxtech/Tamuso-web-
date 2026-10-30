@@ -12,6 +12,7 @@ import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari'
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
+import { AjansSahipIsareti } from '../../ajanslar/bilesenler/AjansSahipRozeti';
 import { OzellikBayragiAktifMi } from '../../ozellik-bayraklari/OzellikBayragiAktifMi';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { UnvanSunumunuCoz } from '../okuma/UnvanSunumunuCoz';
@@ -21,6 +22,7 @@ import { UserTitleBadge } from './UserTitleBadge';
 type Props = {
   displayName: string;
   verified?: boolean | null;
+  ajansSahibi?: boolean;
   titleId?: string | null;
   title?: TitlePresentationModel | null;
   size?: UnvanSize;
@@ -36,6 +38,7 @@ type Props = {
 export function UserIdentityRow({
   displayName,
   verified,
+  ajansSahibi,
   titleId,
   title,
   size = 'NORMAL',
@@ -80,6 +83,7 @@ export function UserIdentityRow({
         {displayName?.trim() || '—'}
       </Text>
       <DogrulanmisTik dogrulandi={verified} size={tikSize} />
+      {ajansSahibi ? <AjansSahipIsareti /> : null}
       {presentation ? (
         <UserTitleBadge presentation={presentation} size={size} />
       ) : null}

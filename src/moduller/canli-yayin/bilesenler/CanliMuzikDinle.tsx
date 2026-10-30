@@ -51,6 +51,26 @@ function bildir() {
   for (const fn of dinleyiciler) fn(calanId);
 }
 
+let kesitOncesiSes: number | null = null;
+
+/** Kesit kaydı hoparlördeki parçayı da duysun diye sesi açar; bitince eski seviyeye döner. */
+export function canliMuzikKesitSes(kayit: boolean) {
+  const p = player;
+  if (!p) return;
+  if (kayit) {
+    if (kesitOncesiSes == null) kesitOncesiSes = p.volume;
+    p.volume = 0.9;
+  } else if (kesitOncesiSes != null) {
+    p.volume = kesitOncesiSes;
+    kesitOncesiSes = null;
+  }
+  try {
+    p.play();
+  } catch {
+    /* oturum kilitliyse kayıt bitince yeniden dener */
+  }
+}
+
 /** Kesit kaydı ses oturumunu bölmüşse aynı parçayı sürdürür. */
 export function canliMuzikDevam() {
   const p = player;

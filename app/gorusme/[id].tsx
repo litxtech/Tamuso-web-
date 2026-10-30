@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { LiveKitBaglantiYoneticisi } from '../../src/moduller/livekit/baglanti/LiveKitBaglantiYoneticisi';
 import { GorusmeAktifEkrani } from '../../src/moduller/gorusme/bilesenler/GorusmeEkranlari';
 import { GorusmeArkaPlan } from '../../src/moduller/gorusme/bilesenler/GorusmeArkaPlan';
@@ -31,7 +31,8 @@ import { useCoinYuklePaneli } from '../../src/moduller/cuzdan/islemler/useCoinYu
 export default function GorusmeEkrani() {
   const { t } = useCeviri();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user, wallet } = useAuth();
+  const { user } = useAuth();
+  const { wallet } = useWallet();
   const oturum = useGorusmeOturumu();
   const bilincliCikis = useRef(false);
   const mockUyariVerildi = useRef(false);

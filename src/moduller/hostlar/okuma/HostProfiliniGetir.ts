@@ -13,6 +13,14 @@ export type HostProfil = {
   violations: number;
 };
 
+export type HostBasvurusu = {
+  id: string;
+  path: 'independent' | 'join_agency';
+  agency_id: string | null;
+  status: 'pending' | 'agency_review' | 'platform_review' | 'approved' | 'rejected';
+  created_at: string;
+};
+
 export async function HostProfilimiGetir(): Promise<HostProfil | null> {
   const uid = (await supabase.auth.getUser()).data.user?.id;
   if (!uid) return null;
@@ -25,13 +33,13 @@ export async function HostProfilimiGetir(): Promise<HostProfil | null> {
   return data as HostProfil | null;
 }
 
-export async function HostBasvurularimiGetir() {
+export async function HostBasvurularimiGetir(): Promise<HostBasvurusu[]> {
   const { data, error } = await supabase
     .from('host_applications')
-    .select('*')
+    .select('id, path, agency_id, status, created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as HostBasvurusu[];
 }
 
 export async function HostHedefleriniGetir(agencyId?: string) {

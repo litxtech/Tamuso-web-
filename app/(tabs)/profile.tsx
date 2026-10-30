@@ -14,7 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../src/components/Screen';
 import { GradientButton } from '../../src/components/GradientButton';
 import { YUZEN_TAB_ICERIK_BOSLUGU } from '../../src/components/YuzenTabBar';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
+import { SeoAdresiniPaylas } from '../../src/moduller/seo/SeoPaylasimAdresi';
+import { useAjansSahibiMi } from '../../src/moduller/ajanslar/kancalar/useAjansSahibiMi';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import {
   ProfilIstatistikleriniGetir,
@@ -64,6 +66,7 @@ import {
   YaricapTokenlari,
 } from '../../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { TamusoBanner } from '../../src/banner';
+import { ProfilAlinanHediyeButonu } from '../../src/moduller/kullanici-profili/bilesenler/ProfilAlinanHediyeButonu';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 const EMPTY_PRIVACY: GizlilikAyarlari = {
@@ -91,7 +94,8 @@ const EMPTY_PRIVACY: GizlilikAyarlari = {
 export default function ProfileScreen() {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
-  const { profile, wallet, user, isGuest, refreshProfile, refreshWallet, patchProfile } = useAuth();
+  const { profile, user, isGuest, refreshProfile, patchProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { uyelik: ajansUyelik, yukleniyor: ajansYukleniyor } = useAjansUyeligi(!isGuest);
   const [upgradeAcik, setUpgradeAcik] = useState(false);
   const [oyunKartAcik, setOyunKartAcik] = useState(false);
@@ -121,6 +125,7 @@ export default function ProfileScreen() {
   });
   const oyunProfiliAcik = oyunPlatformAcik && oyunGorunur;
   const hikayeOzet = useHikayeProfilOzet(user?.id);
+  const ajansSahibi = useAjansSahibiMi(user?.id);
 
   const hacimGorunurlukSec = (v: IslemHacmiGorunurluk) => {
     setHacimGorunurlukAcik(false);
@@ -230,6 +235,12 @@ export default function ProfileScreen() {
     ? () => setUpgradeAcik(true)
     : () => router.push('/durum/olustur' as any);
 
+  const profilLinkPaylas = async () => {
+    if (!user?.id) return;
+    const sonuc = await SeoAdresiniPaylas('profile', user.id);
+    if (sonuc === 'yok') Alert.alert(t('ortak.paylas'), t('profil.baglantiKapali'));
+  };
+
   return (
     <Screen edges={[]} tabSayfaKaydir>
       <ModulHataSiniri modulAdi="kullanici-profili">
@@ -246,6 +257,7 @@ export default function ProfileScreen() {
             username={username}
             bio={bio}
             verified={!!profile?.is_verified}
+            ajansSahibi={ajansSahibi}
             titleId={
               privacy.hide_prestige
                 ? null
@@ -265,6 +277,14 @@ export default function ProfileScreen() {
             level={Number(profile?.level) || 1}
             tacGizli={privacy.hide_crown}
             coverHExtra={insets.top}
+            isimYani={
+              user?.id ? (
+                <ProfilAlinanHediyeButonu
+                  userId={user.id}
+                  adet={stats?.total_gifts_received ?? 0}
+                />
+              ) : null
+            }
             onTakipPress={() =>
               user?.id &&
               router.push(`/takip/takip-edilenler?userId=${user.id}` as any)
@@ -281,18 +301,30 @@ export default function ProfileScreen() {
             hasUnseenStory={hikayeOzet.hasUnseen}
             storyPreviewUri={hikayeOzet.previewUrl}
             ustSag={
-              <Pressable
-                style={profilXOverlayBtnStyle}
-                onPress={() => router.push('/profil-ayarlar' as any)}
-                hitSlop={8}
-                accessibilityLabel={t('profil.ayarlar')}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={20}
-                  color={RenkTokenlari.text}
-                />
-              </Pressable>
+              <>
+                {!isGuest && user?.id ? (
+                  <Pressable
+                    style={profilXOverlayBtnStyle}
+                    onPress={() => void profilLinkPaylas()}
+                    hitSlop={8}
+                    accessibilityLabel={t('profil.baglantiyiPaylas')}
+                  >
+                    <Ionicons name="share-outline" size={20} color={RenkTokenlari.text} />
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  style={profilXOverlayBtnStyle}
+                  onPress={() => router.push('/profil-ayarlar' as any)}
+                  hitSlop={8}
+                  accessibilityLabel={t('profil.ayarlar')}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={20}
+                    color={RenkTokenlari.text}
+                  />
+                </Pressable>
+              </>
             }
             aksiyonSlot={
               <Pressable
@@ -380,114 +412,39 @@ export default function ProfileScreen() {
 
             <TamusoBanner placement="PROFILE_MIDDLE" screen="PROFILE" compact />
 
-            <Pressable
-              onPress={cuzdanaGit}
-              style={({ pressed }) => [styles.walletPress, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel={t('cuzdan.baslik')}
-            >
-              <View style={styles.walletUst}>
-                <View style={styles.walletSol}>
-                  <Text style={styles.walletBaslik}>{t('cuzdan.baslik')}</Text>
-                  <Text style={styles.walletAlt}>{t('profilTab.cuzdanAlt')}</Text>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={RenkTokenlari.textDim}
-                />
-              </View>
-              <View style={styles.walletBakiyeRow}>
-                <View style={styles.walletBakiyeKart}>
-                  <View
-                    style={[
-                      styles.walletDot,
-                      { backgroundColor: RenkTokenlari.accent },
-                    ]}
-                  />
-                  <View style={styles.walletBakiyeCopy}>
-                    <Text style={styles.walletBakiyeEtiket}>{t('cuzdan.coin')}</Text>
-                    <Text style={styles.walletBakiyeDeger} numberOfLines={1}>
-                      {formatSayi(wallet?.coins ?? 0)}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.walletBakiyeKart}>
-                  <View
-                    style={[
-                      styles.walletDot,
-                      { backgroundColor: RenkTokenlari.violet },
-                    ]}
-                  />
-                  <View style={styles.walletBakiyeCopy}>
-                    <Text style={styles.walletBakiyeEtiket}>{t('cuzdan.elmas')}</Text>
-                    <Text style={styles.walletBakiyeDeger} numberOfLines={1}>
-                      {formatSayi(wallet?.diamonds ?? 0)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </Pressable>
-
-            {oyunProfiliAcik && !privacy.hide_game_stats ? (
+            <View style={styles.kisayolSatiri}>
               <Pressable
-                onPress={() => setOyunKartAcik(true)}
-                style={({ pressed }) => [
-                  styles.walletPress,
-                  pressed && styles.pressed,
-                ]}
+                onPress={cuzdanaGit}
+                style={({ pressed }) => [styles.kisayolButon, pressed && styles.pressed]}
                 accessibilityRole="button"
-                accessibilityLabel={t('profilTab.oyunProfili')}
+                accessibilityLabel={t('cuzdan.baslik')}
               >
-                <View style={styles.walletUst}>
-                  <View style={styles.walletSol}>
-                    <Text style={styles.walletBaslik}>{t('profilTab.oyun')}</Text>
-                    <Text style={styles.walletAlt}>
-                      {t('profilTab.oyunAlt', {
-                        lig: oyunStats?.leagueLabel ?? t('sehir.lig'),
-                      })}
-                    </Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={18}
-                    color={RenkTokenlari.textDim}
-                  />
-                </View>
-                <View style={styles.walletBakiyeRow}>
-                  <View style={styles.walletBakiyeKart}>
-                    <View
-                      style={[
-                        styles.walletDot,
-                        { backgroundColor: RenkTokenlari.accent },
-                      ]}
-                    />
-                    <View style={styles.walletBakiyeCopy}>
-                      <Text style={styles.walletBakiyeEtiket}>
-                        {t('profilTab.kupa')}
-                      </Text>
-                      <Text style={styles.walletBakiyeDeger} numberOfLines={1}>
-                        {formatSayi(oyunStats?.trophies ?? 0)}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.walletBakiyeKart}>
-                    <View
-                      style={[
-                        styles.walletDot,
-                        { backgroundColor: RenkTokenlari.mint },
-                      ]}
-                    />
-                    <View style={styles.walletBakiyeCopy}>
-                      <Text style={styles.walletBakiyeEtiket}>{t('profil.galibiyet')}</Text>
-                      <Text style={styles.walletBakiyeDeger} numberOfLines={1}>
-                        {oyunStats?.wins ?? 0}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                <Ionicons name="wallet-outline" size={18} color={RenkTokenlari.accent} />
+                <Text style={styles.kisayolMetin} numberOfLines={1}>
+                  {t('cuzdan.baslik')}
+                </Text>
+                <Ionicons name="chevron-forward" size={16} color={RenkTokenlari.textDim} />
               </Pressable>
-            ) : null}
+
+              {oyunProfiliAcik && !privacy.hide_game_stats ? (
+                <Pressable
+                  onPress={() => setOyunKartAcik(true)}
+                  style={({ pressed }) => [styles.kisayolButon, pressed && styles.pressed]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('profilTab.oyunProfili')}
+                >
+                  <Ionicons
+                    name="game-controller-outline"
+                    size={18}
+                    color={RenkTokenlari.mint}
+                  />
+                  <Text style={styles.kisayolMetin} numberOfLines={1}>
+                    {t('profilTab.oyun')}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={RenkTokenlari.textDim} />
+                </Pressable>
+              ) : null}
+            </View>
 
             <View style={styles.metrics}>
               <Metric
@@ -745,15 +702,30 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
   },
   pressed: { opacity: 0.9 },
-  walletPress: {
+  kisayolSatiri: {
+    flexDirection: 'row',
     marginHorizontal: BoslukTokenlari.lg,
     marginTop: BoslukTokenlari.md,
-    padding: BoslukTokenlari.md,
-    borderRadius: YaricapTokenlari.lg,
+    gap: BoslukTokenlari.sm,
+  },
+  kisayolButon: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: BoslukTokenlari.sm,
+    paddingHorizontal: BoslukTokenlari.md,
+    borderRadius: YaricapTokenlari.md,
     backgroundColor: RenkTokenlari.bgCard,
     borderWidth: 1,
     borderColor: 'rgba(212,175,55,0.28)',
-    gap: BoslukTokenlari.md,
+  },
+  kisayolMetin: {
+    ...TipografiTokenlari.body,
+    flex: 1,
+    fontWeight: '700',
+    color: RenkTokenlari.text,
   },
   walletUst: {
     flexDirection: 'row',
@@ -769,10 +741,6 @@ const styles = StyleSheet.create({
   walletAlt: {
     ...TipografiTokenlari.micro,
     color: RenkTokenlari.textMuted,
-  },
-  walletBakiyeRow: {
-    flexDirection: 'row',
-    gap: BoslukTokenlari.sm,
   },
   walletBakiyeKart: {
     flex: 1,

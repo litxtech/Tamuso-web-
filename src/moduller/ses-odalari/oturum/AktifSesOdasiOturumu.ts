@@ -17,6 +17,10 @@ type Dinleyici = (durum: AktifSesOdasiDurum | null) => void;
 
 let durum: AktifSesOdasiDurum | null = null;
 const dinleyiciler = new Set<Dinleyici>();
+/** Küçültme anı — hemen ardından gelen odak/load pencereyi kapatmasın */
+let kucultulduguAn = 0;
+/** profil: oda ekranı altta durur, kapanınca küçük pencere kapanmalı */
+let arkaPlanNedeni: 'profil' | 'kucult' | null = null;
 
 function yayinla() {
   dinleyiciler.forEach((fn) => fn(durum));
@@ -34,6 +38,16 @@ export function AktifSesOdasiCanliMi(): boolean {
   return !!durum;
 }
 
+/** Küçültmeden hemen sonra gelen sahte odak / yeniden bağlanma */
+export function AktifSesOdasiKucultmeTazeMi(ms = 4000): boolean {
+  return kucultulduguAn > 0 && Date.now() - kucultulduguAn < ms;
+}
+
+/** Profil ziyareti — odaya dönünce küçük pencere kapanır */
+export function AktifSesOdasiProfilZiyaretiMi(): boolean {
+  return arkaPlanNedeni === 'profil';
+}
+
 export function AktifSesOdasiDinle(fn: Dinleyici): () => void {
   dinleyiciler.add(fn);
   fn(durum);
@@ -49,14 +63,21 @@ export function AktifSesOdasiBaslat(input: {
   micAcik?: boolean;
   dinleyiciSayisi?: number;
 }): void {
+  const ayni =
+    durum?.roomId === input.roomId &&
+    (durum.arkaPlanda || (kucultulduguAn > 0 && Date.now() - kucultulduguAn < 4000));
   durum = {
     roomId: input.roomId,
     title: input.title,
     coverUrl: input.coverUrl ?? null,
-    arkaPlanda: false,
+    arkaPlanda: ayni ? true : false,
     micAcik: input.micAcik ?? false,
     dinleyiciSayisi: input.dinleyiciSayisi ?? 0,
   };
+  if (!ayni) {
+    kucultulduguAn = 0;
+    arkaPlanNedeni = null;
+  }
   yayinla();
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -78,15 +99,30 @@ export function AktifSesOdasiBaslat(input: {
 }
 
 /** Küçült / profil — oda ekranı blur olur ama ses devam eder */
-export function AktifSesOdasiArkaPlanaAl(): void {
+export function AktifSesOdasiArkaPlanaAl(
+  neden: 'profil' | 'kucult' = 'kucult',
+): void {
   if (!durum) return;
+  kucultulduguAn = Date.now();
+  arkaPlanNedeni = neden;
   durum = { ...durum, arkaPlanda: true };
   yayinla();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { MedyaMiniSesiniTut } = require('../../livekit/MedyaBaglantisi') as {
+      MedyaMiniSesiniTut: () => void;
+    };
+    MedyaMiniSesiniTut();
+  } catch {
+    /* ses modülü */
+  }
 }
 
-/** Oda ekranına dönünce */
+/** Oda ekranına dönünce. Küçültme sonrası sahte odak bunu çağırmamalı. */
 export function AktifSesOdasiOneCikar(): void {
   if (!durum) return;
+  kucultulduguAn = 0;
+  arkaPlanNedeni = null;
   durum = { ...durum, arkaPlanda: false };
   yayinla();
 }
@@ -132,6 +168,8 @@ export function AktifSesOdasiBitir(): void {
   if (!durum) return;
   const roomId = durum.roomId;
   durum = null;
+  kucultulduguAn = 0;
+  arkaPlanNedeni = null;
   yayinla();
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

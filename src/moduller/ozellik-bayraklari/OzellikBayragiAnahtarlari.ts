@@ -9,6 +9,7 @@ export const OzellikBayragiAnahtarlari = [
   'gifts_enabled',
   'pk_enabled',
   'agency_enabled',
+  'agency_meetings_enabled',
   'agency_verification_v2_enabled',
   'agency_verification_financial_locks',
   'agency_verification_sync_wallet_kyc',
@@ -55,6 +56,8 @@ export const OzellikBayragiAnahtarlari = [
   'kozmik_kaskad_enabled',
   'zeus_enabled',
   'nox_reels_enabled',
+  'storm_king_enabled',
+  'storm_king_autoplay_enabled',
   'stories_enabled',
   'story_creation_enabled',
   'story_video_enabled',
@@ -94,17 +97,6 @@ export const OzellikBayragiAnahtarlari = [
   'people_show_online_indicators',
   'user_titles_enabled',
   'title_animations_enabled',
-  'studio_enabled',
-  'studio_menu_visible',
-  'new_game_creation_enabled',
-  'game_testing_enabled',
-  'game_submission_enabled',
-  'game_publishing_enabled',
-  'ai_generation_enabled',
-  'meshy_enabled',
-  'elevenlabs_enabled',
-  'playcanvas_enabled',
-  'creator_rewards_enabled',
   // iOS Dynamic Island / Live Activities / CallKit
   'ios_dynamic_island_enabled',
   'live_activity_enabled',
@@ -150,6 +142,7 @@ export const KillSwitchAnahtarlari = [
   'kill_people_paid_calls',
   'kill_offline_outbox',
   'kill_stories',
+  'kill_agency_meetings',
 ] as const;
 
 export type KillSwitchAnahtari = (typeof KillSwitchAnahtarlari)[number];

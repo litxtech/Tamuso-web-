@@ -11,6 +11,8 @@ import { MesajOkunmamisSaglayici } from '../src/moduller/mesajlasma/baglam/Mesaj
 import { GorusmeGelenSaglayici } from '../src/moduller/gorusme/bilesenler/GorusmeGelenSaglayici';
 import { KullanimSuresiSaglayici } from '../src/moduller/kullanim-suresi/baglam/KullanimSuresiSaglayici';
 import { AktifSesOdasiMiniBar } from '../src/moduller/ses-odalari/bilesenler/AktifSesOdasiMiniBar';
+import { LiderlikDevriKarti } from '../src/moduller/ses-odalari/bilesenler/LiderlikDevriKarti';
+import { AktifCanliYayinMiniBar } from '../src/moduller/canli-yayin/bilesenler/AktifCanliYayinMiniBar';
 import { AktifSesOdasiPipKart } from '../src/moduller/ses-odalari/bilesenler/AktifSesOdasiPipKart';
 import { SesOdasiArkaPlanKurulum } from '../src/moduller/ses-odalari/arka-plan/SesOdasiArkaPlanServisi';
 import { SesOdasiPipKurulum } from '../src/moduller/ses-odalari/pip/useSesOdasiPip';
@@ -32,6 +34,7 @@ import { OzellikBayrakSaglayici } from '../src/moduller/ozellik-bayraklari/Ozell
 import { RtcYenilemeKatmani } from '../src/moduller/rtc/RtcYenilemeKatmani';
 import { WebAlertKatmani, WebAlertKur } from '../src/ortak/web/WebAlertKatmani';
 import { WebZiyaretKaydi } from '../src/moduller/web-ziyaret/WebZiyaretKaydet';
+import { CevrimdisiSerit } from '../src/moduller/cevrimdisi/bilesenler/CevrimdisiSerit';
 import '../src/i18n';
 import '../src/moduller/livekit/polyfill/AbortReasonPolyfill';
 
@@ -127,7 +130,6 @@ function KokIcerik() {
   const segments = useSegments();
   const { width } = useWindowDimensions();
   const tamSite =
-    segments[0] === 'admin' ||
     segments[0] === 'tanitim' ||
     segments[0] === 'blog' ||
     segments[0] === 'politika' ||
@@ -200,7 +202,12 @@ function KokIcerik() {
           <Stack.Screen name="canli/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen
             name="canli/[id]"
-            options={{ animation: 'slide_from_bottom', presentation: 'fullScreenModal' }}
+            options={{
+              animation: 'slide_from_bottom',
+              presentation: 'fullScreenModal',
+              gestureEnabled: true,
+              gestureDirection: 'vertical',
+            }}
           />
           <Stack.Screen name="pk/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="siralamalar/index" options={{ animation: 'slide_from_right' }} />
@@ -283,7 +290,6 @@ function KokIcerik() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen name="sertifikasyon/index" options={{ animation: 'slide_from_right' }} />
-          <Stack.Screen name="admin" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="webview" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen
             name="odeme-basarili"
@@ -296,6 +302,10 @@ function KokIcerik() {
           <Stack.Screen name="paylasim/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="paylas/[kod]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ayarlar/index" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen
+            name="ayarlar/veri-cevrimdisi"
+            options={{ animation: 'slide_from_right' }}
+          />
           <Stack.Screen name="ayarlar/dil" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="ayarlar/gizlilik" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen
@@ -318,7 +328,12 @@ function KokIcerik() {
               presentation: 'fullScreenModal',
               contentStyle: { backgroundColor: palet.bg },
               gestureEnabled: true,
+              gestureDirection: 'vertical',
               freezeOnBlur: true,
+              // Tam ekran modal bazen durum çubuğunun altına çiziyor;
+              // boşluk her zaman uygulama tarafında, sabit kalsın.
+              statusBarTranslucent: true,
+              statusBarStyle: 'light',
             }}
           />
           <Stack.Screen
@@ -333,17 +348,12 @@ function KokIcerik() {
               navigationBarHidden: true,
             }}
           />
-          <Stack.Screen
-            name="studio/index"
-            options={{ animation: 'slide_from_right' }}
-          />
-          <Stack.Screen
-            name="studio/[id]"
-            options={{ animation: 'slide_from_right' }}
-          />
               </Stack>
+              <CevrimdisiSerit />
               <YuzenTabBar />
               <AktifSesOdasiMiniBar />
+              <LiderlikDevriKarti />
+              <AktifCanliYayinMiniBar />
               <AktifSesOdasiPipKart />
               <GorusmeGlobalKatman />
               <RtcYenilemeKatmani />

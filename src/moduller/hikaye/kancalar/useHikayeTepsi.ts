@@ -81,6 +81,13 @@ export function useHikayeTepsi(opts?: { enabled?: boolean }) {
     ilk.current = false;
     setYukleniyor(false);
     if (!r.ok) {
+      const { HikayeTepsiOku } = await import('../../cevrimdisi/AnlikGoruntu');
+      const disk = (await HikayeTepsiOku(user?.id)) as HikayeTepsiOgesi[];
+      if (disk.length > 0) {
+        setHata(null);
+        setOgeler(hikayeTepsiSirala(disk));
+        return;
+      }
       setHata(r.hata);
       const kendi = kendiHalka(user?.id, profile, undefined);
       setOgeler(kendi ? [kendi] : []);
@@ -93,6 +100,8 @@ export function useHikayeTepsi(opts?: { enabled?: boolean }) {
     const kendi = kendiHalka(user?.id, profile, sunucuKendi);
     const sirali = hikayeTepsiSirala(kendi ? [kendi, ...diger] : diger);
     setOgeler(sirali);
+    const { HikayeTepsiYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+    void HikayeTepsiYaz(user?.id, sirali);
   }, [enabled, user?.id, profile]);
 
   /** İzleme bitince tepside anında sona kaydır */

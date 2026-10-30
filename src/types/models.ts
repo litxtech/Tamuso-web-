@@ -40,16 +40,26 @@ export type Profile = {
 
 export type Wallet = {
   user_id: string;
+  /** Satın alınan coin */
   coins: number;
+  /** Oyunlardan kazanılan coin — nakde çevrilemez, hediye gelir oluşturmaz */
+  game_coins: number;
+  /** Ödül / promosyon coin — nakde çevrilemez, hediye gelir oluşturmaz */
+  bonus_coins: number;
+  /** Alınan hediye puanı (parasal değeri yok) */
   diamonds: number;
   updated_at: string;
 };
+
+export type CoinKaynagi = 'purchased' | 'game' | 'bonus';
 
 export type Room = {
   id: string;
   /** Kısa benzersiz oda kimliği — örn. ODA-A3K7M2 */
   room_code?: string | null;
   host_id: string;
+  /** Odayı açan kişi. Liderlik devredilse de değişmez. */
+  kurucu_id?: string | null;
   title: string;
   topic: string | null;
   cover_url: string | null;
@@ -59,6 +69,10 @@ export type Room = {
   is_locked: boolean;
   listener_count: number;
   total_coins_earned: number;
+  /** Kart önizlemesi: odadaki toplam hediye coin. */
+  hediye_islem?: number;
+  /** Kart önizlemesi: odadaki toplam oyun harcama coin. */
+  oyun_islem?: number;
   created_at: string;
   host?: Profile | null;
   layout_code?: string | null;
@@ -67,6 +81,10 @@ export type Room = {
   audience_capacity?: number | null;
   microphone_capacity?: number | null;
   livekit_room_name?: string | null;
+  /** true: koltuk onayı gerekir. false: boş koltuğa doğrudan oturulur. */
+  oturma_izinli?: boolean | null;
+  /** true: mikrofon onayı gerekir. false: koltuktaki kullanıcı mikrofonunu kendisi açar. */
+  mikrofon_izinli?: boolean | null;
 };
 
 export type Gift = {

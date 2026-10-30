@@ -1,6 +1,6 @@
 /**
- * Ses odası oyun seçim kartı — poster kart + OYNA.
- * Kabuk (aşağıdan kayma) OyunOdaAltKart'tadır; burada Modal yok.
+ * Ses odası oyun seçim kartı — yalnızca Fruit Wheel.
+ * Kabuk (yerleşim) OyunOdaAltKart'tadır; burada Modal yok.
  */
 
 import React from 'react';
@@ -20,75 +20,35 @@ import {
   BoslukTokenlari,
   YaricapTokenlari,
 } from '../../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
-import { GAME_DISPLAY_NAME as KASKAD_NAME } from '../../kaskad/sabitler/KaskadSabitleri';
-import {
-  BackgroundImages as KaskadBg,
-  CharacterImages as KaskadCharacter,
-} from '../../kaskad/assets/VisualAssets';
-import { GAME_DISPLAY_NAME as ZEUS_NAME } from '../../zeus/config/ZeusSabitleri';
-import {
-  CharacterImages as ZeusCharacterImages,
-  UiImages as ZeusUi,
-} from '../../zeus/assets/VisualAssets';
-import { GAME_DISPLAY_NAME as NOX_NAME } from '../../slot/sabitler/SlotAyarlari';
-import { UiImages as NoxUi } from '../../slot/assets/VisualAssets';
 import type { GameCode } from '../tipler/OyunTipleri';
 import { OyunAuraCerceve } from './OyunAuraCerceve';
-import { SisSpinGirisKarti } from '../../sis-spin/SisSpinGirisKarti';
 import { useCeviri } from '../../../../i18n/useCeviri';
+import { STORM_KING_KART } from '../../storm-king/StormKingGiris';
 
 const FRUIT_WHEEL_COVER = require('../../../../../assets/oyunlar/fruit-wheel/fw-cover.jpg');
-const FAIR_SPIN_COVER = require('../../../../../assets/oyunlar/fair-spin/ui/cover.png');
-const DEDE_COVER = require('../../../../../assets/dede/cover.jpg');
-const DEDE_ICON = require('../../../../../assets/dede/icon.jpg');
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onBaslatKaskad?: () => void;
-  onBaslatZeus?: () => void;
-  onBaslatNox?: () => void;
-  onBaslatFairSpin?: () => void;
   onBaslatFruitWheel?: () => void;
-  onBaslatAstralFalls?: () => void;
-  onBaslatDede?: () => void;
-  onBaslatSisSpin?: () => void;
-  /** Admin'de açık oyun kodları — kapalı olanlar hiç render edilmez. */
+  onBaslatStormKing?: () => void;
+  /** Admin'de açık oyun kodları — Fruit Wheel kapalıysa kart boş kalır. */
   visibleGameCodes?: readonly GameCode[];
-  studioOyunlar?: readonly { id: string; title: string; coverUrl: string | null }[];
-  onBaslatStudio?: (id: string) => void;
 };
 
 export function OyunBaslatModal({
   visible,
   onClose,
-  onBaslatKaskad,
-  onBaslatZeus,
-  onBaslatNox,
-  onBaslatFairSpin,
   onBaslatFruitWheel,
-  onBaslatAstralFalls,
-  onBaslatDede,
-  onBaslatSisSpin,
+  onBaslatStormKing,
   visibleGameCodes,
-  studioOyunlar = [],
-  onBaslatStudio,
 }: Props) {
   const { t } = useCeviri();
-  const showKaskad =
-    visibleGameCodes == null ? true : visibleGameCodes.includes('kozmik_kaskad');
-  const showZeus =
-    visibleGameCodes == null ? true : visibleGameCodes.includes('zeus');
-  const showNox =
-    visibleGameCodes == null ? true : visibleGameCodes.includes('nox_reels');
-  const showFairSpin =
-    visibleGameCodes == null ? true : visibleGameCodes.includes('fair_spin');
   const showFruitWheel =
     visibleGameCodes == null ? true : visibleGameCodes.includes('fruit_wheel');
-  const showAstral =
-    visibleGameCodes == null ? true : visibleGameCodes.includes('astral_falls');
-  const hicYok =
-    !showKaskad && !showZeus && !showNox && !showFairSpin && !showFruitWheel && !showAstral && studioOyunlar.length === 0 && !onBaslatDede && !onBaslatSisSpin;
+  const showStormKing =
+    STORM_KING_KART != null &&
+    (visibleGameCodes == null ? true : visibleGameCodes.includes('storm_king'));
 
   if (!visible) return null;
 
@@ -117,45 +77,6 @@ export function OyunBaslatModal({
         nestedScrollEnabled
         keyboardShouldPersistTaps="handled"
       >
-        {hicYok ? (
-          <View style={styles.bosKart}>
-            <Text style={styles.bosBaslik}>{t('oyun.acikOyunYok')}</Text>
-            <Text style={styles.bosGovde}>{t('oyun.acikOyunYokBody')}</Text>
-          </View>
-        ) : null}
-
-        {onBaslatSisSpin ? <SisSpinGirisKarti onPress={onBaslatSisSpin} /> : null}
-
-        {onBaslatDede ? (
-          <OyunPosterKart
-            cover={DEDE_COVER}
-            avatar={DEDE_ICON}
-            tint={['#1A0C2E', '#E6C56A'] as const}
-            eyebrow="TEST"
-            title="DEDE"
-            body="6×5 gök konağı. Test kredisi, cüzdan değişmez."
-            meta="TEST 10.000"
-            ctaLabel="▶ OYNAT"
-            ctaDisabled={false}
-            onPress={() => onBaslatDede()}
-          />
-        ) : null}
-
-        {showAstral ? (
-          <OyunPosterKart
-            cover={FAIR_SPIN_COVER}
-            avatar={FAIR_SPIN_COVER}
-            tint={['#111a2b', '#E8C691'] as const}
-            eyebrow={t('oyun.astralFallsEyebrow')}
-            title={t('oyun.astralFalls')}
-            body={t('oyun.astralFallsBody')}
-            meta={t('oyun.soloSunucu')}
-            ctaLabel={t('oyun.oyna')}
-            ctaDisabled={!onBaslatAstralFalls}
-            onPress={() => onBaslatAstralFalls?.()}
-          />
-        ) : null}
-
         {showFruitWheel ? (
           <OyunPosterKart
             cover={FRUIT_WHEEL_COVER}
@@ -170,88 +91,26 @@ export function OyunBaslatModal({
             onPress={() => onBaslatFruitWheel?.()}
           />
         ) : null}
-
-        {showFairSpin ? (
+        {showStormKing && STORM_KING_KART ? (
           <OyunPosterKart
-            cover={FAIR_SPIN_COVER}
-            avatar={FAIR_SPIN_COVER}
-            tint={['#0a0a12', '#E6CE92'] as const}
-            eyebrow={t('oyun.fairSpinEyebrow')}
-            title={t('oyun.fairSpin')}
-            body={t('oyun.fairSpinBody')}
+            cover={STORM_KING_KART.kapak}
+            avatar={STORM_KING_KART.karakter}
+            tint={['#12081C', '#E6C36A'] as const}
+            eyebrow="FIRTINA"
+            title={t('stormKing.menuTitle')}
+            body={t('stormKing.menuBody')}
             meta={t('oyun.soloSunucu')}
             ctaLabel={t('oyun.oyna')}
-            ctaDisabled={!onBaslatFairSpin}
-            onPress={() => onBaslatFairSpin?.()}
+            ctaDisabled={!onBaslatStormKing}
+            onPress={() => onBaslatStormKing?.()}
           />
         ) : null}
-
-        {showNox ? (
-          <OyunPosterKart
-            cover={NoxUi.cover}
-            avatar={NoxUi.cover}
-            tint={['#12081F', '#7C3AED'] as const}
-            eyebrow="NIGHT SLOT"
-            title={NOX_NAME}
-            body={t('oyun.noxBody')}
-            meta={t('oyun.soloSunucu')}
-            ctaLabel={t('oyun.oyna')}
-            ctaDisabled={!onBaslatNox}
-            onPress={() => onBaslatNox?.()}
-          />
+        {!showFruitWheel && !showStormKing ? (
+          <View style={styles.bosKart}>
+            <Text style={styles.bosBaslik}>{t('oyun.acikOyunYok')}</Text>
+            <Text style={styles.bosGovde}>{t('oyun.acikOyunYokBody')}</Text>
+          </View>
         ) : null}
-
-        {showZeus ? (
-          <OyunPosterKart
-            cover={ZeusUi.cover}
-            avatar={ZeusCharacterImages.zeusIdle}
-            tint={['#3A2208', '#C9A24A'] as const}
-            eyebrow="OLYMPUS"
-            title={ZEUS_NAME}
-            body={t('oyun.zeusBody')}
-            meta={t('oyun.soloSunucu')}
-            ctaLabel={t('oyun.oyna')}
-            ctaDisabled={!onBaslatZeus}
-            onPress={() => onBaslatZeus?.()}
-          />
-        ) : null}
-
-        {showKaskad ? (
-          <OyunPosterKart
-            cover={KaskadBg.stormSky}
-            avatar={KaskadCharacter.stormKeeper}
-            tint={['#1A0A3E', '#7C5CFF'] as const}
-            eyebrow="KOZMİK KASKAD"
-            title={KASKAD_NAME}
-            body={t('oyun.kaskadBody')}
-            meta={t('oyun.soloSunucu')}
-            ctaLabel={t('oyun.oyna')}
-            ctaDisabled={!onBaslatKaskad}
-            onPress={() => onBaslatKaskad?.()}
-          />
-        ) : null}
-
-        {studioOyunlar.map((oyun) => (
-          <Pressable
-            key={oyun.id}
-            onPress={() => onBaslatStudio?.(oyun.id)}
-            disabled={!onBaslatStudio}
-            style={styles.studioKart}
-            accessibilityRole="button"
-            accessibilityLabel={oyun.title || t('oyun.oyna')}
-          >
-            {oyun.coverUrl ? (
-              <Image source={{ uri: oyun.coverUrl }} style={styles.studioKapak} resizeMode="cover" />
-            ) : (
-              <View style={styles.studioKapak} />
-            )}
-            <View style={styles.studioGovde}>
-              <Text style={styles.cardEyebrow}>STUDIO</Text>
-              <Text style={styles.cardTitle} numberOfLines={1}>{oyun.title || t('oyun.baslik')}</Text>
-              <Text style={styles.ctaText}>{t('oyun.oyna')}</Text>
-            </View>
-          </Pressable>
-        ))}
       </ScrollView>
     </View>
   );
@@ -292,7 +151,6 @@ function OyunPosterKart({
       aktif={!ctaDisabled}
       parlamaRengi={tint[1]}
     >
-      {/* Kart gövdesi tıklanmaz — kaydırırken yanlışlıkla OYNA açılmasın */}
       <View style={[styles.poster, ctaDisabled && styles.posterDisabled]}>
         <Image
           source={cover}
@@ -416,20 +274,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     flexGrow: 1,
   },
-  studioKart: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 84,
-    borderRadius: YaricapTokenlari.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(232,92,168,0.45)',
-    backgroundColor: 'rgba(18,12,22,0.92)',
-    overflow: 'hidden',
-    paddingRight: 14,
-  },
-  studioKapak: { width: 84, height: 84, backgroundColor: '#1a1020' },
-  studioGovde: { flex: 1, gap: 2 },
   bosKart: {
     backgroundColor: 'rgba(18,20,32,0.9)',
     borderRadius: YaricapTokenlari.lg,

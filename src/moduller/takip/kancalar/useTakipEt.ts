@@ -76,6 +76,14 @@ export function useTakipMutasyonu(input: {
 
         if (!r.ok) {
           input.setDurum(onceki);
+          if (r.code === 'network' || r.code === 'timeout') {
+            const { TakipKuyrugaAl } = await import('../../cevrimdisi/SosyalKuyruk');
+            await TakipKuyrugaAl({
+              userId: input.viewerId,
+              hedefId: input.targetUserId,
+              following: islem === 'follow',
+            });
+          }
           TakipAnalitik('follow_failed');
           return r;
         }

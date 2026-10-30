@@ -1,6 +1,7 @@
 import i18n from '../../../i18n';
 import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
+import { OAUTH_TARAYICI, oauthTarayiciAcilmadanOnce } from './OAuthTarayici';
 import { OAuthProfiliniTamamla } from './OAuthProfiliniTamamla';
 import { WebdeOAuthDene } from './WebOAuthYonlendir';
 
@@ -171,7 +172,8 @@ export async function GoogleIleGirisYap(): Promise<GoogleGirisSonuc> {
       return { ok: false, hata: i18n.t('auth.googleAdresAlinamadi') };
     }
 
-    const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    await oauthTarayiciAcilmadanOnce();
+    const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, OAUTH_TARAYICI);
 
     if (res.type === 'cancel' || res.type === 'dismiss') {
       return { ok: false, hata: i18n.t('auth.iptalEdildi'), iptal: true };

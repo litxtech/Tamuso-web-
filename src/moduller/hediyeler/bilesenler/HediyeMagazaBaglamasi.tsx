@@ -2,7 +2,7 @@ import React from 'react';
 import { HediyeMagazaPaneli } from './HediyeMagazaPaneli';
 import { HediyeAnimasyonKatmani } from './HediyeAnimasyonKatmani';
 import { HesabiTamamlaKarti } from '../../misafir-hesabi/bilesenler/HesabiTamamlaKarti';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../contexts/AuthContext';
 import type { HediyeMagazaDurumu } from '../islemler/HediyeMagazaTipleri';
 
 type Props = {
@@ -19,7 +19,8 @@ export function HediyeMagazaBaglamasi({
   animasyon = true,
   misafirKart = true,
 }: Props) {
-  const { refreshProfile, refreshWallet } = useAuth();
+  const { refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const yukle = magaza.coinYuklePaneli;
 
   return (
@@ -28,6 +29,9 @@ export function HediyeMagazaBaglamasi({
         visible={magaza.acik}
         gifts={magaza.gifts}
         coins={magaza.coins}
+        coinKaynagi={magaza.coinKaynagi}
+        onCoinKaynagiDegis={magaza.setCoinKaynagi}
+        coinBakiyeleri={magaza.coinBakiyeleri}
         aliciAdi={magaza.aliciAdi}
         pkAlicilar={magaza.pkAlicilar}
         seciliPkAliciId={magaza.seciliPkAliciId}

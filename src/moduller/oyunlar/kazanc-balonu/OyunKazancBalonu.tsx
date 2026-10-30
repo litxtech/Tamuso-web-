@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
+  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
-import {
-  BoslukTokenlari,
-  YaricapTokenlari,
-} from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { BoslukTokenlari } from '../../../tasarim-sistemi/BoslukVeYaricapTokenlari';
+import { useCeviri } from '../../../i18n/useCeviri';
+import { OyunAuraCerceve } from '../ortak/bilesenler/OyunAuraCerceve';
 import type { OyunKazancDuyurusu } from './OyunKazancDuyuruTipleri';
+import { KazancCarpani, KazancCoin, KazancOyunAdi } from './OyunKazancMetin';
 
 type Props = {
   duyuru: OyunKazancDuyurusu;
@@ -22,98 +24,187 @@ type Props = {
   onDismiss: () => void;
 };
 
-const GOSTERIM_MS = 5200;
+/** Kısa kalsın — dikkat çeksin, ekranda beklemeyin. */
+const GOSTERIM_MS = 2400;
+const YARICAP = 18;
+
+const ATES = ['#FF1E00', '#FFD15A', '#FF6A00'] as const;
 
 export function OyunKazancBalonu({ duyuru, onPress, onDismiss }: Props) {
+  const { t } = useCeviri();
   const insets = useSafeAreaInsets();
-  const y = useSharedValue(-120);
+  const x = useSharedValue(360);
   const opacity = useSharedValue(0);
+  const sarsinti = useSharedValue(0);
 
   useEffect(() => {
-    y.value = withSpring(0, { damping: 16, stiffness: 180 });
-    opacity.value = withTiming(1, { duration: 220 });
-    const t = setTimeout(() => {
-      opacity.value = withTiming(0, { duration: 280 });
-      y.value = withTiming(-100, { duration: 280 }, (done) => {
+    x.value = withSpring(0, { damping: 13, stiffness: 210 });
+    opacity.value = withTiming(1, { duration: 140 });
+    sarsinti.value = withSequence(
+      withTiming(1, { duration: 36 }),
+      withTiming(-1, { duration: 42 }),
+      withTiming(0.8, { duration: 36 }),
+      withTiming(-0.5, { duration: 34 }),
+      withTiming(0, { duration: 40 }),
+    );
+    const zaman = setTimeout(() => {
+      opacity.value = withTiming(0, { duration: 180 });
+      x.value = withTiming(-420, { duration: 240, easing: Easing.in(Easing.cubic) }, (done) => {
         if (done) runOnJS(onDismiss)();
       });
     }, GOSTERIM_MS);
-    return () => clearTimeout(t);
-  }, [duyuru.id, onDismiss, opacity, y]);
+    return () => clearTimeout(zaman);
+  }, [duyuru.id, onDismiss, opacity, sarsinti, x]);
 
   const anim = useAnimatedStyle(() => ({
-    transform: [{ translateY: y.value }],
     opacity: opacity.value,
+    transform: [
+      { translateX: x.value + sarsinti.value * 7 },
+      { rotate: `${sarsinti.value * 0.8}deg` },
+    ],
   }));
 
-  const coin = duyuru.win_amount.toLocaleString('tr-TR');
+  const oyun = KazancOyunAdi(duyuru.game_code, duyuru.game_title, t('oyun.meyveKisa'));
+  const carpan = KazancCarpani(duyuru.multiplier, duyuru.win_amount, duyuru.bet_amount);
+  const coin = KazancCoin(duyuru.win_amount);
+  const metin = carpan
+    ? t('odalar.kazancMetin', { ad: duyuru.display_name, oyun, carpan, coin })
+    : t('odalar.kazancMetinDuz', { ad: duyuru.display_name, oyun, coin });
 
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.wrap, { top: Math.max(insets.top, 8) + 4 }]}
+      style={[styles.wrap, { top: Math.max(insets.top, 8) + 2 }]}
     >
       <Animated.View style={anim}>
-        <Pressable
-          onPress={onPress}
-          style={({ pressed }) => [styles.balon, pressed && styles.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel={`${duyuru.display_name} ${duyuru.game_title} ${coin} coin kazandı`}
+        <Kor />
+        <OyunAuraCerceve
+          renkler={ATES}
+          yaricap={YARICAP}
+          kalinlik={3.5}
+          hizMs={520}
+          parlamaRengi="#FF2A00"
         >
-          <View style={styles.dot} />
-          <View style={styles.copy}>
-            <Text style={styles.baslik} numberOfLines={1}>
-              {duyuru.display_name}{' '}
-              <Text style={styles.oyun}>({duyuru.game_title})</Text>
+          <Pressable
+            onPress={onPress}
+            style={({ pressed }) => [styles.balon, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={metin}
+          >
+            <Text style={styles.baslik} numberOfLines={2}>
+              {metin}
             </Text>
             <Text style={styles.alt} numberOfLines={1}>
-              {coin} coin kazandı · Oyuna git
+              {t('odalar.kazancOyna')}
             </Text>
-          </View>
-        </Pressable>
+          </Pressable>
+        </OyunAuraCerceve>
       </Animated.View>
     </View>
+  );
+}
+
+/** Köşelerde hızlı alev titreşimi. */
+function Kor() {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Kivilcim sol={8} ust={-3} gecikme={0} />
+      <Kivilcim sol={undefined} ust={-4} sag={18} gecikme={40} />
+      <Kivilcim sol={28} ust={undefined} alt={-3} gecikme={80} />
+      <Kivilcim sol={undefined} ust={undefined} sag={10} alt={-4} gecikme={20} />
+    </View>
+  );
+}
+
+function Kivilcim({
+  sol,
+  sag,
+  ust,
+  alt,
+  gecikme,
+}: {
+  sol?: number;
+  sag?: number;
+  ust?: number;
+  alt?: number;
+  gecikme: number;
+}) {
+  const o = useSharedValue(0.15);
+  const olcek = useSharedValue(0.6);
+
+  useEffect(() => {
+    const zaman = setTimeout(() => {
+      o.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 70 }),
+          withTiming(0.12, { duration: 90 }),
+        ),
+        -1,
+        true,
+      );
+      olcek.value = withRepeat(
+        withSequence(
+          withTiming(1.35, { duration: 80 }),
+          withTiming(0.55, { duration: 100 }),
+        ),
+        -1,
+        true,
+      );
+    }, gecikme);
+    return () => clearTimeout(zaman);
+  }, [gecikme, o, olcek]);
+
+  const stil = useAnimatedStyle(() => ({
+    opacity: o.value,
+    transform: [{ scale: olcek.value }],
+  }));
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.kivilcim,
+        { left: sol, right: sag, top: ust, bottom: alt },
+        stil,
+      ]}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: BoslukTokenlari.lg,
-    right: BoslukTokenlari.lg,
-    zIndex: 120,
-    elevation: 120,
+    left: BoslukTokenlari.md,
+    right: BoslukTokenlari.md,
+    zIndex: 240,
+    elevation: 240,
   },
   balon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: BoslukTokenlari.sm,
-    paddingVertical: 12,
+    paddingVertical: 11,
     paddingHorizontal: 14,
-    borderRadius: YaricapTokenlari.lg,
-    backgroundColor: 'rgba(18, 12, 28, 0.94)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 214, 107, 0.35)',
+    backgroundColor: 'rgba(28, 6, 4, 0.96)',
   },
-  pressed: { opacity: 0.9 },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: RenkTokenlari.accent,
-  },
-  copy: { flex: 1, gap: 2 },
+  pressed: { opacity: 0.92 },
   baslik: {
     ...TipografiTokenlari.body,
-    color: RenkTokenlari.text,
-    fontWeight: '700',
-  },
-  oyun: {
-    color: RenkTokenlari.accent,
-    fontWeight: '600',
+    color: '#FFF6E8',
+    fontWeight: '800',
   },
   alt: {
     ...TipografiTokenlari.caption,
-    color: RenkTokenlari.textMuted,
+    color: '#FFB15A',
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  kivilcim: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF5A00',
+    shadowColor: '#FF2A00',
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
   },
 });

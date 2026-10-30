@@ -41,17 +41,20 @@ export function KameraOnizlemeTutuluyorMu(): boolean {
 export async function KameraOnizlemeSerbestBirak(
   timeoutMs = 2_500,
 ): Promise<void> {
-  if (tutuluyor) {
-    await Promise.race([
-      new Promise<void>((resolve) => {
-        const done = () => {
-          bekleyenler.delete(done);
-          resolve();
-        };
-        bekleyenler.add(done);
-      }),
-      new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
-    ]);
+  if (!tutuluyor) {
+    if (timeoutMs <= 0) return;
+    await new Promise((r) => setTimeout(r, 80));
+    return;
   }
+  await Promise.race([
+    new Promise<void>((resolve) => {
+      const done = () => {
+        bekleyenler.delete(done);
+        resolve();
+      };
+      bekleyenler.add(done);
+    }),
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
   await new Promise((r) => setTimeout(r, platformSettleMs()));
 }

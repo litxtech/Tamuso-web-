@@ -160,6 +160,8 @@ export function usePkRakipGoruntu(
         adaptiveStream: false,
         dynacast: false,
         disconnectOnPageLeave: false,
+        // RN tek PeerConnection yolunda uzak video siyah kalıyor (client-sdk-js#1977)
+        singlePeerConnection: Platform.OS === 'web',
       });
       tut.room = room;
 

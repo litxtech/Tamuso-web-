@@ -577,6 +577,21 @@ export function HikayeIzleyici({
     const url = sonrakiOge?.thumbnail_url || sonrakiOge?.media_url;
     if (sonrakiOge?.media_type === 'image' && url) {
       void Image.prefetch(url).catch(() => undefined);
+      void import('../../cevrimdisi/MedyaOnbellek').then(({ MedyaSonrakiniOnYukle }) =>
+        import('../../cevrimdisi/AktifKullanici').then(({ CevrimdisiAktifKullanici }) =>
+          MedyaSonrakiniOnYukle(CevrimdisiAktifKullanici(), url, 'image'),
+        ),
+      );
+    }
+    if (sonrakiOge?.media_type === 'video') {
+      const videoUrl = sonrakiOge.media_url;
+      if (videoUrl) {
+        void import('../../cevrimdisi/MedyaOnbellek').then(({ MedyaSonrakiniOnYukle }) =>
+          import('../../cevrimdisi/AktifKullanici').then(({ CevrimdisiAktifKullanici }) =>
+            MedyaSonrakiniOnYukle(CevrimdisiAktifKullanici(), videoUrl, 'video'),
+          ),
+        );
+      }
     }
     // Aktif görsel de ısıt
     if (oge?.media_type === 'image' && oge.media_url) {
@@ -1124,6 +1139,40 @@ export function HikayeIzleyici({
               }
               HikayeAnalitik('story_mute');
               Alert.alert(t('ortak.basarili'), t('hikaye.sessizeAlindi'));
+            })();
+          }}
+          onCevrimdisiKaydet={() => {
+            if (!oge) return;
+            void (async () => {
+              const { CevrimdisiAktifKullanici } = await import(
+                '../../cevrimdisi/AktifKullanici'
+              );
+              const { CevrimdisiIcerikKaydet } = await import(
+                '../../cevrimdisi/CevrimdisiKaydet'
+              );
+              const uid = CevrimdisiAktifKullanici();
+              if (!uid) return;
+              const tur =
+                oge.media_type === 'video'
+                  ? 'video'
+                  : oge.media_type === 'image'
+                    ? 'image'
+                    : 'text';
+              const r = await CevrimdisiIcerikKaydet({
+                userId: uid,
+                id: oge.id,
+                url: oge.media_url,
+                tur,
+                baslik: grup.display_name,
+              });
+              Alert.alert(
+                t('ortak.basarili'),
+                r.ok
+                  ? t('cevrimdisi.kaydedildi')
+                  : r.hata === 'disk'
+                    ? t('cevrimdisi.diskYetersiz')
+                    : t('cevrimdisi.senkronHata'),
+              );
             })();
           }}
           onBildir={() => {

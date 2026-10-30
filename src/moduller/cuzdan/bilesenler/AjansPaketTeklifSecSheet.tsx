@@ -29,6 +29,8 @@ type Props = {
   visible: boolean;
   agencyId: string;
   threadId: string;
+  /** Alıcı: ajansa talep mesajı gider, öde butonu ajans teklif gönderince gelir */
+  talepMi?: boolean;
   onClose: () => void;
   onGonderildi?: () => void;
 };
@@ -40,11 +42,12 @@ function formatTry(n: number, locale: string): string {
   })} ₺`;
 }
 
-/** Ajans sohbetinden Stripe ödemeli paket teklifi seç / gönder */
+/** Ajans sohbetinden Stripe ödemeli paket teklifi (ajans) veya paket talebi (alıcı) gönder */
 export function AjansPaketTeklifSecSheet({
   visible,
   agencyId,
   threadId,
+  talepMi,
   onClose,
   onGonderildi,
 }: Props) {
@@ -85,6 +88,7 @@ export function AjansPaketTeklifSecSheet({
     }
     onGonderildi?.();
     onClose();
+    if (r.talep) Alert.alert(t('cuzdanX.alertMesaj'), t('cuzdanX.ajansTalepIletildi'));
   };
 
   const indirimPct = paketler[0]?.indirimYuzde ?? AJANS_COIN_INDIRIM_YUZDE;
@@ -99,9 +103,13 @@ export function AjansPaketTeklifSecSheet({
       <Pressable style={styles.backdrop} onPress={onClose} />
       <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <View style={styles.handle} />
-        <Text style={styles.baslik}>{t('cuzdanX.ajansTeklifSecBaslik')}</Text>
+        <Text style={styles.baslik}>
+          {talepMi ? t('cuzdanX.ajansTalepSecBaslik') : t('cuzdanX.ajansTeklifSecBaslik')}
+        </Text>
         <Text style={styles.alt}>
-          {t('cuzdanX.ajansTeklifSecAlt', { pct: indirimPct })}
+          {talepMi
+            ? t('cuzdanX.ajansTalepSecAlt', { pct: indirimPct })
+            : t('cuzdanX.ajansTeklifSecAlt', { pct: indirimPct })}
         </Text>
         {yukleniyor && !paketler.length ? (
           <ActivityIndicator

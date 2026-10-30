@@ -14,6 +14,7 @@ import {
   DurumMedyaHttpsMi,
   DurumMetinGonderisiMi,
   DurumMuzikPayloadAl,
+  DurumAjansDavetPayloadAl,
   DurumOyunKazanciPayloadAl,
   DurumSesPayloadAl,
 } from '../islemler/DurumIslemleri';
@@ -21,6 +22,7 @@ import { DurumZamanMetni } from '../islemler/DurumZaman';
 import { DurumMuzikKarti } from './DurumMuzikKarti';
 import { DurumSesKarti } from './DurumSesKarti';
 import { DurumOyunKazanciKart } from './DurumOyunKazanciKart';
+import { DurumAjansDavetKarti } from './DurumAjansDavetKarti';
 import { DurumVideoOnizleme } from './DurumVideoOnizleme';
 import { DurumCaptionAcilir } from './DurumCaptionAcilir';
 import { DurumEtkilesimCubugu } from './DurumEtkilesimCubugu';
@@ -115,11 +117,13 @@ function DurumKartIc({
   useUnvanKatalog();
   const handle = oge.username ? `@${oge.username}` : null;
   const kazanc = DurumOyunKazanciPayloadAl(oge);
+  const ajansDavet = DurumAjansDavetPayloadAl(oge);
   const muzik = DurumMuzikPayloadAl(oge);
   const ses = DurumSesPayloadAl(oge);
   const metinGonderisi = DurumMetinGonderisiMi(oge);
   const resimBuyutulebilir =
     !kazanc &&
+    !ajansDavet &&
     !muzik &&
     !ses &&
     !metinGonderisi &&
@@ -226,12 +230,14 @@ function DurumKartIc({
               if (resimBuyutulebilir) onResimPress?.();
               else onPress();
             }}
-            style={[styles.medyaHit, !!kazanc && styles.medyaHitKart]}
+            style={[styles.medyaHit, (!!kazanc || !!ajansDavet) && styles.medyaHitKart]}
             accessibilityRole="imagebutton"
             accessibilityLabel={resimBuyutulebilir ? t('durumX.resmiBuyut') : t('ortak.medya')}
           >
             {kazanc ? (
               <DurumOyunKazanciKart payload={kazanc} />
+            ) : ajansDavet ? (
+              <DurumAjansDavetKarti payload={ajansDavet} />
             ) : oge.media_type === 'video' ? (
               <View style={[styles.medyaVideo, styles.medyaBos]}>
                 <DurumVideoOnizleme

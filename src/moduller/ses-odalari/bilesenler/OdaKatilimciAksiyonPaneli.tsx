@@ -4,7 +4,7 @@
  */
 
 import React, { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TamusoModal } from '../../../bilesenler/yuzey/TamusoModal';
@@ -37,6 +37,7 @@ function OdaKatilimciAksiyonPaneliInner({
   onAksiyon,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const { t } = useCeviri();
 
   return (
@@ -76,29 +77,35 @@ function OdaKatilimciAksiyonPaneliInner({
           </Pressable>
         </View>
 
-        {aksiyonlar.map((a) => (
-          <Pressable
-            key={a.id}
-            style={styles.satir}
-            onPress={() => {
-              onClose();
-              onAksiyon(a.id);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={a.etiket}
-          >
-            <Text
-              style={[styles.satirYazi, a.destructive && styles.satirTehlikeli]}
+        <ScrollView
+          style={{ maxHeight: Math.round(height * 0.62) }}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+        >
+          {aksiyonlar.map((a) => (
+            <Pressable
+              key={a.id}
+              style={styles.satir}
+              onPress={() => {
+                onClose();
+                onAksiyon(a.id);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={a.etiket}
             >
-              {a.etiket}
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={a.destructive ? '#F87171' : 'rgba(255,255,255,0.35)'}
-            />
-          </Pressable>
-        ))}
+              <Text
+                style={[styles.satirYazi, a.destructive && styles.satirTehlikeli]}
+              >
+                {a.etiket}
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={a.destructive ? '#F87171' : 'rgba(255,255,255,0.35)'}
+              />
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
     </TamusoModal>
   );

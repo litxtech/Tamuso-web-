@@ -21,7 +21,7 @@ import { KlavyeKapatan } from '../../src/components/KlavyeKapatan';
 import { KlavyeGuvenliAlan } from '../../src/bilesenler/klavye/KlavyeGuvenliAlan';
 import { useKlavyeYuksekligi } from '../../src/bilesenler/klavye/useKlavyeYuksekligi';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import { AjansBasvurusuOlustur } from '../../src/moduller/ajanslar/islemler/AjansIslemleri';
@@ -129,7 +129,8 @@ function formDogrula(f: FormState, t: CevirFn): string | null {
 
 export default function AjansEkrani() {
   const { t } = useCeviri();
-  const { user, isGuest, refreshProfile, refreshWallet } = useAuth();
+  const { user, isGuest, refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const {
     yetkili,

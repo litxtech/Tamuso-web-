@@ -39,7 +39,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: displayName,
   slug: 'muta',
   owner: 'mutaq',
-  version: '1.2.5',
+  version: '1.3.1',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',

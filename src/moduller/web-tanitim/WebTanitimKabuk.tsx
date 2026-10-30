@@ -34,28 +34,15 @@ function disAc(url: string) {
 function WebSiteMobilOlcek() {
   const yol = usePathname();
   useEffect(() => {
-    if (Platform.OS !== 'web' || typeof document === 'undefined' || typeof window === 'undefined') return;
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    // Ölçek hilesi kaldırıldı: pazarlama sayfalarını küçültmek yerine
+    // her sayfa cihazın gerçek genişliğinde (initial-scale=1) açılır.
     const meta = document.querySelector('meta[name="viewport"]');
-    const normal =
-      'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content';
-    const uzak =
-      'width=device-width, initial-scale=0.85, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content';
-    const uygula = () => {
-      const pazarlama = yol === '/' || yol.startsWith('/tanitim');
-      const kisa = window.screen
-        ? Math.min(window.screen.width, window.screen.height)
-        : window.innerWidth;
-      const dar = kisa < 760;
-      document.documentElement.removeAttribute('data-web-site');
-      meta?.setAttribute('content', pazarlama && dar ? uzak : normal);
-    };
-    uygula();
-    window.addEventListener('resize', uygula);
-    return () => {
-      window.removeEventListener('resize', uygula);
-      document.documentElement.removeAttribute('data-web-site');
-      meta?.setAttribute('content', normal);
-    };
+    meta?.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content',
+    );
+    document.documentElement.removeAttribute('data-web-site');
   }, [yol]);
   return null;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import type { DirektMesaj } from '../okuma/MesajlariGetir';
+import { mesajRealtimeDebounce } from './mesajRealtimeDebounce';
 
 type ChangePayload = {
   eventType: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -116,10 +117,15 @@ export async function MesajPeerOkunduYayinla(
   }
 }
 
-/** Inbox listesini anlik yenile */
-export function useMesajInboxKanali(onDegisti: () => void) {
+/** Inbox listesini anlik yenile — debounce + kendi mesajını yok say */
+export function useMesajInboxKanali(
+  onDegisti: () => void,
+  kendiUserId?: string | null,
+) {
   const cb = useRef(onDegisti);
   cb.current = onDegisti;
+  const uidRef = useRef(kendiUserId);
+  uidRef.current = kendiUserId;
 
   useEffect(() => {
     const topic = 'dm-inbox';
@@ -129,19 +135,27 @@ export function useMesajInboxKanali(onDegisti: () => void) {
       }
     }
 
-    const yenile = () => cb.current();
+    const yenile = mesajRealtimeDebounce(() => cb.current(), 1200);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const kanal: any = supabase.channel(topic);
     kanal
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'message_threads' },
+        { event: 'UPDATE', schema: 'public', table: 'message_threads' },
         yenile,
       )
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'direct_messages' },
-        yenile,
+        (payload: { new?: { sender_id?: string } }) => {
+          if (
+            uidRef.current &&
+            payload?.new?.sender_id === uidRef.current
+          ) {
+            return;
+          }
+          yenile();
+        },
       )
       .subscribe();
 

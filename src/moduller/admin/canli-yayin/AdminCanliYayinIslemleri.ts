@@ -1,8 +1,8 @@
-import { supabase } from '../../../lib/supabase';
+﻿import { supabase } from '../../../lib/supabase';
 import {
   YaptirimPayloadOlustur,
   type AdminOdaYaptirimGirdi,
-} from '../ses-odalari/AdminSesOdasiIslemleri';
+} from '../../medya-yukleme/AdminSesOdasiIslemleri';
 
 export type AdminCanliYayin = {
   id: string;
@@ -35,7 +35,7 @@ export type AdminYayinModerasyonSonuc = {
 };
 
 function rpcHata(error: { message?: string } | null): never {
-  throw new Error(error?.message ?? 'Admin işlem başarısız');
+  throw new Error(error?.message ?? 'Admin iÅŸlem baÅŸarÄ±sÄ±z');
 }
 
 export async function AdminCanliYayinlari(
@@ -58,7 +58,7 @@ export async function AdminYayinKatilimcilari(
   return (data ?? []) as AdminYayinKatilimci[];
 }
 
-/** Canlı yayını zorla bitir — feed’den düşer, izleyiciler çıkar */
+/** CanlÄ± yayÄ±nÄ± zorla bitir â€” feedâ€™den dÃ¼ÅŸer, izleyiciler Ã§Ä±kar */
 export async function AdminCanliYayinKapat(
   sessionId: string,
   reason?: string,
@@ -70,7 +70,7 @@ export async function AdminCanliYayinKapat(
   if (error) rpcHata(error);
 }
 
-/** Kapat + isteğe bağlı yaptırımlar (host + seçilen izleyiciler) */
+/** Kapat + isteÄŸe baÄŸlÄ± yaptÄ±rÄ±mlar (host + seÃ§ilen izleyiciler) */
 export async function AdminCanliYayinKapatVeYaptirim(
   sessionId: string,
   sanctions: AdminOdaYaptirimGirdi = {},
@@ -85,3 +85,4 @@ export async function AdminCanliYayinKapatVeYaptirim(
   if (error) rpcHata(error);
   return data as AdminYayinModerasyonSonuc;
 }
+

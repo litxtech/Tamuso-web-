@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import {
   ODA_DOCK_BTN,
@@ -28,8 +28,10 @@ type Props = {
   boyut?: 'dock' | 'ust';
 };
 
-function ikonAdi(hacim: number): keyof typeof Ionicons.glyphMap {
-  if (hacim <= 0.02) return 'volume-mute';
+function ikonAdi(
+  hacim: number,
+): React.ComponentProps<typeof MaterialCommunityIcons>['name'] {
+  if (hacim <= 0.02) return 'volume-off';
   if (hacim < 0.35) return 'volume-low';
   if (hacim < 0.7) return 'volume-medium';
   return 'volume-high';
@@ -113,7 +115,7 @@ export function OdaSesHacmiButonu({ hacim, onHacimDegisti, boyut = 'dock' }: Pro
         accessibilityLabel={t('sesOda.odaSesiA11y', { yuzde })}
         accessibilityRole="button"
       >
-        <Ionicons
+        <MaterialCommunityIcons
           name={ikonAdi(hacim)}
           size={iconSize}
           color={aktif ? colors.mint : colors.textMuted}

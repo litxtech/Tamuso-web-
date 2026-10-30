@@ -175,6 +175,16 @@ export function AnaSayfaSesOdasiSeridi({
                   <Text style={styles.host} numberOfLines={1}>
                     {hostAd}
                   </Text>
+                  <View style={styles.islem}>
+                    <Ionicons name="gift" size={11} color="#F5E6A8" />
+                    <Text style={styles.islemYazi}>
+                      {SayiKisaBicim(oge.hediye_islem ?? 0)}
+                    </Text>
+                    <Ionicons name="game-controller" size={11} color="#C9B6FF" />
+                    <Text style={styles.islemYazi}>
+                      {SayiKisaBicim(oge.oyun_islem ?? 0)}
+                    </Text>
+                  </View>
 
                   <View style={styles.altSatir}>
                     <OdaUyeAvatarYigini
@@ -286,6 +296,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 17,
+  },
+  islem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  islemYazi: {
+    ...TipografiTokenlari.micro,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
+    fontSize: 11,
   },
   host: {
     ...TipografiTokenlari.micro,

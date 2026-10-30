@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     overflow: 'hidden',
-    minHeight: 68,
+    minHeight: 76,
   },
   kartVurgu: {
     borderColor: RenkTokenlari.borderAccent,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   kartGovde: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
     paddingTop: 2,

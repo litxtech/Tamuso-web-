@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -20,6 +20,7 @@ import {
   OdaUyeleriniGetir,
   type OdaDinleyici,
 } from '../okuma/OdaDinleyicileriniGetir';
+import { canliVarlikIdleri, useOdaVarlik } from '../varlik/useOdaVarlik';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 import { TipografiTokenlari } from '../../../tasarim-sistemi/TipografiTokenlari';
 import { DogrulanmisTik } from '../../kullanici-profili/bilesenler/DogrulanmisTik';
@@ -42,6 +43,9 @@ type Props = {
   /** Sahnedeki dolu koltuklar — bunlar dinleyen listesine girmez. */
   koltukUserIds?: string[];
   onProfil?: (userId: string) => void;
+  /** Oda sahibi: koltukta olmayan yöneticinin yetkisini geri alır */
+  sahipMi?: boolean;
+  onYoneticiKaldir?: (userId: string) => void;
   /** dock: alt bar 40px · ust: üst bar 36px */
   boyut?: 'dock' | 'ust';
   /** false: tetik butonu gizle (ör. dinleyici sayısı pill üzerinden aç) */
@@ -112,7 +116,11 @@ function adAl(d: OdaDinleyici): string {
 
 const EKRAN_H = Dimensions.get('window').height;
 const KART_MAX = Math.round(EKRAN_H * 0.72);
-const LISTE_MAX = Math.round(EKRAN_H * 0.5);
+const LISTE_MAX = Math.round(EKRAN_H * 0.42);
+/** Taç halkasının dış kutusu (yogunluk=oda) — isim sütununa taşmasın */
+const AVATAR = 40;
+const TAC_SLOT =
+  AVATAR + 8 + (Math.round(AVATAR * 0.2) + 6) * 2;
 
 /** Dock / üst: koltukta olmayan dinleyen profiller — kart sayfa */
 export function OdaDinleyiciPaneli({
@@ -121,6 +129,8 @@ export function OdaDinleyiciPaneli({
   currentUserId,
   koltukUserIds = [],
   onProfil,
+  sahipMi = false,
+  onYoneticiKaldir,
   boyut = 'dock',
   gosterButon = true,
   acikDis,
@@ -205,13 +215,59 @@ export function OdaDinleyiciPaneli({
     };
   }, [demoMi, roomId, yukle]);
 
-  const liste = useMemo(
-    () =>
-      demoMi
-        ? uyeler
-        : OdaDinleyicileriniAyikla(uyeler, koltukUserIds),
-    [demoMi, uyeler, koltukUserIds],
-  );
+  const varlik = useOdaVarlik(demoMi ? null : roomId);
+  const canliIdler = canliVarlikIdleri(varlik);
+  const canliBekleniyor = !!varlik && !varlik.senkron && !varlik.hata;
+
+  // Odaya yeni bağlanan ama üyelik listesinde henüz olmayan kişi → üyeleri tazele
+  const istenenIdler = useRef(new Set<string>());
+  useEffect(() => {
+    if (!canliIdler) return;
+    const bilinen = new Set(uyeler.map((u) => u.user_id));
+    const yeni = canliIdler.filter(
+      (id) => !bilinen.has(id) && !istenenIdler.current.has(id),
+    );
+    if (yeni.length === 0) return;
+    const t = setTimeout(() => {
+      yeni.forEach((id) => istenenIdler.current.add(id));
+      void yukle();
+    }, 600);
+    return () => clearTimeout(t);
+  }, [canliIdler, uyeler, yukle]);
+
+  const liste = useMemo(() => {
+    if (demoMi) return uyeler;
+    if (canliBekleniyor) return [];
+    // Yalnızca şu an bağlı olanlar; sıra: en son gelen önce
+    const sira = canliIdler
+      ? new Map(canliIdler.map((id, i) => [id, i]))
+      : null;
+    const mevcut = sira
+      ? uyeler
+          .filter((u) => sira.has(u.user_id))
+          .sort((a, b) => (sira.get(a.user_id) ?? 0) - (sira.get(b.user_id) ?? 0))
+      : uyeler;
+    const ayik = OdaDinleyicileriniAyikla(mevcut, koltukUserIds);
+    if (!sahipMi) return ayik;
+    const gorunen = new Set(ayik.map((u) => u.user_id));
+    const koltukta = new Set(koltukUserIds);
+    const oturanYoneticiler = mevcut.filter(
+      (u) =>
+        u.role === 'cohost' &&
+        u.user_id !== currentUserId &&
+        koltukta.has(u.user_id) &&
+        !gorunen.has(u.user_id),
+    );
+    return [...oturanYoneticiler, ...ayik];
+  }, [
+    demoMi,
+    canliBekleniyor,
+    canliIdler,
+    uyeler,
+    koltukUserIds,
+    sahipMi,
+    currentUserId,
+  ]);
 
   const ac = () => {
     setAcik(true);
@@ -274,7 +330,6 @@ export function OdaDinleyiciPaneli({
             { paddingBottom: Math.max(insets.bottom, BoslukTokenlari.lg) },
           ]}
         >
-          <View style={styles.handle} />
           <View style={styles.kartBaslik}>
             <View style={styles.baslikSol}>
               <Ionicons
@@ -285,6 +340,12 @@ export function OdaDinleyiciPaneli({
               <Text style={styles.baslik}>{t('sesOda.dinleyenler')}</Text>
             </View>
             <View style={styles.baslikSag}>
+              {canliIdler ? (
+                <View
+                  style={styles.canliNokta}
+                  accessibilityLabel={t('sesOda.canliDinleyici')}
+                />
+              ) : null}
               <Text style={styles.sayiEtiket}>{sayi}</Text>
               <Pressable
                 onPress={() => setAcik(false)}
@@ -301,7 +362,7 @@ export function OdaDinleyiciPaneli({
             {t('sesOda.dinleyenAciklama')}
           </Text>
 
-          {yukleniyor && sayi === 0 ? (
+          {(yukleniyor || canliBekleniyor) && sayi === 0 ? (
             <ActivityIndicator
               color={RenkTokenlari.accent}
               style={styles.yukleniyor}
@@ -330,50 +391,75 @@ export function OdaDinleyiciPaneli({
                 const ad = adAl(item);
                 const ben = !!currentUserId && item.user_id === currentUserId;
                 const kullaniciAdi = item.profile?.username?.trim();
+                const yoneticiGeriAl =
+                  sahipMi && item.role === 'cohost' && !ben && !!onYoneticiKaldir;
                 return (
-                  <Pressable
-                    onPress={() => {
-                      if (demoMi) return;
-                      setAcik(false);
-                      onProfil?.(item.user_id);
-                    }}
-                    style={styles.profilKart}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('kisilerX.profilA11y', { isim: ad })}
-                  >
-                    <View style={styles.avatarKutu}>
-                      <SeviyeTaci
-                        level={item.profile?.level ?? 0}
-                        size="sm"
-                        avatarBoy={48}
-                      >
-                        <ProfilAvatarKucuk
-                          size={48}
-                          displayName={item.profile?.display_name}
-                          username={item.profile?.username}
-                          avatarUrl={item.profile?.avatar_url}
-                        />
-                      </SeviyeTaci>
-                      {item.profile?.is_verified ? (
-                        <View style={styles.onayRozeti} pointerEvents="none">
-                          <DogrulanmisTik size={14} />
+                  <View style={styles.profilKart}>
+                    <Pressable
+                      onPress={() => {
+                        if (demoMi) return;
+                        setAcik(false);
+                        onProfil?.(item.user_id);
+                      }}
+                      style={styles.profilDokun}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('kisilerX.profilA11y', { isim: ad })}
+                    >
+                      <View style={styles.avatarKutu}>
+                        <SeviyeTaci
+                          level={item.profile?.level ?? 0}
+                          size="sm"
+                          avatarBoy={AVATAR}
+                          animasyonluMu={false}
+                        >
+                          <ProfilAvatarKucuk
+                            size={AVATAR}
+                            displayName={item.profile?.display_name}
+                            username={item.profile?.username}
+                            avatarUrl={item.profile?.avatar_url}
+                          />
+                        </SeviyeTaci>
+                      </View>
+                      <View style={styles.profilMetin}>
+                        <View style={styles.adSatir}>
+                          <Text style={styles.ad} numberOfLines={1}>
+                            {ben ? 'Sen' : ad}
+                          </Text>
+                          {item.profile?.is_verified ? (
+                            <DogrulanmisTik size={14} />
+                          ) : null}
                         </View>
-                      ) : null}
-                    </View>
-                    <View style={styles.profilMetin}>
-                      <Text style={styles.ad} numberOfLines={1}>
-                        {ben ? 'Sen' : ad}
+                        <Text style={styles.altAd} numberOfLines={1}>
+                          {kullaniciAdi ? `@${kullaniciAdi}` : t('sesOda.dinliyorKisa')}
+                        </Text>
+                      </View>
+                      <Text style={styles.durum}>
+                        {item.role === 'cohost' ? t('sesOda.yonetici') : t('sesOda.dinliyorKisa')}
                       </Text>
-                      <Text style={styles.altAd} numberOfLines={1}>
-                        {kullaniciAdi ? `@${kullaniciAdi}` : 'Dinliyor'}
-                      </Text>
-                    </View>
-                    <Text style={styles.durum}>Dinliyor</Text>
-                  </Pressable>
+                    </Pressable>
+                    {yoneticiGeriAl ? (
+                      <Pressable
+                        onPress={() => onYoneticiKaldir?.(item.user_id)}
+                        style={styles.geriAl}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('sesOda.menuYoneticiYetkisiniKaldir')}
+                      >
+                        <Text style={styles.geriAlYazi}>{t('sesOda.yoneticiGeriAl')}</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                 );
               }}
             />
           )}
+          <Pressable
+            onPress={() => setAcik(false)}
+            style={styles.kapatSatir}
+            accessibilityRole="button"
+            accessibilityLabel={t('ortak.kapat')}
+          >
+            <Text style={styles.kapatYazi}>{t('ortak.kapat')}</Text>
+          </Pressable>
         </View>
       </TamusoModal>
     </View>
@@ -423,15 +509,7 @@ const styles = StyleSheet.create({
     minHeight: 280,
     width: '100%',
     paddingHorizontal: BoslukTokenlari.lg,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    marginTop: 10,
-    marginBottom: 8,
+    paddingTop: 12,
   },
   kartBaslik: {
     flexDirection: 'row',
@@ -453,15 +531,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  canliNokta: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: RenkTokenlari.mint,
+  },
   sayiEtiket: {
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.primarySoft,
     fontWeight: '800',
   },
   kapatBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
@@ -498,35 +582,45 @@ const styles = StyleSheet.create({
   profilKart: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: BoslukTokenlari.md,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     borderRadius: YaricapTokenlari.md,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  avatarKutu: {
-    width: 48,
-    height: 48,
-    overflow: 'visible',
+  profilDokun: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minWidth: 0,
   },
-  onayRozeti: {
-    position: 'absolute',
-    right: -2,
-    bottom: -2,
-    backgroundColor: RenkTokenlari.bgElevated,
-    borderRadius: 8,
+  avatarKutu: {
+    width: TAC_SLOT,
+    height: TAC_SLOT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
   },
   profilMetin: {
     flex: 1,
     minWidth: 0,
     gap: 2,
   },
+  adSatir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    minWidth: 0,
+  },
   ad: {
     ...TipografiTokenlari.body,
     color: RenkTokenlari.text,
     fontWeight: '700',
+    flexShrink: 1,
   },
   altAd: {
     ...TipografiTokenlari.micro,
@@ -537,5 +631,33 @@ const styles = StyleSheet.create({
     color: RenkTokenlari.mint,
     fontWeight: '700',
     flexShrink: 0,
+    marginLeft: 4,
+  },
+  geriAl: {
+    marginLeft: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: YaricapTokenlari.pill,
+    backgroundColor: 'rgba(239,68,68,0.22)',
+  },
+  geriAlYazi: {
+    ...TipografiTokenlari.micro,
+    color: '#FECACA',
+    fontWeight: '800',
+  },
+  kapatSatir: {
+    marginTop: 10,
+    minHeight: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  kapatYazi: {
+    ...TipografiTokenlari.body,
+    color: RenkTokenlari.text,
+    fontWeight: '700',
   },
 });

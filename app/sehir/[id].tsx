@@ -15,7 +15,7 @@ import { Screen } from '../../src/components/Screen';
 import { EkranBasligi } from '../../src/components/EkranBasligi';
 import { useCeviri } from '../../src/i18n/useCeviri';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import { SehirDestekle } from '../../src/moduller/sehirler/islemler/SehirDestekle';
@@ -53,7 +53,8 @@ export default function SehirDetayEkrani() {
     return map[status] ?? status;
   };
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { isGuest, refreshProfile, refreshWallet } = useAuth();
+  const { isGuest, refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const leagueOn = OzellikBayragiAktifMi('city_league_enabled');
 

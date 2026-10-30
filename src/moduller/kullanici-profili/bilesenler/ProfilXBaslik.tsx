@@ -19,6 +19,7 @@ import {
 import { MedyaUriGuvenli } from '../../mesajlasma/yardimcilar/MedyaUriGecerliMi';
 import { TakipSayaciniFormatla } from '../../takip/TakipSayacFormat';
 import { DogrulanmisTik } from './DogrulanmisTik';
+import { AjansSahipRozeti } from '../../ajanslar/bilesenler/AjansSahipRozeti';
 import { ProfilAvatarCerceve } from './ProfilAvatarCerceve';
 import { ProfilOnizlemeGorseli } from './ProfilOnizlemeGorseli';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -64,6 +65,7 @@ export function ProfilXBaslik({
   username,
   bio,
   verified,
+  ajansSahibi,
   titleId,
   createdAt,
   country,
@@ -93,6 +95,7 @@ export function ProfilXBaslik({
   hasUnseenStory = false,
   /** Story varken avatar yerine gösterilecek önizleme */
   storyPreviewUri = null,
+  isimYani,
   children,
 }: {
   coverUri: string | null;
@@ -101,6 +104,7 @@ export function ProfilXBaslik({
   username?: string | null;
   bio?: string | null;
   verified?: boolean;
+  ajansSahibi?: boolean;
   /** Dinamik vitrin ünvanı (presentation — yetki değil) */
   titleId?: string | null;
   createdAt?: string | null;
@@ -134,6 +138,8 @@ export function ProfilXBaslik({
   hasStory?: boolean;
   hasUnseenStory?: boolean;
   storyPreviewUri?: string | null;
+  /** İsim satırının sağı — cazibe ünvanı */
+  isimYani?: ReactNode;
   children?: ReactNode;
 }) {
   const { t, i18n, dil } = useCeviri();
@@ -286,7 +292,9 @@ export function ProfilXBaslik({
           </Text>
           {verified ? <DogrulanmisTik size={18} /> : null}
           {title ? <UserTitleBadge title={title} size="NORMAL" /> : null}
+          {isimYani}
         </View>
+        {ajansSahibi ? <AjansSahipRozeti /> : null}
         {username ? (
           <Text style={styles.username}>@{username}</Text>
         ) : null}

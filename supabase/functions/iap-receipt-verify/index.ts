@@ -1,4 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import {
+  appleIslemDogrula,
+  googleIslemDogrula,
+  MagazaDogrulamaHatasi,
+  type DogrulanmisIslem,
+} from '../_shared/iap/magazaDogrulama.ts';
 
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -45,117 +51,79 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as Body;
-    if (!body.packageId || !body.store || !body.productId || !body.idempotencyKey) {
+    if (!body.store || !body.productId || !body.idempotencyKey) {
       return Response.json({ error: 'Invalid payload' }, { status: 400, headers: corsHeaders });
     }
-    if (!body.transactionId && !body.purchaseToken) {
+    if (body.store === 'apple' && !body.transactionId) {
       return Response.json({ error: 'Missing transaction proof' }, { status: 400, headers: corsHeaders });
     }
-
-    // Production: Apple App Store Server API / Google Play Developer API verify burada.
-    // Sandbox/dev: token varligi + paket-SKU eslesmesi yeterli (APPLE_IAP_SKIP_VERIFY=1).
-    const skip = Deno.env.get('APPLE_IAP_SKIP_VERIFY') === '1' ||
-      Deno.env.get('IAP_SKIP_VERIFY') === '1';
-
-    if (!skip) {
-      const appleKey = Deno.env.get('APPLE_IAP_ISSUER_ID');
-      const googleSa = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_JSON');
-      if (body.store === 'apple' && !appleKey) {
-        return Response.json(
-          { error: 'Apple IAP not configured; set APPLE_IAP_* or IAP_SKIP_VERIFY=1 for sandbox' },
-          { status: 503, headers: corsHeaders },
-        );
-      }
-      if (body.store === 'google' && !googleSa) {
-        return Response.json(
-          { error: 'Google Play not configured; set GOOGLE_PLAY_* or IAP_SKIP_VERIFY=1' },
-          { status: 503, headers: corsHeaders },
-        );
-      }
-      // TODO: real verify against Apple/Google when credentials present
+    if (body.store === 'google' && !body.purchaseToken) {
+      return Response.json({ error: 'Missing transaction proof' }, { status: 400, headers: corsHeaders });
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // Güvenilir eşleme: store productId → paket (client packageId'ye tek başına güvenme)
-    const productCol =
-      body.store === 'apple' ? 'apple_product_id' : 'google_product_id';
-    let pkg: Record<string, unknown> | null = null;
-
-    const byStoreId = await admin
+    // Paket yalnızca mağaza ürün kimliğiyle eşlenir; istemcinin gönderdiği packageId'ye güvenilmez.
+    const productCol = body.store === 'apple' ? 'apple_product_id' : 'google_product_id';
+    const { data: pkgRow, error: pkgErr } = await admin
       .from('coin_packages')
-      .select('*')
+      .select('id, sku, price_usd, apple_product_id, google_product_id, is_active')
       .eq(productCol, body.productId)
       .maybeSingle();
-    if (!byStoreId.error && byStoreId.data) {
-      pkg = byStoreId.data as Record<string, unknown>;
-    } else {
-      const bySku = await admin
-        .from('coin_packages')
-        .select('*')
-        .eq('sku', body.productId)
-        .maybeSingle();
-      if (!bySku.error && bySku.data) {
-        pkg = bySku.data as Record<string, unknown>;
-      }
-    }
-
-    if (!pkg && body.packageId) {
-      const { data: byId, error: pkgErr } = await admin
-        .from('coin_packages')
-        .select('*')
-        .eq('id', body.packageId)
-        .maybeSingle();
-      if (pkgErr || !byId) {
-        return Response.json(
-          { error: 'Package not found' },
-          { status: 404, headers: corsHeaders },
-        );
-      }
-      pkg = byId as Record<string, unknown>;
-    }
-
-    // is_active zorunlu değil — satın alma sırasında admin kapatırsa race'te coin yine verilsin
-    if (!pkg) {
+    if (pkgErr || !pkgRow) {
       return Response.json({ error: 'Package not found' }, { status: 404, headers: corsHeaders });
     }
-
-    const expectedSku =
-      body.store === 'apple'
-        ? (pkg.apple_product_id as string | null) ?? (pkg.sku as string)
-        : (pkg.google_product_id as string | null) ?? (pkg.sku as string);
-    if (expectedSku && body.productId !== expectedSku && body.productId !== pkg.sku) {
-      return Response.json({ error: 'Product mismatch' }, { status: 400, headers: corsHeaders });
+    const pkg = pkgRow as { id: string; price_usd: number | null };
+    if (body.packageId && String(pkg.id) !== String(body.packageId)) {
+      return Response.json({ error: 'Package/product mismatch' }, { status: 400, headers: corsHeaders });
     }
-    if (
-      body.packageId &&
-      pkg.id &&
-      String(pkg.id) !== String(body.packageId)
-    ) {
+
+    let tx: DogrulanmisIslem;
+    try {
+      tx = body.store === 'apple'
+        ? await appleIslemDogrula(String(body.transactionId), body.productId)
+        : await googleIslemDogrula(String(body.purchaseToken), body.productId);
+    } catch (e) {
+      if (e instanceof MagazaDogrulamaHatasi) {
+        return Response.json({ error: e.message }, { status: e.status, headers: corsHeaders });
+      }
+      throw e;
+    }
+
+    // Aynı mağaza işlemi ikinci kez coin oluşturmaz; başka hesaba ait işlem reddedilir.
+    const { data: existing } = await admin
+      .from('coin_purchases')
+      .select('id, user_id, coins_added')
+      .eq('provider', tx.store)
+      .eq('provider_tx_id', tx.providerTxId)
+      .maybeSingle();
+    if (existing) {
+      const row = existing as { user_id: string; coins_added: number };
+      if (row.user_id !== user.id) {
+        return Response.json({ error: 'Transaction already used' }, { status: 409, headers: corsHeaders });
+      }
       return Response.json(
-        { error: 'Package/product mismatch' },
-        { status: 400, headers: corsHeaders },
+        { ok: true, duplicate: true, coinsAdded: 0, purchase: existing },
+        { headers: corsHeaders },
       );
     }
 
-    const packageId = String(pkg.id);
-    const providerTx =
-      body.transactionId ?? body.purchaseToken ?? `${body.store}_${body.idempotencyKey}`;
-
     const { data, error } = await admin.rpc('coin_satin_al_onayla_servis', {
       p_user_id: user.id,
-      p_package_id: packageId,
+      p_package_id: pkg.id,
       p_idempotency_key: body.idempotencyKey,
-      p_provider: body.store,
-      p_provider_tx_id: providerTx,
-      p_store: body.store,
+      p_provider: tx.store,
+      p_provider_tx_id: tx.providerTxId,
+      p_store: tx.store,
       p_amount_usd: pkg.price_usd,
       p_receipt: {
-        store: body.store,
-        productId: body.productId,
-        transactionId: body.transactionId ?? null,
-        purchaseToken: body.purchaseToken ? '[redacted]' : null,
-        verified: skip ? 'sandbox_skip' : 'pending_full_verify',
+        store: tx.store,
+        productId: tx.productId,
+        transactionId: tx.providerTxId,
+        originalTransactionId: tx.originalTxId,
+        environment: tx.environment,
+        purchasedAt: tx.purchasedAt,
+        verified: tx.store === 'apple' ? 'apple_server_api' : 'google_play_api',
       },
     });
 

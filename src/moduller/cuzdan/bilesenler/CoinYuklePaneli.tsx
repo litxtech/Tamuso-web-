@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TamusoModal } from '../../../bilesenler/yuzey/TamusoModal';
 import { CamArkaplan } from '../../../bilesenler/yuzey/CamArkaplan';
 import { HesabiTamamlaKarti } from '../../misafir-hesabi/bilesenler/HesabiTamamlaKarti';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../contexts/AuthContext';
 import { useCeviri } from '../../../i18n/useCeviri';
 import { DIL_LOCALE_MAP } from '../../../i18n/diller';
 import { CoinPaketMagaza } from './CoinPaketMagaza';
@@ -59,7 +59,8 @@ export function CoinYuklePaneli({
   const insets = useSafeAreaInsets();
   const { t, dil } = useCeviri();
   const loc = DIL_LOCALE_MAP[dil];
-  const { refreshProfile, refreshWallet } = useAuth();
+  const { refreshProfile } = useAuth();
+  const { refreshWallet } = useWallet();
   const altPad =
     Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 12) + 8;
 

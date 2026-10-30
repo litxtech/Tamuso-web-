@@ -22,7 +22,6 @@ import { ProfilAvatarKucuk } from '../../src/moduller/canli-sohbet/bilesenler/Pr
 import { DurumYorumPaneli } from '../../src/moduller/durum/bilesenler/DurumYorumPaneli';
 import { KullaniciGuvenlikMenusu } from '../../src/moduller/moderasyon/bilesenler/KullaniciGuvenlikMenusu';
 import {
-  DurumBegeniToggle,
   DurumDetayGetir,
   DurumGoruntulemeKaydet,
   DurumMedyaHttpsMi,
@@ -136,7 +135,7 @@ export default function DurumDetayEkrani() {
   const params = useLocalSearchParams<{ id: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const insets = useSafeAreaInsets();
-  const { isGuest } = useAuth();
+  const { isGuest, user } = useAuth();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const magaza = useHediyeMagaza();
   const [oge, setOge] = useState<DurumOggesi | null>(null);
@@ -183,7 +182,15 @@ export default function DurumDetayEkrani() {
     if (!oge) return;
     islemiDene('yorum_yap', () => {
       void (async () => {
-        const r = await DurumBegeniToggle(oge.id);
+        const sonraki = !oge.liked_by_me;
+        const { DurumBegeniVeyaKuyruk } = await import(
+          '../../src/moduller/cevrimdisi/SosyalKuyruk'
+        );
+        const r = await DurumBegeniVeyaKuyruk({
+          userId: user?.id,
+          statusId: oge.id,
+          liked: sonraki,
+        });
         if (!r.ok) {
           Alert.alert(t('durum.begeni'), r.hata ?? t('durum.basarisiz'));
           return;

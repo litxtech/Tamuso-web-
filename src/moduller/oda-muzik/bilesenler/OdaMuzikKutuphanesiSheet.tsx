@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -83,7 +84,7 @@ export function OdaMuzikKutuphanesiSheet({
         { key: 'popular' as const, label: t('odaMuzik.tabPopuler') },
         { key: 'new' as const, label: t('odaMuzik.tabYeni') },
         { key: 'favorites' as const, label: t('odaMuzik.tabFavori') },
-        ...(OzellikBayragiAktifMi('ai_music_voice_room_enabled')
+        ...(Platform.OS !== 'ios' && OzellikBayragiAktifMi('ai_music_voice_room_enabled')
           ? [{ key: 'mine' as const, label: t('odaMuzik.tabBenim') }]
           : []),
       ] as Array<{ key: Tab; label: string }>,
@@ -386,7 +387,7 @@ export function OdaMuzikKutuphanesiSheet({
           ) : null}
         </View>
 
-        {OzellikBayragiAktifMi('ai_music_enabled') ? (
+        {Platform.OS !== 'ios' && OzellikBayragiAktifMi('ai_music_enabled') ? (
           <Pressable
             style={styles.aiLink}
             onPress={() => {

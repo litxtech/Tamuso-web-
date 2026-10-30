@@ -170,7 +170,7 @@ export async function CanliYayinBaslatMotoru(input: {
       kamera: input.videoEnabled,
       amac: 'yayin',
     });
-    const kesP = MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+    const kesP = MedyaOdasiKes({ hizli: true, zorla: true }).catch(() => undefined);
 
     const [izin] = await Promise.all([izinP, kesP]);
     if (!izin.ok) {
@@ -254,13 +254,14 @@ export async function CanliYayinBaslatMotoru(input: {
               : i18n.t('canliYayin.baglantiRetry', { attempt, max: MAX_RETRY }),
         });
         if (attempt > 1) {
-          await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+          await MedyaOdasiKes({ hizli: true, zorla: true }).catch(() => undefined);
         }
         medya = await withTimeout(
           MedyaOdasiBaglan({
             roomName,
             role: 'host',
             video: input.videoEnabled,
+            micAcik: true,
             zorla: attempt > 1,
           }),
           CONNECT_TIMEOUT_MS,
@@ -286,7 +287,7 @@ export async function CanliYayinBaslatMotoru(input: {
     if (!medya?.ok) {
       progress({ durum: 'failed', asama: 'room_connect', mesaj: lastErr });
       await CanliYayinBitir(session.id).catch(() => undefined);
-      await MedyaOdasiKes().catch(() => undefined);
+      await MedyaOdasiKes({ zorla: true }).catch(() => undefined);
       sessionId = null;
       return {
         ok: false,
@@ -320,7 +321,7 @@ export async function CanliYayinBaslatMotoru(input: {
 
     if (iptalEdildi()) {
       await CanliYayinBitir(session.id).catch(() => undefined);
-      await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+      await MedyaOdasiKes({ hizli: true, zorla: true }).catch(() => undefined);
       sessionId = null;
       return {
         ok: false as const,
@@ -333,7 +334,7 @@ export async function CanliYayinBaslatMotoru(input: {
     const aktif = await CanliYayinAktifEt(session.id);
     if (iptalEdildi()) {
       await CanliYayinBitir(session.id).catch(() => undefined);
-      await MedyaOdasiKes({ hizli: true }).catch(() => undefined);
+      await MedyaOdasiKes({ hizli: true, zorla: true }).catch(() => undefined);
       sessionId = null;
       return {
         ok: false as const,
@@ -346,7 +347,7 @@ export async function CanliYayinBaslatMotoru(input: {
       logErr('server_live_status_active', aktif.hata);
       progress({ durum: 'failed', asama: 'server_active', mesaj: aktif.hata });
       await CanliYayinBitir(session.id).catch(() => undefined);
-      await MedyaOdasiKes().catch(() => undefined);
+      await MedyaOdasiKes({ zorla: true }).catch(() => undefined);
       sessionId = null;
       return {
         ok: false,
@@ -395,7 +396,7 @@ export async function CanliYayinBaslatMotoru(input: {
     if (sessionId) {
       await CanliYayinBitir(sessionId).catch(() => undefined);
     }
-    await MedyaOdasiKes().catch(() => undefined);
+    await MedyaOdasiKes({ zorla: true }).catch(() => undefined);
     progress({
       durum: 'failed',
       mesaj: e instanceof Error ? e.message : i18n.t('canliYayin.baslatilamadi'),

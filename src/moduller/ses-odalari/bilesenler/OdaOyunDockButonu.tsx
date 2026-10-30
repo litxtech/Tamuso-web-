@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { useCeviri } from '../../../i18n/useCeviri';
 
@@ -29,7 +29,7 @@ export function OdaOyunDockButonu({ aktif, onPress }: Props) {
         accessibilityLabel={t('oyun.baslik')}
       >
         <LinearGradient colors={gradient} style={styles.inner}>
-          <Ionicons name="game-controller" size={iconSize} color="#fff" />
+          <MaterialCommunityIcons name="gamepad-round" size={iconSize} color="#fff" />
         </LinearGradient>
       </Pressable>
     </View>

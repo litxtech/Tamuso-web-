@@ -424,34 +424,37 @@ export default function RegisterScreen() {
             ) : null}
 
             {genderGorunur ? (
-              <View style={styles.genderRow}>
-                {genders.map((g) => (
-                  <Pressable
-                    key={g.id}
-                    onPress={() =>
-                      setGender((prev) => (prev === g.id ? '' : g.id))
-                    }
-                    style={[
-                      styles.genderChip,
-                      gender === g.id && styles.genderActive,
-                    ]}
-                  >
-                    <Text
+              <View>
+                <Text style={styles.yasEtiket}>
+                  {KayitAlanEtiketi(
+                    t('kayitAlan.gender'),
+                    AlanZorunluMu(ayar.alanlar.gender),
+                  )}
+                </Text>
+                <View style={styles.genderRow}>
+                  {genders.map((g) => (
+                    <Pressable
+                      key={g.id}
+                      onPress={() =>
+                        setGender((prev) => (prev === g.id ? '' : g.id))
+                      }
                       style={[
-                        styles.genderText,
-                        gender === g.id && styles.genderTextActive,
+                        styles.genderChip,
+                        gender === g.id && styles.genderActive,
                       ]}
                     >
-                      {g.label}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        style={[
+                          styles.genderText,
+                          gender === g.id && styles.genderTextActive,
+                        ]}
+                      >
+                        {g.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
-            ) : null}
-            {genderGorunur && !AlanZorunluMu(ayar.alanlar.gender) ? (
-              <Text style={styles.istegeBagliHint}>
-                {t('auth.cinsiyetIstegeBagli')}
-              </Text>
             ) : null}
 
             <TextField
@@ -860,11 +863,6 @@ const styles = StyleSheet.create({
   },
   genderText: { ...TipografiTokenlari.caption, color: RenkTokenlari.textMuted },
   genderTextActive: { color: RenkTokenlari.primarySoft, fontWeight: '700' },
-  istegeBagliHint: {
-    ...TipografiTokenlari.micro,
-    color: RenkTokenlari.textDim,
-    marginTop: -BoslukTokenlari.sm,
-  },
   yasEtiket: {
     ...TipografiTokenlari.caption,
     color: RenkTokenlari.textMuted,

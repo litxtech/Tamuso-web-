@@ -7,6 +7,7 @@ export type MikrofonIstegi = {
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   created_at: string;
   requested_seat_index?: number | null;
+  istek_turu?: 'koltuk' | 'mikrofon' | null;
   profile?: {
     display_name: string | null;
     username: string | null;
@@ -30,7 +31,7 @@ export async function MikrofonIstekleriniGetir(
   const { data, error } = await supabase
     .from('room_mic_requests')
     .select(
-      'id, room_id, user_id, status, created_at, requested_seat_index, profile:profiles(display_name, username, avatar_url)',
+      'id, room_id, user_id, status, created_at, requested_seat_index, istek_turu, profile:profiles(display_name, username, avatar_url)',
     )
     .eq('room_id', odaId)
     .eq('status', 'pending')

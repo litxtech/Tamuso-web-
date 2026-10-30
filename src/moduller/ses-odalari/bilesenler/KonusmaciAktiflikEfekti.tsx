@@ -23,13 +23,12 @@ const KAPALI = 0.04;
 const TASMA = 26;
 
 /**
- * Konuşurken avatar etrafında soluk halka.
+ * Konuşurken avatar etrafında belirgin halka. Tahttan ayrı, herkeste aynı renk.
  * Scale ve sürekli yeniden başlayan timing sahneyi kasıyordu.
  */
 export function KonusmaciAktiflikEfekti({
   userId,
   size = 72,
-  hostMu = false,
   children,
 }: Props) {
   const aktif = useSharedValue(0);
@@ -67,16 +66,16 @@ export function KonusmaciAktiflikEfekti({
     });
   }, [userId, aktif]);
 
-  const renk = hostMu ? RenkTokenlari.accent : RenkTokenlari.mint;
+  const renk = RenkTokenlari.mint;
   const halkaBoy = size + 10;
   const wrapBoy = size + TASMA * 2;
 
   const glow = useAnimatedStyle(() => ({
-    opacity: aktif.value * 0.35,
+    opacity: aktif.value * 0.55,
   }));
 
   const cember = useAnimatedStyle(() => ({
-    opacity: aktif.value * 0.85,
+    opacity: aktif.value,
   }));
 
   return (
@@ -127,7 +126,7 @@ export function KonusmaciAktiflikEfekti({
 const styles = StyleSheet.create({
   cember: {
     position: 'absolute',
-    borderWidth: 2.5,
+    borderWidth: 3,
   },
   glow: {
     position: 'absolute',

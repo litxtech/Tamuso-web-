@@ -6,6 +6,7 @@ export type OyunKazancDuyurusu = {
   game_title: string;
   win_amount: number;
   bet_amount: number;
+  multiplier: number | null;
   round_id: string | null;
   created_at: string;
   display_name: string;

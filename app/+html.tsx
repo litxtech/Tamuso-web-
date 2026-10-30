@@ -14,7 +14,10 @@ html, body, #root {
 }
 html, body, #root {
   height: 100%;
-  height: 100svh;
+}
+/* Mobil tarayıcı çubuğu açılıp kapanırken yükseklik doğru kalsın. */
+@supports (height: 100dvh) {
+  html, body, #root { height: 100dvh; }
 }
 body {
   overflow: hidden;
@@ -56,8 +59,10 @@ export default function Root({ children }: PropsWithChildren) {
         <style dangerouslySetInnerHTML={{ __html: WEB_KABUK }} />
         <script
           dangerouslySetInnerHTML={{
+            // Yalnızca sondaki eğik çizgiyi temizler.
+            // Ölçek hilesi YOK: sayfa her cihazda gerçek genişliğinde açılır.
             __html:
-              "(function(){var p=location.pathname;if(p.length>1&&p.endsWith('/')){p=p.replace(/\\/+$/,'');history.replaceState(null,'',p+location.search+location.hash);}var site=p==='/'||p.indexOf('/tanitim')===0;var kisa=window.screen?Math.min(screen.width,screen.height):window.innerWidth;var dar=kisa<760;if(site&&dar){var m=document.querySelector('meta[name=viewport]');if(m)m.setAttribute('content','width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content');}})();",
+              "(function(){var p=location.pathname;if(p.length>1&&p.endsWith('/')){p=p.replace(/\\/+$/,'');history.replaceState(null,'',p+location.search+location.hash);}})();",
           }}
         />
         {headNodes}

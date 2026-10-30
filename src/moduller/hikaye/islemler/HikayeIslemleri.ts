@@ -315,7 +315,13 @@ export async function HikayeGrupGetir(
     p_owner_id: userId,
     p_include_archived: false,
   });
-  if (error) return { ok: false, hata: rpcHata(error) };
+  if (error) {
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { HikayeGrupOku } = await import('../../cevrimdisi/AnlikGoruntu');
+    const disk = await HikayeGrupOku<HikayeGrup>(CevrimdisiAktifKullanici(), userId);
+    if (disk) return { ok: true, data: disk };
+    return { ok: false, hata: rpcHata(error) };
+  }
 
   const root = asObj(data);
   if (root?.enabled === false) {
@@ -332,6 +338,9 @@ export async function HikayeGrupGetir(
 
   const uid = (await supabase.auth.getUser()).data.user?.id;
   grup.is_mine = uid === grup.user_id;
+  const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+  const { HikayeGrupYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+  void HikayeGrupYaz(CevrimdisiAktifKullanici() ?? uid ?? null, grup.user_id, grup);
   return { ok: true, data: grup };
 }
 

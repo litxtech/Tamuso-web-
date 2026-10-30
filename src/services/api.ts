@@ -1,9 +1,10 @@
 import { supabase } from '../lib/supabase';
+import { OdaIslemOzetleriniBagla } from '../moduller/ses-odalari/okuma/OdaIslemOzeti';
 import type { CoinPackage, Gift, Room, RoomSeat } from '../types/models';
 
 /** Feed/liste için dar kolon seti — tam profil/join yükünü taşımaz */
 const CANLI_ODA_LISTE_SELECT =
-  'id, host_id, title, topic, cover_url, mode, max_seats, is_live, is_locked, listener_count, total_coins_earned, created_at, room_code, host:profiles!rooms_host_id_fkey(id, display_name, username, avatar_url, level)';
+  'id, host_id, title, topic, cover_url, mode, max_seats, is_live, is_locked, listener_count, total_coins_earned, created_at, room_code, livekit_room_name, host:profiles!rooms_host_id_fkey(id, display_name, username, avatar_url, level)';
 
 export async function fetchLiveRooms(
   limit = 30,
@@ -23,7 +24,7 @@ export async function fetchLiveRooms(
 
   const { data, error } = await q;
   if (error) throw error;
-  return (data as Room[]) ?? [];
+  return OdaIslemOzetleriniBagla((data as unknown as Room[]) ?? []);
 }
 
 export async function createRoom(input: {
@@ -169,13 +170,27 @@ export async function createRoom(input: {
 }
 
 export async function fetchRoom(roomId: string): Promise<Room | null> {
-  const { data, error } = await supabase
-    .from('rooms')
-    .select('*, host:profiles!rooms_host_id_fkey(*)')
-    .eq('id', roomId)
-    .maybeSingle();
-  if (error) throw error;
-  return data as Room | null;
+  try {
+    const { data, error } = await supabase
+      .from('rooms')
+      .select('*, host:profiles!rooms_host_id_fkey(*)')
+      .eq('id', roomId)
+      .maybeSingle();
+    if (error) throw error;
+    const oda = data as Room | null;
+    if (oda) {
+      const { CevrimdisiAktifKullanici } = await import('../moduller/cevrimdisi/AktifKullanici');
+      const { OdaAnlikYaz } = await import('../moduller/cevrimdisi/AnlikGoruntu');
+      void OdaAnlikYaz(CevrimdisiAktifKullanici(), oda);
+    }
+    return oda;
+  } catch (e) {
+    const { CevrimdisiAktifKullanici } = await import('../moduller/cevrimdisi/AktifKullanici');
+    const { OdaAnlikOku } = await import('../moduller/cevrimdisi/AnlikGoruntu');
+    const disk = await OdaAnlikOku(CevrimdisiAktifKullanici(), roomId);
+    if (disk) return disk as Room;
+    throw e;
+  }
 }
 
 export async function fetchRoomSeats(roomId: string): Promise<RoomSeat[]> {

@@ -19,6 +19,7 @@ type Props = {
   onSessizeAl?: () => void;
   onBildir?: () => void;
   onArsiv?: () => void;
+  onCevrimdisiKaydet?: () => void;
 };
 
 export function HikayeMenuSheet({
@@ -30,6 +31,7 @@ export function HikayeMenuSheet({
   onSessizeAl,
   onBildir,
   onArsiv,
+  onCevrimdisiKaydet,
 }: Props) {
   const { t } = useCeviri();
   const insets = useSafeAreaInsets();
@@ -88,6 +90,9 @@ export function HikayeMenuSheet({
         ? satir(t('hikaye.sessizeAl'), onSessizeAl)
         : null}
       {!isMine && onBildir ? satir(t('hikaye.bildir'), onBildir, true) : null}
+      {onCevrimdisiKaydet
+        ? satir(t('cevrimdisi.kaydetCevrimdisi'), onCevrimdisiKaydet)
+        : null}
       {satir(t('ortak.kapat'), onClose)}
     </TamusoModal>
   );

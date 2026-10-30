@@ -23,7 +23,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ModulHataSiniri } from '../../../../ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth, useWallet } from '../../../../contexts/AuthContext';
 import { AdminYetkisiVarMi } from '../../../admin/yetki/AdminYetkisiVarMi';
 import { CoinYuklePaneli } from '../../../cuzdan/bilesenler/CoinYuklePaneli';
 import { useCoinYuklePaneli } from '../../../cuzdan/islemler/useCoinYuklePaneli';
@@ -106,7 +106,8 @@ function ZeusEkraniGovde({
   embedded = false,
 }: ZeusEkraniProps) {
   const insets = useSafeAreaInsets();
-  const { wallet, profile, patchWallet } = useAuth();
+  const { profile } = useAuth();
+  const { wallet, patchWallet } = useWallet();
   const {
     acik: coinYukleAcik,
     ac: coinYukleAc,

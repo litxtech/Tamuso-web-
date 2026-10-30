@@ -1,5 +1,6 @@
 /**
- * Odaya yeni katılan seviye 10+ kullanıcılar için giriş animasyonu kuyruğu.
+ * Odaya yeni katılan kullanıcılar için giriş animasyonu kuyruğu.
+ * VIP (sv. 10+) girişler normal girişlerin önüne geçer; normal girişler sınırlı tutulur.
  * Aynı oda oturumunda kişi başına en fazla 1 kez.
  */
 
@@ -7,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { ProfilMiniCache } from '../../kullanici-profili/onbellek/ProfilMiniCache';
 import {
+  NORMAL_GIRIS_KUYRUK_SINIRI,
   SeviyeGirisKademesiniCoz,
   type SeviyeGirisOgesi,
 } from '../animasyon/SeviyeGirisKatalogu';
@@ -22,7 +24,7 @@ type Opts = {
   enabled?: boolean;
   /** Host kendi sahip girişini oynatır — seviye self atlanır */
   hostMu?: boolean;
-  /** Kendi profil — odaya ilk girince animasyon (sv≥10) */
+  /** Kendi profil — odaya ilk girince animasyon */
   self?: {
     userId: string;
     ad: string;
@@ -62,7 +64,17 @@ export function useOdaSeviyeGiris({
       const key = OdaGirisAnimAnahtari(roomId, tur, oge.userId);
       if (OdaGirisAnimasyonuGosterildiMi(key)) return;
       OdaGirisAnimasyonuIsaretle(key);
-      kuyrukRef.current.push(oge);
+
+      const kuyruk = kuyrukRef.current;
+      if (oge.kademe === 'normal') {
+        const bekleyenNormal = kuyruk.filter((o) => o.kademe === 'normal').length;
+        if (bekleyenNormal >= NORMAL_GIRIS_KUYRUK_SINIRI) return;
+        kuyruk.push(oge);
+      } else {
+        const ilkNormal = kuyruk.findIndex((o) => o.kademe === 'normal');
+        if (ilkNormal === -1) kuyruk.push(oge);
+        else kuyruk.splice(ilkNormal, 0, oge);
+      }
       sonraki();
     },
     [roomId, sonraki],
@@ -77,14 +89,12 @@ export function useOdaSeviyeGiris({
   /** Kendi giriş animasyonu — oda başına 1 kez (host hariç) */
   useEffect(() => {
     if (!enabled || !roomId || !selfUserId || hostMu) return;
-    const kademe = SeviyeGirisKademesiniCoz(selfLevel);
-    if (!kademe) return;
     kuyrugaEkle({
       userId: selfUserId,
       ad: selfAd,
       avatarUrl: selfAvatar,
       level: selfLevel,
-      kademe,
+      kademe: SeviyeGirisKademesiniCoz(selfLevel),
     });
   }, [
     enabled,
@@ -128,14 +138,12 @@ export function useOdaSeviyeGiris({
             const data = await ProfilMiniCache.al(uid);
             if (!data) return;
             const level = typeof data.level === 'number' ? data.level : 0;
-            const kademe = SeviyeGirisKademesiniCoz(level);
-            if (!kademe) return;
             kuyrugaEkle({
               userId: uid,
               ad: ProfilMiniCache.gosterimAdi(data, i18n.t('ortak.kullanici')),
               avatarUrl: data.avatar_url ?? null,
               level,
-              kademe,
+              kademe: SeviyeGirisKademesiniCoz(level),
             });
           })();
         },

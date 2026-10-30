@@ -5,7 +5,7 @@
  */
 import { createContext } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import type { Profile, Wallet } from '../types/models';
+import type { Profile } from '../types/models';
 import type { EmailOtpAmaci } from '../moduller/kimlik-dogrulama/dogrulama/EmailOtpDogrula';
 import type { OturumGecmisindenGirisSonuc } from '../moduller/kimlik-dogrulama/oturum-gecmisi/OturumGecmisiIslemleri';
 import type { OturumGecmisiKaydi } from '../moduller/kimlik-dogrulama/oturum-gecmisi/tipler';
@@ -14,21 +14,15 @@ export type AuthContextValue = {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
-  wallet: Wallet | null;
   loading: boolean;
   isGuest: boolean;
   refreshProfile: () => Promise<void>;
-  refreshWallet: () => Promise<void>;
   /** Hesap tamamlandıktan sonra UI'yı anında misafir olmaktan çıkar */
   misafirBayraginiKaldir: () => void;
-  /** Harcama / yukleme sonrasi UI aninda guncelle (realtime gelene kadar) */
-  patchWallet: (patch: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => void;
   /** Avatar / kapak vb. sonrasi UI aninda guncelle (refresh bitene kadar) */
   patchProfile: (
     patch: Partial<Pick<Profile, 'avatar_url' | 'cover_url'>>,
   ) => void;
-  /** Relatif degisim — hizli art arda islemlerde stale bakiye riski yok */
-  adjustWallet: (delta: Partial<Pick<Wallet, 'coins' | 'diamonds'>>) => void;
   signIn: (kimlik: string, password: string) => Promise<{ error?: string }>;
   signInWithApple: () => Promise<{ error?: string; cancelled?: boolean }>;
   signInWithSpotify: () => Promise<{ error?: string; cancelled?: boolean }>;

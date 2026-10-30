@@ -17,12 +17,17 @@ const blockExtras = [
   /[\\/]load-tests[\\/].*/,
   /[\\/]imports[\\/].*/,
   /[\\/]\.expo[\\/].*/,
+  /[\\/]\.cache[\\/].*/,
   /[\\/]\.cursor[\\/].*/,
   /[\\/]agent-transcripts[\\/].*/,
   /eas-.*\.log$/,
   /\.log$/,
   /[\\/]docs[\\/]_i18n.*/,
   /[\\/]docs[\\/]odeme[\\/].*/,
+  // iOS binary'sinden çıkarılan arşiv ekranları ve ayrı admin web uygulaması derlemesi
+  /[\\/]archive[\\/].*/,
+  /[\\/]apps[\\/]super-admin[\\/]dist[\\/].*/,
+  /[\\/]apps[\\/]super-admin[\\/]\.expo[\\/].*/,
   /kaskad-sim.*\.json$/,
   /COUNTRY_LEAGUE_.*\.md$/,
   /HEADER_AUDIT\.md$/,
@@ -38,6 +43,54 @@ if (Array.isArray(existing)) {
   config.resolver.blockList = [existing, ...blockExtras];
 } else {
   config.resolver.blockList = blockExtras;
+}
+
+// Windows EMFILE: aynı anda açık dosya sayısını düşük tut
+config.maxWorkers = 2;
+
+// Windows EMFILE: iOS + Android aynı anda bundle'lanınca cache okuma/yazma ana süreçte
+// binlerce dosyayı birden açar (maxWorkers bunu sınırlamaz). Eşzamanlılığı kıs, EMFILE'da tekrar dene.
+const CACHE_ESZAMANLI = 64;
+function sinirliCacheStore(store) {
+  let aktif = 0;
+  const bekleyen = [];
+  const al = () => {
+    if (aktif < CACHE_ESZAMANLI) {
+      aktif += 1;
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => bekleyen.push(resolve));
+  };
+  const birak = () => {
+    const siradaki = bekleyen.shift();
+    if (siradaki) siradaki();
+    else aktif -= 1;
+  };
+  const calistir = async (is) => {
+    await al();
+    try {
+      for (let deneme = 0; ; deneme += 1) {
+        try {
+          return await is();
+        } catch (err) {
+          const kod = err && err.code;
+          if ((kod !== 'EMFILE' && kod !== 'ENFILE') || deneme >= 6) throw err;
+          await new Promise((r) => setTimeout(r, 40 * (deneme + 1)));
+        }
+      }
+    } finally {
+      birak();
+    }
+  };
+  return {
+    name: store.name ?? store.constructor.name,
+    get: (key) => calistir(() => store.get(key)),
+    set: (key, value) => calistir(() => store.set(key, value)),
+    clear: () => store.clear(),
+  };
+}
+if (Array.isArray(config.cacheStores)) {
+  config.cacheStores = config.cacheStores.map(sinirliCacheStore);
 }
 
 // Watcher sağlık kontrolü — dosya handle baskısını azaltır

@@ -51,6 +51,7 @@ import {
 } from '../src/tasarim-sistemi/BoslukVeYaricapTokenlari';
 import { useCeviri } from '../src/i18n/useCeviri';
 import { SesOdasinaGit } from '../src/moduller/ses-odalari/navigasyon/SesOdasinaGit';
+import { CevrimdisiKesfetNotu } from '../src/moduller/cevrimdisi/bilesenler/CevrimdisiSerit';
 
 const FILTRE_IKONLARI: Record<KesfetFiltresi, keyof typeof Ionicons.glyphMap> = {
   global: 'grid-outline',
@@ -263,6 +264,7 @@ export default function KesfetEkrani() {
       <AnaSayfaAtmosfer />
       <ModulHataSiniri modulAdi="kesfet">
         <KesfetMarkaBasligi canliSayisi={rooms.length} />
+        <CevrimdisiKesfetNotu />
         <KesfetAramaCubugu deger={arama} onDegisti={setArama} />
 
         <View style={styles.bannerUst}>

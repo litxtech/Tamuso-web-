@@ -12,12 +12,26 @@ export type AdminOyunKatalogSatiri = {
   is_active: boolean;
 };
 
-/** Oyun kodu → özellik bayrağı (senkron tutmak için). */
-export const OYUN_BAYRAK_ANAHTARI: Record<string, string> = {
-  kozmik_kaskad: 'kozmik_kaskad_enabled',
-  zeus: 'zeus_enabled',
-  nox_reels: 'nox_reels_enabled',
+/** Uygulamanın listelediği durum ile sunucunun bahis/spin kapısı. */
+export type AdminOyunKapiDurumu = {
+  game_code: string;
+  liste_acik: boolean;
+  bayrak: string | null;
+  bayrak_acik: boolean | null;
+  politika_acik: boolean | null;
 };
+
+export function oyunKapisiUyumsuzMu(d: AdminOyunKapiDurumu): boolean {
+  if (d.bayrak_acik != null && d.bayrak_acik !== d.liste_acik) return true;
+  if (d.politika_acik != null && d.politika_acik !== d.liste_acik) return true;
+  return false;
+}
+
+export async function AdminOyunKapiDurumuGetir(): Promise<AdminOyunKapiDurumu[]> {
+  const { data, error } = await supabase.rpc('admin_oyun_kapi_durumu');
+  if (error) throw error;
+  return (data as AdminOyunKapiDurumu[]) ?? [];
+}
 
 export async function AdminOyunKontrolGetir(
   gameCode = 'kozmik_kaskad',
@@ -64,31 +78,22 @@ export async function AdminOyunKontrolGuncelle(params: {
   return data as GameControlConfig;
 }
 
-/** Tek oyunu uygulamada göster / gizle (+ eşleşen feature flag). */
+/**
+ * Tek oyunu canlı aç / kapat. Liste, oyun bayrağı ve Fruit Wheel politikası
+ * sunucuda tek işlemde değişir; kapalı oyuna bahis/spin de reddedilir.
+ */
 export async function AdminOyunGorunurlukAyarla(
   gameCode: string,
   acik: boolean,
+  reason?: string,
 ): Promise<GameControlConfig> {
-  const patch = acik
-    ? { is_enabled: true, mode: 'NORMAL' }
-    : { is_enabled: false, mode: 'MAINTENANCE' };
-
-  const next = await AdminOyunKontrolGuncelle({
-    gameCode,
-    patch,
-    reason: acik ? 'admin: oyun açıldı' : 'admin: oyun kapatıldı',
+  const { data, error } = await supabase.rpc('admin_oyun_gorunurluk_ayarla', {
+    p_game_code: gameCode,
+    p_acik: acik,
+    p_reason: reason ?? (acik ? 'admin: oyun açıldı' : 'admin: oyun kapatıldı'),
   });
-
-  const bayrak = OYUN_BAYRAK_ANAHTARI[gameCode];
-  if (bayrak) {
-    try {
-      await AdminOzellikBayragiAyarla(bayrak, acik);
-    } catch {
-      // bayrak yoksa sessiz — asıl kontrol game_control_configs
-    }
-  }
-
-  return next;
+  if (error) throw error;
+  return data as GameControlConfig;
 }
 
 /** Tüm oyun butonlarını platform seviyesinde aç/kapa. */

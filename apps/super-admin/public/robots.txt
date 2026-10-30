@@ -1,0 +1,3 @@
+# Personel konsolu — arama motorlarına kapalı.
+User-agent: *
+Disallow: /

@@ -48,6 +48,21 @@ export async function SehirleriGetir(limit = 100): Promise<GeoSehir[]> {
   });
 }
 
+/** Keşif araması: ada göre en fazla 8 aktif şehir. İlçe veya koordinat dönmez. */
+export async function SehirAdiAra(sorgu: string): Promise<GeoSehir[]> {
+  const q = sorgu.trim().replace(/[%_\\]/g, '').slice(0, 40);
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('geo_cities')
+    .select('id, country_code, name, slug, timezone, is_active, supporter_count, power_score')
+    .eq('is_active', true)
+    .ilike('name', `%${q}%`)
+    .order('supporter_count', { ascending: false })
+    .limit(8);
+  if (error) return [];
+  return (data as GeoSehir[]) ?? [];
+}
+
 export async function SehirUlkeleriniGetir() {
   return KatalogCache.getOrFetch('geo_countries:active', async () => {
     const { data, error } = await supabase

@@ -22,6 +22,8 @@ export type AjansPaketTeklif = {
 export type AjansPaketTeklifOlusturSonuc =
   | {
       ok: true;
+      /** Alıcı çağırdı: teklif değil, ajansa talep mesajı gitti (offerId boş) */
+      talep: boolean;
       offerId: string;
       threadId: string;
       messageId: string;
@@ -32,7 +34,10 @@ export type AjansPaketTeklifOlusturSonuc =
     }
   | { ok: false; hata: string };
 
-/** Cüzdan / ajans sohbetinden Stripe ödemeli paket teklifi oluşturur. */
+/**
+ * Ajans sahibi çağırırsa Stripe ödemeli teklif kartı gönderir.
+ * Alıcı çağırırsa ajansa talep mesajı gider; öde butonu ajans teklif gönderince gelir.
+ */
 export async function AjansPaketTeklifOlustur(input: {
   agencyId: string;
   listeFiyatTry: number;
@@ -51,13 +56,15 @@ export async function AjansPaketTeklifOlustur(input: {
   }
 
   const row = data as Record<string, unknown> | null;
-  if (!row?.ok || !row.offer_id || !row.thread_id) {
+  const talep = row?.request === true;
+  if (!row?.ok || !row.thread_id || (!talep && !row.offer_id)) {
     return { ok: false, hata: i18n.t('cuzdanX.teklifOlusturulamadi') };
   }
 
   return {
     ok: true,
-    offerId: String(row.offer_id),
+    talep,
+    offerId: talep ? '' : String(row.offer_id),
     threadId: String(row.thread_id),
     messageId: String(row.message_id ?? ''),
     amountTry: Number(row.amount_try ?? 0),

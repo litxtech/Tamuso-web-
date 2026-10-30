@@ -18,6 +18,7 @@ import type { Room } from '../../src/types/models';
 import { YUZEN_TAB_ICERIK_BOSLUGU } from '../../src/components/YuzenTabBar';
 import { OdalarMarkaBasligi } from '../../src/moduller/odalar/bilesenler/OdalarMarkaBasligi';
 import { OdaHaftalikSiralamaSeridi } from '../../src/moduller/liderlik-siralamalari/bilesenler/OdaHaftalikSiralamaSeridi';
+import { OdalarKazancSeridi } from '../../src/moduller/odalar/bilesenler/OdalarKazancSeridi';
 import {
   OdalarModFiltresi,
   type OdalarFiltre,
@@ -36,6 +37,7 @@ export default function RoomsScreen() {
   const { t } = useCeviri();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [listeHazir, setListeHazir] = useState(false);
   const [filtre, setFiltre] = useState<OdalarFiltre>('all');
   const ilkYuklemeBitti = React.useRef(false);
   const loadNesil = React.useRef(0);
@@ -58,6 +60,7 @@ export default function RoomsScreen() {
       if (nesil !== loadNesil.current) return;
       if (mod === 'pull') setRefreshing(false);
       ilkYuklemeBitti.current = true;
+      setListeHazir(true);
     }
   }, []);
 
@@ -116,6 +119,7 @@ export default function RoomsScreen() {
       <ModulHataSiniri modulAdi="odalar">
         <OdalarMarkaBasligi canliSayisi={rooms.length} />
         <OdalarModFiltresi secili={filtre} onSec={filtreSec} />
+        <OdalarKazancSeridi />
         <OdaHaftalikSiralamaSeridi />
 
         <FlatList
@@ -139,6 +143,7 @@ export default function RoomsScreen() {
           }
           ListHeaderComponent={listeBaslik}
           ListEmptyComponent={
+            !listeHazir ? null : (
             <View style={styles.bosWrap}>
               <BosDurum
                 icon="radio-outline"
@@ -167,6 +172,7 @@ export default function RoomsScreen() {
                 </Pressable>
               ) : null}
             </View>
+            )
           }
           renderItem={renderItem}
         />

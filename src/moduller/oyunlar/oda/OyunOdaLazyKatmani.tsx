@@ -36,10 +36,15 @@ let loadPromise: Promise<KatmanTipi> | null = null;
 function oyunKatmaniYukle(): Promise<KatmanTipi> {
   if (cachedKatman) return Promise.resolve(cachedKatman);
   if (!loadPromise) {
-    loadPromise = import('./OyunOdaKatmani').then((mod) => {
-      cachedKatman = mod.OyunOdaKatmani;
-      return mod.OyunOdaKatmani;
-    });
+    loadPromise = import('./OyunOdaKatmani')
+      .then((mod) => {
+        cachedKatman = mod.OyunOdaKatmani;
+        return mod.OyunOdaKatmani;
+      })
+      .catch((err) => {
+        loadPromise = null;
+        throw err;
+      });
   }
   return loadPromise;
 }
@@ -58,13 +63,17 @@ export function OyunOdaLazyKatmani({
   // Oda açıkken her zaman ön-yükle (aktif olmayı bekleme)
   useEffect(() => {
     let iptal = false;
-    void oyunKatmaniYukle().then((mod) => {
-      if (!iptal) setKatman(() => mod);
-    });
+    void oyunKatmaniYukle()
+      .then((mod) => {
+        if (!iptal) setKatman(() => mod);
+      })
+      .catch(() => {
+        if (!iptal) setKatman(null);
+      });
     return () => {
       iptal = true;
     };
-  }, []);
+  }, [aktif]);
 
   if (!aktif || !Katman) return null;
   return (
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 400,
-    elevation: 400,
+    zIndex: 40,
+    elevation: 24,
   },
 });

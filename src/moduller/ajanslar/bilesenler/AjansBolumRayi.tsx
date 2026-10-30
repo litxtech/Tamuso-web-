@@ -28,6 +28,8 @@ type BolumSabit = {
 
 export const AJANS_BOLUMLER: BolumSabit[] = [
   { key: 'ozet', labelKey: 'ajans.ozetBolum', icon: 'grid-outline', path: '' },
+  { key: 'gorusmeler', labelKey: 'ajans.gorusmeBolum', icon: 'videocam-outline', path: 'gorusmeler' },
+  { key: 'sertifika', labelKey: 'ajans.sertifikaBaslik', icon: 'ribbon-outline', path: 'sertifika' },
   { key: 'canli', labelKey: 'ajans.kpiCanli', icon: 'radio-outline', path: 'canli' },
   { key: 'uyeler', labelKey: 'ajans.uyeler', icon: 'people-outline', path: 'uyeler' },
   { key: 'basvurular', labelKey: 'ajans.basvuruVarsayilan', icon: 'mail-outline', path: 'basvurular' },

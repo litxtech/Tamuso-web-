@@ -18,6 +18,8 @@ import { Screen } from '../../src/components/Screen';
 import { guvenliGeriDon } from '../../src/components/EkranBasligi';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { SeoAdresiniPaylas } from '../../src/moduller/seo/SeoPaylasimAdresi';
+import { useAjansSahibiMi } from '../../src/moduller/ajanslar/kancalar/useAjansSahibiMi';
 import { ProfilGetir } from '../../src/moduller/kullanici-profili/okuma/ProfilGetir';
 import {
   ProfilIstatistikleriniGetir,
@@ -65,6 +67,7 @@ import { ProfilSesOdasiButonu } from '../../src/moduller/ses-odalari/bilesenler/
 import {
   ProfilSilinmisMi,
 } from '../../src/moduller/kullanici-profili/yardimcilar/ProfilSilinmis';
+import { ProfilAlinanHediyeButonu } from '../../src/moduller/kullanici-profili/bilesenler/ProfilAlinanHediyeButonu';
 import { useCeviri } from '../../src/i18n/useCeviri';
 
 function formatSayi(n: number) {
@@ -109,6 +112,7 @@ export default function KullaniciProfilEkrani() {
   const id = paramId(idHam);
   const insets = useSafeAreaInsets();
   const { user, isGuest } = useAuth();
+  const ajansSahibi = useAjansSahibiMi(id);
   const [profil, setProfil] = useState<Profile | null>(null);
   const [stats, setStats] = useState<KullaniciProfilIstatistikleri | null>(null);
   const [privacy, setPrivacy] = useState<GizlilikAyarlari>(EMPTY_PRIVACY);
@@ -357,6 +361,7 @@ export default function KullaniciProfilEkrani() {
                 username={profil.username}
                 bio={profil.bio?.trim() || null}
                 verified={!!profil.is_verified}
+                ajansSahibi={ajansSahibi}
                 titleId={
                   gosterPrestige ? profil.selected_title_id ?? null : null
                 }
@@ -390,6 +395,15 @@ export default function KullaniciProfilEkrani() {
                 hasStory={hikayeOzet.hasActive}
                 hasUnseenStory={hikayeOzet.hasUnseen}
                 storyPreviewUri={hikayeOzet.previewUrl}
+                isimYani={
+                  id ? (
+                    <ProfilAlinanHediyeButonu
+                      userId={id}
+                      adet={stats?.total_gifts_received ?? 0}
+                      gizli={!kendi && privacy.hide_gift_collection}
+                    />
+                  ) : null
+                }
                 ustSol={
                   <Pressable
                     style={profilXOverlayBtnStyle}
@@ -405,20 +419,39 @@ export default function KullaniciProfilEkrani() {
                   </Pressable>
                 }
                 ustSag={
-                  !kendi && id ? (
-                    <Pressable
-                      style={profilXOverlayBtnStyle}
-                      onPress={() => setGuvenlikAcik(true)}
-                      accessibilityLabel={t('mesajSohbet.engelleBildir')}
-                      hitSlop={10}
-                    >
-                      <Ionicons
-                        name="ellipsis-horizontal"
-                        size={20}
-                        color={RenkTokenlari.text}
-                      />
-                    </Pressable>
-                  ) : null
+                  <>
+                    {id ? (
+                      <Pressable
+                        style={profilXOverlayBtnStyle}
+                        onPress={() => {
+                          void (async () => {
+                            const sonuc = await SeoAdresiniPaylas('profile', id);
+                            if (sonuc === 'yok') {
+                              Alert.alert(t('ortak.paylas'), t('profil.baglantiKapali'));
+                            }
+                          })();
+                        }}
+                        accessibilityLabel={t('profil.baglantiyiPaylas')}
+                        hitSlop={10}
+                      >
+                        <Ionicons name="share-outline" size={20} color={RenkTokenlari.text} />
+                      </Pressable>
+                    ) : null}
+                    {!kendi && id ? (
+                      <Pressable
+                        style={profilXOverlayBtnStyle}
+                        onPress={() => setGuvenlikAcik(true)}
+                        accessibilityLabel={t('mesajSohbet.engelleBildir')}
+                        hitSlop={10}
+                      >
+                        <Ionicons
+                          name="ellipsis-horizontal"
+                          size={20}
+                          color={RenkTokenlari.text}
+                        />
+                      </Pressable>
+                    ) : null}
+                  </>
                 }
                 aksiyonSlot={
                   kendi ? (

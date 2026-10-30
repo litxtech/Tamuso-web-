@@ -102,6 +102,7 @@ import { MaviTikRozeti } from '../../src/moduller/mesajlasma/bilesenler/MaviTikR
 import { MesajHizliAksiyonSeridi } from '../../src/moduller/mesajlasma/bilesenler/MesajHizliAksiyonSeridi';
 import { PlatformResmiHesapPaneli } from '../../src/moduller/cuzdan/bilesenler/PlatformResmiHesapPaneli';
 import { AjansPaketTeklifSecSheet } from '../../src/moduller/cuzdan/bilesenler/AjansPaketTeklifSecSheet';
+import { useAjansinSahibiMi } from '../../src/moduller/ajanslar/kancalar/useAjansinSahibiMi';
 import { usePaylasilanDurumOnizleme } from '../../src/moduller/durum/paylasim/usePaylasilanDurumOnizleme';
 import {
   TakasMahkemeKaraAc,
@@ -184,6 +185,7 @@ export default function MesajDetayEkrani() {
   const [gonderiyor, setGonderiyor] = useState(false);
   const [aciliyor, setAciliyor] = useState(false);
   const [peer, setPeer] = useState<ThreadKarsiProfil | null>(null);
+  const ajansSahibiBen = useAjansinSahibiMi(peer?.peer_agency_id, user?.id);
   const [engelli, setEngelli] = useState(false);
   const [peerLastReadAt, setPeerLastReadAt] = useState<string | null>(null);
   const [medyaSecimAcik, setMedyaSecimAcik] = useState(false);
@@ -236,6 +238,25 @@ export default function MesajDetayEkrani() {
     for (const x of mesajlar) m[x.id] = x;
     return m;
   }, [mesajlar]);
+
+  /** Sonrasında aynı paketin teklif kartı gönderilmiş paket talepleri */
+  const karsilananPaketTalepleri = useMemo(() => {
+    const set = new Set<string>();
+    if (!ajansSahibiBen) return set;
+    const teklifler = mesajlar.filter((x) => x.message_type === 'agency_package_offer');
+    for (const x of mesajlar) {
+      if (x.media_meta?.kind !== 'agency_package_request') continue;
+      const anahtar = x.media_meta.package_key;
+      if (
+        teklifler.some(
+          (o) => o.media_meta?.package_key === anahtar && o.created_at > x.created_at,
+        )
+      ) {
+        set.add(x.id);
+      }
+    }
+    return set;
+  }, [ajansSahibiBen, mesajlar]);
 
   const {
     metin,
@@ -970,6 +991,72 @@ export default function MesajDetayEkrani() {
 
     try {
       for (const item of items) {
+        const { AgBaglantiDurumunuGetir } = await import(
+          '../../src/moduller/ag-baglantisi/okuma/AgBaglantiDurumunuGetir'
+        );
+        const ag = await AgBaglantiDurumunuGetir();
+        const offline = !ag.bagli || ag.internetErisilebilir === false;
+        if (offline) {
+          let bytes = 0;
+          try {
+            const FS = await import('expo-file-system/legacy');
+            const bilgi = await FS.getInfoAsync(item.uri);
+            bytes = bilgi.exists ? (bilgi.size ?? 0) : 0;
+          } catch {
+            bytes = 0;
+          }
+          const VIDEO_KUYRUK_TAVAN = 80 * 1024 * 1024;
+          if (item.tur === 'video' && bytes > VIDEO_KUYRUK_TAVAN) {
+            const { TaslakKaydet } = await import('../../src/moduller/cevrimdisi/TaslakDeposu');
+            await TaslakKaydet(user.id, {
+              id: `video-${Date.now()}`,
+              type: 'message',
+              text: '',
+              images: [],
+              video: item.uri,
+              hashtags: [],
+              mentions: [],
+              location: null,
+              ekstra: { threadId: id, bytes },
+            });
+            Alert.alert(t('ortak.video'), t('cevrimdisi.videoBuyuk'));
+            continue;
+          }
+          const clientId = uuidYerel();
+          const temp: DirektMesaj = {
+            id: clientId,
+            thread_id: id,
+            sender_id: user.id,
+            body: null,
+            message_type: item.tur,
+            media_url: item.uri,
+            client_id: clientId,
+            view_once: useViewOnce,
+            created_at: new Date().toISOString(),
+            _localStatus: 'queued',
+          };
+          setMesajlar((p) => [...p, temp]);
+          listeAltaKaydir();
+          await MesajGonderVeyaKuyruk({
+            userId: user.id,
+            girdi: {
+              threadId: id,
+              body: '',
+              messageType: item.tur,
+              mediaUrl: item.uri,
+              clientId,
+              viewOnce: useViewOnce,
+              mediaMeta: {
+                pending_upload: true,
+                local_uri: item.uri,
+                bytes,
+                checksum: `size:${bytes}`,
+                mime: item.mimeType ?? null,
+              },
+            },
+          });
+          continue;
+        }
         const up = await DmMedyaUriYukle(item);
         if (!up.ok) {
           Alert.alert(t('ortak.medya'), up.hata);
@@ -1363,6 +1450,7 @@ export default function MesajDetayEkrani() {
               onPress: () =>
                 magaza.ac({
                   receiverId: peer.id,
+                  channel: 'message',
                   aliciAdi:
                     peer.agency_name || peer.display_name || peer.username,
                   animasyon: false,
@@ -1672,6 +1760,8 @@ export default function MesajDetayEkrani() {
                 sharedPostYukleniyor={
                   item.message_type === 'shared_post' && sharedPostYukleniyor
                 }
+                ajansSahibi={ajansSahibiBen}
+                paketTalebiGonderildi={karsilananPaketTalepleri.has(item.id)}
               />
               </View>
               );
@@ -1729,6 +1819,7 @@ export default function MesajDetayEkrani() {
                     ? () => setPaketTeklifAcik(true)
                     : undefined
                 }
+                paketTalepMi={!ajansSahibiBen}
               />
             ) : null}
             <MesajDuzenlemeBasligi
@@ -1771,6 +1862,7 @@ export default function MesajDetayEkrani() {
                 setMedyaGoruntule(null);
                 magaza.ac({
                   receiverId: peer.id,
+                  channel: 'message',
                   aliciAdi: peer.display_name || peer.username,
                   animasyon: false,
                   onBasarili: (gift, adet) => {
@@ -1982,6 +2074,7 @@ export default function MesajDetayEkrani() {
             visible={paketTeklifAcik}
             agencyId={peer.peer_agency_id}
             threadId={threadId}
+            talepMi={!ajansSahibiBen}
             onClose={() => setPaketTeklifAcik(false)}
             onGonderildi={() => {
               void load();

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import { TamusoModal } from '../../../bilesenler/yuzey/TamusoModal';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useCeviri } from '../../../i18n/useCeviri';
@@ -31,7 +31,9 @@ import {
  */
 export function CocukKorumaOnayKarti() {
   const { t } = useCeviri();
+  const segments = useSegments();
   const { user, profile, refreshProfile } = useAuth();
+  const sesOdasiEkrani = segments.some((s) => s === 'room' || s === 'lobi');
   const [gerekli, setGerekli] = useState(false);
   const [kontrolEdildi, setKontrolEdildi] = useState(false);
   const [altOnay, setAltOnay] = useState(false);
@@ -91,7 +93,7 @@ export function CocukKorumaOnayKarti() {
     router.replace('/(auth)/login' as any);
   };
 
-  if (!kontrolEdildi || !gerekli) return null;
+  if (!kontrolEdildi || !gerekli || sesOdasiEkrani) return null;
 
   return (
     <TamusoModal

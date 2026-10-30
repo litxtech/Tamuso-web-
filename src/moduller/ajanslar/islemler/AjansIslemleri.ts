@@ -200,17 +200,24 @@ export async function AjansPolitikaKabul(input: {
   return data;
 }
 
+/** Ücretli satış (paid_sale) sunucuda reddedilir; yüklemeler alıcının ödül coin bakiyesine yazılır. */
+export type AjansCoinYuklemeTuru = 'promotion' | 'operational_correction';
+
 export async function AjansCoinTransfer(input: {
   agencyId: string;
   toUserId: string;
   coins: number;
   idempotencyKey: string;
+  loadType: AjansCoinYuklemeTuru;
+  reason?: string | null;
 }): Promise<{ ok: boolean; hata?: string }> {
   const { error } = await supabase.rpc('ajans_coin_transfer', {
     p_agency_id: input.agencyId,
     p_to_user_id: input.toUserId,
     p_coins: input.coins,
     p_idempotency_key: input.idempotencyKey,
+    p_load_type: input.loadType,
+    p_reason: input.reason?.trim() || null,
   });
   if (error) return { ok: false, hata: error.message };
   return { ok: true };

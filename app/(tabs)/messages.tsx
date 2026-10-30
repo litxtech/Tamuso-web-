@@ -12,7 +12,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { YUZEN_TAB_ICERIK_BOSLUGU } from '../../src/components/YuzenTabBar';
 import { ModulHataSiniri } from '../../src/ortak/hata-sinirlari/ModulHataSiniri';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth, useWallet } from '../../src/contexts/AuthContext';
 import { HesabiTamamlaKarti } from '../../src/moduller/misafir-hesabi/bilesenler/HesabiTamamlaKarti';
 import { useMisafirIslemKapisi } from '../../src/moduller/misafir-hesabi/islemler/useMisafirIslemKapisi';
 import {
@@ -51,7 +51,8 @@ type Sekme = 'sohbet' | 'arsiv' | 'gorusme';
 export default function MessagesScreen() {
   const { t } = useCeviri();
   const acik = OzellikBayragiAktifMi('messages_enabled');
-  const { isGuest, refreshProfile, refreshWallet, user } = useAuth();
+  const { isGuest, refreshProfile, user } = useAuth();
+  const { refreshWallet } = useWallet();
   const { upgradeAcik, upgradeKapat, islemiDene } = useMisafirIslemKapisi(isGuest);
   const { sayfayiAcincaTemizle, yenile: mesajRozetYenile } = useMesajOkunmamis();
   const taslaklar = useMesajTaslakHaritasi(user?.id);
@@ -115,7 +116,7 @@ export default function MessagesScreen() {
 
   useMesajInboxKanali(() => {
     void load('sessiz');
-  });
+  }, user?.id);
 
   const yeniSohbet = () => {
     islemiDene('mesaj_gonder', () => {

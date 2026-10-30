@@ -95,7 +95,7 @@ export function CanliSohbetMesajKarti({
           accessibilityRole="button"
           accessibilityLabel={profilA11y}
         >
-          <SeviyeTaci level={seviye} size="sm" avatarBoy={28}>
+          <SeviyeTaci level={seviye} size="sm" avatarBoy={28} animasyonluMu={false}>
             <ProfilAvatarKucuk
               size={28}
               displayName={item.display_name}
@@ -161,7 +161,7 @@ export function CanliSohbetMesajKarti({
         accessibilityRole="button"
         accessibilityLabel={profilA11y}
       >
-        <SeviyeTaci level={seviye} size="sm" avatarBoy={34}>
+        <SeviyeTaci level={seviye} size="sm" avatarBoy={34} animasyonluMu={false}>
           <ProfilAvatarKucuk
             size={34}
             displayName={item.display_name}

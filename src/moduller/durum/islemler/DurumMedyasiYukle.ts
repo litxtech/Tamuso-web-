@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+﻿import { supabase } from '../../../lib/supabase';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import { GaleriAc } from '../../../ortak/medya/ImagePickerHazirMi';
 import {
@@ -9,7 +9,7 @@ import i18n from '../../../i18n';
 
 export type DurumMedyaTuru = 'image' | 'video';
 
-/** Galeri → status-media bucket (hızlı public URL) */
+/** Galeri â†’ status-media bucket (hÄ±zlÄ± public URL) */
 export async function DurumMedyasiSecVeYukle(
   tur: DurumMedyaTuru,
   opts?: { onYuklemeBasladi?: () => void },
@@ -20,7 +20,7 @@ export async function DurumMedyasiSecVeYukle(
   try {
     const secim = await GaleriAc({
       mediaTypes: tur === 'video' ? ['videos'] : ['images'],
-      // Süre limiti yok — 1080p sıkıştırma
+      // SÃ¼re limiti yok â€” 1080p sÄ±kÄ±ÅŸtÄ±rma
     });
     if (!secim.ok) return secim;
 
@@ -32,7 +32,7 @@ export async function DurumMedyasiSecVeYukle(
     if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
     const { YaptirimAktifMi } = await import(
-      '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+      '../../medya-yukleme/AdminSesOdasiIslemleri'
     );
     if (await YaptirimAktifMi('upload_ban')) {
       return { ok: false, hata: i18n.t('durumX.uploadBan') };
@@ -52,16 +52,16 @@ export async function DurumMedyasiSecVeYukle(
       mime: asset.mimeType,
       tur,
       upsert: false,
-      // video → DepoyaMedyaYukle içinde 1080p
+      // video â†’ DepoyaMedyaYukle iÃ§inde 1080p
     });
 
     if (!up.ok) return { ok: false, hata: up.hata };
 
-    const { data: pub } = supabase.storage.from('status-media').getPublicUrl(path);
+    const { data: pub } = supabase.storage.from('status-media').getPublicUrl(up.path);
     const base = OrtamDegiskenleri.supabaseUrl?.replace(/\/$/, '');
     const url =
       pub?.publicUrl ||
-      `${base}/storage/v1/object/public/status-media/${path}`;
+      `${base}/storage/v1/object/public/status-media/${up.path}`;
     if (typeof url !== 'string' || !/^https?:\/\//i.test(url.trim())) {
       return { ok: false, hata: i18n.t('durumX.gecersizAdres') };
     }
@@ -78,7 +78,7 @@ export async function DurumMedyasiSecVeYukle(
   }
 }
 
-/** Yerel ses kaydı → status-media (audio/mp4) */
+/** Yerel ses kaydÄ± â†’ status-media (audio/mp4) */
 export async function DurumSesDosyasiYukle(
   uri: string,
 ): Promise<{ ok: true; url: string } | { ok: false; hata: string }> {
@@ -87,7 +87,7 @@ export async function DurumSesDosyasiYukle(
     if (!uid) return { ok: false, hata: i18n.t('ortak.oturumYok') };
 
     const { YaptirimAktifMi } = await import(
-      '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+      '../../medya-yukleme/AdminSesOdasiIslemleri'
     );
     if (await YaptirimAktifMi('upload_ban')) {
       return { ok: false, hata: i18n.t('durumX.uploadBan') };
@@ -120,3 +120,4 @@ export async function DurumSesDosyasiYukle(
     };
   }
 }
+

@@ -62,6 +62,14 @@ export async function ManuelCikisYap(neden: CikisNedeni = 'manual'): Promise<voi
   // Mesaj taslak bellegi — disk userId namespaceli kalir; baska hesaba sizmasin
   MesajTaslakBellekTemizle();
   MesajOutboxBellekTemizle();
+  try {
+    const { data } = await supabase.auth.getSession();
+    const uid = data.session?.user?.id;
+    const { CevrimdisiOzelTemizle } = await import('../../cevrimdisi/CevrimdisiOturum');
+    await CevrimdisiOzelTemizle(uid);
+  } catch {
+    /* çıkış önbellek temizliğine takılmasın */
+  }
 
   try {
     if (neden === 'manual') {

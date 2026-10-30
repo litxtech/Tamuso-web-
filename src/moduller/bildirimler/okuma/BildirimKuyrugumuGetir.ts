@@ -36,11 +36,23 @@ function satirMap(r: Record<string, unknown>): UygulamaBildirimi {
 export async function BildirimlerimiListele(
   limit = 50,
 ): Promise<UygulamaBildirimi[]> {
-  const { data, error } = await supabase.rpc('bildirimlerimi_listele', {
-    p_limit: limit,
-  });
-  if (error) throw error;
-  return ((data ?? []) as Record<string, unknown>[]).map(satirMap);
+  try {
+    const { data, error } = await supabase.rpc('bildirimlerimi_listele', {
+      p_limit: limit,
+    });
+    if (error) throw error;
+    const liste = ((data ?? []) as Record<string, unknown>[]).map(satirMap);
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { BildirimAnlikYaz } = await import('../../cevrimdisi/AnlikGoruntu');
+    void BildirimAnlikYaz(CevrimdisiAktifKullanici(), liste);
+    return liste;
+  } catch (e) {
+    const { CevrimdisiAktifKullanici } = await import('../../cevrimdisi/AktifKullanici');
+    const { BildirimAnlikOku } = await import('../../cevrimdisi/AnlikGoruntu');
+    const disk = await BildirimAnlikOku(CevrimdisiAktifKullanici());
+    if (disk) return disk as UygulamaBildirimi[];
+    throw e;
+  }
 }
 
 export async function BildirimOkunmamisSayim(): Promise<number> {

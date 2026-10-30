@@ -229,7 +229,7 @@ export async function GorusmeOturumTamamenBitir(opts?: {
       /* ignore */
     }
   }
-  await MedyaOdasiKes();
+  await MedyaOdasiKes({ zorla: true });
 }
 
 export function GorusmeOturumSunumAyarla(sunum: GorusmeSunum): void {
@@ -578,7 +578,7 @@ export async function GorusmeUygulamaAcilisTemizligi(): Promise<void> {
   // Yeni arama başladıysa LiveKit'i kesme
   if (durum) return;
   try {
-    await MedyaOdasiKes();
+    await MedyaOdasiKes({ zorla: true });
   } catch {
     /* ignore */
   }

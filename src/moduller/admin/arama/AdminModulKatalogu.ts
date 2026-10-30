@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import type { Ionicons } from '@expo/vector-icons';
 import { RenkTokenlari } from '../../../tasarim-sistemi/RenkTokenlari';
 
@@ -15,7 +16,10 @@ export type AdminModul = {
 };
 
 /** Admin hub + arama katalogu (tek kaynak) */
-export const ADMIN_MODULLER: AdminModul[] = [
+/** iOS paketinde ekranı bulunmayan admin modülleri. */
+const IOS_PAKETINDE_OLMAYAN = new Set(['/admin/ai-muzik']);
+
+export const ADMIN_MODULLER: AdminModul[] = ([
   {
     icon: 'shield-outline',
     label: 'Admin Yönetimi',
@@ -206,6 +210,26 @@ export const ADMIN_MODULLER: AdminModul[] = [
     ],
   },
   {
+    icon: 'videocam-outline',
+    label: 'Ajans görüşmeleri',
+    alt: 'Toplantı · oda · force end',
+    href: '/admin/ajans-odalari',
+    tint: RenkTokenlari.primarySoft,
+    bolum: 'İnsanlar',
+    permissionKey: 'agencies.view',
+    anahtarlar: ['görüşme', 'toplantı', 'meeting', 'oda'],
+  },
+  {
+    icon: 'ribbon-outline',
+    label: 'Ajans sertifikası',
+    alt: 'Üye · dakika · coin eşiği',
+    href: '/admin/ajans-sertifika',
+    tint: '#E2B657',
+    bolum: 'İnsanlar',
+    permissionKey: 'agencies.view',
+    anahtarlar: ['sertifika', 'ödül', 'eşik', 'ajans sahibi'],
+  },
+  {
     icon: 'shield-half-outline',
     label: 'Moderasyon',
     alt: 'Rapor kuyruğu · çözüm',
@@ -234,16 +258,6 @@ export const ADMIN_MODULLER: AdminModul[] = [
     bolum: 'Güvenlik',
     permissionKey: 'security.rtc.view',
     anahtarlar: ['livekit', 'agora', 'rtc', 'ses', 'yayın'],
-  },
-  {
-    icon: 'sparkles-outline',
-    label: 'Tamuso Studio',
-    alt: 'Oyun oluşturma · bayraklar',
-    href: '/admin/studio',
-    tint: RenkTokenlari.violet,
-    bolum: 'Oyunlar',
-    permissionKey: 'studio.view',
-    anahtarlar: ['studio', 'oyun', 'creator'],
   },
   {
     icon: 'shield-checkmark-outline',
@@ -404,6 +418,16 @@ export const ADMIN_MODULLER: AdminModul[] = [
     bolum: 'Ürün',
     permissionKey: 'games.algorithm.view',
     anahtarlar: ['algoritma', 'ağırlık'],
+  },
+  {
+    icon: 'list-outline',
+    label: 'Çıkış planı',
+    alt: 'Meyve sırası · saat · Fırtına çarpanı',
+    href: '/admin/cikis-plani',
+    tint: RenkTokenlari.accent,
+    bolum: 'Ürün',
+    permissionKey: 'games.algorithm.view',
+    anahtarlar: ['meyve', 'karpuz', 'fırtına', 'çarpan', 'sıra', 'saat'],
   },
   {
     icon: 'layers-outline',
@@ -615,7 +639,7 @@ export const ADMIN_MODULLER: AdminModul[] = [
     permissionKey: 'ops.security.view',
     anahtarlar: ['koruma', 'olay', 'güvenlik merkezi'],
   },
-];
+] as AdminModul[]).filter((m) => !(Platform.OS === 'ios' && IOS_PAKETINDE_OLMAYAN.has(m.href)));
 
 export const ADMIN_BOLUM_SIRASI = [
   'Uygulama Yönetimi',

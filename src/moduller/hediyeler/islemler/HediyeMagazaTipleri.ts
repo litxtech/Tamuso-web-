@@ -1,5 +1,5 @@
 import type { Gift } from '../../../types/models';
-import type { CoinPackage } from '../../../types/models';
+import type { CoinKaynagi, CoinPackage } from '../../../types/models';
 
 /** useCoinYuklePaneli dönüş şekli — hook import etmeden tip paylaşımı */
 export type CoinYuklePaneliDurumu = {
@@ -38,6 +38,8 @@ export type HediyeMagazaDurumu = {
     /** PK sırasında birden fazla yayıncı — seçilen alır */
     pkAlicilar?: HediyePkAlici[];
     animasyon?: boolean;
+    /** Sunucu kanalı kendisi çözer; mesaj ekranı 'message' ipucu verir */
+    channel?: 'message' | 'live' | null;
     onBasarili?: (gift: Gift, adet: number) => void;
   }) => void;
   kapat: () => void;
@@ -46,6 +48,9 @@ export type HediyeMagazaDurumu = {
   gonderiyor?: boolean;
   gifts: Gift[];
   coins: number | undefined;
+  coinKaynagi: CoinKaynagi;
+  setCoinKaynagi: (k: CoinKaynagi) => void;
+  coinBakiyeleri: Record<CoinKaynagi, number>;
   aliciAdi: string | null | undefined;
   pkAlicilar: HediyePkAlici[] | undefined;
   seciliPkAliciId: string | null | undefined;

@@ -25,6 +25,8 @@ type Props = {
   level?: number | null;
   gizli?: boolean;
   yogunluk?: AvatarTacYogunluk;
+  /** Yorum listesinde dönüş/parıltı kaydırırken satırı titretir */
+  animasyonlu?: boolean;
   children: React.ReactNode;
 };
 
@@ -221,6 +223,7 @@ export function AvatarTacHalkasi({
   level,
   gizli = false,
   yogunluk = 'profil',
+  animasyonlu = true,
   children,
 }: Props) {
   const safeSize =
@@ -246,7 +249,7 @@ export function AvatarTacHalkasi({
   const shine = useSharedValue(0);
 
   useEffect(() => {
-    if (gizli) return;
+    if (gizli || !animasyonlu) return;
     // Tek dönüş — kıvılcımlar parent ile döner (left/top güncellenmez → scroll titremez)
     orbit.value = withRepeat(
       withTiming(360, {
@@ -273,7 +276,7 @@ export function AvatarTacHalkasi({
       -1,
       false,
     );
-  }, [gizli, profilMi, orbit, pulse, shine]);
+  }, [animasyonlu, gizli, profilMi, orbit, pulse, shine]);
 
   // Sadece opacity — scale/shadow scroll'da titretime yol açar
   const auraStil = useAnimatedStyle(() => ({
@@ -485,7 +488,8 @@ export function AvatarTacHalkasi({
         </LinearGradient>
       ) : null}
 
-      {/* Kıvılcımlar — sabit konum, parent döner (left/top animasyonu yok) */}
+      {/* Kıvılcımlar — yorum satırında kapalı; dönüş kaydırırken titretir */}
+      {animasyonlu ? (
       <Animated.View
         pointerEvents="none"
         style={[
@@ -518,6 +522,7 @@ export function AvatarTacHalkasi({
           );
         })}
       </Animated.View>
+      ) : null}
     </View>
   );
 }

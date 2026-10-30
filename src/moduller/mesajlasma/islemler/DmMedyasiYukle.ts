@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+﻿import { supabase } from '../../../lib/supabase';
 import i18n from '../../../i18n';
 import { OrtamDegiskenleri } from '../../../yapilandirma/OrtamDegiskenleri';
 import {
@@ -16,7 +16,7 @@ export type DmMedyaTuru = 'image' | 'video';
 export type DmMedyaKaynak = 'galeri' | 'kamera';
 
 export type DmMedyaTaslak = {
-  /** Yerel önizleme kimliği */
+  /** Yerel Ã¶nizleme kimliÄŸi */
   id: string;
   uri: string;
   tur: DmMedyaTuru;
@@ -51,7 +51,7 @@ async function uploadBanKontrol(): Promise<
   { ok: true } | { ok: false; hata: string }
 > {
   const { YaptirimAktifMi } = await import(
-    '../../admin/ses-odalari/AdminSesOdasiIslemleri'
+    '../../medya-yukleme/AdminSesOdasiIslemleri'
   );
   if (await YaptirimAktifMi('upload_ban')) {
     return { ok: false, hata: i18n.t('durumX.uploadBan') };
@@ -60,14 +60,14 @@ async function uploadBanKontrol(): Promise<
 }
 
 /**
- * Galeri/kamera ile seç — yükleme yok (önizleme için).
- * Galeri: çoklu (max GALERI_COKLU_LIMIT). Kamera: tek.
+ * Galeri/kamera ile seÃ§ â€” yÃ¼kleme yok (Ã¶nizleme iÃ§in).
+ * Galeri: Ã§oklu (max GALERI_COKLU_LIMIT). Kamera: tek.
  */
 export async function DmMedyalariSec(
   tur: DmMedyaTuru,
   opts?: {
     kaynak?: DmMedyaKaynak;
-    /** Kalan kota (mevcut önizleme + yeni). Varsayılan GALERI_COKLU_LIMIT */
+    /** Kalan kota (mevcut Ã¶nizleme + yeni). VarsayÄ±lan GALERI_COKLU_LIMIT */
     maxAdet?: number;
   },
 ): Promise<
@@ -85,7 +85,7 @@ export async function DmMedyalariSec(
         | 'images'
         | 'videos'
       )[],
-      // Süre limiti yok — 1080p sıkıştırma
+      // SÃ¼re limiti yok â€” 1080p sÄ±kÄ±ÅŸtÄ±rma
     };
 
     if (kaynak === 'kamera') {
@@ -111,7 +111,7 @@ export async function DmMedyalariSec(
   }
 }
 
-/** Yerel URI → dm-media (önizleme onayından sonra) */
+/** Yerel URI â†’ dm-media (Ã¶nizleme onayÄ±ndan sonra) */
 export async function DmMedyaUriYukle(
   item: Pick<DmMedyaTaslak, 'uri' | 'tur' | 'mimeType'>,
 ): Promise<
@@ -143,10 +143,10 @@ export async function DmMedyaUriYukle(
 
     if (!up.ok) return { ok: false, hata: up.hata };
 
-    const { data: pub } = supabase.storage.from('dm-media').getPublicUrl(path);
+    const { data: pub } = supabase.storage.from('dm-media').getPublicUrl(up.path);
     return {
       ok: true,
-      url: pub?.publicUrl || publicUrl(path),
+      url: pub?.publicUrl || publicUrl(up.path),
       messageType: item.tur,
     };
   } catch (e) {
@@ -157,7 +157,7 @@ export async function DmMedyaUriYukle(
   }
 }
 
-/** Galeri veya kamera: foto / video → dm-media bucket (eski tek adımlı API) */
+/** Galeri veya kamera: foto / video â†’ dm-media bucket (eski tek adÄ±mlÄ± API) */
 export async function DmMedyasiSecVeYukle(
   tur: DmMedyaTuru,
   opts?: {
@@ -182,7 +182,7 @@ export async function DmMedyasiSecVeYukle(
   return await DmMedyaUriYukle(item);
 }
 
-/** Yerel ses dosyası (m4a/aac/mp4 audio) → dm-media */
+/** Yerel ses dosyasÄ± (m4a/aac/mp4 audio) â†’ dm-media */
 export async function DmSesMedyasiYukle(
   uri: string,
   opts?: { mime?: string | null; durationMs?: number },
@@ -225,3 +225,4 @@ export async function DmSesMedyasiYukle(
     };
   }
 }
+

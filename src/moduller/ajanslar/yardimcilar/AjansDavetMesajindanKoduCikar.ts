@@ -8,7 +8,9 @@ export function AjansDavetMesajindanKoduCikar(
   const metin = (body ?? '').trim();
   if (!metin) return null;
 
-  const kodEslesme = metin.match(/Davet\s*kodu\s*[:：]\s*([A-Za-z0-9_-]{4,32})/i);
+  const kodEslesme =
+    metin.match(/[?&](?:ajans|kod)=([A-Za-z0-9_-]{4,32})/i) ??
+    metin.match(/Davet\s*kodu\s*[:：]\s*([A-Za-z0-9_-]{4,32})/i);
   if (!kodEslesme?.[1]) return null;
 
   const adEslesme = metin.match(/^(.+?)\s+ajansına\s+davet/i);

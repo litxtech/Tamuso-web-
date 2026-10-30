@@ -42,6 +42,8 @@ type Props = {
   maxMesaj?: number;
   /** TikTok tarzı şeffaf float — kart/fade yok */
   floatMod?: boolean;
+  /** PK: karşı yayının yorumları da aynı yanda görünsün */
+  ekSessionId?: string | null;
   /** Avatar / isme tık — profil sheet */
   onProfil?: (item: CanliSohbetMesajGorunum) => void;
 };
@@ -63,6 +65,7 @@ function CanliYorumAkisiInner({
   onClose,
   maxMesaj = VARSAYILAN_MAX,
   floatMod = false,
+  ekSessionId,
   onProfil,
 }: Props) {
   const { t } = useCeviri();
@@ -74,14 +77,20 @@ function CanliYorumAkisiInner({
 
   const load = useCallback(async () => {
     try {
-      const rows = await CanliYayinSohbetMesajlariniGetir(sessionId);
-      const kirp = mesajiKirp(rows, maxMesaj);
+      const birincil = await CanliYayinSohbetMesajlariniGetir(sessionId);
+      const ek = ekSessionId
+        ? await CanliYayinSohbetMesajlariniGetir(ekSessionId).catch(() => [])
+        : [];
+      const birlesik = [...birincil, ...ek].sort(
+        (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+      );
+      const kirp = mesajiKirp(birlesik, maxMesaj);
       seenIds.current = new Set(kirp.map((m) => m.id));
       setMessages(kirp);
     } catch {
       /* migration yoksa sessiz */
     }
-  }, [sessionId, maxMesaj]);
+  }, [sessionId, ekSessionId, maxMesaj]);
 
   useFocusEffect(
     useCallback(() => {
@@ -95,59 +104,68 @@ function CanliYorumAkisiInner({
   }, [yenileSinyali, load]);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`canli-yorum-${sessionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'live_chat_messages',
-          filter: `session_id=eq.${sessionId}`,
-        },
-        (payload) => {
-          const row = payload.new as CanliSohbetMesajGorunum & {
-            id?: string;
-          };
-          if (!row?.id || seenIds.current.has(row.id)) return;
-          seenIds.current.add(row.id);
-          setMessages((prev) =>
-            mesajiKirp(
-              [
-                ...prev,
-                {
-                  id: row.id,
-                  user_id: row.user_id,
-                  body: row.body,
-                  created_at: row.created_at ?? new Date().toISOString(),
-                  display_name: (row as { display_name?: string }).display_name,
-                  username: (row as { username?: string }).username,
-                  avatar_url: (row as { avatar_url?: string }).avatar_url,
-                  level: (row as { level?: number }).level,
-                },
-              ],
-              maxMesaj,
-            ),
-          );
-        },
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'live_chat_messages',
-          filter: `session_id=eq.${sessionId}`,
-        },
-        () => {
-          void load();
-        },
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
+    const ekle = (row: CanliSohbetMesajGorunum & { id?: string }) => {
+      if (!row?.id || seenIds.current.has(row.id)) return;
+      seenIds.current.add(row.id);
+      setMessages((prev) =>
+        mesajiKirp(
+          [
+            ...prev,
+            {
+              id: row.id,
+              user_id: row.user_id,
+              body: row.body,
+              created_at: row.created_at ?? new Date().toISOString(),
+              display_name: (row as { display_name?: string }).display_name,
+              username: (row as { username?: string }).username,
+              avatar_url: (row as { avatar_url?: string }).avatar_url,
+              level: (row as { level?: number }).level,
+            },
+          ],
+          maxMesaj,
+        ),
+      );
     };
-  }, [load, sessionId, maxMesaj]);
+
+    const bagla = (id: string, ad: string) =>
+      supabase
+        .channel(ad)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'live_chat_messages',
+            filter: `session_id=eq.${id}`,
+          },
+          (payload) => {
+            ekle(payload.new as CanliSohbetMesajGorunum & { id?: string });
+          },
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'live_chat_messages',
+            filter: `session_id=eq.${id}`,
+          },
+          () => {
+            void load();
+          },
+        )
+        .subscribe();
+
+    const kanallar = [bagla(sessionId, `canli-yorum-${sessionId}`)];
+    if (ekSessionId && ekSessionId !== sessionId) {
+      kanallar.push(bagla(ekSessionId, `canli-yorum-ek-${ekSessionId}`));
+    }
+    return () => {
+      kanallar.forEach((ch) => {
+        void supabase.removeChannel(ch);
+      });
+    };
+  }, [load, sessionId, ekSessionId, maxMesaj]);
 
   useEffect(() => {
     if (messages.length === 0) return;

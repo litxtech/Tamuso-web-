@@ -134,9 +134,109 @@ export function LiveKitGlobalsKaydet(): boolean {
 }
 
 /**
- * iOS Apple Voice Processing (AEC) açık tut — kendi sesini duyma engeli.
- * Bypass/kapalı VPIO hoparlörden kendi sesini geri verir.
+ * Kesit kaydı: yankı iptalini kapat, oturumu video kaydına al.
+ * voiceChat hoparlördeki müziği ve YouTube sesini mikrofondan siler.
+ * Bırakınca yayın oturumu (voiceChat + yankı iptali) geri gelir.
  */
+export async function IosKesitKayitSesi(kayit: boolean): Promise<void> {
+  if (Platform.OS !== 'ios') return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const native = require('@livekit/react-native') as {
+      AudioSession: {
+        setAppleAudioConfiguration: (config: {
+          audioCategory?: string;
+          audioCategoryOptions?: string[];
+          audioMode?: string;
+        }) => Promise<void>;
+      };
+      AudioDeviceModule?: {
+        setVoiceProcessingEnabled?: (enabled: boolean) => Promise<void>;
+        setVoiceProcessingBypassed?: (bypassed: boolean) => void;
+      };
+    };
+    if (kayit) {
+      native.AudioDeviceModule?.setVoiceProcessingBypassed?.(true);
+      await native.AudioDeviceModule?.setVoiceProcessingEnabled?.(false).catch(() => undefined);
+      await native.AudioSession.setAppleAudioConfiguration({
+        audioCategory: 'playAndRecord',
+        audioCategoryOptions: [
+          'mixWithOthers',
+          'defaultToSpeaker',
+          'allowBluetoothA2DP',
+          'allowAirPlay',
+        ],
+        audioMode: 'videoRecording',
+      });
+      return;
+    }
+    await native.AudioSession.setAppleAudioConfiguration(IOS_SES_ODA_AYAR);
+  } catch {
+    /* eski native */
+  }
+  if (!kayit) IosYankIptaliAc();
+}
+
+/**
+ * Canlı yayın iOS oturumu — bağlantı bittikten SONRA.
+ * Yayıncı: videoChat. voiceChat + kamera mikrofonu susturur.
+ * İzleyici: playAndRecord + hoparlör. playback sessiz anahtarda kesilir.
+ */
+export async function IosCanliYayinOturumu(yayinci: boolean): Promise<void> {
+  if (Platform.OS !== 'ios') return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const native = require('@livekit/react-native') as {
+      AudioSession: {
+        startAudioSession: () => Promise<void>;
+        getAudioOutputs?: () => Promise<string[]>;
+        selectAudioOutput?: (output: string) => Promise<void>;
+        setAppleAudioConfiguration: (config: {
+          audioCategory?: string;
+          audioCategoryOptions?: string[];
+          audioMode?: string;
+        }) => Promise<void>;
+      };
+    };
+    await native.AudioSession.setAppleAudioConfiguration(
+      yayinci
+        ? {
+            audioCategory: 'playAndRecord',
+            audioCategoryOptions: [
+              'mixWithOthers',
+              'defaultToSpeaker',
+              'allowBluetooth',
+              'allowBluetoothA2DP',
+            ],
+            audioMode: 'videoChat',
+          }
+        : {
+            audioCategory: 'playAndRecord',
+            audioCategoryOptions: [
+              'mixWithOthers',
+              'defaultToSpeaker',
+              'allowBluetooth',
+              'allowBluetoothA2DP',
+            ],
+            audioMode: 'voiceChat',
+          },
+    );
+    await native.AudioSession.startAudioSession();
+    const outputs = await native.AudioSession.getAudioOutputs?.().catch(
+      () => [] as string[],
+    );
+    const kulaklik = (outputs ?? []).some((o) =>
+      /bluetooth|headset|airplay/i.test(String(o)),
+    );
+    await native.AudioSession.selectAudioOutput?.(
+      kulaklik ? 'default' : 'force_speaker',
+    ).catch(() => undefined);
+  } catch {
+    /* eski native */
+  }
+  if (yayinci) IosYankIptaliAc();
+}
+
 export function IosYankIptaliAc(): void {
   if (Platform.OS !== 'ios') return;
   try {

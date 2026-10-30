@@ -1,0 +1,40 @@
+﻿[
+  {
+    "id": "ae2aa5b4-da83-4a7c-9e81-b70edbf6854e",
+    "status": "IN_PROGRESS",
+    "platform": "ANDROID",
+    "artifacts": {},
+    "fingerprint": {
+      "id": "01a0ca44-0897-7418-81c1-dd2177b35b80",
+      "hash": "8e9a6963e3c9034cef702d3a5a17049ffb2aa40a"
+    },
+    "initiatingActor": {
+      "id": "c002b060-a185-4301-9aeb-d31dec4ad583",
+      "displayName": "luvolive"
+    },
+    "logFiles": [
+      "https://storage.googleapis.com/eas-workflows-production/logs/36cb815b-2891-4075-a1a8-89902e491af5/ae2aa5b4-da83-4a7c-9e81-b70edbf6854e/2026-09-22T17%3A58%3A12Z-698a4cb3-f96d-4a34-8dfc-aaa6aa347646.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260922%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260922T175823Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=4d8181aca14b4ea089c8a7ab26c6fa80be50ff1f48b3dc430d1bf21970d951fbc244cc7302521ee4ec6d8ec765b1f71cdc9c4a16af1d13c42ee6c17e68205c13f98e1c4268debd62d0d80567b56fb15721005d75e2f608566b127956c587da489442f8cca2a9244577ff3e869a8fc34045cc16dcc27b41a713e564408d932451ceaefc013cc2255075ce9b344f9f864d0e15ba57278174f488c9753de1d9561911044ce8a6a50b72d54b564dd5ffbd9b316259d02816315748834369e53ef20544e3254bde380c9689bb2a39298eb2d9882b299ed8fc711263d9058129e4ce8834d9f4e8f0ba0a360abb2f6bd024790309dcce6a177c4cccb3e4ebb24948f396"
+    ],
+    "project": {
+      "id": "36cb815b-2891-4075-a1a8-89902e491af5",
+      "name": "muta",
+      "slug": "muta",
+      "ownerAccount": {
+        "id": "52b5b6d4-93c4-482f-8f48-a8be33f288a1",
+        "name": "mutaq"
+      }
+    },
+    "distribution": "INTERNAL",
+    "buildProfile": "production-apk",
+    "sdkVersion": "57.0.0",
+    "appVersion": "1.2.4",
+    "appBuildVersion": "119",
+    "gitCommitHash": "997b9b751c86210bf385bc5a91c42f4236fe34a2",
+    "gitCommitMessage": "Sync profile, feed, messaging, and live/session work to GitHub.\n\nAdds recent-rooms strip, video frame previews, profile/layout polish, feedback/report flows, PIP/session helpers, and related Supabase migrations so another machine can continue from this branch.\n\nCo-authored-by: Cursor <cursoragent@cursor.com>",
+    "priority": "HIGH",
+    "createdAt": "2026-09-22T17:58:07.945Z",
+    "updatedAt": "2026-09-22T17:58:16.912Z",
+    "expirationDate": "2026-12-21T17:58:07.998Z",
+    "isForIosSimulator": false
+  }
+]
