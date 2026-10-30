@@ -81,7 +81,10 @@
         margin: 0;
         background: #07060d;
         height: 100%;
-        height: 100svh;
+      }
+      /* Mobil tarayici cubugu acilip kapanirken yukseklik dogru kalsin. */
+      @supports (height: 100dvh) {
+        html, body, #root { height: 100dvh; }
       }
       body {
         overflow: hidden;
@@ -105,17 +108,11 @@
     </style>
     <script>
       (function () {
-        var p = location.pathname.replace(/\/+$/, '') || '/';
-        var site = p === '/' || p.indexOf('/tanitim') === 0;
-        var kisa = window.screen ? Math.min(screen.width, screen.height) : window.innerWidth;
-        var dar = kisa < 760;
-        if (!site || !dar) return;
-        var m = document.querySelector('meta[name="viewport"]');
-        if (m) {
-          m.setAttribute(
-            'content',
-            'width=device-width, initial-scale=0.75, minimum-scale=0.5, viewport-fit=cover, interactive-widget=resizes-content'
-          );
+        // Yalnizca sondaki egik cizgiyi temizler.
+        // Olcek hilesi YOK: sayfa her cihazda gercek genisliginde acilir.
+        var p = location.pathname;
+        if (p.length > 1 && p.charAt(p.length - 1) === '/') {
+          history.replaceState(null, '', p.replace(/\/+$/, '') + location.search + location.hash);
         }
       })();
     </script>

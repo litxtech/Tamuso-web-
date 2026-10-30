@@ -1,0 +1,16 @@
+# Yerel artefaktlar / buyuk dosyalar Vercel'e yuklenmesin.
+# DIKKAT: basindaki egik cizgi sart; aksi halde "android" adli her klasor
+# (ornegin src/moduller/gorusme/android/) yanlislikla dislanir.
+/artifacts/
+/.cache/
+/.tmp-ios-export/
+/.tmp-export-check/
+/apps/
+/ios/
+/android/
+/docs/
+*.ipa
+*.log
+*.tsbuildinfo
+/node_modules/
+/.expo/
