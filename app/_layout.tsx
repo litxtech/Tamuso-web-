@@ -289,7 +289,6 @@ function KokIcerik() {
             name="bildirim-ayarlari/index"
             options={{ animation: 'slide_from_right' }}
           />
-          <Stack.Screen name="sertifikasyon/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="webview" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen
             name="odeme-basarili"
