@@ -12,7 +12,7 @@ import {
   fruitWheelAdminMath,
   fruitWheelAdminPublish,
   fruitWheelAdminSetEnabled,
-} from '../../../../src/moduller/oyunlar/fruit-wheel/servisler/FruitWheelApi';
+} from '../../lib/FruitWheelAdminApi';
 
 type Fruit = {
   id: string;

@@ -5,6 +5,7 @@ import {
   DeviceEventEmitter,
   FlatList,
   Linking,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
