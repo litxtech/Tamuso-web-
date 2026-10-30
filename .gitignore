@@ -81,3 +81,6 @@ supabase/.temp/
 # Build / submit loglari (yerel)
 eas-*.log
 .tmp-*
+
+# Yerel calisma dosyalari (commit edilmez)
+/.cache/
